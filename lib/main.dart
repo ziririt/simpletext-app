@@ -4,9 +4,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/tidy_engine.dart';
+import 'core/wizard.dart';
 
 void main() {
   runApp(const SimpleTextApp());
@@ -110,8 +112,12 @@ class AppSettings {
   bool smartDashList = true;
   bool smartFillerHeading = true;
   bool headingPad = true;
+  int headingPadAbove = 2;
+  int headingPadBelow = 1;
   int bulletIndent = 2;
   bool removeCitations = true;
+  String aiKey = '';
+  String aiModel = 'gemini-2.5-flash-lite';
   List<CustomRule> customRules = [];
 
   Map<String, dynamic> toJson() => {
@@ -123,8 +129,12 @@ class AppSettings {
         'smartDashList': smartDashList,
         'smartFillerHeading': smartFillerHeading,
         'headingPad': headingPad,
+        'headingPadAbove': headingPadAbove,
+        'headingPadBelow': headingPadBelow,
         'bulletIndent': bulletIndent,
         'removeCitations': removeCitations,
+        'aiKey': aiKey,
+        'aiModel': aiModel,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
             .toList(),
@@ -140,8 +150,12 @@ class AppSettings {
     s.smartDashList = (j['smartDashList'] ?? s.smartDashList) as bool;
     s.smartFillerHeading = (j['smartFillerHeading'] ?? s.smartFillerHeading) as bool;
     s.headingPad = (j['headingPad'] ?? s.headingPad) as bool;
+    s.headingPadAbove = (j['headingPadAbove'] ?? s.headingPadAbove) as int;
+    s.headingPadBelow = (j['headingPadBelow'] ?? s.headingPadBelow) as int;
     s.bulletIndent = (j['bulletIndent'] ?? s.bulletIndent) as int;
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
+    s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
+    s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.customRules = ((j['customRules'] ?? []) as List)
         .map((e) => CustomRule(
               find: (e['find'] ?? '') as String,
@@ -225,7 +239,11 @@ class Store extends ChangeNotifier {
     if (o.smartDashList) o.smartDashList = s.smartDashList;
     if (o.smartFillerHeading) o.smartFillerHeading = s.smartFillerHeading;
     if (o.stripEmphasis) o.customRules = s.customRules.where((r) => r.find.isNotEmpty).toList();
-    if (o.stripHeadings || o.smartFillerHeading) o.headingPad = s.headingPad;
+    if (o.stripHeadings || o.smartFillerHeading) {
+      o.headingPad = s.headingPad;
+      o.headingPadAbove = s.headingPadAbove;
+      o.headingPadBelow = s.headingPadBelow;
+    }
     if (o.bulletsToDot) o.bulletIndent = s.bulletIndent;
     if (o.removeCitations) o.removeCitations = s.removeCitations;
     return o;
@@ -588,6 +606,190 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+  static const _aiSys =
+      '너는 텍스트 편집 도구다. 사용자의 지시대로만 본문을 편집한다. 규칙: 숫자·날짜·통화·퍼센트·고유명사·URL은 절대 바꾸지 않는다. 요청하지 않은 사실을 추가하지 않고, 요청하지 않은 내용을 삭제하지 않는다. 입력 언어를 유지한다. 결과 본문만 출력하고 설명·인사·코드펜스는 붙이지 않는다.';
+
+  Future<String> _aiEditCall(String instruction, String body) async {
+    final s = store.settings;
+    final user = '[지시]\n$instruction\n\n[본문]\n$body';
+    if (s.aiModel.startsWith('gemini')) {
+      final res = await http.post(
+        Uri.parse(
+            'https://generativelanguage.googleapis.com/v1beta/models/${s.aiModel}:generateContent?key=${Uri.encodeComponent(s.aiKey)}'),
+        headers: {'content-type': 'application/json'},
+        body: jsonEncode({
+          'system_instruction': {'parts': [{'text': _aiSys}]},
+          'contents': [{'role': 'user', 'parts': [{'text': user}]}],
+        }),
+      );
+      if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
+      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final cands = (j['candidates'] ?? []) as List;
+      if (cands.isEmpty) return '';
+      final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
+      return parts.map((p) => (p['text'] ?? '') as String).join();
+    }
+    final res = await http.post(
+      Uri.parse('https://api.anthropic.com/v1/messages'),
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': s.aiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: jsonEncode({
+        'model': s.aiModel,
+        'max_tokens': 8000,
+        'system': _aiSys,
+        'messages': [{'role': 'user', 'content': user}],
+      }),
+    );
+    if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
+    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    final content = (j['content'] ?? []) as List;
+    return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
+  }
+
+  Future<void> _showWizardDialog() async {
+    final cmdCtl = TextEditingController();
+    List<String> applied = [];
+    List<String> unknown = [];
+    String? aiResult;
+    String aiGuard = '';
+    bool aiBusy = false;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: const Text('마법사'),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: cmdCtl,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  for (final a in applied)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text('적용됨 · $a',
+                          style: const TextStyle(color: _accent, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ),
+                  for (final u in unknown)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text('규칙으로 해석 불가 · $u',
+                          style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
+                    ),
+                  if (unknown.isNotEmpty && store.settings.aiKey.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text('설정에 AI API 키를 넣으면 이런 자유 편집 명령도 처리됩니다.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    ),
+                  if (unknown.isNotEmpty && store.settings.aiKey.isNotEmpty && aiResult == null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: FilledButton(
+                        onPressed: aiBusy
+                            ? null
+                            : () async {
+                                setD(() => aiBusy = true);
+                                try {
+                                  var out = (await _aiEditCall(unknown.join('. '), bodyCtl.text)).trim();
+                                  out = out
+                                      .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
+                                      .replaceFirst(RegExp(r'\n?```$'), '');
+                                  if (out.isEmpty) throw Exception('빈 응답');
+                                  setD(() {
+                                    aiResult = out;
+                                    aiGuard = numberGuard(bodyCtl.text, out);
+                                    aiBusy = false;
+                                  });
+                                } catch (e) {
+                                  setD(() => aiBusy = false);
+                                  if (mounted) _toast(context, 'AI 호출 실패: $e');
+                                }
+                              },
+                        child: Text(aiBusy ? 'AI 편집 중…' : '해석 불가 명령을 AI로 실행'),
+                      ),
+                    ),
+                  if (aiResult != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                          color: const Color(0xFFF6F6F4),
+                          border: Border.all(color: const Color(0xFFE4E4E0)),
+                          borderRadius: BorderRadius.circular(10)),
+                      child: SingleChildScrollView(
+                          child: Text(aiResult!, style: const TextStyle(fontSize: 13.5, height: 1.5))),
+                    ),
+                    if (aiGuard.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(aiGuard,
+                            style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: FilledButton(
+                        onPressed: () async {
+                          note.history.add(bodyCtl.text);
+                          if (note.history.length > 30) note.history.removeAt(0);
+                          bodyCtl.text = aiResult!;
+                          await _save();
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          if (mounted) {
+                            setState(() {});
+                            _toast(context, 'AI 편집을 적용했습니다 — 되돌리기로 복구 가능');
+                          }
+                        },
+                        child: const Text('AI 결과 적용'),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('닫기')),
+            FilledButton(
+              onPressed: () async {
+                final r = applyWizard(
+                    command: cmdCtl.text, settings: store.settings, body: bodyCtl.text);
+                if (r.bodyChanged) {
+                  note.history.add(bodyCtl.text);
+                  if (note.history.length > 30) note.history.removeAt(0);
+                  bodyCtl.text = r.body;
+                }
+                await store.persistSettings();
+                await _save();
+                setD(() {
+                  applied = r.applied;
+                  unknown = r.unknown;
+                  aiResult = null;
+                });
+                if (mounted) setState(() {});
+              },
+              child: const Text('해석하고 적용'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _showReplaceDialog() async {
     final findCtl = TextEditingController();
     final withCtl = TextEditingController();
@@ -838,6 +1040,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   child: const Text('정리', style: TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ),
+              Expanded(child: TextButton(onPressed: _showWizardDialog, child: const Text('마법사'))),
               Expanded(child: TextButton(onPressed: _showTables, child: const Text('표'))),
               Expanded(child: TextButton(onPressed: _showReplaceDialog, child: const Text('바꾸기'))),
               Expanded(child: TextButton(onPressed: _showCopyMenu, child: const Text('복사'))),
@@ -1043,6 +1246,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
               store.persistSettings();
               setState(() {});
             },
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
+            child: Text('AI 마법사 연결 (자유 편집)', style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('API 키를 넣으면 "더 간결하게 써줘" 같은 자유 편집 명령을 마법사가 처리합니다. 키는 이 기기에만 저장됩니다.',
+                style: TextStyle(fontSize: 12, color: Colors.grey)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    initialValue: s.aiKey,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                        hintText: 'API 키 (Google AI 또는 Anthropic)', isDense: true),
+                    onChanged: (v) {
+                      s.aiKey = v.trim();
+                      store.persistSettings();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: s.aiModel,
+                  items: const [
+                    DropdownMenuItem(value: 'gemini-2.5-flash-lite', child: Text('Gemini Flash-Lite')),
+                    DropdownMenuItem(value: 'gemini-2.5-flash', child: Text('Gemini Flash')),
+                    DropdownMenuItem(value: 'claude-haiku-4-5-20251001', child: Text('Claude Haiku')),
+                    DropdownMenuItem(value: 'claude-sonnet-5', child: Text('Claude Sonnet')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      s.aiModel = v;
+                      store.persistSettings();
+                      setState(() {});
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
