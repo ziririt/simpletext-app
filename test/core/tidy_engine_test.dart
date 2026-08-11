@@ -242,6 +242,11 @@ table = "A | B"
     test('여백 끔이면 기존 방식', () {
       expect(tidy(padIn, aiOpts()).text.startsWith('지수 마감\n\n· S&P500'), true);
     });
+    test('기존 여백 흡수 (4줄/2줄 버그 재현 fixture)', () {
+      const preSpaced = '도입 문장.\nㅤ\nㅤ\nㅤ ㅤ 지수 마감 ㅤ\nㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%';
+      const exp = '도입 문장.\nㅤ\nㅤ\n지수 마감\nㅤ\n  · S&P500 7,753.11. -0.06%\n  · 다우 53,975.98. -0.11%';
+      expect(tidy(preSpaced, padOpts).text, exp);
+    });
   });
 
   group('v1.5.2 들여쓰기 고정', () {

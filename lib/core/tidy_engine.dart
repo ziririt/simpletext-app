@@ -635,11 +635,14 @@ List<String> _processTextSegment(
   final lines = _expandDashLists(input, o, rep);
   final out = <String>[];
   bool skipBlanks = false;
+  // 빈 줄 또는 투명 문자(ㅤ)로만 이루어진 여백 줄 판정
+  bool isSpacer(String l) => l.replaceAll(RegExp('[ㅤ\\s]'), '').isEmpty;
 
   void emitHeading(String formatted) {
     if (o.headingPad) {
       final ch = o.headingPadChar.isNotEmpty ? o.headingPadChar : 'ㅤ';
-      while (out.isNotEmpty && (out.last.trim().isEmpty || out.last == ch)) out.removeLast();
+      // 원본에 이미 있던 소제목 주변 여백 줄은 흡수해 두 배가 되지 않게 한다
+      while (out.isNotEmpty && isSpacer(out.last)) out.removeLast();
       if (out.isNotEmpty) {
         for (int k = 0; k < o.headingPadAbove; k++) out.add(ch);
       }
@@ -692,7 +695,7 @@ List<String> _processTextSegment(
     }
     if (o.tablesOnly) continue;
     if (skipBlanks) {
-      if (lines[i].trim().isEmpty) continue;
+      if (isSpacer(lines[i])) continue;
       skipBlanks = false;
     }
     final line = lines[i];
