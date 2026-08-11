@@ -471,6 +471,114 @@ class _EditorScreenState extends State<EditorScreen> {
   late TextEditingController bodyCtl;
   late TextEditingController tagsCtl;
   bool _found = true;
+  final FocusNode _titleFocus = FocusNode();
+  final FocusNode _bodyFocus = FocusNode();
+  final FocusNode _tagsFocus = FocusNode();
+  bool _showMeta = false;
+  final UndoHistoryController _undoCtl = UndoHistoryController();
+
+  bool get _editing => _titleFocus.hasFocus || _bodyFocus.hasFocus || _tagsFocus.hasFocus;
+
+  /// 커서 위치에 삽입, 선택 영역이 있으면 감싼다
+  void _insertText(String left, [String right = '']) {
+    final sel = bodyCtl.selection;
+    final text = bodyCtl.text;
+    final start = sel.isValid ? sel.start : text.length;
+    final end = sel.isValid ? sel.end : text.length;
+    final selected = text.substring(start, end);
+    final ins = '$left$selected$right';
+    bodyCtl.value = bodyCtl.value.copyWith(
+      text: text.replaceRange(start, end, ins),
+      selection: TextSelection.collapsed(
+          offset: right.isEmpty ? start + ins.length : start + left.length + selected.length),
+    );
+    _save();
+  }
+
+  void _moveCursor(int delta) {
+    final sel = bodyCtl.selection;
+    if (!sel.isValid) return;
+    final pos = (sel.baseOffset + delta).clamp(0, bodyCtl.text.length);
+    bodyCtl.selection = TextSelection.collapsed(offset: pos);
+  }
+
+  void _moveToLineEdge(bool start) {
+    final sel = bodyCtl.selection;
+    if (!sel.isValid) return;
+    final text = bodyCtl.text;
+    int pos = sel.baseOffset.clamp(0, text.length);
+    if (start) {
+      final idx = text.lastIndexOf('\n', pos > 0 ? pos - 1 : 0);
+      pos = idx < 0 ? 0 : idx + 1;
+    } else {
+      final idx = text.indexOf('\n', pos);
+      pos = idx < 0 ? text.length : idx;
+    }
+    bodyCtl.selection = TextSelection.collapsed(offset: pos);
+  }
+
+  Widget _kbBtn({String? glyph, IconData? icon, required VoidCallback onTap, String? tip}) {
+    final child = glyph != null
+        ? Text(glyph, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1))
+        : Icon(icon, size: 20);
+    return Tooltip(
+      message: tip ?? '',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 40,
+          alignment: Alignment.center,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _accessoryBar() {
+    return Container(
+      height: 44,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF2F2F0),
+        border: Border(top: BorderSide(color: Color(0xFFE0E0DC))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              children: [
+                _kbBtn(icon: Icons.undo, tip: '실행 취소', onTap: () => _undoCtl.undo()),
+                _kbBtn(icon: Icons.redo, tip: '다시 실행', onTap: () => _undoCtl.redo()),
+                _kbBtn(glyph: '( )', onTap: () => _insertText('(', ')')),
+                _kbBtn(glyph: '[ ]', onTap: () => _insertText('[', ']')),
+                _kbBtn(glyph: '" "', onTap: () => _insertText('"', '"')),
+                _kbBtn(glyph: "' '", onTap: () => _insertText("'", "'")),
+                _kbBtn(glyph: '·', onTap: () => _insertText('· ')),
+                _kbBtn(glyph: '-', onTap: () => _insertText('- ')),
+                _kbBtn(glyph: '@', onTap: () => _insertText('@')),
+                _kbBtn(glyph: '%', onTap: () => _insertText('%')),
+                _kbBtn(glyph: '/', onTap: () => _insertText('/')),
+                _kbBtn(icon: Icons.keyboard_arrow_left, tip: '왼쪽으로', onTap: () => _moveCursor(-1)),
+                _kbBtn(icon: Icons.keyboard_arrow_right, tip: '오른쪽으로', onTap: () => _moveCursor(1)),
+                _kbBtn(icon: Icons.keyboard_double_arrow_left, tip: '줄 처음', onTap: () => _moveToLineEdge(true)),
+                _kbBtn(icon: Icons.keyboard_double_arrow_right, tip: '줄 끝', onTap: () => _moveToLineEdge(false)),
+                _kbBtn(icon: Icons.format_indent_increase, tip: '들여쓰기', onTap: () => _insertText('  ')),
+              ],
+            ),
+          ),
+          Container(width: 1, height: 26, color: const Color(0xFFE0E0DC)),
+          _kbBtn(
+            icon: Icons.keyboard_hide_outlined,
+            tip: '키보드 내리기',
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -485,6 +593,9 @@ class _EditorScreenState extends State<EditorScreen> {
     titleCtl = TextEditingController(text: note.title);
     bodyCtl = TextEditingController(text: note.body);
     tagsCtl = TextEditingController(text: note.tags.join(', '));
+    for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
+      f.addListener(() => setState(() {}));
+    }
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
     }
@@ -495,6 +606,10 @@ class _EditorScreenState extends State<EditorScreen> {
     titleCtl.dispose();
     bodyCtl.dispose();
     tagsCtl.dispose();
+    _titleFocus.dispose();
+    _bodyFocus.dispose();
+    _tagsFocus.dispose();
+    _undoCtl.dispose();
     super.dispose();
   }
 
@@ -934,11 +1049,22 @@ class _EditorScreenState extends State<EditorScreen> {
         appBar: AppBar(
           title: TextField(
             controller: titleCtl,
+            focusNode: _titleFocus,
             decoration: const InputDecoration(hintText: '제목', border: InputBorder.none),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             onChanged: (_) => _save(),
           ),
           actions: [
+            if (_editing)
+              TextButton(
+                onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: const Text('완료', style: TextStyle(fontWeight: FontWeight.w800)),
+              ),
+            IconButton(
+              icon: Icon(_showMeta ? Icons.sell : Icons.sell_outlined),
+              tooltip: '출처·태그',
+              onPressed: () => setState(() => _showMeta = !_showMeta),
+            ),
             IconButton(
               icon: Icon(note.pinned ? Icons.push_pin : Icons.push_pin_outlined),
               tooltip: note.pinned ? '상단 고정 해제' : '리스트 상단 고정',
@@ -972,6 +1098,7 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
         body: Column(
           children: [
+            if (_showMeta)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
               child: Row(
@@ -997,6 +1124,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   Expanded(
                     child: TextField(
                       controller: tagsCtl,
+                      focusNode: _tagsFocus,
                       decoration: const InputDecoration(hintText: '태그 (쉼표로 구분)', isDense: true),
                       onChanged: (_) => _save(),
                     ),
@@ -1009,6 +1137,8 @@ class _EditorScreenState extends State<EditorScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   controller: bodyCtl,
+                  focusNode: _bodyFocus,
+                  undoController: _undoCtl,
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
@@ -1031,8 +1161,12 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
           ],
         ),
-        bottomNavigationBar: SafeArea(
-          child: Row(
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: SafeArea(
+            child: _bodyFocus.hasFocus
+                ? _accessoryBar()
+                : Row(
             children: [
               Expanded(
                 child: TextButton(
@@ -1060,6 +1194,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),
