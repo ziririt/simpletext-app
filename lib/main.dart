@@ -26,7 +26,13 @@ class SimpleTextApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: _accent),
+        scaffoldBackgroundColor: const Color(0xFFF2F2F7),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFF2F2F7),
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+        ),
       ),
       home: const HomeScreen(),
     );
@@ -281,12 +287,6 @@ class Store extends ChangeNotifier {
   }
 }
 
-String _fmtDate(int ts) {
-  final d = DateTime.fromMillisecondsSinceEpoch(ts);
-  String p(int x) => x.toString().padLeft(2, '0');
-  return '${d.year}-${p(d.month)}-${p(d.day)} ${p(d.hour)}:${p(d.minute)}';
-}
-
 void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -349,54 +349,53 @@ class _HomeScreenState extends State<HomeScreen> {
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('심플텍스트', style: TextStyle(fontWeight: FontWeight.w800)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: '정리 규칙 설정',
-            onPressed: () =>
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
-        ],
-      ),
       body: !store.loaded
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: '메모 검색',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
-                      isDense: true,
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar.large(
+                  title: const Text('메모', style: TextStyle(fontWeight: FontWeight.w800)),
+                  backgroundColor: const Color(0xFFF2F2F7),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.settings_outlined),
+                      tooltip: '정리 규칙 설정',
+                      onPressed: () => Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
                     ),
-                    onChanged: (v) => setState(() => query = v),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: '검색',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        filled: true,
+                        fillColor: const Color(0xFFE3E3E8),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                      ),
+                      onChanged: (v) => setState(() => query = v),
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: (pinned.isEmpty && rest.isEmpty)
-                      ? const Center(child: Text('메모가 없습니다.\n"붙여넣고 정리"로 시작해 보세요.', textAlign: TextAlign.center))
-                      : ListView(
-                          padding: const EdgeInsets.only(bottom: 96),
-                          children: [
-                            if (pinned.isNotEmpty)
-                              const Padding(
-                                padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
-                                child: Text('고정됨', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
-                              ),
-                            ...pinned.map(_noteTile),
-                            if (rest.isNotEmpty)
-                              const Padding(
-                                padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
-                                child: Text('메모', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
-                              ),
-                            ...rest.map(_noteTile),
-                          ],
-                        ),
-                ),
+                if (pinned.isEmpty && rest.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                        child: Text('메모가 없습니다.\n"붙여넣고 정리"로 시작해 보세요.',
+                            textAlign: TextAlign.center)),
+                  ),
+                if (pinned.isNotEmpty) _groupLabel('고정됨'),
+                if (pinned.isNotEmpty) _groupCard(pinned),
+                if (rest.isNotEmpty) _groupLabel('메모'),
+                if (rest.isNotEmpty) _groupCard(rest),
+                const SliverToBoxAdapter(child: SizedBox(height: 110)),
               ],
             ),
       floatingActionButton: Column(
@@ -427,29 +426,106 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _groupLabel(String label) => SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 12, 16, 6),
+          child: Text(label,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey)),
+        ),
+      );
+
+  Widget _groupCard(List<Note> group) => SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  for (int i = 0; i < group.length; i++) ...[
+                    if (i > 0)
+                      const Divider(height: 1, indent: 16, color: Color(0xFFEDEDEF)),
+                    _noteTile(group[i]),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+  String _listDate(int ts) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ts);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final that = DateTime(d.year, d.month, d.day);
+    final diff = today.difference(that).inDays;
+    String p(int x) => x.toString().padLeft(2, '0');
+    if (diff == 0) return '${p(d.hour)}:${p(d.minute)}';
+    if (diff == 1) return '어제';
+    return '${d.year}. ${d.month}. ${d.day}.';
+  }
+
   Widget _noteTile(Note n) {
     final firstLine = n.body.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
-    final meta = <String>[
-      if (n.source.isNotEmpty) n.source,
-      if (n.tags.isNotEmpty) n.tags.map((t) => '#$t').join(' '),
-      _fmtDate(n.updatedAt),
-    ].join(' · ');
-    return ListTile(
-      title: Text(
-        n.title.isNotEmpty ? n.title : (firstLine.isNotEmpty ? firstLine : '제목 없음'),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w700),
+    return Dismissible(
+      key: ValueKey('dis-${n.id}'),
+      background: Container(
+        color: const Color(0xFFF2B705),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: Icon(n.pinned ? Icons.push_pin_outlined : Icons.push_pin, color: Colors.white),
       ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(firstLine, maxLines: 1, overflow: TextOverflow.ellipsis),
-          Text(meta, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        ],
+      secondaryBackground: Container(
+        color: const Color(0xFFE53935),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
-      trailing: n.pinned ? const Icon(Icons.push_pin, size: 16, color: _accent) : null,
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
+      confirmDismiss: (dir) async {
+        if (dir == DismissDirection.startToEnd) {
+          n.pinned = !n.pinned;
+          await store.persist();
+          return false;
+        }
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('이 메모를 삭제할까요?'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('삭제')),
+            ],
+          ),
+        );
+        if (ok == true) store.deleteNote(n.id);
+        return ok == true;
+      },
+      child: ListTile(
+        tileColor: Colors.white,
+        title: Text(
+          n.title.isNotEmpty ? n.title : (firstLine.isNotEmpty ? firstLine : '제목 없음'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+        subtitle: Row(
+          children: [
+            Text(_listDate(n.updatedAt), style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(firstLine,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            ),
+          ],
+        ),
+        trailing: n.pinned ? const Icon(Icons.push_pin, size: 15, color: Color(0xFFF2B705)) : null,
+        onTap: () =>
+            Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
+      ),
     );
   }
 }
@@ -744,24 +820,46 @@ class _EditorScreenState extends State<EditorScreen> {
       final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
       return parts.map((p) => (p['text'] ?? '') as String).join();
     }
+    if (s.aiModel.startsWith('claude')) {
+      final res = await http.post(
+        Uri.parse('https://api.anthropic.com/v1/messages'),
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': s.aiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: jsonEncode({
+          'model': s.aiModel,
+          'max_tokens': 8000,
+          'system': _aiSys,
+          'messages': [{'role': 'user', 'content': user}],
+        }),
+      );
+      if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
+      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final content = (j['content'] ?? []) as List;
+      return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
+    }
+    // OpenAI(ChatGPT)와 xAI(Grok)는 동일한 chat/completions 형식
+    final base = s.aiModel.startsWith('grok') ? 'https://api.x.ai' : 'https://api.openai.com';
     final res = await http.post(
-      Uri.parse('https://api.anthropic.com/v1/messages'),
+      Uri.parse('$base/v1/chat/completions'),
       headers: {
         'content-type': 'application/json',
-        'x-api-key': s.aiKey,
-        'anthropic-version': '2023-06-01',
+        'authorization': 'Bearer ${s.aiKey}',
       },
       body: jsonEncode({
         'model': s.aiModel,
-        'max_tokens': 8000,
-        'system': _aiSys,
-        'messages': [{'role': 'user', 'content': user}],
+        'messages': [
+          {'role': 'system', 'content': _aiSys},
+          {'role': 'user', 'content': user},
+        ],
       }),
     );
     if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
     final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    final content = (j['content'] ?? []) as List;
-    return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
+    final choices = (j['choices'] ?? []) as List;
+    return choices.isEmpty ? '' : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
   }
 
   Future<void> _showWizardDialog() async {
@@ -1046,14 +1144,10 @@ class _EditorScreenState extends State<EditorScreen> {
         if (didPop) _save();
       },
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: TextField(
-            controller: titleCtl,
-            focusNode: _titleFocus,
-            decoration: const InputDecoration(hintText: '제목', border: InputBorder.none),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            onChanged: (_) => _save(),
-          ),
+          backgroundColor: Colors.white,
+          title: const SizedBox.shrink(),
           actions: [
             if (_editing)
               TextButton(
@@ -1098,6 +1192,17 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
         body: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: TextField(
+                controller: titleCtl,
+                focusNode: _titleFocus,
+                decoration: const InputDecoration(
+                    hintText: '제목', border: InputBorder.none, isDense: true),
+                style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
+                onChanged: (_) => _save(),
+              ),
+            ),
             if (_showMeta)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
@@ -1415,6 +1520,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     DropdownMenuItem(value: 'gemini-2.5-flash', child: Text('Gemini Flash')),
                     DropdownMenuItem(value: 'claude-haiku-4-5-20251001', child: Text('Claude Haiku')),
                     DropdownMenuItem(value: 'claude-sonnet-5', child: Text('Claude Sonnet')),
+                    DropdownMenuItem(value: 'gpt-5-mini', child: Text('ChatGPT (GPT-5 Mini)')),
+                    DropdownMenuItem(value: 'gpt-5-nano', child: Text('ChatGPT (GPT-5 Nano)')),
+                    DropdownMenuItem(value: 'grok-4.1-fast', child: Text('Grok (4.1 Fast)')),
                   ],
                   onChanged: (v) {
                     if (v != null) {
