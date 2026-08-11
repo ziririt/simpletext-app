@@ -588,6 +588,92 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+  Future<void> _showReplaceDialog() async {
+    final findCtl = TextEditingController();
+    final withCtl = TextEditingController();
+    bool useRegex = false;
+    bool saveRule = false;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: const Text('바꾸기'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: findCtl, decoration: const InputDecoration(labelText: '찾기')),
+              TextField(controller: withCtl, decoration: const InputDecoration(labelText: '바꾸기 (\\n=줄바꿈)')),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('정규식', style: TextStyle(fontSize: 14)),
+                value: useRegex,
+                onChanged: (v) => setD(() => useRegex = v ?? false),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('자동 바꾸기 규칙으로 저장', style: TextStyle(fontSize: 14)),
+                subtitle: const Text('이후 "정리"할 때마다 항상 적용', style: TextStyle(fontSize: 12)),
+                value: saveRule,
+                onChanged: (v) => setD(() => saveRule = v ?? false),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
+            FilledButton(
+              onPressed: () async {
+                final find = findCtl.text;
+                if (find.isEmpty) return;
+                final rawRepl = withCtl.text;
+                final repl = rawRepl.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
+                int count = 0;
+                String result = bodyCtl.text;
+                try {
+                  if (useRegex) {
+                    final re = RegExp(find);
+                    count = re.allMatches(bodyCtl.text).length;
+                    result = bodyCtl.text.replaceAllMapped(re, (m) {
+                      var r2 = repl;
+                      for (int g = 1; g <= m.groupCount; g++) {
+                        r2 = r2.replaceAll('\$$g', m.group(g) ?? '');
+                      }
+                      return r2;
+                    });
+                  } else {
+                    count = find.allMatches(bodyCtl.text).length;
+                    result = bodyCtl.text.split(find).join(repl);
+                  }
+                } catch (_) {
+                  Navigator.pop(ctx);
+                  if (mounted) _toast(context, '정규식이 올바르지 않습니다');
+                  return;
+                }
+                Navigator.pop(ctx);
+                if (count == 0) {
+                  if (mounted) _toast(context, '일치하는 내용이 없습니다');
+                  return;
+                }
+                note.history.add(bodyCtl.text);
+                if (note.history.length > 30) note.history.removeAt(0);
+                bodyCtl.text = result;
+                if (saveRule) {
+                  store.settings.customRules.add(CustomRule(find: find, replace: rawRepl, regex: useRegex));
+                  await store.persistSettings();
+                }
+                await _save();
+                if (mounted) {
+                  setState(() {});
+                  _toast(context, '$count곳을 바꿨습니다${saveRule ? ' · 자동 바꾸기 규칙으로 저장됨' : ''}');
+                }
+              },
+              child: const Text('모두 바꾸기'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showCopyMenu() {
     showModalBottomSheet(
       context: context,
@@ -753,6 +839,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
               ),
               Expanded(child: TextButton(onPressed: _showTables, child: const Text('표'))),
+              Expanded(child: TextButton(onPressed: _showReplaceDialog, child: const Text('바꾸기'))),
               Expanded(child: TextButton(onPressed: _showCopyMenu, child: const Text('복사'))),
               Expanded(
                 child: TextButton(
@@ -959,7 +1046,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
-            child: Text('사용자 치환 규칙', style: TextStyle(fontWeight: FontWeight.w800)),
+            child: Text('자동 바꾸기 규칙', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
