@@ -28,8 +28,39 @@ jobs:
       - name: Build Windows release
         run: flutter build windows --release
 
+      # 받는 사람이 폴더째 옮겨야 한다는 걸 모르면 "실행이 안 된다"는 문의가 온다.
+      # exe 옆의 DLL과 data 폴더가 함께 있어야 동작하므로, 안내문을 같이 넣는다.
+      - name: 실행 안내문 넣기
+        shell: pwsh
+        run: |
+          $dir = 'build/windows/x64/runner/Release'
+          @'
+          SimpleText (Windows)
+
+          실행 방법
+            이 폴더 안의 simpletext.exe 를 두 번 누르세요.
+
+          주의
+            폴더 전체를 함께 보관해야 합니다.
+            simpletext.exe 만 따로 옮기면 실행되지 않습니다
+            (옆의 DLL 파일들과 data 폴더가 함께 있어야 합니다).
+
+          설치가 필요 없습니다. 폴더를 원하는 곳에 두고 바로 쓰면 됩니다.
+          바탕화면에서 바로 열고 싶으면 simpletext.exe 를 오른쪽 클릭 →
+          "바로 가기 만들기" 후 그 바로 가기를 바탕화면으로 옮기세요.
+          '@ | Set-Content -Path "$dir/읽어보세요.txt" -Encoding UTF8
+
+      # 버전과 실행 번호를 파일 이름에 넣는다.
+      # 여러 개 받아 두었을 때 어느 것이 최신인지 알 수 없으면 곤란하다.
+      - name: 버전 읽기
+        id: ver
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path pubspec.yaml -Pattern '^version:\s*(.+)$').Matches[0].Groups[1].Value.Split('+')[0].Trim()
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Upload Windows app
         uses: actions/upload-artifact@v4
         with:
-          name: simpletext-windows
+          name: SimpleText-windows-v${{ steps.ver.outputs.version }}-build${{ github.run_number }}
           path: build/windows/x64/runner/Release/
