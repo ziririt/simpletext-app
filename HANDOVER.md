@@ -47,7 +47,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok·Perplexity)을 붙여넣으면 바로 �
 
 ```
 cd ~/development/simpletext_app
-flutter test                                # 엔진 테스트 43개 — 항상 먼저
+flutter test                                # 엔진 테스트 48개 — 항상 먼저
 flutter analyze --no-fatal-infos            # 경고 0 유지
 
 # 아이폰 설치 (폰 잠금 해제 필수! 잠기면 Install failed)
@@ -76,7 +76,7 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   HomeScreen(큰제목·그룹리스트·스와이프 고정/삭제), EditorScreen(제목 본문통합·키보드
   액세서리바·완료버튼·출처/태그 숨김토글·마법사/표/바꾸기/복사/되돌리기), PreviewScreen,
   SettingsScreen(정리 규칙 + AI 키/모델 + 자동 바꾸기 규칙)
-- test/core/tidy_engine_test.dart — 43개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture
+- test/core/tidy_engine_test.dart — 48개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture
   + 표 정렬 출력 fixture(2026-08-12) 포함
 - 웹(simpletext/index.html)은 같은 엔진의 JS 원본 포함. **엔진 수정 시 반드시 양쪽(JS·Dart) 동일
   적용 + 양쪽 테스트 통과**가 제1규칙 (웹 테스트: 저장소엔 없음, 로직 대칭만 유지하면 됨)
@@ -153,6 +153,12 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   (테스트 '한글 폭 2칸 계산으로 열 시작 위치가 모든 줄에서 같다'가 이걸 지킨다)
 - 표 출력 형식은 사용자가 화면을 보고 확정한 것이다(2026-08-12). 파이프 마크다운으로
   되돌리지 말 것 — AT01·AT03 기대값도 그 형식에 맞춰 갱신되어 있다.
+- **엔진이 만든 형식은 엔진이 되읽을 수 있어야 한다.** 2026-08-12에 표 출력만 공백 정렬로
+  바꾸고 탐지(detectTableBlocks)를 안 고쳐서, "정리" 직후 표 도구가 표를 못 찾아
+  '스프레드시트용 복사'가 끊긴 채로 웹에 배포됐다. 메모는 글자만 저장되고 표 구조는
+  저장되지 않는다 — 표는 매번 본문을 다시 파싱해서 찾는다. 그래서 출력 형식을 바꾸면
+  반드시 탐지·파싱도 같이 바꾸고, "원본 → 정리 → 되읽기 TSV 일치" 테스트를 걸 것.
+  (테스트 '정리한 표를 다시 표로 읽어낸다'가 이걸 지킨다)
 - 기획서 62절: 노션 경쟁 기능(폴더·협업·웹클리퍼·PDF 등) 추가 금지
 
 ## 10. 코워크/코드 세션 시작 지시문 예시

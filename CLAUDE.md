@@ -24,7 +24,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok 등)을 붙여넣으면 바로 저장·�
   - `lib/core/tidy_engine.dart` — 정리 엔진 (Pure Dart, 플랫폼 API 금지)
   - `lib/core/wizard.dart` — AI 마법사 1층(자연어 규칙 명령 해석기) + NumberGuard
   - `lib/main.dart` — 앱 전체 UI (애플 메모장 스타일)
-  - `test/core/tidy_engine_test.dart` — 엔진 테스트 43개 (기획서 Acceptance Test 포함)
+  - `test/core/tidy_engine_test.dart` — 엔진 테스트 48개 (기획서 Acceptance Test 포함)
   - `.github/workflows/windows_build.yml` — push마다 Windows 빌드 자동 생성(Artifacts)
 - `ziririt/simpletext` — 웹앱(단일 index.html, GitHub Pages)
   - 배포 주소: https://ziririt.github.io/simpletext/
@@ -33,7 +33,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok 등)을 붙여넣으면 바로 저장·�
 ## 검증 명령
 
 ```
-flutter test        # 엔진 37개 테스트 — 전부 통과해야 함
+flutter test        # 엔진 48개 테스트 — 전부 통과해야 함
 flutter analyze     # 경고 0 유지 (info 수준은 허용)
 ```
 
@@ -73,6 +73,9 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
 - **표 출력 형식 변경 (2026-08-12)**: 파이프 마크다운 → 공백 정렬 텍스트.
   웹(index.html)에 먼저 넣고 Dart에 동일 적용. AT01·AT03 기대값을 새 형식으로 갱신하고
   재현 fixture 7개 추가(그룹 '표 정렬 출력'). 사용자가 화면 확인 후 확정한 형식이다.
+- **표 왕복(round-trip) 보장 (2026-08-12)**: 공백 정렬 표를 다시 표로 인식하는
+  detectAlignedBlocks/parseAlignedTable 추가. 메모는 글자만 저장하므로 표 도구는
+  매번 본문을 재파싱한다 — 출력 형식을 바꾸면 탐지도 반드시 함께 바꿀 것.
 - 이름 논의 중: "Blue AI Editor" 유력 (Blue Note 상표 충돌로 'Blue AI Note'는 보류)
 
 ## 다음 할 일 (우선순위)

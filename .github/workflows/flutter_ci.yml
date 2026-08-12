@@ -32,5 +32,5 @@ jobs:
       - name: Analyze (warning = failure, info = allowed)
         run: flutter analyze --no-fatal-infos
 
-      - name: Run tests (engine 43 + l10n)
+      - name: Run tests (engine 48 + l10n)
         run: flutter test
