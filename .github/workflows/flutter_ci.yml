@@ -29,6 +29,9 @@ jobs:
       - name: l10n consistency check (tool/l10n_check.py)
         run: python3 tool/l10n_check.py
 
+      - name: version check (tool/version_check.py)
+        run: python3 tool/version_check.py
+
       - name: store metadata check (tool/store_check.py)
         run: python3 tool/store_check.py
 

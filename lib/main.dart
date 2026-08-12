@@ -6,6 +6,7 @@
 /// 이번 범위에서 제외 — 로드맵의 후속 항목이다. 프리셋 이름은 Preset.id를 UI 층에서 매핑한다.
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/tidy_engine.dart';
 import 'core/wizard.dart';
 import 'l10n/l10n.dart';
+import 'version.dart';
 
 void main() {
   runApp(const SimpleTextApp());
@@ -766,6 +768,49 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+  /// 아래 도구 막대의 버튼 하나.
+  ///
+  /// 2026-08-12 — 전에는 글자만 있는 버튼 6개를 Expanded로 6등분했다. 폰 화면에서
+  /// 6분의 1은 "되돌리기"가 들어가기에 좁아서 글자가 두 줄로 깨졌다(실제 화면에서 확인).
+  /// 아이콘을 위에 두고 글자를 작게 내리면 아이폰 도구 막대의 일반적인 모양이 되고,
+  /// 글자가 짧아져 깨지지도 않는다. 그래도 넘칠 때를 대비해 한 줄로 줄여 맞춘다.
+  Widget _barBtn(IconData icon, String label, VoidCallback? onTap, {bool primary = false}) {
+    final on = onTap != null;
+    final color = !on
+        ? context.c.sub.withValues(alpha: 0.5)
+        : (primary ? context.c.accent : context.c.accent);
+    return Expanded(
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          minimumSize: const Size(0, 52),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 21, color: color),
+            const SizedBox(height: 3),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 11,
+                  height: 1.1,
+                  color: color,
+                  fontWeight: primary ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _accessoryBar() {
     final l = L10n.of(context);
     return Container(
@@ -1452,34 +1497,29 @@ class _EditorScreenState extends State<EditorScreen> {
             child: _bodyFocus.hasFocus
                 ? _accessoryBar()
                 : Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: _showPresetSheet,
-                  child: Text(l.tidyAction, style: const TextStyle(fontWeight: FontWeight.w800)),
-                ),
-              ),
-              Expanded(child: TextButton(onPressed: _showWizardDialog, child: Text(l.wizardAction))),
-              Expanded(child: TextButton(onPressed: _showTables, child: Text(l.tableAction))),
-              Expanded(child: TextButton(onPressed: _showReplaceDialog, child: Text(l.replaceAction))),
-              Expanded(child: TextButton(onPressed: _showCopyMenu, child: Text(l.copyAction))),
-              Expanded(
-                child: TextButton(
-                  onPressed: note.history.isEmpty
-                      ? null
-                      : () async {
-                          note.body = note.history.removeLast();
-                          note.lastReport = '';
-                          bodyCtl.text = note.body;
-                          await _save();
-                          setState(() {});
-                          if (mounted) _toast(context, L10n.of(context).revertedToast);
-                        },
-                  child: Text(l.undoAction),
-                ),
-              ),
-            ],
-          ),
+                    children: [
+                      _barBtn(CupertinoIcons.wand_stars, l.tidyAction, _showPresetSheet,
+                          primary: true),
+                      _barBtn(CupertinoIcons.sparkles, l.wizardAction, _showWizardDialog),
+                      _barBtn(CupertinoIcons.table, l.tableAction, _showTables),
+                      _barBtn(CupertinoIcons.search, l.replaceAction, _showReplaceDialog),
+                      _barBtn(CupertinoIcons.doc_on_doc, l.copyAction, _showCopyMenu),
+                      _barBtn(
+                        CupertinoIcons.arrow_uturn_left,
+                        l.undoAction,
+                        note.history.isEmpty
+                            ? null
+                            : () async {
+                                note.body = note.history.removeLast();
+                                note.lastReport = '';
+                                bodyCtl.text = note.body;
+                                await _save();
+                                setState(() {});
+                                if (mounted) _toast(context, L10n.of(context).revertedToast);
+                              },
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -1749,8 +1789,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: Text(l.settingsFooter, style: TextStyle(fontSize: 12, color: context.c.sub)),
+          ),
+          // 버전은 여기서 눈으로 확인한다. 업데이트가 실제로 반영됐는지
+          // 이 숫자 하나로 알 수 있어야 한다(소유자 요청 2026-08-12).
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+            child: Text('${l.versionLabel} $appVersionLabel',
+                style: TextStyle(fontSize: 12, color: context.c.sub)),
           ),
         ],
       ),

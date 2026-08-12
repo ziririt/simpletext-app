@@ -100,6 +100,11 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
 - 엔진에 플랫폼 API 호출 금지 (Pure Dart 유지)
 - 모든 변환은 비파괴(미리보기→적용) 원칙 유지
 - 새 버그는 재현 fixture를 테스트에 먼저 추가한 뒤 수정
+- **작업할 때마다 버전을 올린다 (소유자 요청 2026-08-12).** 올리기만 하면 소용없고
+  화면에서 보여야 한다 — 앱은 설정 맨 아래, 웹도 설정 맨 아래에 `ver.0.1.1.1` 형식으로.
+  고칠 곳 3군데: pubspec.yaml `version:`, lib/version.dart, 웹 index.html `APP_VERSION`
+  (+ 웹은 sw.js 캐시 이름). 어긋나면 tool/version_check.py가 CI에서 잡는다.
+  표기: ver.<major>.<minor>.<patch>.<build> — 앞 셋은 pubspec version, 끝은 빌드 번호.
 - UI 문자열은 lib/l10n/에만 추가한다 — 하드코딩 금지, 9개 언어 전부 채울 것.
   (구 규칙 "UI 문구는 한국어"는 2026-08-12 i18n 완료로 대체됨 — 한국어 파일이 원문 기준)
 - 새 언어 추가 시 손댈 곳: lib/l10n/ + ios·macos Info.plist CFBundleLocalizations +
