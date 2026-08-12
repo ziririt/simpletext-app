@@ -79,6 +79,32 @@ HANDOVER 6절 기준으로 이름은 미확정이고("Blue AI Editor" 유력), �
 출시 전 확인:
 - [ ] 앱 이름 확정 + 상표 확인
 - [ ] `name.txt` 11개 갱신
+- [ ] 홈 화면 이름 현지화 — 아래 "맥에서 한 번만" 참고
 - [ ] 스크린샷 촬영 + `screenshot_check.py` 통과
 - [ ] 개인정보 처리방침 URL (App Store Connect 필수)
 - [ ] 연령 등급, 카테고리(생산성) 설정
+
+## 맥에서 한 번만: 홈 화면 이름 현지화
+
+아이폰 홈 화면 아이콘 밑에 뜨는 이름은 스토어 이름과 별개다. 그대로 두면
+한국·일본·중국 사용자도 영문 "SimpleText"를 보게 된다.
+
+번역 파일은 이미 만들어 두었다.
+
+```
+ios/Runner/ko.lproj/InfoPlist.strings        심플텍스트
+ios/Runner/ja.lproj/InfoPlist.strings        シンプルテキスト
+ios/Runner/zh-Hans.lproj/InfoPlist.strings   简洁文本
+ios/Runner/zh-Hant.lproj/InfoPlist.strings   簡潔文字
+```
+
+다만 iOS는 이 파일들이 **Xcode 프로젝트에 등록되어 있어야** 빌드에 들어간다.
+등록은 파일 추가라 명령줄로 하면 프로젝트 파일이 깨질 수 있어, Xcode에서 한 번만 해야 한다.
+
+1. `open ios/Runner.xcworkspace`
+2. 왼쪽 파일 목록의 `Runner` 폴더에 위 4개 `.lproj` 폴더를 끌어다 놓는다
+   (Create folder references 아님 — **Create groups**, Target `Runner` 체크)
+3. 각 `InfoPlist.strings`를 고르고 오른쪽 File Inspector에서 Localization 확인
+4. 빌드해서 홈 화면 이름이 언어별로 바뀌는지 확인
+
+독일어·프랑스어·스페인어·포르투갈어는 이름이 "SimpleText" 그대로라 파일이 필요 없다.

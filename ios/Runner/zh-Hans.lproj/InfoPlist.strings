@@ -1,0 +1,2 @@
+/* 主屏幕上显示的应用名称 (简体中文) */
+CFBundleDisplayName = "简洁文本";

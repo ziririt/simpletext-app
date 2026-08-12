@@ -21,7 +21,7 @@
 		<string>fr</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>Simpletext</string>
+	<string>SimpleText</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
