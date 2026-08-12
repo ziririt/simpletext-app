@@ -57,16 +57,22 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
   ChatGPT(gpt-5-mini/gpt-5-nano), Grok(grok-4.1-fast). 결과는 미리보기 + NumberGuard(숫자 보존 검증) 후 적용.
 - 시스템 규칙: 숫자·날짜·고유명사·URL 불변, 추가·삭제 금지, 입력 언어 유지, 본문만 반환.
 
-## 현재 상태 (2026-08-12 아침)
+## 현재 상태 (2026-08-12 오후)
 
 - 웹 v1.7 배포됨 (마법사 포함)
 - iPhone(Ziririt iPhone 16)·macOS(/Applications/심플텍스트.app) 설치됨 — 애플 메모장 스타일 UI
 - Windows: GitHub Actions 자동 빌드 동작 중
+- **i18n 완료 (클라우드 세션, 2026-08-12)**: UI 문자열 126키를 lib/l10n/으로 분리,
+  9개 언어(한/영/일/중간체/중번체/스/포/독/프). gen-l10n 미사용 — 손으로 쓴 L10n 클래스 계층
+  (키 누락 = 컴파일 오류). 검사: test/l10n/l10n_test.dart + tool/l10n_check.py(CI 연동)
+- Flutter CI 신설(.github/workflows/flutter_ci.yml): push마다 analyze + test + l10n 검사
 - 이름 논의 중: "Blue AI Editor" 유력 (Blue Note 상표 충돌로 'Blue AI Note'는 보류)
 
 ## 다음 할 일 (우선순위)
 
-1. 다국어(i18n) 준비 — 문자열 분리 (영/일/중/포/스/독/프)
+1. ~~다국어(i18n) 준비~~ 완료 — 남은 후속: (a) 엔진 리포트 문구(summary/warnings) 현지화는
+   JS·Dart 동시 작업 필요라 보류 중, (b) 마법사 1층 규칙 해석기는 한국어 명령 전용
+   (비한국어는 AI 2층으로 처리됨), (c) 스토어 현지화 스크린샷(출시 전 필수 확인)
 2. iOS Share Extension (ChatGPT 앱에서 공유 → 심플텍스트) — Xcode 네이티브 작업
 3. iOS TestFlight 클라우드 배포(CI) 구성
 4. 백업 내보내기/가져오기 Flutter 이식 (웹과 같은 JSON 스키마 v2, 병합 규칙: id 기준·updatedAt 최신 승리·tombstone 우선)
@@ -79,4 +85,10 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
 - 엔진에 플랫폼 API 호출 금지 (Pure Dart 유지)
 - 모든 변환은 비파괴(미리보기→적용) 원칙 유지
 - 새 버그는 재현 fixture를 테스트에 먼저 추가한 뒤 수정
-- UI 문구는 한국어, 애플 메모장 수준의 미니멀리즘 유지 (이모지 사용 금지)
+- UI 문자열은 lib/l10n/에만 추가한다 — 하드코딩 금지, 9개 언어 전부 채울 것.
+  (구 규칙 "UI 문구는 한국어"는 2026-08-12 i18n 완료로 대체됨 — 한국어 파일이 원문 기준)
+- 새 언어 추가 시 손댈 곳: lib/l10n/ + ios·macos Info.plist CFBundleLocalizations +
+  test/l10n/l10n_test.dart (tool/l10n_check.py 상단 체크리스트 참고)
+- 애플 메모장 수준의 미니멀리즘 유지 (이모지 사용 금지)
+- 클라우드 세션 주의: 컨테이너에서 pub.dev·storage.googleapis.com 차단 →
+  flutter 명령 로컬 실행 불가. 검증은 Flutter CI(푸시 후 Actions 확인)로 한다

@@ -1,0 +1,36 @@
+# 검증 CI (2026-08-12 신설)
+# 배경: 클라우드 세션 컨테이너는 pub.dev·storage.googleapis.com 이 막혀 있어
+# flutter test/analyze 를 로컬에서 못 돌린다. 그래서 이 워크플로가
+# 클라우드-git 개발 흐름의 공식 검증 루프다.
+# 원칙(노하우 문서 11절): 배포는 푸시가 아니라 라이브 확인에서 끝난다 —
+# 푸시 후 반드시 이 워크플로의 결과를 확인할 것.
+name: Flutter CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: ['**']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: l10n consistency check (tool/l10n_check.py)
+        run: python3 tool/l10n_check.py
+
+      - name: Analyze (warning = failure, info = allowed)
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests (engine 37 + l10n)
+        run: flutter test

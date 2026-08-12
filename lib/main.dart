@@ -1,14 +1,20 @@
 /// 심플텍스트 (SimpleText) — Flutter MVP
 /// AI 답변을 붙여넣으면, 바로 쓸 수 있는 글이 됩니다.
+///
+/// 2026-08-12 i18n: UI 문자열은 전부 lib/l10n/으로 분리했다 (한/영/일/중간·번체/스/포/독/프).
+/// 엔진(tidy_engine)·마법사(wizard)가 만드는 리포트 문구는 JS 엔진과의 대칭 규칙 때문에
+/// 이번 범위에서 제외 — 로드맵의 후속 항목이다. 프리셋 이름은 Preset.id를 UI 층에서 매핑한다.
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/tidy_engine.dart';
 import 'core/wizard.dart';
+import 'l10n/l10n.dart';
 
 void main() {
   runApp(const SimpleTextApp());
@@ -22,8 +28,15 @@ class SimpleTextApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '심플텍스트',
+      onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        L10n.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: L10n.supportedLocales,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: _accent),
         scaffoldBackgroundColor: const Color(0xFFF2F2F7),
@@ -255,32 +268,17 @@ class Store extends ChangeNotifier {
     return o;
   }
 
+  /// 시드 메모 — 위젯 트리 밖이라 L10n.system()으로 시스템 로케일을 따른다
   static Note _seedNote() {
-    final body = [
-      '심플텍스트 사용법',
-      '',
-      '1. ChatGPT나 클로드 답변을 복사한 뒤, "붙여넣고 정리"를 누르세요.',
-      '2. 정리 미리보기에서 원본과 결과를 비교하고 "적용"을 누르면 끝.',
-      '3. 표가 있는 메모는 "표" 버튼으로 스프레드시트용(TSV) 복사가 가능합니다.',
-      '4. 모든 정리는 되돌리기 한 번으로 복구됩니다.',
-      '',
-      '아래는 일부러 깨뜨린 표입니다. "정리"를 눌러 복구를 확인해 보세요.',
-      '',
-      '| 종목 | 티커 | 수익률 | 비중',
-      '|------|------|--------|',
-      '| 애플 | AAPL | +14.2% | 12% |',
-      '| 마이크로소프트 | MSFT | +21.5%',
-      '| 엔비디아 | NVDA | +48.9% | 22% | 추가셀 |',
-      '|테슬라|TSLA|-8.3%|8%|',
-    ].join('\n');
+    final l = L10n.system();
     final now = DateTime.now().millisecondsSinceEpoch;
     return Note(
       id: 'seed-$now',
-      title: '심플텍스트에 오신 것을 환영합니다',
-      body: body,
-      originalBody: body,
+      title: l.seedTitle,
+      body: l.seedBody,
+      originalBody: l.seedBody,
       pinned: true,
-      tags: ['사용법'],
+      tags: [l.seedTag],
       createdAt: now,
       updatedAt: now,
     );
@@ -324,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final data = await Clipboard.getData('text/plain');
     final text = data?.text ?? '';
     if (text.trim().isEmpty) {
-      if (mounted) _toast(context, '클립보드가 비어 있습니다. AI 답변을 먼저 복사해 주세요.');
+      if (mounted) _toast(context, L10n.of(context).clipboardEmpty);
       return;
     }
     final note = Note.fresh(body: text);
@@ -337,6 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final q = query.trim().toLowerCase();
     final filtered = store.notes.where((n) {
       if (q.isEmpty) return true;
@@ -354,12 +353,12 @@ class _HomeScreenState extends State<HomeScreen> {
           : CustomScrollView(
               slivers: [
                 SliverAppBar.large(
-                  title: const Text('메모', style: TextStyle(fontWeight: FontWeight.w800)),
+                  title: Text(l.homeTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
                   backgroundColor: const Color(0xFFF2F2F7),
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
-                      tooltip: '정리 규칙 설정',
+                      tooltip: l.settingsTooltip,
                       onPressed: () => Navigator.push(
                           context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
                     ),
@@ -370,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: '검색',
+                        hintText: l.searchHint,
                         prefixIcon: const Icon(Icons.search, size: 20),
                         filled: true,
                         fillColor: const Color(0xFFE3E3E8),
@@ -385,15 +384,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 if (pinned.isEmpty && rest.isEmpty)
-                  const SliverFillRemaining(
+                  SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Center(
-                        child: Text('메모가 없습니다.\n"붙여넣고 정리"로 시작해 보세요.',
-                            textAlign: TextAlign.center)),
+                    child: Center(child: Text(l.emptyList, textAlign: TextAlign.center)),
                   ),
-                if (pinned.isNotEmpty) _groupLabel('고정됨'),
+                if (pinned.isNotEmpty) _groupLabel(l.pinnedLabel),
                 if (pinned.isNotEmpty) _groupCard(pinned),
-                if (rest.isNotEmpty) _groupLabel('메모'),
+                if (rest.isNotEmpty) _groupLabel(l.notesLabel),
                 if (rest.isNotEmpty) _groupCard(rest),
                 const SliverToBoxAdapter(child: SizedBox(height: 110)),
               ],
@@ -404,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           FloatingActionButton.small(
             heroTag: 'new',
-            tooltip: '새 메모',
+            tooltip: l.newNoteTooltip,
             onPressed: () async {
               final note = Note.fresh();
               store.notes.insert(0, note);
@@ -419,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
             heroTag: 'paste',
             onPressed: _pasteAndTidy,
             icon: const Icon(Icons.content_paste_go),
-            label: const Text('붙여넣고 정리', style: TextStyle(fontWeight: FontWeight.w700)),
+            label: Text(l.pasteAndTidy, style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -455,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
 
-  String _listDate(int ts) {
+  String _listDate(L10n l, int ts) {
     final d = DateTime.fromMillisecondsSinceEpoch(ts);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -463,12 +460,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final diff = today.difference(that).inDays;
     String p(int x) => x.toString().padLeft(2, '0');
     if (diff == 0) return '${p(d.hour)}:${p(d.minute)}';
-    if (diff == 1) return '어제';
-    return '${d.year}. ${d.month}. ${d.day}.';
+    if (diff == 1) return l.yesterday;
+    return l.dateShort(d.year, d.month, d.day);
   }
 
   Widget _noteTile(Note n) {
-    final firstLine = n.body.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+    final l = L10n.of(context);
+    final firstLine = n.body.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
     return Dismissible(
       key: ValueKey('dis-${n.id}'),
       background: Container(
@@ -492,10 +490,10 @@ class _HomeScreenState extends State<HomeScreen> {
         final ok = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('이 메모를 삭제할까요?'),
+            title: Text(L10n.of(ctx).deleteConfirmTitle),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
-              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('삭제')),
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(L10n.of(ctx).cancel)),
+              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(L10n.of(ctx).delete)),
             ],
           ),
         );
@@ -505,14 +503,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListTile(
         tileColor: Colors.white,
         title: Text(
-          n.title.isNotEmpty ? n.title : (firstLine.isNotEmpty ? firstLine : '제목 없음'),
+          n.title.isNotEmpty ? n.title : (firstLine.isNotEmpty ? firstLine : l.untitled),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         ),
         subtitle: Row(
           children: [
-            Text(_listDate(n.updatedAt), style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            Text(_listDate(l, n.updatedAt), style: const TextStyle(fontSize: 13, color: Colors.grey)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(firstLine,
@@ -613,6 +611,7 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Widget _accessoryBar() {
+    final l = L10n.of(context);
     return Container(
       height: 44,
       decoration: const BoxDecoration(
@@ -626,8 +625,8 @@ class _EditorScreenState extends State<EditorScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 4),
               children: [
-                _kbBtn(icon: Icons.undo, tip: '실행 취소', onTap: () => _undoCtl.undo()),
-                _kbBtn(icon: Icons.redo, tip: '다시 실행', onTap: () => _undoCtl.redo()),
+                _kbBtn(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
+                _kbBtn(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
                 _kbBtn(glyph: '( )', onTap: () => _insertText('(', ')')),
                 _kbBtn(glyph: '[ ]', onTap: () => _insertText('[', ']')),
                 _kbBtn(glyph: '" "', onTap: () => _insertText('"', '"')),
@@ -637,18 +636,18 @@ class _EditorScreenState extends State<EditorScreen> {
                 _kbBtn(glyph: '@', onTap: () => _insertText('@')),
                 _kbBtn(glyph: '%', onTap: () => _insertText('%')),
                 _kbBtn(glyph: '/', onTap: () => _insertText('/')),
-                _kbBtn(icon: Icons.keyboard_arrow_left, tip: '왼쪽으로', onTap: () => _moveCursor(-1)),
-                _kbBtn(icon: Icons.keyboard_arrow_right, tip: '오른쪽으로', onTap: () => _moveCursor(1)),
-                _kbBtn(icon: Icons.keyboard_double_arrow_left, tip: '줄 처음', onTap: () => _moveToLineEdge(true)),
-                _kbBtn(icon: Icons.keyboard_double_arrow_right, tip: '줄 끝', onTap: () => _moveToLineEdge(false)),
-                _kbBtn(icon: Icons.format_indent_increase, tip: '들여쓰기', onTap: () => _insertText('  ')),
+                _kbBtn(icon: Icons.keyboard_arrow_left, tip: l.moveLeftTip, onTap: () => _moveCursor(-1)),
+                _kbBtn(icon: Icons.keyboard_arrow_right, tip: l.moveRightTip, onTap: () => _moveCursor(1)),
+                _kbBtn(icon: Icons.keyboard_double_arrow_left, tip: l.lineStartTip, onTap: () => _moveToLineEdge(true)),
+                _kbBtn(icon: Icons.keyboard_double_arrow_right, tip: l.lineEndTip, onTap: () => _moveToLineEdge(false)),
+                _kbBtn(icon: Icons.format_indent_increase, tip: l.indentTip, onTap: () => _insertText('  ')),
               ],
             ),
           ),
           Container(width: 1, height: 26, color: const Color(0xFFE0E0DC)),
           _kbBtn(
             icon: Icons.keyboard_hide_outlined,
-            tip: '키보드 내리기',
+            tip: l.hideKeyboardTip,
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           ),
         ],
@@ -701,10 +700,12 @@ class _EditorScreenState extends State<EditorScreen> {
     await _save();
     final r = tidy(note.body, store.effOpts(preset));
     if (!mounted) return;
+    final l = L10n.of(context);
     final apply = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-          builder: (_) => PreviewScreen(presetName: preset.name, before: note.body, result: r)),
+          builder: (_) => PreviewScreen(
+              presetName: l.presetName(preset.id, preset.name), before: note.body, result: r)),
     );
     if (apply == true) {
       note.history.add(note.body);
@@ -713,7 +714,7 @@ class _EditorScreenState extends State<EditorScreen> {
       note.body = r.text;
       note.lastReport = r.summary;
       if (note.title.isEmpty) {
-        note.title = r.text.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+        note.title = r.text.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
         if (note.title.length > 40) note.title = note.title.substring(0, 40);
         titleCtl.text = note.title;
       }
@@ -721,7 +722,7 @@ class _EditorScreenState extends State<EditorScreen> {
       await _save();
       if (mounted) {
         setState(() {});
-        _toast(context, '적용 완료 — ${r.summary}');
+        _toast(context, L10n.of(context).appliedDone(r.summary));
       }
     }
   }
@@ -735,8 +736,10 @@ class _EditorScreenState extends State<EditorScreen> {
           shrinkWrap: true,
           children: buildPresets()
               .map((p) => ListTile(
-                    title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text(p.desc, style: const TextStyle(fontSize: 12)),
+                    title: Text(L10n.of(ctx).presetName(p.id, p.name),
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text(L10n.of(ctx).presetDesc(p.id, p.desc),
+                        style: const TextStyle(fontSize: 12)),
                     onTap: () {
                       Navigator.pop(ctx);
                       _runTidyWithPreset(p);
@@ -757,27 +760,28 @@ class _EditorScreenState extends State<EditorScreen> {
       showDragHandle: true,
       builder: (ctx) => SafeArea(
         child: r.tables.isEmpty
-            ? const Padding(padding: EdgeInsets.all(30), child: Text('이 메모에서 표를 찾지 못했습니다.'))
+            ? Padding(padding: const EdgeInsets.all(30), child: Text(L10n.of(ctx).noTablesFound))
             : ListView(
                 shrinkWrap: true,
                 children: [
                   for (int i = 0; i < r.tables.length; i++)
                     ListTile(
-                      title: Text('표 ${i + 1} — ${r.tables[i].header.length}열 × ${r.tables[i].rows.length}행'),
+                      title: Text(L10n.of(ctx)
+                          .tableInfo(i + 1, r.tables[i].header.length, r.tables[i].rows.length)),
                       subtitle: Wrap(spacing: 8, children: [
                         FilledButton.tonal(
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: tableToTSV(r.tables[i])));
                             Navigator.pop(ctx);
-                            _toast(context, '복사 완료 — 구글 시트나 엑셀 셀에 붙여넣으세요');
+                            _toast(context, L10n.of(context).copiedSpreadsheet);
                           },
-                          child: const Text('스프레드시트용'),
+                          child: Text(L10n.of(ctx).forSpreadsheet),
                         ),
                         TextButton(
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: tableToCSV(r.tables[i])));
                             Navigator.pop(ctx);
-                            _toast(context, 'CSV로 복사했습니다');
+                            _toast(context, L10n.of(context).copiedCsv);
                           },
                           child: const Text('CSV'),
                         ),
@@ -785,7 +789,7 @@ class _EditorScreenState extends State<EditorScreen> {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: tableToMarkdown(r.tables[i])));
                             Navigator.pop(ctx);
-                            _toast(context, 'Markdown 표로 복사했습니다');
+                            _toast(context, L10n.of(context).copiedMarkdown);
                           },
                           child: const Text('Markdown'),
                         ),
@@ -872,133 +876,136 @@ class _EditorScreenState extends State<EditorScreen> {
     await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setD) => AlertDialog(
-          title: const Text('마법사'),
-          content: SizedBox(
-            width: 480,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: cmdCtl,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  for (final a in applied)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text('적용됨 · $a',
-                          style: const TextStyle(color: _accent, fontSize: 13, fontWeight: FontWeight.w600)),
-                    ),
-                  for (final u in unknown)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text('규칙으로 해석 불가 · $u',
-                          style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
-                    ),
-                  if (unknown.isNotEmpty && store.settings.aiKey.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 6),
-                      child: Text('설정에 AI API 키를 넣으면 이런 자유 편집 명령도 처리됩니다.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    ),
-                  if (unknown.isNotEmpty && store.settings.aiKey.isNotEmpty && aiResult == null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: FilledButton(
-                        onPressed: aiBusy
-                            ? null
-                            : () async {
-                                setD(() => aiBusy = true);
-                                try {
-                                  var out = (await _aiEditCall(unknown.join('. '), bodyCtl.text)).trim();
-                                  out = out
-                                      .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
-                                      .replaceFirst(RegExp(r'\n?```$'), '');
-                                  if (out.isEmpty) throw Exception('빈 응답');
-                                  setD(() {
-                                    aiResult = out;
-                                    aiGuard = numberGuard(bodyCtl.text, out);
-                                    aiBusy = false;
-                                  });
-                                } catch (e) {
-                                  setD(() => aiBusy = false);
-                                  if (mounted) _toast(context, 'AI 호출 실패: $e');
-                                }
-                              },
-                        child: Text(aiBusy ? 'AI 편집 중…' : '해석 불가 명령을 AI로 실행'),
+        builder: (ctx, setD) {
+          final l = L10n.of(ctx);
+          return AlertDialog(
+            title: Text(l.wizardTitle),
+            content: SizedBox(
+              width: 480,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: cmdCtl,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: l.wizardHint,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
-                  if (aiResult != null) ...[
                     const SizedBox(height: 8),
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 220),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: const Color(0xFFF6F6F4),
-                          border: Border.all(color: const Color(0xFFE4E4E0)),
-                          borderRadius: BorderRadius.circular(10)),
-                      child: SingleChildScrollView(
-                          child: Text(aiResult!, style: const TextStyle(fontSize: 13.5, height: 1.5))),
-                    ),
-                    if (aiGuard.isNotEmpty)
+                    for (final a in applied)
                       Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(aiGuard,
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(l.appliedPrefix(a),
+                            style: const TextStyle(color: _accent, fontSize: 13, fontWeight: FontWeight.w600)),
+                      ),
+                    for (final u in unknown)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(l.unknownPrefix(u),
                             style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
                       ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: FilledButton(
-                        onPressed: () async {
-                          note.history.add(bodyCtl.text);
-                          if (note.history.length > 30) note.history.removeAt(0);
-                          bodyCtl.text = aiResult!;
-                          await _save();
-                          if (ctx.mounted) Navigator.pop(ctx);
-                          if (mounted) {
-                            setState(() {});
-                            _toast(context, 'AI 편집을 적용했습니다 — 되돌리기로 복구 가능');
-                          }
-                        },
-                        child: const Text('AI 결과 적용'),
+                    if (unknown.isNotEmpty && store.settings.aiKey.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(l.aiKeyPromo,
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ),
-                    ),
+                    if (unknown.isNotEmpty && store.settings.aiKey.isNotEmpty && aiResult == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: FilledButton(
+                          onPressed: aiBusy
+                              ? null
+                              : () async {
+                                  setD(() => aiBusy = true);
+                                  try {
+                                    var out = (await _aiEditCall(unknown.join('. '), bodyCtl.text)).trim();
+                                    out = out
+                                        .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
+                                        .replaceFirst(RegExp(r'\n?```$'), '');
+                                    if (out.isEmpty) throw Exception(l.aiEmptyResponse);
+                                    setD(() {
+                                      aiResult = out;
+                                      aiGuard = numberGuard(bodyCtl.text, out);
+                                      aiBusy = false;
+                                    });
+                                  } catch (e) {
+                                    setD(() => aiBusy = false);
+                                    if (mounted) _toast(context, L10n.of(context).aiCallFailed('$e'));
+                                  }
+                                },
+                          child: Text(aiBusy ? l.aiBusyLabel : l.aiRunUnknown),
+                        ),
+                      ),
+                    if (aiResult != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 220),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: const Color(0xFFF6F6F4),
+                            border: Border.all(color: const Color(0xFFE4E4E0)),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: SingleChildScrollView(
+                            child: Text(aiResult!, style: const TextStyle(fontSize: 13.5, height: 1.5))),
+                      ),
+                      if (aiGuard.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(aiGuard,
+                              style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: FilledButton(
+                          onPressed: () async {
+                            note.history.add(bodyCtl.text);
+                            if (note.history.length > 30) note.history.removeAt(0);
+                            bodyCtl.text = aiResult!;
+                            await _save();
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            if (mounted) {
+                              setState(() {});
+                              _toast(context, L10n.of(context).aiAppliedToast);
+                            }
+                          },
+                          child: Text(l.aiApplyResult),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('닫기')),
-            FilledButton(
-              onPressed: () async {
-                final r = applyWizard(
-                    command: cmdCtl.text, settings: store.settings, body: bodyCtl.text);
-                if (r.bodyChanged) {
-                  note.history.add(bodyCtl.text);
-                  if (note.history.length > 30) note.history.removeAt(0);
-                  bodyCtl.text = r.body;
-                }
-                await store.persistSettings();
-                await _save();
-                setD(() {
-                  applied = r.applied;
-                  unknown = r.unknown;
-                  aiResult = null;
-                });
-                if (mounted) setState(() {});
-              },
-              child: const Text('해석하고 적용'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.close)),
+              FilledButton(
+                onPressed: () async {
+                  final r = applyWizard(
+                      command: cmdCtl.text, settings: store.settings, body: bodyCtl.text);
+                  if (r.bodyChanged) {
+                    note.history.add(bodyCtl.text);
+                    if (note.history.length > 30) note.history.removeAt(0);
+                    bodyCtl.text = r.body;
+                  }
+                  await store.persistSettings();
+                  await _save();
+                  setD(() {
+                    applied = r.applied;
+                    unknown = r.unknown;
+                    aiResult = null;
+                  });
+                  if (mounted) setState(() {});
+                },
+                child: Text(l.interpretApply),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1011,80 +1018,85 @@ class _EditorScreenState extends State<EditorScreen> {
     await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setD) => AlertDialog(
-          title: const Text('바꾸기'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: findCtl, decoration: const InputDecoration(labelText: '찾기')),
-              TextField(controller: withCtl, decoration: const InputDecoration(labelText: '바꾸기 (\\n=줄바꿈)')),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('정규식', style: TextStyle(fontSize: 14)),
-                value: useRegex,
-                onChanged: (v) => setD(() => useRegex = v ?? false),
-              ),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('자동 바꾸기 규칙으로 저장', style: TextStyle(fontSize: 14)),
-                subtitle: const Text('이후 "정리"할 때마다 항상 적용', style: TextStyle(fontSize: 12)),
-                value: saveRule,
-                onChanged: (v) => setD(() => saveRule = v ?? false),
+        builder: (ctx, setD) {
+          final l = L10n.of(ctx);
+          return AlertDialog(
+            title: Text(l.replaceTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: findCtl, decoration: InputDecoration(labelText: l.findLabel)),
+                TextField(controller: withCtl, decoration: InputDecoration(labelText: l.replaceWithLabel)),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l.regexLabel, style: const TextStyle(fontSize: 14)),
+                  value: useRegex,
+                  onChanged: (v) => setD(() => useRegex = v ?? false),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l.saveAsRule, style: const TextStyle(fontSize: 14)),
+                  subtitle: Text(l.saveAsRuleSub, style: const TextStyle(fontSize: 12)),
+                  value: saveRule,
+                  onChanged: (v) => setD(() => saveRule = v ?? false),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+              FilledButton(
+                onPressed: () async {
+                  final find = findCtl.text;
+                  if (find.isEmpty) return;
+                  final rawRepl = withCtl.text;
+                  final repl = rawRepl.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
+                  int count = 0;
+                  String result = bodyCtl.text;
+                  try {
+                    if (useRegex) {
+                      final re = RegExp(find);
+                      count = re.allMatches(bodyCtl.text).length;
+                      result = bodyCtl.text.replaceAllMapped(re, (m) {
+                        var r2 = repl;
+                        for (int g = 1; g <= m.groupCount; g++) {
+                          r2 = r2.replaceAll('\$$g', m.group(g) ?? '');
+                        }
+                        return r2;
+                      });
+                    } else {
+                      count = find.allMatches(bodyCtl.text).length;
+                      result = bodyCtl.text.split(find).join(repl);
+                    }
+                  } catch (_) {
+                    Navigator.pop(ctx);
+                    if (mounted) _toast(context, L10n.of(context).invalidRegex);
+                    return;
+                  }
+                  Navigator.pop(ctx);
+                  if (count == 0) {
+                    if (mounted) _toast(context, L10n.of(context).noMatches);
+                    return;
+                  }
+                  note.history.add(bodyCtl.text);
+                  if (note.history.length > 30) note.history.removeAt(0);
+                  bodyCtl.text = result;
+                  if (saveRule) {
+                    store.settings.customRules.add(CustomRule(find: find, replace: rawRepl, regex: useRegex));
+                    await store.persistSettings();
+                  }
+                  await _save();
+                  if (mounted) {
+                    setState(() {});
+                    final lm = L10n.of(context);
+                    _toast(context,
+                        '${lm.replacedCount(count)}${saveRule ? lm.savedRuleSuffix : ''}');
+                  }
+                },
+                child: Text(l.replaceAllAction),
               ),
             ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
-            FilledButton(
-              onPressed: () async {
-                final find = findCtl.text;
-                if (find.isEmpty) return;
-                final rawRepl = withCtl.text;
-                final repl = rawRepl.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
-                int count = 0;
-                String result = bodyCtl.text;
-                try {
-                  if (useRegex) {
-                    final re = RegExp(find);
-                    count = re.allMatches(bodyCtl.text).length;
-                    result = bodyCtl.text.replaceAllMapped(re, (m) {
-                      var r2 = repl;
-                      for (int g = 1; g <= m.groupCount; g++) {
-                        r2 = r2.replaceAll('\$$g', m.group(g) ?? '');
-                      }
-                      return r2;
-                    });
-                  } else {
-                    count = find.allMatches(bodyCtl.text).length;
-                    result = bodyCtl.text.split(find).join(repl);
-                  }
-                } catch (_) {
-                  Navigator.pop(ctx);
-                  if (mounted) _toast(context, '정규식이 올바르지 않습니다');
-                  return;
-                }
-                Navigator.pop(ctx);
-                if (count == 0) {
-                  if (mounted) _toast(context, '일치하는 내용이 없습니다');
-                  return;
-                }
-                note.history.add(bodyCtl.text);
-                if (note.history.length > 30) note.history.removeAt(0);
-                bodyCtl.text = result;
-                if (saveRule) {
-                  store.settings.customRules.add(CustomRule(find: find, replace: rawRepl, regex: useRegex));
-                  await store.persistSettings();
-                }
-                await _save();
-                if (mounted) {
-                  setState(() {});
-                  _toast(context, '$count곳을 바꿨습니다${saveRule ? ' · 자동 바꾸기 규칙으로 저장됨' : ''}');
-                }
-              },
-              child: const Text('모두 바꾸기'),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -1098,33 +1110,33 @@ class _EditorScreenState extends State<EditorScreen> {
           shrinkWrap: true,
           children: [
             ListTile(
-              title: const Text('전체 복사'),
+              title: Text(L10n.of(ctx).copyAll),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: bodyCtl.text));
                 Navigator.pop(ctx);
-                _toast(context, '전체 텍스트를 복사했습니다');
+                _toast(context, L10n.of(context).copiedAll);
               },
             ),
             ListTile(
-              title: const Text('정리해서 복사'),
-              subtitle: const Text('메모는 그대로 두고, 정리된 결과만 복사', style: TextStyle(fontSize: 12)),
+              title: Text(L10n.of(ctx).tidyCopy),
+              subtitle: Text(L10n.of(ctx).tidyCopySub, style: const TextStyle(fontSize: 12)),
               onTap: () {
                 final r = tidy(bodyCtl.text, store.effOpts(buildPresets().first));
                 Clipboard.setData(ClipboardData(text: r.text));
                 Navigator.pop(ctx);
-                _toast(context, '정리해서 복사했습니다 — ${r.summary}');
+                _toast(context, L10n.of(context).tidyCopied(r.summary));
               },
             ),
             ListTile(
-              title: const Text('표를 스프레드시트용으로 복사'),
+              title: Text(L10n.of(ctx).copyTableSpreadsheet),
               onTap: () {
                 final r = extractTables(bodyCtl.text);
                 Navigator.pop(ctx);
                 if (r.tables.isEmpty) {
-                  _toast(context, '이 메모에서 표를 찾지 못했습니다');
+                  _toast(context, L10n.of(context).noTablesFound);
                 } else {
                   Clipboard.setData(ClipboardData(text: r.tables.map(tableToTSV).join('\n\n')));
-                  _toast(context, '표를 스프레드시트용으로 복사했습니다');
+                  _toast(context, L10n.of(context).copiedTableSpreadsheet);
                 }
               },
             ),
@@ -1136,8 +1148,9 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     if (!_found) {
-      return const Scaffold(body: Center(child: Text('메모를 찾을 수 없습니다')));
+      return Scaffold(body: Center(child: Text(l.noteNotFound)));
     }
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
@@ -1152,16 +1165,16 @@ class _EditorScreenState extends State<EditorScreen> {
             if (_editing)
               TextButton(
                 onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: const Text('완료', style: TextStyle(fontWeight: FontWeight.w800)),
+                child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
             IconButton(
               icon: Icon(_showMeta ? Icons.sell : Icons.sell_outlined),
-              tooltip: '출처·태그',
+              tooltip: l.metaTooltip,
               onPressed: () => setState(() => _showMeta = !_showMeta),
             ),
             IconButton(
               icon: Icon(note.pinned ? Icons.push_pin : Icons.push_pin_outlined),
-              tooltip: note.pinned ? '상단 고정 해제' : '리스트 상단 고정',
+              tooltip: note.pinned ? l.unpinTooltip : l.pinTooltip,
               onPressed: () async {
                 note.pinned = !note.pinned;
                 await store.persist();
@@ -1170,15 +1183,17 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: '삭제',
+              tooltip: l.deleteTooltip,
               onPressed: () async {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('이 메모를 삭제할까요?'),
+                    title: Text(L10n.of(ctx).deleteConfirmTitle),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
-                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('삭제')),
+                      TextButton(
+                          onPressed: () => Navigator.pop(ctx, false), child: Text(L10n.of(ctx).cancel)),
+                      FilledButton(
+                          onPressed: () => Navigator.pop(ctx, true), child: Text(L10n.of(ctx).delete)),
                     ],
                   ),
                 );
@@ -1197,8 +1212,8 @@ class _EditorScreenState extends State<EditorScreen> {
               child: TextField(
                 controller: titleCtl,
                 focusNode: _titleFocus,
-                decoration: const InputDecoration(
-                    hintText: '제목', border: InputBorder.none, isDense: true),
+                decoration: InputDecoration(
+                    hintText: l.titleHint, border: InputBorder.none, isDense: true),
                 style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
                 onChanged: (_) => _save(),
               ),
@@ -1210,14 +1225,15 @@ class _EditorScreenState extends State<EditorScreen> {
                 children: [
                   DropdownButton<String>(
                     value: note.source.isEmpty ? '' : note.source,
-                    items: const [
-                      DropdownMenuItem(value: '', child: Text('출처 없음')),
-                      DropdownMenuItem(value: 'ChatGPT', child: Text('ChatGPT')),
-                      DropdownMenuItem(value: 'Claude', child: Text('Claude')),
-                      DropdownMenuItem(value: 'Gemini', child: Text('Gemini')),
-                      DropdownMenuItem(value: 'Grok', child: Text('Grok')),
-                      DropdownMenuItem(value: 'Perplexity', child: Text('Perplexity')),
-                      DropdownMenuItem(value: '기타', child: Text('기타')),
+                    items: [
+                      DropdownMenuItem(value: '', child: Text(l.sourceNone)),
+                      const DropdownMenuItem(value: 'ChatGPT', child: Text('ChatGPT')),
+                      const DropdownMenuItem(value: 'Claude', child: Text('Claude')),
+                      const DropdownMenuItem(value: 'Gemini', child: Text('Gemini')),
+                      const DropdownMenuItem(value: 'Grok', child: Text('Grok')),
+                      const DropdownMenuItem(value: 'Perplexity', child: Text('Perplexity')),
+                      // 저장 값('기타')은 데이터 호환을 위해 유지, 표시만 번역한다
+                      DropdownMenuItem(value: '기타', child: Text(l.sourceOther)),
                     ],
                     onChanged: (v) async {
                       note.source = v ?? '';
@@ -1230,7 +1246,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     child: TextField(
                       controller: tagsCtl,
                       focusNode: _tagsFocus,
-                      decoration: const InputDecoration(hintText: '태그 (쉼표로 구분)', isDense: true),
+                      decoration: InputDecoration(hintText: l.tagsHint, isDense: true),
                       onChanged: (_) => _save(),
                     ),
                   ),
@@ -1247,7 +1263,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
-                  decoration: const InputDecoration(hintText: '여기에 붙여넣거나 입력하세요', border: InputBorder.none),
+                  decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
                   style: const TextStyle(fontSize: 16, height: 1.6),
                   onChanged: (_) => _save(),
                 ),
@@ -1276,13 +1292,13 @@ class _EditorScreenState extends State<EditorScreen> {
               Expanded(
                 child: TextButton(
                   onPressed: _showPresetSheet,
-                  child: const Text('정리', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: Text(l.tidyAction, style: const TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ),
-              Expanded(child: TextButton(onPressed: _showWizardDialog, child: const Text('마법사'))),
-              Expanded(child: TextButton(onPressed: _showTables, child: const Text('표'))),
-              Expanded(child: TextButton(onPressed: _showReplaceDialog, child: const Text('바꾸기'))),
-              Expanded(child: TextButton(onPressed: _showCopyMenu, child: const Text('복사'))),
+              Expanded(child: TextButton(onPressed: _showWizardDialog, child: Text(l.wizardAction))),
+              Expanded(child: TextButton(onPressed: _showTables, child: Text(l.tableAction))),
+              Expanded(child: TextButton(onPressed: _showReplaceDialog, child: Text(l.replaceAction))),
+              Expanded(child: TextButton(onPressed: _showCopyMenu, child: Text(l.copyAction))),
               Expanded(
                 child: TextButton(
                   onPressed: note.history.isEmpty
@@ -1293,9 +1309,9 @@ class _EditorScreenState extends State<EditorScreen> {
                           bodyCtl.text = note.body;
                           await _save();
                           setState(() {});
-                          if (mounted) _toast(context, '이전 버전으로 되돌렸습니다');
+                          if (mounted) _toast(context, L10n.of(context).revertedToast);
                         },
-                  child: const Text('되돌리기'),
+                  child: Text(l.undoAction),
                 ),
               ),
             ],
@@ -1316,8 +1332,9 @@ class PreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text('$presetName — 미리보기')),
+      appBar: AppBar(title: Text(l.previewTitle(presetName))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -1332,11 +1349,12 @@ class PreviewScreen extends StatelessWidget {
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: const Color(0xFFFDF3E7), borderRadius: BorderRadius.circular(10)),
-              child: Text('주의: $w',
+              child: Text(l.warningPrefix(w),
                   style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5, fontWeight: FontWeight.w600)),
             ),
           const SizedBox(height: 14),
-          const Text('정리 결과', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
+          Text(l.tidyResultLabel,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1347,7 +1365,8 @@ class PreviewScreen extends StatelessWidget {
             child: SelectableText(result.text, style: const TextStyle(fontSize: 14, height: 1.6)),
           ),
           const SizedBox(height: 14),
-          const Text('원본', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
+          Text(l.originalLabel,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1367,13 +1386,13 @@ class PreviewScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
+                    onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: FilledButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('적용', style: TextStyle(fontWeight: FontWeight.w700))),
+                    child: Text(l.apply, style: const TextStyle(fontWeight: FontWeight.w700))),
               ),
             ],
           ),
@@ -1414,42 +1433,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final s = store.settings;
     return Scaffold(
-      appBar: AppBar(title: const Text('정리 규칙 설정')),
+      appBar: AppBar(title: Text(l.settingsTitle)),
       body: ListView(
         children: [
-          _dropRow('굵은 강조 (**텍스트**)', '40자 초과 문장 전체 강조는 항상 마커만 제거', s.emphStyle, const [
-            ('quoteSingle', "작은따옴표 '강조'"),
-            ('quoteDouble', '큰따옴표 "강조"'),
-            ('remove', '제거'),
-            ('keep', '유지'),
+          _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
+            ('quoteSingle', l.emphQuoteSingle),
+            ('quoteDouble', l.emphQuoteDouble),
+            ('remove', l.removeLabel),
+            ('keep', l.keepLabel),
           ], (v) => s.emphStyle = v),
-          _dropRow('구분선 (---)', null, s.hrMode, const [
-            ('keep', '유지'),
-            ('remove', '제거'),
+          _dropRow(l.hrTitle, null, s.hrMode, [
+            ('keep', l.keepLabel),
+            ('remove', l.removeLabel),
           ], (v) => s.hrMode = v),
-          _dropRow('제목 (#, ##)', null, s.headingMode, const [
-            ('strip', '텍스트만 남기기'),
-            ('keep', '그대로 유지'),
-            ('prefix', '■ 기호 붙이기'),
-            ('bracket', '[대괄호]'),
+          _dropRow(l.headingTitle, null, s.headingMode, [
+            ('strip', l.headingStrip),
+            ('keep', l.headingKeep),
+            ('prefix', l.headingPrefix),
+            ('bracket', l.headingBracket),
           ], (v) => s.headingMode = v),
-          _dropRow('글머리 기호 (-, *)', null, s.bulletChar, const [
-            ('-', '하이픈 -'),
-            ('·', '가운뎃점 ·'),
-            ('•', '불릿 •'),
-            ('◦', '흰 불릿 ◦'),
-            ('keep', '원래 기호 유지'),
+          _dropRow(l.bulletTitle, null, s.bulletChar, [
+            ('-', l.bulletHyphen),
+            ('·', l.bulletMiddot),
+            ('•', l.bulletDot),
+            ('◦', l.bulletWhite),
+            ('keep', l.bulletKeep),
           ], (v) => s.bulletChar = v),
-          _dropRow('글머리 들여쓰기', null, s.bulletIndent, const [
-            (2, '2칸'),
-            (4, '4칸'),
-            (0, '없음'),
+          _dropRow(l.bulletIndentTitle, null, s.bulletIndent, [
+            (2, l.indent2),
+            (4, l.indent4),
+            (0, l.indentNone),
           ], (v) => s.bulletIndent = v),
           SwitchListTile(
-            title: const Text('소제목 여백', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: const Text('위 2줄·아래 1줄, 투명 문자(ㅤ)라 카톡·블로그에서도 유지', style: TextStyle(fontSize: 12)),
+            title: Text(l.headingPadTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            subtitle: Text(l.headingPadSub, style: const TextStyle(fontSize: 12)),
             value: s.headingPad,
             onChanged: (v) {
               s.headingPad = v;
@@ -1458,8 +1478,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('출처 링크 제거', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: const Text('[1]: URL 출처 블록과 본문 [1] 표시 제거', style: TextStyle(fontSize: 12)),
+            title: Text(l.citationsTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            subtitle: Text(l.citationsSub, style: const TextStyle(fontSize: 12)),
             value: s.removeCitations,
             onChanged: (v) {
               s.removeCitations = v;
@@ -1468,8 +1488,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('대시 나열 목록화', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: const Text('"– a – b – c" 한 줄 나열을 줄 목록으로 분리', style: TextStyle(fontSize: 12)),
+            title: Text(l.dashListTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            subtitle: Text(l.dashListSub, style: const TextStyle(fontSize: 12)),
             value: s.smartDashList,
             onChanged: (v) {
               s.smartDashList = v;
@@ -1478,8 +1498,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('투명 문자 소제목 정리', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: const Text('ㅤ로 감싼 유사 소제목에 여백·제목 규칙 적용', style: TextStyle(fontSize: 12)),
+            title: Text(l.fillerHeadingTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            subtitle: Text(l.fillerHeadingSub, style: const TextStyle(fontSize: 12)),
             value: s.smartFillerHeading,
             onChanged: (v) {
               s.smartFillerHeading = v;
@@ -1487,14 +1507,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
-            child: Text('AI 마법사 연결 (자유 편집)', style: TextStyle(fontWeight: FontWeight.w800)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
+            child: Text(l.aiSectionTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('API 키를 넣으면 "더 간결하게 써줘" 같은 자유 편집 명령을 마법사가 처리합니다. 키는 이 기기에만 저장됩니다.',
-                style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(l.aiSectionDesc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -1504,8 +1523,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: TextFormField(
                     initialValue: s.aiKey,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                        hintText: 'API 키 (Google AI 또는 Anthropic)', isDense: true),
+                    decoration: InputDecoration(hintText: l.aiKeyHint, isDense: true),
                     onChanged: (v) {
                       s.aiKey = v.trim();
                       store.persistSettings();
@@ -1535,14 +1553,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
-            child: Text('자동 바꾸기 규칙', style: TextStyle(fontWeight: FontWeight.w800)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
+            child: Text(l.rulesSectionTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('위에서부터 순서대로 적용. 바꾸기에 \\n을 쓰면 줄바꿈. 코드블록 안은 건드리지 않습니다.',
-                style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(l.rulesSectionDesc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ),
           for (int i = 0; i < s.customRules.length; i++) _ruleRow(i),
           Padding(
@@ -1554,13 +1571,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() {});
               },
               icon: const Icon(Icons.add),
-              label: const Text('규칙 추가'),
+              label: Text(l.addRule),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 0, 16, 30),
-            child: Text('설정은 저장 즉시 반영되며, 이후 "정리"를 실행할 때부터 적용됩니다. 이미 정리해 둔 메모는 소급해서 바뀌지 않습니다.',
-                style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+            child: Text(l.settingsFooter, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ),
         ],
       ),
@@ -1568,6 +1584,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _ruleRow(int i) {
+    final l = L10n.of(context);
     final s = store.settings;
     final r = s.customRules[i];
     return Padding(
@@ -1577,7 +1594,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Expanded(
             child: TextFormField(
               initialValue: r.find,
-              decoration: const InputDecoration(hintText: '찾기', isDense: true),
+              decoration: InputDecoration(hintText: l.findLabel, isDense: true),
               onChanged: (v) {
                 s.customRules[i] = CustomRule(find: v, replace: r.replace, regex: r.regex);
                 store.persistSettings();
@@ -1588,7 +1605,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Expanded(
             child: TextFormField(
               initialValue: r.replace,
-              decoration: const InputDecoration(hintText: '바꾸기', isDense: true),
+              decoration: InputDecoration(hintText: l.replaceAction, isDense: true),
               onChanged: (v) {
                 s.customRules[i] = CustomRule(find: r.find, replace: v, regex: r.regex);
                 store.persistSettings();
@@ -1603,7 +1620,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
-          const Text('정규식', style: TextStyle(fontSize: 11)),
+          Text(l.regexLabel, style: const TextStyle(fontSize: 11)),
           IconButton(
             icon: const Icon(Icons.close, size: 18),
             onPressed: () {

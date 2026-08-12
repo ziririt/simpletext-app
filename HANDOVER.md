@@ -70,6 +70,8 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 
 - lib/core/tidy_engine.dart — 정리+표 엔진. Pure Dart, 플랫폼 API 호출 금지
 - lib/core/wizard.dart — AI 마법사 1층(자연어 규칙 해석기) + numberGuard
+- lib/l10n/ — 다국어. l10n.dart(추상 L10n + 로케일 해석 + all 맵) + 언어별 9파일.
+  UI 문자열은 반드시 여기에만 추가(9개 언어 전부). 검사: tool/l10n_check.py, test/l10n/
 - lib/main.dart — 전체 UI: Store(shared_preferences, 스키마 v2 {v,notes,tombstones}),
   HomeScreen(큰제목·그룹리스트·스와이프 고정/삭제), EditorScreen(제목 본문통합·키보드
   액세서리바·완료버튼·출처/태그 숨김토글·마법사/표/바꾸기/복사/되돌리기), PreviewScreen,
@@ -102,10 +104,23 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   바꾸기, 표 도구, 키보드 액세서리 바 — 아이폰·맥 설치 완료
 - Windows CI 자동 빌드 동작
 - CLAUDE.md(요약 컨텍스트) 저장소에 존재
+- **다국어(i18n) — 2026-08-12 클라우드 세션에서 완료.** UI 문자열 126키 분리, 9개 언어
+  (한/영/일/중간체/중번체/스/포/독/프 — 사용자 확정: 중국어만 간·번체 분리, es·pt는 단일).
+  구조: lib/l10n/의 손으로 쓴 L10n 클래스 계층(gen-l10n 미사용 — 키 누락이 컴파일 오류로 잡힘).
+  기능명 용어집은 test/l10n/l10n_test.dart에 고정(바꾸기=Replace·置換·替换·取代·Reemplazar·
+  Substituir·Ersetzen·Remplacer). 검사 도구 tool/l10n_check.py(빈 값·all맵 누락·미번역 의심).
+  시드 메모·프리셋 이름도 현지화(프리셋은 Preset.id를 UI층에서 매핑, 엔진 무수정).
+- **Flutter CI 신설**(.github/workflows/flutter_ci.yml): 모든 push/PR에서
+  l10n 검사 + flutter analyze + flutter test. 클라우드 세션의 공식 검증 루프.
 
 ## 8. 로드맵 (다음 할 일 순서)
 
-1. **다국어(i18n)**: UI 문자열 분리 (한/영/일/중/포/스/독/프). 기능명 번역 확정: Replace·置換·替换 등
+1. ~~**다국어(i18n)**~~ 완료 (7절 참고). 남은 후속 3건:
+   (a) 엔진 리포트 문구(summary/warnings — '변경 사항 없음' 등) 현지화: JS·Dart 동시 작업
+   필요(5절 제1규칙)라 별도 항목으로 보류. 리포트를 구조화(코드+파라미터)해서 UI층에서
+   번역하는 방식 권장.
+   (b) 마법사 1층(규칙 해석기)은 한국어 명령 전용 — 비한국어 사용자는 AI 2층으로 우회 가능.
+   (c) 스토어 등록정보 현지화 스크린샷 — 노하우 문서 6절: 없으면 기본 언어 것이 그대로 나간다.
 2. **iOS Share Extension**: ChatGPT 앱 공유 → 심플텍스트 (기획서 45절 모바일 킬러 기능. Xcode 네이티브)
 3. **TestFlight CI**: GitHub Actions macOS 러너로 iOS 빌드+업로드 → 폰에서 설치까지 원격화
 4. **백업 내보내기/가져오기 Flutter 이식**: 웹과 동일 JSON 스키마 v2. 병합 규칙 = id 기준,
@@ -115,6 +130,12 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 
 ## 9. 알려진 함정 (시간 아끼는 지식)
 
+- **클라우드 세션 컨테이너는 pub.dev와 storage.googleapis.com이 막혀 있다** (2026-08-12 확인).
+  Flutter SDK 설치도 pub get도 안 된다. 코드는 쓸 수 있으니, 검증은 푸시 → Flutter CI
+  (Actions) 결과 확인으로 한다. GitHub 읽기는 되고, 푸시는 저장소가 세션 소스로
+  연결됐을 때만 된다(안 되면 git bundle을 만들어 사용자에게 전달 → 맥에서 push).
+- pubspec.lock은 flutter_localizations 추가(2026-08-12) 후 갱신이 필요할 수 있다 —
+  맥에서 flutter pub get 후 lock 변경이 있으면 함께 커밋할 것.
 - 아이폰 설치는 폰이 잠겨 있으면 "Install failed" — 잠금 해제 후 재시도하면 됨
 - flutter analyze는 warning도 실패 처리 — 미사용 코드 남기지 말 것
 - macOS 앱에서 외부 API 호출하려면 Release.entitlements에 com.apple.security.network.client 필요(적용됨)

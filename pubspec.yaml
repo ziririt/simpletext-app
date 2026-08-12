@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # i18n (2026-08-12): Material/Cupertino 위젯 내장 문구의 현지화 델리게이트.
+  # 앱 자체 문자열은 lib/l10n/ (gen-l10n 미사용, 손으로 쓴 클래스 계층).
+  flutter_localizations:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

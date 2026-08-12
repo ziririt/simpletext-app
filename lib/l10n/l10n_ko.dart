@@ -1,0 +1,313 @@
+import 'l10n.dart';
+
+/// 한국어 — 원문(소스 오브 트루스). 다른 언어는 이 파일 기준으로 번역한다.
+class L10nKo extends L10n {
+  const L10nKo();
+
+  @override
+  String get localeTag => 'ko';
+
+  @override
+  String get appTitle => '심플텍스트';
+
+  @override
+  String get homeTitle => '메모';
+  @override
+  String get settingsTooltip => '정리 규칙 설정';
+  @override
+  String get searchHint => '검색';
+  @override
+  String get emptyList => '메모가 없습니다.\n"붙여넣고 정리"로 시작해 보세요.';
+  @override
+  String get pinnedLabel => '고정됨';
+  @override
+  String get notesLabel => '메모';
+  @override
+  String get newNoteTooltip => '새 메모';
+  @override
+  String get pasteAndTidy => '붙여넣고 정리';
+  @override
+  String get clipboardEmpty => '클립보드가 비어 있습니다. AI 답변을 먼저 복사해 주세요.';
+  @override
+  String get yesterday => '어제';
+  @override
+  String get untitled => '제목 없음';
+  @override
+  String get deleteConfirmTitle => '이 메모를 삭제할까요?';
+  @override
+  String get cancel => '취소';
+  @override
+  String get delete => '삭제';
+
+  @override
+  String dateShort(int y, int m, int d) => '$y. $m. $d.';
+
+  @override
+  String get seedTitle => '심플텍스트에 오신 것을 환영합니다';
+  @override
+  String get seedTag => '사용법';
+  @override
+  String get seedBody => [
+        '심플텍스트 사용법',
+        '',
+        '1. ChatGPT나 클로드 답변을 복사한 뒤, "붙여넣고 정리"를 누르세요.',
+        '2. 정리 미리보기에서 원본과 결과를 비교하고 "적용"을 누르면 끝.',
+        '3. 표가 있는 메모는 "표" 버튼으로 스프레드시트용(TSV) 복사가 가능합니다.',
+        '4. 모든 정리는 되돌리기 한 번으로 복구됩니다.',
+        '',
+        '아래는 일부러 깨뜨린 표입니다. "정리"를 눌러 복구를 확인해 보세요.',
+        '',
+        '| 종목 | 티커 | 수익률 | 비중',
+        '|------|------|--------|',
+        '| 애플 | AAPL | +14.2% | 12% |',
+        '| 마이크로소프트 | MSFT | +21.5%',
+        '| 엔비디아 | NVDA | +48.9% | 22% | 추가셀 |',
+        '|테슬라|TSLA|-8.3%|8%|',
+      ].join('\n');
+
+  @override
+  String get done => '완료';
+  @override
+  String get metaTooltip => '출처·태그';
+  @override
+  String get pinTooltip => '리스트 상단 고정';
+  @override
+  String get unpinTooltip => '상단 고정 해제';
+  @override
+  String get deleteTooltip => '삭제';
+  @override
+  String get titleHint => '제목';
+  @override
+  String get sourceNone => '출처 없음';
+  @override
+  String get sourceOther => '기타';
+  @override
+  String get tagsHint => '태그 (쉼표로 구분)';
+  @override
+  String get bodyHint => '여기에 붙여넣거나 입력하세요';
+  @override
+  String get noteNotFound => '메모를 찾을 수 없습니다';
+  @override
+  String get revertedToast => '이전 버전으로 되돌렸습니다';
+  @override
+  String appliedDone(String summary) => '적용 완료 — $summary';
+
+  @override
+  String get undoTip => '실행 취소';
+  @override
+  String get redoTip => '다시 실행';
+  @override
+  String get moveLeftTip => '왼쪽으로';
+  @override
+  String get moveRightTip => '오른쪽으로';
+  @override
+  String get lineStartTip => '줄 처음';
+  @override
+  String get lineEndTip => '줄 끝';
+  @override
+  String get indentTip => '들여쓰기';
+  @override
+  String get hideKeyboardTip => '키보드 내리기';
+
+  @override
+  String get tidyAction => '정리';
+  @override
+  String get wizardAction => '마법사';
+  @override
+  String get tableAction => '표';
+  @override
+  String get replaceAction => '바꾸기';
+  @override
+  String get copyAction => '복사';
+  @override
+  String get undoAction => '되돌리기';
+
+  @override
+  String get noTablesFound => '이 메모에서 표를 찾지 못했습니다';
+  @override
+  String tableInfo(int n, int cols, int rows) => '표 $n — $cols열 × $rows행';
+  @override
+  String get forSpreadsheet => '스프레드시트용';
+  @override
+  String get copiedSpreadsheet => '복사 완료 — 구글 시트나 엑셀 셀에 붙여넣으세요';
+  @override
+  String get copiedCsv => 'CSV로 복사했습니다';
+  @override
+  String get copiedMarkdown => 'Markdown 표로 복사했습니다';
+
+  @override
+  String get wizardTitle => '마법사';
+  @override
+  String get wizardHint => '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘';
+  @override
+  String appliedPrefix(String what) => '적용됨 · $what';
+  @override
+  String unknownPrefix(String what) => '규칙으로 해석 불가 · $what';
+  @override
+  String get aiKeyPromo => '설정에 AI API 키를 넣으면 이런 자유 편집 명령도 처리됩니다.';
+  @override
+  String get aiRunUnknown => '해석 불가 명령을 AI로 실행';
+  @override
+  String get aiBusyLabel => 'AI 편집 중…';
+  @override
+  String get aiEmptyResponse => '빈 응답';
+  @override
+  String aiCallFailed(String error) => 'AI 호출 실패: $error';
+  @override
+  String get aiApplyResult => 'AI 결과 적용';
+  @override
+  String get aiAppliedToast => 'AI 편집을 적용했습니다 — 되돌리기로 복구 가능';
+  @override
+  String get close => '닫기';
+  @override
+  String get interpretApply => '해석하고 적용';
+
+  @override
+  String get replaceTitle => '바꾸기';
+  @override
+  String get findLabel => '찾기';
+  @override
+  String get replaceWithLabel => '바꾸기 (\\n=줄바꿈)';
+  @override
+  String get regexLabel => '정규식';
+  @override
+  String get saveAsRule => '자동 바꾸기 규칙으로 저장';
+  @override
+  String get saveAsRuleSub => '이후 "정리"할 때마다 항상 적용';
+  @override
+  String get invalidRegex => '정규식이 올바르지 않습니다';
+  @override
+  String get noMatches => '일치하는 내용이 없습니다';
+  @override
+  String replacedCount(int count) => '$count곳을 바꿨습니다';
+  @override
+  String get savedRuleSuffix => ' · 자동 바꾸기 규칙으로 저장됨';
+  @override
+  String get replaceAllAction => '모두 바꾸기';
+
+  @override
+  String get copyAll => '전체 복사';
+  @override
+  String get copiedAll => '전체 텍스트를 복사했습니다';
+  @override
+  String get tidyCopy => '정리해서 복사';
+  @override
+  String get tidyCopySub => '메모는 그대로 두고, 정리된 결과만 복사';
+  @override
+  String tidyCopied(String summary) => '정리해서 복사했습니다 — $summary';
+  @override
+  String get copyTableSpreadsheet => '표를 스프레드시트용으로 복사';
+  @override
+  String get copiedTableSpreadsheet => '표를 스프레드시트용으로 복사했습니다';
+
+  @override
+  String previewTitle(String preset) => '$preset — 미리보기';
+  @override
+  String warningPrefix(String warning) => '주의: $warning';
+  @override
+  String get tidyResultLabel => '정리 결과';
+  @override
+  String get originalLabel => '원본';
+  @override
+  String get apply => '적용';
+
+  @override
+  String get presetAiName => 'AI 답변 정리';
+  @override
+  String get presetAiDesc => '마크다운 마커·이모지·AI 서두 제거, 표 복구';
+  @override
+  String get presetStripName => 'Markdown 완전 제거';
+  @override
+  String get presetStripDesc => '마크다운 문법 최대 제거, 표는 TSV로';
+  @override
+  String get presetMinimalName => '최소 정리';
+  @override
+  String get presetMinimalDesc => '구조 보존, 잡티(공백·제로폭 문자 등)만 제거';
+  @override
+  String get presetTablesName => '표만 뽑기';
+  @override
+  String get presetTablesDesc => '문서에서 표를 추출해 TSV로';
+  @override
+  String get presetBlogName => '블로그 붙여넣기';
+  @override
+  String get presetBlogDesc => '마커 제거, 링크는 주소 유지, 표 복구';
+
+  @override
+  String get settingsTitle => '정리 규칙 설정';
+  @override
+  String get emphTitle => '굵은 강조 (**텍스트**)';
+  @override
+  String get emphSub => '40자 초과 문장 전체 강조는 항상 마커만 제거';
+  @override
+  String get emphQuoteSingle => "작은따옴표 '강조'";
+  @override
+  String get emphQuoteDouble => '큰따옴표 "강조"';
+  @override
+  String get removeLabel => '제거';
+  @override
+  String get keepLabel => '유지';
+  @override
+  String get hrTitle => '구분선 (---)';
+  @override
+  String get headingTitle => '제목 (#, ##)';
+  @override
+  String get headingStrip => '텍스트만 남기기';
+  @override
+  String get headingKeep => '그대로 유지';
+  @override
+  String get headingPrefix => '■ 기호 붙이기';
+  @override
+  String get headingBracket => '[대괄호]';
+  @override
+  String get bulletTitle => '글머리 기호 (-, *)';
+  @override
+  String get bulletHyphen => '하이픈 -';
+  @override
+  String get bulletMiddot => '가운뎃점 ·';
+  @override
+  String get bulletDot => '불릿 •';
+  @override
+  String get bulletWhite => '흰 불릿 ◦';
+  @override
+  String get bulletKeep => '원래 기호 유지';
+  @override
+  String get bulletIndentTitle => '글머리 들여쓰기';
+  @override
+  String get indent2 => '2칸';
+  @override
+  String get indent4 => '4칸';
+  @override
+  String get indentNone => '없음';
+  @override
+  String get headingPadTitle => '소제목 여백';
+  @override
+  String get headingPadSub => '위 2줄·아래 1줄, 투명 문자(ㅤ)라 카톡·블로그에서도 유지';
+  @override
+  String get citationsTitle => '출처 링크 제거';
+  @override
+  String get citationsSub => '[1]: URL 출처 블록과 본문 [1] 표시 제거';
+  @override
+  String get dashListTitle => '대시 나열 목록화';
+  @override
+  String get dashListSub => '"– a – b – c" 한 줄 나열을 줄 목록으로 분리';
+  @override
+  String get fillerHeadingTitle => '투명 문자 소제목 정리';
+  @override
+  String get fillerHeadingSub => 'ㅤ로 감싼 유사 소제목에 여백·제목 규칙 적용';
+  @override
+  String get aiSectionTitle => 'AI 마법사 연결 (자유 편집)';
+  @override
+  String get aiSectionDesc =>
+      'API 키를 넣으면 "더 간결하게 써줘" 같은 자유 편집 명령을 마법사가 처리합니다. 키는 이 기기에만 저장됩니다.';
+  @override
+  String get aiKeyHint => 'API 키 (Google AI 또는 Anthropic)';
+  @override
+  String get rulesSectionTitle => '자동 바꾸기 규칙';
+  @override
+  String get rulesSectionDesc => '위에서부터 순서대로 적용. 바꾸기에 \\n을 쓰면 줄바꿈. 코드블록 안은 건드리지 않습니다.';
+  @override
+  String get addRule => '규칙 추가';
+  @override
+  String get settingsFooter =>
+      '설정은 저장 즉시 반영되며, 이후 "정리"를 실행할 때부터 적용됩니다. 이미 정리해 둔 메모는 소급해서 바뀌지 않습니다.';
+}
