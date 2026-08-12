@@ -1,0 +1,26 @@
+La respuesta de la IA sirve. Su formato, no.
+
+Pégala aquí. Los asteriscos, los signos de número y los preámbulos desaparecen, y queda un texto limpio que puedes usar donde sea.
+
+QUÉ ELIMINA
+- Marcas de Markdown (**negritas**, ## títulos, --- separadores)
+- Emojis y arranques del tipo "Claro, aquí tienes un resumen"
+- Referencias como [1] y la lista de enlaces del final
+- Espacios especiales y caracteres de ancho cero, invisibles en pantalla
+
+QUÉ HACE CON LAS TABLAS
+Repara filas descuadradas y celdas faltantes. Las tablas angostas quedan alineadas en columnas limpias. Las tablas anchas, llenas de oraciones, se despliegan fila por fila y se siguen leyendo bien en el celular. También puedes copiar cualquier tabla directo a Google Sheets o Excel.
+
+TODO PASA EN TU DISPOSITIVO
+La limpieza se hace por completo en el dispositivo. Funciona sin conexión y tu texto nunca se envía a un servidor.
+
+SIEMPRE PUEDES REGRESAR
+Antes de cambiar algo verás el original y el resultado lado a lado. Después de aplicarlo, basta con deshacer una vez.
+
+TUS REGLAS
+Decide si el énfasis pasa a comillas o se quita, qué viñeta y qué sangría usar, cuánto espacio dejar alrededor de los subtítulos. El siguiente pegado seguirá lo mismo.
+
+LA EDICIÓN CON IA ES OPCIONAL
+Puedes pedir algo libre, como reescribir en tono formal. Solo funciona con una clave de API que tú proporciones, la clave se queda en el dispositivo y el resultado se revisa por si cambiaron cifras o fechas antes de mostrarlo.
+
+Ajustado a las respuestas de ChatGPT, Claude, Gemini, Grok y Perplexity.

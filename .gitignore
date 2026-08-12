@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# 스토어 스크린샷은 생성 파일이라 커밋하지 않는다 (노하우 10절)
+store/screenshots/

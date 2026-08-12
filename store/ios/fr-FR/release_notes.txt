@@ -1,0 +1,4 @@
+- Les tableaux larges sont désormais dépliés ligne par ligne et restent lisibles sur un téléphone.
+- Le mode sombre est pris en charge.
+- Nouveau réglage : police à chasse fixe dans l’éditeur, pour aligner exactement les colonnes.
+- Correction : les tableaux peuvent de nouveau être copiés vers un tableur après nettoyage.

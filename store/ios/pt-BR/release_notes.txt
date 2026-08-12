@@ -1,0 +1,4 @@
+- Tabelas largas agora são abertas linha por linha e continuam legíveis no celular.
+- O modo escuro é compatível.
+- Novo ajuste: fonte monoespaçada no editor, que alinha as colunas com precisão.
+- Corrigido: as tabelas podem ser copiadas para uma planilha depois da limpeza.

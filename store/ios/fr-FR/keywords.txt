@@ -1,0 +1,1 @@
+IA,nettoyer,Markdown,supprimer,convertir,texte,notes,tableau,tableur,coller,presse-papiers

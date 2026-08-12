@@ -1,0 +1,26 @@
+Die Antwort der KI ist brauchbar. Die Formatierung nicht.
+
+Einfach einfügen. Sternchen, Rautezeichen und einleitende Höflichkeiten verschwinden, übrig bleibt sauberer Text, den Sie überall verwenden können.
+
+WAS ENTFERNT WIRD
+- Markdown-Zeichen (**fett**, ## Überschriften, --- Trennlinien)
+- Emoji und Einleitungen wie "Gerne, hier die Zusammenfassung"
+- Quellenangaben wie [1] und die Linkliste am Ende
+- Unsichtbare Sonderzeichen und Leerzeichen ohne Breite
+
+WAS MIT TABELLEN PASSIERT
+Verrutschte Zeilen und fehlende Zellen werden repariert. Schmale Tabellen werden sauber in Spalten ausgerichtet. Breite Tabellen mit ganzen Sätzen werden Zeile für Zeile aufgeklappt und bleiben so auch auf dem Telefon lesbar. Jede Tabelle lässt sich außerdem direkt nach Google Tabellen oder Excel kopieren.
+
+ALLES BLEIBT AUF DEM GERÄT
+Das Aufräumen läuft vollständig auf Ihrem Gerät. Es funktioniert ohne Verbindung, und Ihr Text wird nie an einen Server geschickt.
+
+SIE KÖNNEN ZURÜCK
+Vor jeder Änderung sehen Sie Original und Ergebnis nebeneinander. Auch danach genügt ein Widerruf.
+
+IHRE REGELN
+Legen Sie fest, ob Hervorhebungen zu Anführungszeichen werden oder verschwinden, welches Aufzählungszeichen und welcher Einzug gilt, wie viel Abstand um Zwischenüberschriften steht. Beim nächsten Einfügen gilt dasselbe.
+
+KI-BEARBEITUNG IST OPTIONAL
+Sie können auch frei formulieren, etwa "in förmlichem Ton umschreiben". Das läuft nur mit einem API-Schlüssel, den Sie selbst hinterlegen. Der Schlüssel bleibt auf dem Gerät, und das Ergebnis wird auf veränderte Zahlen und Daten geprüft, bevor Sie es sehen.
+
+Abgestimmt auf Antworten von ChatGPT, Claude, Gemini, Grok und Perplexity.

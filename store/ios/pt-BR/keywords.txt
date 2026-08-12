@@ -1,0 +1,1 @@
+IA,limpar,Markdown,remover,converter,texto,notas,tabela,planilha,colar,área de transferência

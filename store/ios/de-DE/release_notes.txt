@@ -1,0 +1,4 @@
+- Breite Tabellen werden jetzt Zeile für Zeile aufgeklappt und bleiben auf dem Telefon lesbar.
+- Dunkler Modus wird unterstützt.
+- Neue Einstellung: Monospace-Schrift im Editor, damit Tabellenspalten exakt stehen.
+- Behoben: Tabellen lassen sich nach dem Aufräumen wieder in eine Tabellenkalkulation kopieren.

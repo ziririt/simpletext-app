@@ -1,0 +1,1 @@
+Paste an answer from ChatGPT or Claude and get clean, ready-to-use text. Broken tables get repaired, too.

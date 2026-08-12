@@ -1,0 +1,1 @@
+AI,cleanup,markdown,remove,convert,text,notes,table,spreadsheet,paste,clipboard,productivity

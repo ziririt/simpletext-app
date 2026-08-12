@@ -1,0 +1,4 @@
+- Wide tables are now broken out row by row, so they stay readable on a phone.
+- Dark mode is supported.
+- New setting: monospaced editor font, which lines table columns up exactly.
+- Fixed: tables can be copied to a spreadsheet after cleanup.

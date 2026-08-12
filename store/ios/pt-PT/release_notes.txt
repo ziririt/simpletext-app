@@ -1,0 +1,4 @@
+- As tabelas largas passam a ser abertas linha a linha e continuam legíveis no telemóvel.
+- O modo escuro é suportado.
+- Nova definição: tipo de letra monoespaçado no editor, para alinhar as colunas com precisão.
+- Corrigido: as tabelas podem ser copiadas para uma folha de cálculo depois da limpeza.

@@ -1,0 +1,26 @@
+La réponse de l’IA est utile. Sa mise en forme, beaucoup moins.
+
+Collez-la ici. Les astérisques, les dièses et les formules de politesse disparaissent, et il reste un texte propre que vous pouvez utiliser partout.
+
+CE QUI EST SUPPRIMÉ
+- Les marques Markdown (**gras**, ## titres, --- séparateurs)
+- Les émojis et les entrées en matière du type « Bien sûr, voici un résumé »
+- Les appels de source comme [1] et la liste de liens en fin de texte
+- Les espaces spéciaux et les caractères de largeur nulle, invisibles à l’écran
+
+CE QUI ARRIVE AUX TABLEAUX
+Les lignes décalées et les cellules manquantes sont réparées. Les tableaux étroits sont alignés en colonnes nettes. Les tableaux larges, remplis de phrases, sont dépliés ligne par ligne et restent lisibles sur un téléphone. Vous pouvez aussi copier n’importe quel tableau directement vers Google Sheets ou Excel.
+
+TOUT RESTE SUR VOTRE APPAREIL
+Le nettoyage se fait entièrement sur l’appareil. Il fonctionne sans connexion, et votre texte n’est jamais envoyé à un serveur.
+
+VOUS POUVEZ REVENIR EN ARRIÈRE
+Avant toute modification, l’original et le résultat s’affichent côte à côte. Une fois appliqué, une seule annulation suffit.
+
+VOS RÈGLES
+Choisissez si la mise en évidence devient des guillemets ou disparaît, quelle puce et quel retrait utiliser, quel espacement autour des sous-titres. Le collage suivant suivra les mêmes règles.
+
+L’ÉDITION PAR IA EST FACULTATIVE
+Vous pouvez demander autre chose, par exemple une réécriture dans un ton formel. Cela ne fonctionne qu’avec une clé d’API que vous fournissez, la clé reste sur l’appareil, et le résultat est vérifié pour repérer les nombres et les dates modifiés avant affichage.
+
+Ajusté pour les réponses de ChatGPT, Claude, Gemini, Grok et Perplexity.

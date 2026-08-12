@@ -1,0 +1,1 @@
+KI,aufräumen,Markdown,entfernen,umwandeln,Text,Notizen,Tabelle,Tabellenkalkulation,einfügen

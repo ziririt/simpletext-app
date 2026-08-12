@@ -1,0 +1,4 @@
+- Las tablas anchas ahora se despliegan fila por fila y se leen bien en el móvil.
+- Se admite el modo oscuro.
+- Nuevo ajuste: fuente monoespaciada en el editor, para alinear las columnas con precisión.
+- Corregido: las tablas se pueden copiar a una hoja de cálculo después de limpiarlas.

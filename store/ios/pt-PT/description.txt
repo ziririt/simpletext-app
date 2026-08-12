@@ -1,0 +1,26 @@
+A resposta da IA é útil. A formatação não.
+
+Cole aqui. Os asteriscos, os cardinais e as introduções cerimoniosas desaparecem, e fica um texto limpo que pode usar em qualquer lado.
+
+O QUE É REMOVIDO
+- Marcas de Markdown (**negrito**, ## títulos, --- separadores)
+- Emojis e aberturas do género «Com certeza, aqui fica um resumo»
+- Referências como [1] e a lista de ligações no fim
+- Espaços especiais e caracteres de largura nula, invisíveis no ecrã
+
+O QUE ACONTECE ÀS TABELAS
+As linhas desalinhadas e as células em falta são reparadas. As tabelas estreitas ficam alinhadas em colunas limpas. As tabelas largas, cheias de frases, são abertas linha a linha e continuam legíveis no telemóvel. Também pode copiar qualquer tabela diretamente para o Google Sheets ou o Excel.
+
+TUDO FICA NO SEU DISPOSITIVO
+A limpeza é feita inteiramente no dispositivo. Funciona sem ligação, e o seu texto nunca é enviado para um servidor.
+
+PODE SEMPRE VOLTAR ATRÁS
+Antes de alterar seja o que for, vê o original e o resultado lado a lado. Depois de aplicar, basta anular uma vez.
+
+AS SUAS REGRAS
+Decida se o destaque passa a aspas ou desaparece, que marca e que avanço usar, que espaço deixar à volta dos subtítulos. A colagem seguinte segue as mesmas regras.
+
+A EDIÇÃO POR IA É OPCIONAL
+Também pode pedir algo livre, como reescrever num tom formal. Só funciona com uma chave de API fornecida por si, a chave fica no dispositivo, e o resultado é verificado quanto a números e datas alterados antes de ser mostrado.
+
+Ajustado às respostas do ChatGPT, Claude, Gemini, Grok e Perplexity.

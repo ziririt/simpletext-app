@@ -1,0 +1,1 @@
+Pega una respuesta de ChatGPT o Claude y obtén texto limpio. Las tablas rotas también se arreglan.

@@ -164,11 +164,16 @@ extension AppColorsX on BuildContext {
 }
 
 class SimpleTextApp extends StatelessWidget {
-  const SimpleTextApp({super.key});
+  /// 스토어 스크린샷 촬영용 강제 로케일. 평상시엔 null이라 기기 설정을 따른다.
+  /// (integration_test/screenshots_test.dart에서 언어별로 지정한다 —
+  ///  노하우 6절: 현지화 스크린샷이 없으면 기본 언어 것이 그대로 나간다)
+  final Locale? locale;
+  const SimpleTextApp({super.key, this.locale});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: locale,
       onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [

@@ -1,0 +1,26 @@
+That answer the AI gave you is useful. The formatting is not.
+
+Paste it in. Asterisks, hash marks and throat-clearing intros come out, and what is left is clean text you can drop anywhere.
+
+WHAT IT REMOVES
+- Markdown markers (**bold**, ## headings, --- rules)
+- Emoji and openers like "Sure, here is a summary"
+- Citation marks such as [1] and the link block at the end
+- Invisible spaces and zero-width characters
+
+WHAT IT DOES WITH TABLES
+Misaligned rows and missing cells get repaired. Narrow tables are aligned into neat columns. Wide tables full of sentences are broken out row by row, so they stay readable on a phone. You can also copy any table straight into Google Sheets or Excel.
+
+IT STAYS ON YOUR DEVICE
+Cleanup runs entirely on your device. It works with no connection, and your text is never sent to a server.
+
+YOU CAN ALWAYS GO BACK
+You see the original and the result side by side before anything changes. After applying, one undo puts it back.
+
+YOUR RULES
+Decide whether emphasis becomes quotes or disappears, pick your bullet character and indent, set the spacing around subheadings. Your choices carry over to the next paste.
+
+AI EDITING IS OPTIONAL
+Ask for something freeform, like rewriting in a formal tone. It only runs with an API key you supply, the key stays on your device, and the result is checked for changed numbers and dates before you see it.
+
+Tuned for answers from ChatGPT, Claude, Gemini, Grok and Perplexity.
