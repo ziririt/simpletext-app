@@ -47,7 +47,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok·Perplexity)을 붙여넣으면 바로 �
 
 ```
 cd ~/development/simpletext_app
-flutter test                                # 엔진 테스트 37개 — 항상 먼저
+flutter test                                # 엔진 테스트 43개 — 항상 먼저
 flutter analyze --no-fatal-infos            # 경고 0 유지
 
 # 아이폰 설치 (폰 잠금 해제 필수! 잠기면 Install failed)
@@ -76,7 +76,8 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   HomeScreen(큰제목·그룹리스트·스와이프 고정/삭제), EditorScreen(제목 본문통합·키보드
   액세서리바·완료버튼·출처/태그 숨김토글·마법사/표/바꾸기/복사/되돌리기), PreviewScreen,
   SettingsScreen(정리 규칙 + AI 키/모델 + 자동 바꾸기 규칙)
-- test/core/tidy_engine_test.dart — 37개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture 포함
+- test/core/tidy_engine_test.dart — 43개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture
+  + 표 정렬 출력 fixture(2026-08-12) 포함
 - 웹(simpletext/index.html)은 같은 엔진의 JS 원본 포함. **엔진 수정 시 반드시 양쪽(JS·Dart) 동일
   적용 + 양쪽 테스트 통과**가 제1규칙 (웹 테스트: 저장소엔 없음, 로직 대칭만 유지하면 됨)
 
@@ -104,6 +105,11 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   바꾸기, 표 도구, 키보드 액세서리 바 — 아이폰·맥 설치 완료
 - Windows CI 자동 빌드 동작
 - CLAUDE.md(요약 컨텍스트) 저장소에 존재
+- **표 출력 형식 변경 — 2026-08-12 클라우드 세션.** 표 본문 출력이 파이프 마크다운에서
+  공백 정렬 텍스트로 바뀌었다(세로 구분자 없음, 각 열 좌측 정렬, 헤더 아래 가로 구분선 ─).
+  한글·CJK·전각·이모지를 2칸으로 세는 dispWidth로 패딩한다. 웹 index.html에 먼저 적용 후
+  Dart 동일 적용. AT01·AT03 기대값을 새 형식으로 갱신, 재현 fixture 7개 추가.
+  파이프 마크다운은 표 도구 'Markdown 복사'(tableToMarkdown)로만 남아 있다.
 - **다국어(i18n) — 2026-08-12 클라우드 세션에서 완료.** UI 문자열 126키 분리, 9개 언어
   (한/영/일/중간체/중번체/스/포/독/프 — 사용자 확정: 중국어만 간·번체 분리, es·pt는 단일).
   구조: lib/l10n/의 손으로 쓴 L10n 클래스 계층(gen-l10n 미사용 — 키 누락이 컴파일 오류로 잡힘).
@@ -142,6 +148,11 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 - 웹앱 사용자에게 구버전이 보이면: PWA 완전 종료 후 재실행(네트워크 우선이라 그러면 갱신됨)
 - 표 안 파이프(\|), 코드블록 보호, 서두 오탐 방지(확신도 낮으면 보존) 등은 테스트가 지키고 있음 —
   테스트를 깨뜨리는 "개선"은 하지 말 것
+- 표 정렬은 문자 수가 아니라 **표시폭**으로 패딩해야 한다. '마이크로소프트'(7자·14칸)와
+  '애플'(2자·4칸)을 문자 수로 맞추면 등폭 글꼴에서 열이 어긋난다. dispWidth를 쓸 것.
+  (테스트 '한글 폭 2칸 계산으로 열 시작 위치가 모든 줄에서 같다'가 이걸 지킨다)
+- 표 출력 형식은 사용자가 화면을 보고 확정한 것이다(2026-08-12). 파이프 마크다운으로
+  되돌리지 말 것 — AT01·AT03 기대값도 그 형식에 맞춰 갱신되어 있다.
 - 기획서 62절: 노션 경쟁 기능(폴더·협업·웹클리퍼·PDF 등) 추가 금지
 
 ## 10. 코워크/코드 세션 시작 지시문 예시

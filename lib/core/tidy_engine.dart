@@ -438,7 +438,7 @@ TableGrid _parseTable(List<String> lines, List<String> warnings, String Function
   );
 }
 
-/// --------- Table Export (Markdown / TSV / CSV / HTML) ---------
+/// --------- Table Export (Aligned / Markdown / TSV / CSV / HTML) ---------
 String _rowToMd(List<String> cells) =>
     '|' + cells.map((c) => c.isEmpty ? ' ' : ' $c ').join('|') + '|';
 
@@ -448,6 +448,68 @@ String tableToMarkdown(TableGrid t) {
 }
 
 String _flat(String c) => c.replaceAll(RegExp(r'[\t\n\r]+'), ' ');
+
+/// 표시폭: 한글·CJK·전각·이모지는 2칸, 그 외는 1칸.
+/// 등폭 글꼴에서 열을 맞추려면 문자 수가 아니라 이 폭으로 패딩해야 한다
+/// (한글 '종목'은 2글자지만 등폭에서 4칸을 차지한다).
+int dispWidth(String s) {
+  var w = 0;
+  for (final c in s.runes) {
+    final wide = c >= 0x1100 &&
+        (c <= 0x115F || // 한글 자모
+            c == 0x2329 ||
+            c == 0x232A ||
+            (c >= 0x2E80 && c <= 0xA4CF && c != 0x303F) || // CJK 부수~이체자
+            (c >= 0xAC00 && c <= 0xD7A3) || // 한글 음절
+            (c >= 0xF900 && c <= 0xFAFF) || // CJK 호환 한자
+            (c >= 0xFE30 && c <= 0xFE4F) || // CJK 호환 형식
+            (c >= 0xFF00 && c <= 0xFF60) || // 전각 형식
+            (c >= 0xFFE0 && c <= 0xFFE6) ||
+            (c >= 0x1F300 && c <= 0x1FAFF) || // 이모지
+            (c >= 0x20000 && c <= 0x3FFFD)); // CJK 확장 B+
+    w += wide ? 2 : 1;
+  }
+  return w;
+}
+
+String _padDisp(String s, int width) {
+  final pad = width - dispWidth(s);
+  return pad > 0 ? s + ' ' * pad : s;
+}
+
+/// 세로 구분자 없이 공백만으로 각 열을 좌측 정렬하고,
+/// 헤더 아래에 가로 구분선(─────)을 넣은 정렬 텍스트 표.
+///
+/// 2026-08-12 — 표 복구의 기본 출력이 파이프 마크다운(| a | b |)이었는데,
+/// 일반 사용자에게는 그 구분줄(| --- |)이 "고장 난 표"로 보였다. 그래서
+/// 세로선을 없애고 공백 정렬로 바꿨다. 웹(index.html)에 먼저 넣고 동일 적용한 것이며,
+/// 엔진 수정은 JS·Dart 양쪽 대칭 유지가 제1규칙이다(HANDOVER 5절).
+/// 되돌리기 전에: 이 형식은 사용자가 화면을 보고 확정한 것이다.
+String tableToAligned(TableGrid t) {
+  const gap = '  '; // 열 사이 간격(공백 2칸)
+  final header = t.header.map(_flat).toList();
+  final dataRows = t.rows.map((r) => r.map(_flat).toList()).toList();
+  final cols = t.header.length;
+  final widths = List<int>.filled(cols, 0);
+  for (final r in [header, ...dataRows]) {
+    for (var i = 0; i < cols; i++) {
+      final w = dispWidth(i < r.length ? r[i] : '');
+      if (w > widths[i]) widths[i] = w;
+    }
+  }
+  String fmtRow(List<String> r) {
+    final cells = <String>[];
+    for (var i = 0; i < cols; i++) {
+      cells.add(_padDisp(i < r.length ? r[i] : '', widths[i]));
+    }
+    // 좌측 정렬 + 마지막 열 뒤 공백 제거
+    return cells.join(gap).replaceAll(RegExp(r'\s+$'), '');
+  }
+
+  final total = widths.fold<int>(0, (a, b) => a + b) + gap.length * (cols - 1);
+  final rule = '─' * total; // 헤더와 데이터를 나누는 가로 구분선
+  return [fmtRow(header), rule, ...dataRows.map(fmtRow)].join('\n');
+}
 
 String tableToTSV(TableGrid t) =>
     [t.header, ...t.rows].map((r) => r.map(_flat).join('\t')).join('\n');
@@ -683,7 +745,7 @@ List<String> _processTextSegment(
         } else if (o.tablesToTSV) {
           out.add(tableToTSV(t));
         } else {
-          out.add(tableToMarkdown(t));
+          out.add(tableToAligned(t));
         }
       } else {
         for (int k = b.start; k <= b.end; k++) {

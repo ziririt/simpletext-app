@@ -20,16 +20,18 @@ void main() {
 | Meta | 높음 | 부정적 |
 | Apple | 낮음 | 혼재 |''';
 
+    // 2026-08-12 — 표 기본 출력이 파이프 마크다운에서 공백 정렬로 바뀌었다.
+    // 기대값의 표 블록만 교체했고 나머지(제목·글머리·구분선 제거)는 그대로다.
     const at01Exp = '''1. 핵심 요약
 
 · Apple은 최근 AI 전략에서 시장 기대에 미치지 못했다는 평가를 받았다.
 · 그러나 과도한 AI CapEx 부담이 없다는 점은 오히려 긍정적이다.
 
-| 기업 | AI CapEx 부담 | 시장 반응 |
-| --- | ---: | --- |
-| Microsoft | 높음 | 긍정적 |
-| Meta | 높음 | 부정적 |
-| Apple | 낮음 | 혼재 |''';
+기업       AI CapEx 부담  시장 반응
+───────────────────────────────────
+Microsoft  높음           긍정적
+Meta       높음           부정적
+Apple      낮음           혼재''';
 
     test('AT01 AI 답변 정리', () {
       expect(tidy(at01In, aiOpts()).text, at01Exp);
@@ -49,12 +51,13 @@ void main() {
 | 엔비디아 | NVDA | +48.9% | 22% | 추가셀 |
 |테슬라|TSLA|-8.3%|8%|''';
 
-    const at03Exp = '''| 종목 | 티커 | 수익률 | 비중 |
-| --- | --- | --- | --- |
-| 애플 | AAPL | +14.2% | 12% |
-| 마이크로소프트 | MSFT | +21.5% | |
-| 엔비디아 | NVDA | +48.9% | 22% 추가셀 |
-| 테슬라 | TSLA | -8.3% | 8% |''';
+    // 빈 셀(마이크로소프트 행의 비중)은 패딩 후 줄 끝 공백이 제거되므로 줄이 짧게 끝난다.
+    const at03Exp = '''종목            티커  수익률  비중
+────────────────────────────────────────
+애플            AAPL  +14.2%  12%
+마이크로소프트  MSFT  +21.5%
+엔비디아        NVDA  +48.9%  22% 추가셀
+테슬라          TSLA  -8.3%   8%''';
 
     test('AT03 깨진 표 복구', () {
       final r = tidy(at03In, aiOpts());
@@ -116,6 +119,80 @@ table = "A | B"
     });
     test('HTML escape', () {
       expect(tableToHTML(tt).contains('&lt;태그&gt;'), true);
+    });
+    test('Markdown 내보내기는 파이프 형식을 유지한다', () {
+      // 기본 본문 출력만 정렬 텍스트로 바뀌었을 뿐,
+      // 표 도구의 'Markdown 복사'는 그대로 파이프 표여야 한다.
+      expect(tableToMarkdown(tt).startsWith('| 이름 | 메모 |'), true);
+    });
+  });
+
+  // 2026-08-12 — 표 출력 형식 변경(세로선 제거 + 공백 좌측 정렬)의 재현 fixture.
+  // 사용자가 아이폰 화면에서 보고 확정한 형식이다. 되돌리기 전에 HANDOVER 9절을 볼 것.
+  group('표 정렬 출력 (공백 정렬 · 2026-08-12)', () {
+    // 시드 노트에 들어 있는, 일부러 깨뜨린 표 (앱 첫 화면에서 사용자가 처음 보는 표)
+    const brokenIn = '''| 종목 | 티커 | 수익률 | 비중
+|------|------|--------|
+| 애플 | AAPL | +14.2% | 12% |
+| 마이크로소프트 | MSFT | +21.5%
+| 엔비디아 | NVDA | +48.9% | 22% | 추가셀 |
+|테슬라|TSLA|-8.3%|8%|''';
+
+    test('세로 구분자가 남지 않는다', () {
+      final text = tidy(brokenIn, aiOpts()).text;
+      expect(text.contains('|'), false, reason: '파이프 세로선이 남아 있다');
+      expect(text.contains(' : '), false, reason: '콜론 구분자가 남아 있다');
+    });
+
+    test('헤더 아래에 가로 구분선이 정확히 한 줄 있다', () {
+      final lines = tidy(brokenIn, aiOpts()).text.split('\n');
+      final rules = lines.where((l) => RegExp(r'^─+$').hasMatch(l)).toList();
+      expect(rules.length, 1);
+      expect(lines.indexOf(rules.first), 1, reason: '구분선은 헤더 바로 아래여야 한다');
+    });
+
+    test('한글 폭 2칸 계산으로 열 시작 위치가 모든 줄에서 같다', () {
+      // 이 프로젝트가 실제로 물렸던 지점: 문자 수로 패딩하면 '마이크로소프트'(7자/14칸)와
+      // '애플'(2자/4칸) 행의 열이 어긋난다. 표시폭으로 패딩해야 등폭 글꼴에서 맞는다.
+      final lines = tidy(brokenIn, aiOpts()).text.split('\n');
+      int offsetOf(String line, String cell) =>
+          dispWidth(line.substring(0, line.indexOf(cell)));
+      final offsets = [
+        offsetOf(lines[0], '티커'),
+        offsetOf(lines[2], 'AAPL'),
+        offsetOf(lines[3], 'MSFT'),
+        offsetOf(lines[4], 'NVDA'),
+        offsetOf(lines[5], 'TSLA'),
+      ];
+      expect(offsets.toSet().length, 1, reason: '2열 시작 위치가 어긋난다: $offsets');
+    });
+
+    test('줄 끝에 공백을 남기지 않는다', () {
+      for (final l in tidy(brokenIn, aiOpts()).text.split('\n')) {
+        expect(l, l.trimRight(), reason: '줄 끝 공백: "$l"');
+      }
+    });
+
+    test('dispWidth — 한글·전각·이모지는 2칸, ASCII는 1칸', () {
+      expect(dispWidth('AAPL'), 4);
+      expect(dispWidth('종목'), 4);
+      expect(dispWidth('애플AAPL'), 8);
+      expect(dispWidth('＋'), 2); // 전각
+      expect(dispWidth('📈'), 2); // 이모지
+      expect(dispWidth(''), 0);
+    });
+
+    test('빈 셀이 있어도 뒤 열 정렬이 유지된다', () {
+      final t = TableGrid(
+        header: ['항목', '값'],
+        aligns: ['left', 'left'],
+        rows: [
+          ['가', ''],
+          ['나다라마', '2'],
+        ],
+        repaired: false,
+      );
+      expect(tableToAligned(t), '항목      값\n────────────\n가\n나다라마  2');
     });
   });
 

@@ -24,7 +24,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok 등)을 붙여넣으면 바로 저장·�
   - `lib/core/tidy_engine.dart` — 정리 엔진 (Pure Dart, 플랫폼 API 금지)
   - `lib/core/wizard.dart` — AI 마법사 1층(자연어 규칙 명령 해석기) + NumberGuard
   - `lib/main.dart` — 앱 전체 UI (애플 메모장 스타일)
-  - `test/core/tidy_engine_test.dart` — 엔진 테스트 37개 (기획서 Acceptance Test 포함)
+  - `test/core/tidy_engine_test.dart` — 엔진 테스트 43개 (기획서 Acceptance Test 포함)
   - `.github/workflows/windows_build.yml` — push마다 Windows 빌드 자동 생성(Artifacts)
 - `ziririt/simpletext` — 웹앱(단일 index.html, GitHub Pages)
   - 배포 주소: https://ziririt.github.io/simpletext/
@@ -43,6 +43,10 @@ flutter analyze     # 경고 0 유지 (info 수준은 허용)
 AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출처([n]: URL) 제거 →
 대시 나열 분리 → ㅤ소제목 여백(위2/아래1, 기존 여백 흡수) → 블록/인라인 정리 →
 표 탐지·복구(mode 기반 열 수, 초과 셀 병합+경고) → 공백 정규화 → TidyReport
+
+표 본문 출력은 **공백 정렬 텍스트**(세로 구분자 없음, 각 열 좌측 정렬, 헤더 아래 가로
+구분선 ─). 한글·CJK·전각·이모지를 2칸으로 세는 `dispWidth`로 패딩해 등폭 글꼴에서 열이 맞는다.
+파이프 마크다운은 표 도구의 'Markdown 복사'로만 남아 있다(`tableToMarkdown`).
 
 ## 사용자 설정 (AppSettings)
 
@@ -66,6 +70,9 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
   9개 언어(한/영/일/중간체/중번체/스/포/독/프). gen-l10n 미사용 — 손으로 쓴 L10n 클래스 계층
   (키 누락 = 컴파일 오류). 검사: test/l10n/l10n_test.dart + tool/l10n_check.py(CI 연동)
 - Flutter CI 신설(.github/workflows/flutter_ci.yml): push마다 analyze + test + l10n 검사
+- **표 출력 형식 변경 (2026-08-12)**: 파이프 마크다운 → 공백 정렬 텍스트.
+  웹(index.html)에 먼저 넣고 Dart에 동일 적용. AT01·AT03 기대값을 새 형식으로 갱신하고
+  재현 fixture 7개 추가(그룹 '표 정렬 출력'). 사용자가 화면 확인 후 확정한 형식이다.
 - 이름 논의 중: "Blue AI Editor" 유력 (Blue Note 상표 충돌로 'Blue AI Note'는 보류)
 
 ## 다음 할 일 (우선순위)
