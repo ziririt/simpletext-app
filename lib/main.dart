@@ -22,6 +22,147 @@ void main() {
 
 const _accent = Color(0xFF2F5FE0);
 
+/// ---------------- 색 (라이트/다크) ----------------
+/// 2026-08-12 — 다크 모드 미지원이 애플 기기에서 가장 크게 어색한 지점이었다.
+/// 애플 메모장은 시스템 설정을 따라가는데 이 앱은 밤에도 흰 화면이었다.
+/// 화면 코드에 색을 직접 박지 말고 반드시 여기(context.c)를 거칠 것 —
+/// 한 곳이라도 직접 박으면 다크 모드에서 그 부분만 눈이 부신다.
+/// 값은 iOS 시스템 색(systemGroupedBackground, separator, label 등)에 맞췄다.
+@immutable
+class AppC extends ThemeExtension<AppC> {
+  final Color bg; // 화면 배경
+  final Color panel; // 카드·행 배경
+  final Color line; // 구분선
+  final Color sub; // 보조 글자
+  final Color accent; // 강조
+  final Color field; // 검색창 배경
+  final Color toolbar; // 키보드 액세서리 바
+  final Color toolbarLine;
+  final Color infoBg; // 요약 카드
+  final Color warnBg; // 경고 카드
+  final Color warnInk; // 경고 글자
+  final Color codeBg; // 본문 미리보기 상자
+  final Color codeLine;
+  final Color pin; // 고정 표시
+  final Color danger; // 삭제
+
+  const AppC({
+    required this.bg,
+    required this.panel,
+    required this.line,
+    required this.sub,
+    required this.accent,
+    required this.field,
+    required this.toolbar,
+    required this.toolbarLine,
+    required this.infoBg,
+    required this.warnBg,
+    required this.warnInk,
+    required this.codeBg,
+    required this.codeLine,
+    required this.pin,
+    required this.danger,
+  });
+
+  static const light = AppC(
+    bg: Color(0xFFF2F2F7),
+    panel: Colors.white,
+    line: Color(0xFFEDEDEF),
+    sub: Color(0xFF8E8E93),
+    accent: _accent,
+    field: Color(0xFFE3E3E8),
+    toolbar: Color(0xFFF2F2F0),
+    toolbarLine: Color(0xFFE0E0DC),
+    infoBg: Color(0xFFEEF2FD),
+    warnBg: Color(0xFFFDF3E7),
+    warnInk: Color(0xFF9A6A1F),
+    codeBg: Color(0xFFF6F6F4),
+    codeLine: Color(0xFFE4E4E0),
+    pin: Color(0xFFF2B705),
+    danger: Color(0xFFE53935),
+  );
+
+  static const dark = AppC(
+    bg: Color(0xFF000000),
+    panel: Color(0xFF1C1C1E),
+    line: Color(0xFF38383A),
+    sub: Color(0xFF98989E),
+    accent: Color(0xFF6E9BFF),
+    field: Color(0xFF1C1C1E),
+    toolbar: Color(0xFF1C1C1E),
+    toolbarLine: Color(0xFF38383A),
+    infoBg: Color(0xFF13203A),
+    warnBg: Color(0xFF2A2318),
+    warnInk: Color(0xFFE0B96A),
+    codeBg: Color(0xFF141416),
+    codeLine: Color(0xFF2C2C2E),
+    pin: Color(0xFFF2B705),
+    danger: Color(0xFFFF453A),
+  );
+
+  @override
+  AppC copyWith({
+    Color? bg,
+    Color? panel,
+    Color? line,
+    Color? sub,
+    Color? accent,
+    Color? field,
+    Color? toolbar,
+    Color? toolbarLine,
+    Color? infoBg,
+    Color? warnBg,
+    Color? warnInk,
+    Color? codeBg,
+    Color? codeLine,
+    Color? pin,
+    Color? danger,
+  }) =>
+      AppC(
+        bg: bg ?? this.bg,
+        panel: panel ?? this.panel,
+        line: line ?? this.line,
+        sub: sub ?? this.sub,
+        accent: accent ?? this.accent,
+        field: field ?? this.field,
+        toolbar: toolbar ?? this.toolbar,
+        toolbarLine: toolbarLine ?? this.toolbarLine,
+        infoBg: infoBg ?? this.infoBg,
+        warnBg: warnBg ?? this.warnBg,
+        warnInk: warnInk ?? this.warnInk,
+        codeBg: codeBg ?? this.codeBg,
+        codeLine: codeLine ?? this.codeLine,
+        pin: pin ?? this.pin,
+        danger: danger ?? this.danger,
+      );
+
+  @override
+  AppC lerp(ThemeExtension<AppC>? other, double t) {
+    if (other is! AppC) return this;
+    return AppC(
+      bg: Color.lerp(bg, other.bg, t)!,
+      panel: Color.lerp(panel, other.panel, t)!,
+      line: Color.lerp(line, other.line, t)!,
+      sub: Color.lerp(sub, other.sub, t)!,
+      accent: Color.lerp(accent, other.accent, t)!,
+      field: Color.lerp(field, other.field, t)!,
+      toolbar: Color.lerp(toolbar, other.toolbar, t)!,
+      toolbarLine: Color.lerp(toolbarLine, other.toolbarLine, t)!,
+      infoBg: Color.lerp(infoBg, other.infoBg, t)!,
+      warnBg: Color.lerp(warnBg, other.warnBg, t)!,
+      warnInk: Color.lerp(warnInk, other.warnInk, t)!,
+      codeBg: Color.lerp(codeBg, other.codeBg, t)!,
+      codeLine: Color.lerp(codeLine, other.codeLine, t)!,
+      pin: Color.lerp(pin, other.pin, t)!,
+      danger: Color.lerp(danger, other.danger, t)!,
+    );
+  }
+}
+
+extension AppColorsX on BuildContext {
+  AppC get c => Theme.of(this).extension<AppC>() ?? AppC.light;
+}
+
 class SimpleTextApp extends StatelessWidget {
   const SimpleTextApp({super.key});
 
@@ -37,19 +178,26 @@ class SimpleTextApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: L10n.supportedLocales,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: _accent),
-        scaffoldBackgroundColor: const Color(0xFFF2F2F7),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFF2F2F7),
-          elevation: 0,
-          scrolledUnderElevation: 0.5,
-        ),
-      ),
+      theme: _theme(Brightness.light, AppC.light),
+      darkTheme: _theme(Brightness.dark, AppC.dark),
+      // 애플 메모장과 같이 기기 설정(라이트/다크)을 그대로 따른다
+      themeMode: ThemeMode.system,
       home: const HomeScreen(),
     );
   }
+
+  static ThemeData _theme(Brightness b, AppC c) => ThemeData(
+        useMaterial3: true,
+        brightness: b,
+        colorScheme: ColorScheme.fromSeed(seedColor: _accent, brightness: b),
+        scaffoldBackgroundColor: c.bg,
+        appBarTheme: AppBarTheme(
+          backgroundColor: c.bg,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+        ),
+        extensions: [c],
+      );
 }
 
 /// ---------------- 데이터 모델 ----------------
@@ -354,7 +502,7 @@ class _HomeScreenState extends State<HomeScreen> {
               slivers: [
                 SliverAppBar.large(
                   title: Text(l.homeTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
-                  backgroundColor: const Color(0xFFF2F2F7),
+                  backgroundColor: context.c.bg,
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
@@ -372,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         hintText: l.searchHint,
                         prefixIcon: const Icon(Icons.search, size: 20),
                         filled: true,
-                        fillColor: const Color(0xFFE3E3E8),
+                        fillColor: context.c.field,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         border: OutlineInputBorder(
@@ -427,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 12, 16, 6),
           child: Text(label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey)),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: context.c.sub)),
         ),
       );
 
@@ -437,12 +585,12 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Container(
-              color: Colors.white,
+              color: context.c.panel,
               child: Column(
                 children: [
                   for (int i = 0; i < group.length; i++) ...[
                     if (i > 0)
-                      const Divider(height: 1, indent: 16, color: Color(0xFFEDEDEF)),
+                      Divider(height: 1, indent: 16, color: context.c.line),
                     _noteTile(group[i]),
                   ],
                 ],
@@ -470,13 +618,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Dismissible(
       key: ValueKey('dis-${n.id}'),
       background: Container(
-        color: const Color(0xFFF2B705),
+        color: context.c.pin,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
         child: Icon(n.pinned ? Icons.push_pin_outlined : Icons.push_pin, color: Colors.white),
       ),
       secondaryBackground: Container(
-        color: const Color(0xFFE53935),
+        color: context.c.danger,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete_outline, color: Colors.white),
@@ -501,7 +649,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return ok == true;
       },
       child: ListTile(
-        tileColor: Colors.white,
+        tileColor: context.c.panel,
         title: Text(
           n.title.isNotEmpty ? n.title : (firstLine.isNotEmpty ? firstLine : l.untitled),
           maxLines: 1,
@@ -510,17 +658,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         subtitle: Row(
           children: [
-            Text(_listDate(l, n.updatedAt), style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            Text(_listDate(l, n.updatedAt), style: TextStyle(fontSize: 13, color: context.c.sub)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(firstLine,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                  style: TextStyle(fontSize: 13, color: context.c.sub)),
             ),
           ],
         ),
-        trailing: n.pinned ? const Icon(Icons.push_pin, size: 15, color: Color(0xFFF2B705)) : null,
+        trailing: n.pinned ? Icon(Icons.push_pin, size: 15, color: context.c.pin) : null,
         onTap: () =>
             Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
       ),
@@ -614,9 +762,9 @@ class _EditorScreenState extends State<EditorScreen> {
     final l = L10n.of(context);
     return Container(
       height: 44,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2F2F0),
-        border: Border(top: BorderSide(color: Color(0xFFE0E0DC))),
+      decoration: BoxDecoration(
+        color: context.c.toolbar,
+        border: Border(top: BorderSide(color: context.c.toolbarLine)),
       ),
       child: Row(
         children: [
@@ -644,7 +792,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ],
             ),
           ),
-          Container(width: 1, height: 26, color: const Color(0xFFE0E0DC)),
+          Container(width: 1, height: 26, color: context.c.toolbarLine),
           _kbBtn(
             icon: Icons.keyboard_hide_outlined,
             tip: l.hideKeyboardTip,
@@ -900,19 +1048,19 @@ class _EditorScreenState extends State<EditorScreen> {
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(l.appliedPrefix(a),
-                            style: const TextStyle(color: _accent, fontSize: 13, fontWeight: FontWeight.w600)),
+                            style: TextStyle(color: context.c.accent, fontSize: 13, fontWeight: FontWeight.w600)),
                       ),
                     for (final u in unknown)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(l.unknownPrefix(u),
-                            style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
+                            style: TextStyle(color: context.c.warnInk, fontSize: 12.5)),
                       ),
                     if (unknown.isNotEmpty && store.settings.aiKey.isEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(l.aiKeyPromo,
-                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: TextStyle(fontSize: 12, color: context.c.sub)),
                       ),
                     if (unknown.isNotEmpty && store.settings.aiKey.isNotEmpty && aiResult == null)
                       Padding(
@@ -947,8 +1095,8 @@ class _EditorScreenState extends State<EditorScreen> {
                         constraints: const BoxConstraints(maxHeight: 220),
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFF6F6F4),
-                            border: Border.all(color: const Color(0xFFE4E4E0)),
+                            color: context.c.codeBg,
+                            border: Border.all(color: context.c.codeLine),
                             borderRadius: BorderRadius.circular(10)),
                         child: SingleChildScrollView(
                             child: Text(aiResult!, style: const TextStyle(fontSize: 13.5, height: 1.5))),
@@ -957,7 +1105,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(aiGuard,
-                              style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5)),
+                              style: TextStyle(color: context.c.warnInk, fontSize: 12.5)),
                         ),
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
@@ -1157,9 +1305,9 @@ class _EditorScreenState extends State<EditorScreen> {
         if (didPop) _save();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: context.c.panel,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: context.c.panel,
           title: const SizedBox.shrink(),
           actions: [
             if (_editing)
@@ -1277,7 +1425,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   child: Text(note.lastReport,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: _accent, fontWeight: FontWeight.w600)),
+                      style: TextStyle(fontSize: 12, color: context.c.accent, fontWeight: FontWeight.w600)),
                 ),
               ),
           ],
@@ -1340,39 +1488,39 @@ class PreviewScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFFEEF2FD), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: context.c.infoBg, borderRadius: BorderRadius.circular(10)),
             child: Text(result.summary,
-                style: const TextStyle(color: _accent, fontWeight: FontWeight.w700, fontSize: 13)),
+                style: TextStyle(color: context.c.accent, fontWeight: FontWeight.w700, fontSize: 13)),
           ),
           for (final w in result.warnings)
             Container(
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFFFDF3E7), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: context.c.warnBg, borderRadius: BorderRadius.circular(10)),
               child: Text(l.warningPrefix(w),
-                  style: const TextStyle(color: Color(0xFF9A6A1F), fontSize: 12.5, fontWeight: FontWeight.w600)),
+                  style: TextStyle(color: context.c.warnInk, fontSize: 12.5, fontWeight: FontWeight.w600)),
             ),
           const SizedBox(height: 14),
           Text(l.tidyResultLabel,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.c.sub)),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: const Color(0xFFF6F6F4),
-                border: Border.all(color: const Color(0xFFE4E4E0)),
+                color: context.c.codeBg,
+                border: Border.all(color: context.c.codeLine),
                 borderRadius: BorderRadius.circular(10)),
             child: SelectableText(result.text, style: const TextStyle(fontSize: 14, height: 1.6)),
           ),
           const SizedBox(height: 14),
           Text(l.originalLabel,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.c.sub)),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: const Color(0xFFF6F6F4),
-                border: Border.all(color: const Color(0xFFE4E4E0)),
+                color: context.c.codeBg,
+                border: Border.all(color: context.c.codeLine),
                 borderRadius: BorderRadius.circular(10)),
             child: SelectableText(before, style: const TextStyle(fontSize: 14, height: 1.6)),
           ),
@@ -1513,7 +1661,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(l.aiSectionDesc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            child: Text(l.aiSectionDesc, style: TextStyle(fontSize: 12, color: context.c.sub)),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -1559,7 +1707,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(l.rulesSectionDesc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            child: Text(l.rulesSectionDesc, style: TextStyle(fontSize: 12, color: context.c.sub)),
           ),
           for (int i = 0; i < s.customRules.length; i++) _ruleRow(i),
           Padding(
@@ -1576,7 +1724,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
-            child: Text(l.settingsFooter, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            child: Text(l.settingsFooter, style: TextStyle(fontSize: 12, color: context.c.sub)),
           ),
         ],
       ),
