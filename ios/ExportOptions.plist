@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  TestFlight/App Store 업로드용 내보내기 설정.
+  .github/workflows/ios_testflight.yml 에서 flutter build ipa 에 넘긴다.
+
+  method=app-store-connect : TestFlight와 App Store 심사로 가는 배포 방식
+  signingStyle=manual      : CI에서는 인증서·프로파일을 Secret으로 넣어 쓰므로 수동
+  teamID                   : 애플 개발자 팀 ID (HANDOVER 3절)
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>ZK846VZN92</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<!-- TestFlight 배포는 앱 씬닝을 서버가 처리한다 -->
+	<key>thinning</key>
+	<string>&lt;none&gt;</string>
+</dict>
+</plist>

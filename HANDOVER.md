@@ -132,7 +132,10 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
    (b) 마법사 1층(규칙 해석기)은 한국어 명령 전용 — 비한국어 사용자는 AI 2층으로 우회 가능.
    (c) 스토어 등록정보 현지화 스크린샷 — 노하우 문서 6절: 없으면 기본 언어 것이 그대로 나간다.
 2. **iOS Share Extension**: ChatGPT 앱 공유 → 심플텍스트 (기획서 45절 모바일 킬러 기능. Xcode 네이티브)
-3. **TestFlight CI**: GitHub Actions macOS 러너로 iOS 빌드+업로드 → 폰에서 설치까지 원격화
+3. ~~**TestFlight CI**~~ 워크플로 작성 완료(.github/workflows/ios_testflight.yml).
+   **남은 것은 소유자만 할 수 있는 일** — GitHub Secrets 6개 등록(애플 API 키·배포 인증서·
+   프로비저닝 프로파일). 클릭 순서는 docs/testflight_setup.md에 적어 뒀다.
+   등록 전까지 이 워크플로는 자동으로 돌지 않는다(수동 실행·태그 푸시에만 반응).
 4. **백업 내보내기/가져오기 Flutter 이식**: 웹과 동일 JSON 스키마 v2. 병합 규칙 = id 기준,
    updatedAt 최신 승리, tombstone(삭제 기록) 우선·부활 금지 — 이것이 향후 동기화 알고리즘
 5. **클라우드 동기화**(iCloud Documents / Google Drive appDataFolder) — 위 병합 규칙 재사용

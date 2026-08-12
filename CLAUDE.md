@@ -73,6 +73,9 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
 - **표 출력 형식 변경 (2026-08-12)**: 파이프 마크다운 → 공백 정렬 텍스트.
   웹(index.html)에 먼저 넣고 Dart에 동일 적용. AT01·AT03 기대값을 새 형식으로 갱신하고
   재현 fixture 7개 추가(그룹 '표 정렬 출력'). 사용자가 화면 확인 후 확정한 형식이다.
+- **글로벌 출시 준비 (2026-08-12)**: 스토어 등록정보 11개 로케일(store/ios/, fastlane 구조)
+  + tool/store_check.py CI 연동. 스크린샷 자동 촬영(tool/screenshots.sh, 11개 로케일 × 3장).
+  es·pt는 스토어에서만 지역 분리(es-ES/es-MX, pt-BR/pt-PT).
 - **표 왕복(round-trip) 보장 (2026-08-12)**: 공백 정렬 표를 다시 표로 인식하는
   detectAlignedBlocks/parseAlignedTable 추가. 메모는 글자만 저장하므로 표 도구는
   매번 본문을 재파싱한다 — 출력 형식을 바꾸면 탐지도 반드시 함께 바꿀 것.
@@ -84,7 +87,8 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
    JS·Dart 동시 작업 필요라 보류 중, (b) 마법사 1층 규칙 해석기는 한국어 명령 전용
    (비한국어는 AI 2층으로 처리됨), (c) 스토어 현지화 스크린샷(출시 전 필수 확인)
 2. iOS Share Extension (ChatGPT 앱에서 공유 → 심플텍스트) — Xcode 네이티브 작업
-3. iOS TestFlight 클라우드 배포(CI) 구성
+3. ~~iOS TestFlight 클라우드 배포(CI) 구성~~ 워크플로 완료 — 소유자의 Secrets 6개 등록 대기
+   (docs/testflight_setup.md). 등록 전에는 수동 실행·태그 푸시에만 반응하므로 CI를 붉게 만들지 않는다.
 4. 백업 내보내기/가져오기 Flutter 이식 (웹과 같은 JSON 스키마 v2, 병합 규칙: id 기준·updatedAt 최신 승리·tombstone 우선)
 5. 클라우드 동기화(iCloud/Google Drive) — 2차
 6. Android 빌드 — 나중
