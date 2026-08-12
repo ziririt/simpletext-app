@@ -182,6 +182,54 @@ table = "A | B"
       expect(dispWidth(''), 0);
     });
 
+    // 2026-08-12 재현 fixture — 형식만 바꾸고 되읽기를 안 만들어 실제로 깨졌던 자리다.
+    // 정리 직후 표 도구가 표를 못 찾아 '스프레드시트용 복사'가 끊겼다(웹에 배포까지 됨).
+    test('정리한 표를 다시 표로 읽어낸다 (스프레드시트 복사 복원)', () {
+      final before = extractTables(brokenIn).tables;
+      final tidied = tidy(brokenIn, aiOpts()).text;
+      final after = extractTables(tidied).tables;
+      expect(after.length, 1, reason: '정리된 본문에서 표를 다시 찾지 못했다');
+      expect(tableToTSV(after.first), tableToTSV(before.first),
+          reason: '왕복 후 스프레드시트 데이터가 달라졌다');
+    });
+
+    test('두 번 정리해도 결과가 그대로다', () {
+      final once = tidy(brokenIn, aiOpts()).text;
+      expect(tidy(once, aiOpts()).text, once);
+    });
+
+    test('긴 문장이 든 표도 왕복된다', () {
+      const wide = '''| 시기 | 확인된 움직임 | 해석 |
+|---|---|---|
+| 2021년 4월 | 세계 책의 날에 디지털 굿즈를 제작·배포했습니다. | 독서 경험에 연결한 초기 사례입니다. |
+| 2023년 3~4월 | 회사명을 리디북스에서 리디로 변경했습니다. | IP 사업 확장 전략을 밝힌 단계입니다. |''';
+      final before = extractTables(wide).tables.first;
+      final after = extractTables(tidy(wide, aiOpts()).text).tables;
+      expect(after.length, 1);
+      expect(tableToTSV(after.first), tableToTSV(before));
+    });
+
+    test('표가 아닌 ─ 장식선은 표로 오인하지 않는다', () {
+      expect(extractTables('제목입니다\n──────────\n본문 한 줄입니다.').tables, isEmpty);
+      expect(extractTables('소제목 A\n내용\n\n---\n\n소제목 B').tables, isEmpty);
+    });
+
+    test('셀 안 연속 공백은 1칸으로 줄여 구분자와 헷갈리지 않게 한다', () {
+      final t = TableGrid(
+        header: ['항목', '값'],
+        aligns: ['left', 'left'],
+        rows: [
+          ['가  나', '1'], // 셀 안에 공백 2칸
+        ],
+        repaired: false,
+      );
+      final out = tableToAligned(t);
+      expect(out.contains('가 나'), true, reason: '셀 안 연속 공백이 안 줄었다');
+      final back = extractTables(out).tables;
+      expect(back.length, 1);
+      expect(back.first.rows.first, ['가 나', '1']);
+    });
+
     test('빈 셀이 있어도 뒤 열 정렬이 유지된다', () {
       final t = TableGrid(
         header: ['항목', '값'],

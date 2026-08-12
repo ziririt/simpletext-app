@@ -339,7 +339,65 @@ bool _isSeparatorCells(List<String> cells) =>
 class _Block {
   final int start;
   final int end;
-  _Block(this.start, this.end);
+  final String kind; // 'pipe' | 'aligned'
+  _Block(this.start, this.end, [this.kind = 'pipe']);
+}
+
+/// --------- 정렬 텍스트 표 되읽기 (round-trip) ---------
+/// 2026-08-12 — tableToAligned가 만든 공백 정렬 표를 다시 표로 인식한다.
+/// 이게 없으면 "정리" 직후 표 도구가 표를 못 찾아 스프레드시트 복사가 끊긴다
+/// (실제로 그 상태로 웹이 한 번 배포됐다). 엔진이 만든 형식은 엔진이 되읽을 수 있어야 한다.
+/// 셀 안에는 연속 공백이 없도록 생성하므로(_alignCell), 2칸 이상 공백 = 열 구분자.
+bool _isAlignedRule(String line) => RegExp(r'^─{3,}$').hasMatch(line.trim());
+
+List<String> _splitAlignedCells(String line) =>
+    line.trim().split(RegExp(r' {2,}')).map((c) => c.trim()).toList();
+
+List<_Block> _detectAlignedBlocks(List<String> lines) {
+  final blocks = <_Block>[];
+  for (int i = 1; i < lines.length; i++) {
+    if (!_isAlignedRule(lines[i])) continue;
+    final header = lines[i - 1];
+    if (header.trim().isEmpty || _splitAlignedCells(header).length < 2) continue;
+    int j = i + 1;
+    while (j < lines.length && lines[j].trim().isNotEmpty) {
+      j++;
+    }
+    if (j - (i + 1) < 1) continue;
+    // 데이터 줄 중 하나 이상이 2열 이상이어야 표로 본다(─ 장식선 오탐 방지)
+    int multi = 0;
+    for (int k = i + 1; k < j; k++) {
+      if (_splitAlignedCells(lines[k]).length >= 2) multi++;
+    }
+    if (multi < 1) continue;
+    blocks.add(_Block(i - 1, j - 1, 'aligned'));
+    i = j;
+  }
+  return blocks;
+}
+
+TableGrid _parseAlignedTable(List<String> lines, String Function(String)? cellClean) {
+  String clean(String c) => cellClean != null ? cellClean(c) : c;
+  final header = _splitAlignedCells(lines[0]);
+  final colCount = header.length;
+  final rows = <List<String>>[];
+  for (int k = 2; k < lines.length; k++) {
+    if (lines[k].trim().isEmpty) continue;
+    var cells = _splitAlignedCells(lines[k]);
+    if (cells.length > colCount) {
+      cells = [...cells.take(colCount - 1), cells.skip(colCount - 1).join(' ')];
+    }
+    while (cells.length < colCount) {
+      cells.add('');
+    }
+    rows.add(cells.map(clean).toList());
+  }
+  return TableGrid(
+    header: header.map(clean).toList(),
+    aligns: List<String>.filled(colCount, 'left'),
+    rows: rows,
+    repaired: false,
+  );
 }
 
 List<_Block> _detectTableBlocks(List<String> lines) {
@@ -365,6 +423,24 @@ List<_Block> _detectTableBlocks(List<String> lines) {
       i++;
     }
   }
+  // 정렬 텍스트 표도 함께 인식 (파이프 블록과 겹치지 않는 구간만)
+  final taken = <int>{};
+  for (final b in blocks) {
+    for (int k = b.start; k <= b.end; k++) {
+      taken.add(k);
+    }
+  }
+  for (final b in _detectAlignedBlocks(lines)) {
+    var overlap = false;
+    for (int k = b.start; k <= b.end; k++) {
+      if (taken.contains(k)) {
+        overlap = true;
+        break;
+      }
+    }
+    if (!overlap) blocks.add(b);
+  }
+  blocks.sort((a, b) => a.start.compareTo(b.start));
   return blocks;
 }
 
@@ -487,8 +563,11 @@ String _padDisp(String s, int width) {
 /// 되돌리기 전에: 이 형식은 사용자가 화면을 보고 확정한 것이다.
 String tableToAligned(TableGrid t) {
   const gap = '  '; // 열 사이 간격(공백 2칸)
-  final header = t.header.map(_flat).toList();
-  final dataRows = t.rows.map((r) => r.map(_flat).toList()).toList();
+  // 셀 안의 연속 공백은 1칸으로 줄인다 — 그래야 "2칸 이상 = 열 구분자"가 성립해
+  // 되읽기(_parseAlignedTable)가 셀 내용과 구분자를 헷갈리지 않는다.
+  String alignCell(String c) => _flat(c).replaceAll(RegExp(r' {2,}'), ' ');
+  final header = t.header.map(alignCell).toList();
+  final dataRows = t.rows.map((r) => r.map(alignCell).toList()).toList();
   final cols = t.header.length;
   final widths = List<int>.filled(cols, 0);
   for (final r in [header, ...dataRows]) {
@@ -736,7 +815,10 @@ List<String> _processTextSegment(
       final b = tableBlocks[bi];
       if (o.repairTables || o.tablesOnly || o.tablesToTSV) {
         final w = <String>[];
-        final t = _parseTable(lines.sublist(b.start, b.end + 1), w, cellClean);
+        final blockLines = lines.sublist(b.start, b.end + 1);
+        final t = b.kind == 'aligned'
+            ? _parseAlignedTable(blockLines, cellClean)
+            : _parseTable(blockLines, w, cellClean);
         warnings.addAll(w);
         if (t.repaired || w.isNotEmpty) rep.tablesRepaired++;
         tablesOut.add(t);
