@@ -51,7 +51,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok·Perplexity)을 붙여넣으면 바로 �
 
 ```
 cd ~/development/simpletext_app
-flutter test                                # 엔진 테스트 48개 — 항상 먼저
+flutter test                                # 엔진 테스트 55개 — 항상 먼저
 flutter analyze --no-fatal-infos            # 경고 0 유지
 
 # 아이폰 설치 (폰 잠금 해제 필수! 잠기면 Install failed)
@@ -80,7 +80,7 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   HomeScreen(큰제목·그룹리스트·스와이프 고정/삭제), EditorScreen(제목 본문통합·키보드
   액세서리바·완료버튼·출처/태그 숨김토글·마법사/표/바꾸기/복사/되돌리기), PreviewScreen,
   SettingsScreen(정리 규칙 + AI 키/모델 + 자동 바꾸기 규칙)
-- test/core/tidy_engine_test.dart — 48개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture
+- test/core/tidy_engine_test.dart — 55개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture
   + 표 정렬 출력 fixture(2026-08-12) 포함
 - 웹(simpletext/index.html)은 같은 엔진의 JS 원본 포함. **엔진 수정 시 반드시 양쪽(JS·Dart) 동일
   적용 + 양쪽 테스트 통과**가 제1규칙 (웹 테스트: 저장소엔 없음, 로직 대칭만 유지하면 됨)
