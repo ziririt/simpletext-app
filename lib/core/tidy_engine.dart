@@ -23,6 +23,8 @@ class TidyOptions {
   bool repairTables;
   bool tablesToTSV;
   bool tablesOnly;
+  bool detectRecords; // 풀어쓴 표도 표로 인식 (표 도구 전용 — 본문 오탐 방지)
+  String wideTables; // auto | aligned | records
   String linkMode; // keep | text | textUrl
   bool stripHtml;
   bool unescape;
@@ -56,6 +58,8 @@ class TidyOptions {
     this.repairTables = false,
     this.tablesToTSV = false,
     this.tablesOnly = false,
+    this.detectRecords = false,
+    this.wideTables = 'auto',
     this.linkMode = 'keep',
     this.stripHtml = false,
     this.unescape = false,
@@ -89,6 +93,8 @@ class TidyOptions {
     bool? repairTables,
     bool? tablesToTSV,
     bool? tablesOnly,
+    bool? detectRecords,
+    String? wideTables,
     String? linkMode,
     bool? stripHtml,
     bool? unescape,
@@ -121,6 +127,8 @@ class TidyOptions {
       repairTables: repairTables ?? this.repairTables,
       tablesToTSV: tablesToTSV ?? this.tablesToTSV,
       tablesOnly: tablesOnly ?? this.tablesOnly,
+      detectRecords: detectRecords ?? this.detectRecords,
+      wideTables: wideTables ?? this.wideTables,
       linkMode: linkMode ?? this.linkMode,
       stripHtml: stripHtml ?? this.stripHtml,
       unescape: unescape ?? this.unescape,
@@ -339,7 +347,8 @@ bool _isSeparatorCells(List<String> cells) =>
 class _Block {
   final int start;
   final int end;
-  final String kind; // 'pipe' | 'aligned'
+  final String kind; // 'pipe' | 'aligned' | 'record'
+  final List<_RecordGroup> records = []; // kind == 'record'일 때만 채워진다
   _Block(this.start, this.end, [this.kind = 'pipe']);
 }
 
@@ -400,7 +409,7 @@ TableGrid _parseAlignedTable(List<String> lines, String Function(String)? cellCl
   );
 }
 
-List<_Block> _detectTableBlocks(List<String> lines) {
+List<_Block> _detectTableBlocks(List<String> lines, bool withRecords) {
   final blocks = <_Block>[];
   int i = 0;
   while (i < lines.length) {
@@ -430,15 +439,23 @@ List<_Block> _detectTableBlocks(List<String> lines) {
       taken.add(k);
     }
   }
-  for (final b in _detectAlignedBlocks(lines)) {
-    var overlap = false;
+  void addIfFree(_Block b) {
     for (int k = b.start; k <= b.end; k++) {
-      if (taken.contains(k)) {
-        overlap = true;
-        break;
-      }
+      if (taken.contains(k)) return;
     }
-    if (!overlap) blocks.add(b);
+    for (int k = b.start; k <= b.end; k++) {
+      taken.add(k);
+    }
+    blocks.add(b);
+  }
+
+  for (final b in _detectAlignedBlocks(lines)) {
+    addIfFree(b);
+  }
+  if (withRecords) {
+    for (final b in _detectRecordBlocks(lines)) {
+      addIfFree(b);
+    }
   }
   blocks.sort((a, b) => a.start.compareTo(b.start));
   return blocks;
@@ -588,6 +605,139 @@ String tableToAligned(TableGrid t) {
   final total = widths.fold<int>(0, (a, b) => a + b) + gap.length * (cols - 1);
   final rule = '─' * total; // 헤더와 데이터를 나누는 가로 구분선
   return [fmtRow(header), rule, ...dataRows.map(fmtRow)].join('\n');
+}
+
+/// --------- 넓은 표: 행 단위 풀어쓰기 (record view) ---------
+/// 칸 맞추기는 셀에 문장이 들어가는 순간 화면 밖으로 나가 줄이 접히고, 접히면 정렬이
+/// 통째로 깨진다. 그래서 넓은 표는 한 행을 한 덩어리로 눕힌다.
+/// (DB 도구의 세로 출력 — MySQL \G, psql \x — 과 같은 해법)
+/// 첫 칸은 제목 줄, 나머지 칸은 "이름 : 값" 글머리. 사용자 확정 형식(2026-08-12).
+const int kWideTotal = 42; // 폰 화면에서 등폭으로 무리 없이 읽히는 한계
+const int kWideCell = 25; // 한 칸에 문장이 들어왔다고 볼 기준
+
+List<int> _alignedWidths(TableGrid t) {
+  final cells = [t.header, ...t.rows];
+  final cols = t.header.length;
+  final widths = List<int>.filled(cols, 0);
+  for (final r in cells) {
+    for (var i = 0; i < cols; i++) {
+      final raw = i < r.length ? r[i] : '';
+      final w = dispWidth(_flat(raw).replaceAll(RegExp(r' {2,}'), ' '));
+      if (w > widths[i]) widths[i] = w;
+    }
+  }
+  return widths;
+}
+
+bool tableIsWide(TableGrid t) {
+  final widths = _alignedWidths(t);
+  final total = widths.fold<int>(0, (a, b) => a + b) + 2 * (widths.length - 1);
+  return total > kWideTotal || widths.any((w) => w > kWideCell);
+}
+
+String tableToRecords(TableGrid t, TidyOptions o) {
+  final mark = (o.bulletChar.isNotEmpty && o.bulletChar != 'keep') ? o.bulletChar : '-';
+  // 들여쓰기는 사용자 글머리 설정을 그대로 따른다. 여기서 임의로 최소값을 강제하면
+  // 재정리 때 글머리 규칙이 다시 들여쓰기를 바꿔 결과가 계속 달라진다(멱등성 깨짐).
+  final pad = ' ' * o.bulletIndent;
+  final names = t.header.map((c) => _flat(c).trim()).toList();
+  final blocks = <String>[];
+  for (final r in t.rows) {
+    final key = _flat(r.isNotEmpty ? r[0] : '').trim();
+    final lines = <String>[key.isEmpty ? '-' : key];
+    for (var i = 1; i < names.length; i++) {
+      final v = _flat(i < r.length ? r[i] : '').trim();
+      if (v.isEmpty) continue; // 빈 칸은 줄을 만들지 않는다
+      lines.add('$pad$mark ${names[i]} : $v');
+    }
+    blocks.add(lines.join('\n'));
+  }
+  return blocks.join('\n\n');
+}
+
+/// 풀어쓴 표를 다시 표로 되읽기 — 스프레드시트 변환용.
+/// 오탐이 본문을 망치지 않도록 표 도구(extractTables)에서만 켠다(o.detectRecords).
+class _RecordField {
+  final String name;
+  final String value;
+  _RecordField(this.name, this.value);
+}
+
+class _RecordGroup {
+  final int start;
+  final int end;
+  final String key;
+  final List<_RecordField> fields;
+  _RecordGroup(this.start, this.end, this.key, this.fields);
+}
+
+_RecordField? _recordFieldOf(String line) {
+  final m = RegExp(r'^\s*[-*·•◦]\s+(.+?)\s+:\s+(.+)$').firstMatch(line);
+  return m == null ? null : _RecordField(m.group(1)!.trim(), m.group(2)!.trim());
+}
+
+List<_Block> _detectRecordBlocks(List<String> lines) {
+  final groups = <_RecordGroup>[];
+  var i = 0;
+  while (i < lines.length) {
+    final head = lines[i];
+    if (head.trim().isEmpty || RegExp(r'^\s').hasMatch(head) || _recordFieldOf(head) != null) {
+      i++;
+      continue;
+    }
+    var j = i + 1;
+    final fields = <_RecordField>[];
+    while (j < lines.length) {
+      final f = _recordFieldOf(lines[j]);
+      if (f == null) break;
+      fields.add(f);
+      j++;
+    }
+    if (fields.isNotEmpty) {
+      groups.add(_RecordGroup(i, j - 1, head.trim(), fields));
+      i = j;
+    } else {
+      i++;
+    }
+  }
+  // 같은 항목 이름을 가진 덩어리가 2개 이상 이어질 때만 표로 본다
+  final blocks = <_Block>[];
+  var s = 0;
+  while (s < groups.length) {
+    final sig = groups[s].fields.map((f) => f.name).join();
+    var e = s;
+    while (e + 1 < groups.length && groups[e + 1].fields.map((f) => f.name).join() == sig) {
+      e++;
+    }
+    if (e > s) {
+      blocks.add(_Block(groups[s].start, groups[e].end, 'record')
+        ..records.addAll(groups.sublist(s, e + 1)));
+    }
+    s = e + 1;
+  }
+  return blocks;
+}
+
+TableGrid _recordBlockToTable(_Block b, String Function(String)? cellClean) {
+  String clean(String c) => cellClean != null ? cellClean(c) : c;
+  final names = b.records.first.fields.map((f) => f.name).toList();
+  // 첫 칸 이름은 풀어쓰기에 남지 않는다(사용자 확정 [A]) — 빈 제목으로 둔다
+  final header = ['', ...names];
+  final rows = b.records.map((g) {
+    return [
+      g.key,
+      ...names.map((n) {
+        final f = g.fields.where((x) => x.name == n);
+        return f.isEmpty ? '' : f.first.value;
+      })
+    ].map(clean).toList();
+  }).toList();
+  return TableGrid(
+    header: header.map(clean).toList(),
+    aligns: List<String>.filled(header.length, 'left'),
+    rows: rows,
+    repaired: false,
+  );
 }
 
 String tableToTSV(TableGrid t) =>
@@ -797,7 +947,7 @@ List<String> _processTextSegment(
     }
   }
 
-  final tableBlocks = _detectTableBlocks(lines);
+  final tableBlocks = _detectTableBlocks(lines, o.detectRecords);
   final inTable = <int, int>{};
   for (int bi = 0; bi < tableBlocks.length; bi++) {
     for (int k = tableBlocks[bi].start; k <= tableBlocks[bi].end; k++) {
@@ -816,9 +966,11 @@ List<String> _processTextSegment(
       if (o.repairTables || o.tablesOnly || o.tablesToTSV) {
         final w = <String>[];
         final blockLines = lines.sublist(b.start, b.end + 1);
-        final t = b.kind == 'aligned'
-            ? _parseAlignedTable(blockLines, cellClean)
-            : _parseTable(blockLines, w, cellClean);
+        final t = b.kind == 'record'
+            ? _recordBlockToTable(b, cellClean)
+            : b.kind == 'aligned'
+                ? _parseAlignedTable(blockLines, cellClean)
+                : _parseTable(blockLines, w, cellClean);
         warnings.addAll(w);
         if (t.repaired || w.isNotEmpty) rep.tablesRepaired++;
         tablesOut.add(t);
@@ -826,6 +978,9 @@ List<String> _processTextSegment(
           // 본문 출력 안 함
         } else if (o.tablesToTSV) {
           out.add(tableToTSV(t));
+        } else if (o.wideTables != 'aligned' && (o.wideTables == 'records' || tableIsWide(t))) {
+          // 좁은 표는 칸 맞추기, 넓거나 문장이 든 표는 행 단위 풀어쓰기 (자동 판단)
+          out.add(tableToRecords(t, o));
         } else {
           out.add(tableToAligned(t));
         }
@@ -1027,6 +1182,8 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
 
 /// 문서에서 표만 추출 (표 도구용)
 ({List<TableGrid> tables, List<String> warnings}) extractTables(String raw) {
-  final r = tidy(raw, TidyOptions(tablesOnly: true, repairTables: true, removeOuterFence: true));
+  // detectRecords: 풀어쓴 표도 스프레드시트로 되돌릴 수 있도록 표 도구에서만 인식
+  final r = tidy(raw,
+      TidyOptions(tablesOnly: true, repairTables: true, removeOuterFence: true, detectRecords: true));
   return (tables: r.tables, warnings: r.warnings);
 }

@@ -230,7 +230,7 @@ table = "A | B"
       expect(back.first.rows.first, ['가 나', '1']);
     });
 
-    test('빈 셀이 있어도 뒤 열 정렬이 유지된다', () {
+    test('빈 셀이 있어도 뒤 열 정렬이 유지된다 (칸 맞추기)', () {
       final t = TableGrid(
         header: ['항목', '값'],
         aligns: ['left', 'left'],
@@ -241,6 +241,88 @@ table = "A | B"
         repaired: false,
       );
       expect(tableToAligned(t), '항목      값\n────────────\n가\n나다라마  2');
+    });
+  });
+
+  // 2026-08-12 — 넓은 표는 칸 맞추기로는 화면을 넘겨 줄이 접히고, 접히면 정렬이 깨진다.
+  // 그래서 한 행을 한 덩어리로 눕힌다(첫 칸=제목 줄, 나머지="이름 : 값" 글머리).
+  // 좁은 표는 그대로 칸 맞추기. 전환은 자동 판단(사용자 확정 2026-08-12).
+  group('넓은 표 풀어쓰기 (자동 전환 · 2026-08-12)', () {
+    const wideIn = '''| 시기 | 확인된 움직임 | 해석 |
+|---|---|---|
+| 2021년 4월 | 세계 책의 날에 디지털 굿즈를 제작하고 배포했습니다. | 독서 경험에 연결한 초기 사례입니다. |
+| 2023년 3~4월 | 회사명을 리디북스에서 리디로 변경했습니다. | IP 확장 전략을 공개한 단계입니다. |''';
+
+    const narrowIn = '''| 종목 | 티커 | 수익률 |
+|---|---|---|
+| 애플 | AAPL | +14.2% |
+| 테슬라 | TSLA | -8.3% |''';
+
+    test('넓은 표는 행 단위로 풀어쓴다', () {
+      expect(tidy(wideIn, aiOpts()).text, '''2021년 4월
+· 확인된 움직임 : 세계 책의 날에 디지털 굿즈를 제작하고 배포했습니다.
+· 해석 : 독서 경험에 연결한 초기 사례입니다.
+
+2023년 3~4월
+· 확인된 움직임 : 회사명을 리디북스에서 리디로 변경했습니다.
+· 해석 : IP 확장 전략을 공개한 단계입니다.''');
+    });
+
+    test('좁은 표는 칸 맞추기를 유지한다', () {
+      final text = tidy(narrowIn, aiOpts()).text;
+      expect(text.contains('─'), true, reason: '좁은 표인데 풀어쓰기로 넘어갔다');
+      expect(text.split('\n').first, '종목    티커  수익률');
+    });
+
+    test('풀어쓴 표도 스프레드시트로 되돌릴 수 있다', () {
+      final out = tidy(wideIn, aiOpts()).text;
+      final back = extractTables(out).tables;
+      expect(back.length, 1, reason: '풀어쓴 표를 다시 표로 읽지 못했다');
+      // 첫 칸 이름(시기)은 풀어쓰기에 남지 않는다 — 사용자 확정 [A]
+      expect(back.first.header, ['', '확인된 움직임', '해석']);
+      expect(back.first.rows.first.first, '2021년 4월');
+      expect(back.first.rows.length, 2);
+    });
+
+    test('두 번 정리해도 결과가 그대로다 (글머리 규칙과 충돌 없음)', () {
+      final once = tidy(wideIn, aiOpts()).text;
+      expect(tidy(once, aiOpts()).text, once);
+      // 들여쓰기 설정을 바꿔도 멱등이어야 한다
+      final o2 = aiOpts().copyWith(bulletChar: '-', bulletIndent: 2);
+      final a = tidy(wideIn, o2).text;
+      expect(tidy(a, o2).text, a);
+      expect(a.contains('\n  - 확인된 움직임 : '), true, reason: '글머리 설정이 반영되지 않았다');
+    });
+
+    test('빈 칸은 줄을 만들지 않는다', () {
+      const withBlank = '''| 이름 | 메모 | 비고 |
+|---|---|---|
+| 첫째 | 아주 길고 자세한 설명이 여기에 들어갑니다 그래서 넓어집니다 | |
+| 둘째 | 두 번째 항목에 대한 설명도 길게 들어갑니다 여기에 | 참고 |''';
+      final text = tidy(withBlank, aiOpts()).text;
+      expect(text.contains('비고 : 참고'), true);
+      expect(RegExp(r'비고 : \s*$', multiLine: true).hasMatch(text), false,
+          reason: '빈 칸인데 줄을 만들었다');
+    });
+
+    test('일반 문서를 표로 오인하지 않는다', () {
+      const doc = '''회의 정리
+
+  - 참석자 : 김대리
+  - 장소 : 3층
+
+다음 주 계획
+
+  - 첫째 항목
+  - 둘째 항목''';
+      expect(extractTables(doc).tables, isEmpty);
+    });
+
+    test('설정으로 자동 전환을 끌 수 있다', () {
+      final always = tidy(wideIn, aiOpts().copyWith(wideTables: 'aligned')).text;
+      expect(always.contains('─'), true, reason: 'aligned 고정이 동작하지 않았다');
+      final never = tidy(narrowIn, aiOpts().copyWith(wideTables: 'records')).text;
+      expect(never.contains('─'), false, reason: 'records 고정이 동작하지 않았다');
     });
   });
 
