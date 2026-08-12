@@ -287,6 +287,10 @@ class L10nZhHant extends L10n {
   @override
   String get citationsSub => '移除 [1]: URL 引用區塊與內文中的 [1] 標記';
   @override
+  String get monoEditorTitle => '編輯器等寬字型';
+  @override
+  String get monoEditorSub => '表格各欄精確對齊。將套用至整個編輯畫面';
+  @override
   String get dashListTitle => '破折號連排轉列表';
   @override
   String get dashListSub => '將「– a – b – c」式的單行連排拆成逐行列表';

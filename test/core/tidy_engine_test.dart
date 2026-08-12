@@ -198,13 +198,17 @@ table = "A | B"
       expect(tidy(once, aiOpts()).text, once);
     });
 
-    test('긴 문장이 든 표도 왕복된다', () {
+    test('긴 문장이 든 표도 칸 맞추기로 고정하면 왕복된다', () {
+      // 이 표는 넓어서 기본값(auto)이면 풀어쓰기로 간다. 여기서 검증하려는 것은
+      // '칸 맞추기' 형식의 왕복이므로 aligned로 고정한다.
+      // (풀어쓰기 왕복은 아래 '넓은 표 풀어쓰기' 그룹에서 따로 검증한다)
       const wide = '''| 시기 | 확인된 움직임 | 해석 |
 |---|---|---|
 | 2021년 4월 | 세계 책의 날에 디지털 굿즈를 제작·배포했습니다. | 독서 경험에 연결한 초기 사례입니다. |
 | 2023년 3~4월 | 회사명을 리디북스에서 리디로 변경했습니다. | IP 사업 확장 전략을 밝힌 단계입니다. |''';
+      final o = aiOpts().copyWith(wideTables: 'aligned');
       final before = extractTables(wide).tables.first;
-      final after = extractTables(tidy(wide, aiOpts()).text).tables;
+      final after = extractTables(tidy(wide, o).text).tables;
       expect(after.length, 1);
       expect(tableToTSV(after.first), tableToTSV(before));
     });

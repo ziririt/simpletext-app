@@ -287,6 +287,10 @@ class L10nKo extends L10n {
   @override
   String get citationsSub => '[1]: URL 출처 블록과 본문 [1] 표시 제거';
   @override
+  String get monoEditorTitle => '편집기 등폭 글꼴';
+  @override
+  String get monoEditorSub => '표의 칸이 정확히 맞습니다. 켜면 편집 화면 전체가 등폭 글꼴이 됩니다';
+  @override
   String get dashListTitle => '대시 나열 목록화';
   @override
   String get dashListSub => '"– a – b – c" 한 줄 나열을 줄 목록으로 분리';

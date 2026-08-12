@@ -219,6 +219,8 @@ abstract class L10n {
   String get headingPadSub;
   String get citationsTitle;
   String get citationsSub;
+  String get monoEditorTitle;
+  String get monoEditorSub;
   String get dashListTitle;
   String get dashListSub;
   String get fillerHeadingTitle;
@@ -352,6 +354,8 @@ abstract class L10n {
         'headingPadSub': headingPadSub,
         'citationsTitle': citationsTitle,
         'citationsSub': citationsSub,
+        'monoEditorTitle': monoEditorTitle,
+        'monoEditorSub': monoEditorSub,
         'dashListTitle': dashListTitle,
         'dashListSub': dashListSub,
         'fillerHeadingTitle': fillerHeadingTitle,

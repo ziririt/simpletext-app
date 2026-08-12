@@ -283,6 +283,7 @@ class AppSettings {
   int headingPadBelow = 1;
   int bulletIndent = 2;
   bool removeCitations = true;
+  bool monoEditor = false; // 편집기 등폭 글꼴 (CotEditor 관습 — 표 칸이 정확히 맞는다)
   String aiKey = '';
   String aiModel = 'gemini-2.5-flash-lite';
   List<CustomRule> customRules = [];
@@ -300,6 +301,7 @@ class AppSettings {
         'headingPadBelow': headingPadBelow,
         'bulletIndent': bulletIndent,
         'removeCitations': removeCitations,
+        'monoEditor': monoEditor,
         'aiKey': aiKey,
         'aiModel': aiModel,
         'customRules': customRules
@@ -321,6 +323,7 @@ class AppSettings {
     s.headingPadBelow = (j['headingPadBelow'] ?? s.headingPadBelow) as int;
     s.bulletIndent = (j['bulletIndent'] ?? s.bulletIndent) as int;
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
+    s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -635,9 +638,9 @@ class _HomeScreenState extends State<HomeScreen> {
           await store.persist();
           return false;
         }
-        final ok = await showDialog<bool>(
+        final ok = await showAdaptiveDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
+          builder: (ctx) => AlertDialog.adaptive(
             title: Text(L10n.of(ctx).deleteConfirmTitle),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(L10n.of(ctx).cancel)),
@@ -1021,12 +1024,12 @@ class _EditorScreenState extends State<EditorScreen> {
     String? aiResult;
     String aiGuard = '';
     bool aiBusy = false;
-    await showDialog<void>(
+    await showAdaptiveDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
           final l = L10n.of(ctx);
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text(l.wizardTitle),
             content: SizedBox(
               width: 480,
@@ -1163,12 +1166,12 @@ class _EditorScreenState extends State<EditorScreen> {
     final withCtl = TextEditingController();
     bool useRegex = false;
     bool saveRule = false;
-    await showDialog<void>(
+    await showAdaptiveDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
           final l = L10n.of(ctx);
-          return AlertDialog(
+          return AlertDialog.adaptive(
             title: Text(l.replaceTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1333,9 +1336,9 @@ class _EditorScreenState extends State<EditorScreen> {
               icon: const Icon(Icons.delete_outline),
               tooltip: l.deleteTooltip,
               onPressed: () async {
-                final ok = await showDialog<bool>(
+                final ok = await showAdaptiveDialog<bool>(
                   context: context,
-                  builder: (ctx) => AlertDialog(
+                  builder: (ctx) => AlertDialog.adaptive(
                     title: Text(L10n.of(ctx).deleteConfirmTitle),
                     actions: [
                       TextButton(
@@ -1412,7 +1415,15 @@ class _EditorScreenState extends State<EditorScreen> {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
-                  style: const TextStyle(fontSize: 16, height: 1.6),
+                  // 등폭을 켜면 표의 칸이 정확히 맞는다 (CotEditor와 같은 방식).
+                  // 비례 글꼴에서는 공백 정렬이 원리적으로 맞을 수 없다.
+                  style: store.settings.monoEditor
+                      ? const TextStyle(
+                          fontSize: 14.5,
+                          height: 1.5,
+                          fontFamily: 'Menlo',
+                          fontFamilyFallback: ['SF Mono', 'Consolas', 'monospace'])
+                      : const TextStyle(fontSize: 16, height: 1.6),
                   onChanged: (_) => _save(),
                 ),
               ),
@@ -1615,7 +1626,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             (4, l.indent4),
             (0, l.indentNone),
           ], (v) => s.bulletIndent = v),
-          SwitchListTile(
+          SwitchListTile.adaptive(
             title: Text(l.headingPadTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
             subtitle: Text(l.headingPadSub, style: const TextStyle(fontSize: 12)),
             value: s.headingPad,
@@ -1625,7 +1636,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
-          SwitchListTile(
+          SwitchListTile.adaptive(
+            title: Text(l.monoEditorTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            subtitle: Text(l.monoEditorSub, style: const TextStyle(fontSize: 12)),
+            value: s.monoEditor,
+            onChanged: (v) {
+              s.monoEditor = v;
+              store.persistSettings();
+              setState(() {});
+            },
+          ),
+          SwitchListTile.adaptive(
             title: Text(l.citationsTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
             subtitle: Text(l.citationsSub, style: const TextStyle(fontSize: 12)),
             value: s.removeCitations,
@@ -1635,7 +1656,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
-          SwitchListTile(
+          SwitchListTile.adaptive(
             title: Text(l.dashListTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
             subtitle: Text(l.dashListSub, style: const TextStyle(fontSize: 12)),
             value: s.smartDashList,
@@ -1645,7 +1666,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
-          SwitchListTile(
+          SwitchListTile.adaptive(
             title: Text(l.fillerHeadingTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
             subtitle: Text(l.fillerHeadingSub, style: const TextStyle(fontSize: 12)),
             value: s.smartFillerHeading,

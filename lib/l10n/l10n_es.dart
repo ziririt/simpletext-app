@@ -289,6 +289,10 @@ class L10nEs extends L10n {
   @override
   String get citationsSub => 'Quita los bloques de citas [1]: URL y las marcas [1] del texto';
   @override
+  String get monoEditorTitle => 'Fuente monoespaciada';
+  @override
+  String get monoEditorSub => 'Alinea las columnas de las tablas con precisión. Se aplica a todo el editor';
+  @override
   String get dashListTitle => 'Convertir series con guiones en listas';
   @override
   String get dashListSub => 'Divide series de una línea como "– a – b – c" en una lista por líneas';

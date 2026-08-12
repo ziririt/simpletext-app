@@ -287,6 +287,10 @@ class L10nJa extends L10n {
   @override
   String get citationsSub => '[1]: URL の出典ブロックと本文中の [1] 表記を除去';
   @override
+  String get monoEditorTitle => 'エディタを等幅フォントに';
+  @override
+  String get monoEditorSub => '表の桁がぴったり揃います。編集画面全体に適用されます';
+  @override
   String get dashListTitle => 'ダッシュ列挙のリスト化';
   @override
   String get dashListSub => '「– a – b – c」の一行列挙を行リストに分割';
