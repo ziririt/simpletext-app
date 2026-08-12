@@ -91,7 +91,8 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
    (docs/testflight_setup.md). 등록 전에는 수동 실행·태그 푸시에만 반응하므로 CI를 붉게 만들지 않는다.
 4. 백업 내보내기/가져오기 Flutter 이식 (웹과 같은 JSON 스키마 v2, 병합 규칙: id 기준·updatedAt 최신 승리·tombstone 우선)
 5. 클라우드 동기화(iCloud/Google Drive) — 2차
-6. Android 빌드 — 나중
+6. ~~Android 빌드~~ APK 자동 빌드 완료(.github/workflows/android_build.yml, 시험 설치용).
+   남은 것: 구글 플레이 출시용 키스토어 서명 — 소유자가 키를 만들어 Secret으로 넣는 단계
 
 ## 작업 규칙 (모든 세션 공통)
 

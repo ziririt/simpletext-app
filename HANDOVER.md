@@ -139,7 +139,9 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 4. **백업 내보내기/가져오기 Flutter 이식**: 웹과 동일 JSON 스키마 v2. 병합 규칙 = id 기준,
    updatedAt 최신 승리, tombstone(삭제 기록) 우선·부활 금지 — 이것이 향후 동기화 알고리즘
 5. **클라우드 동기화**(iCloud Documents / Google Drive appDataFolder) — 위 병합 규칙 재사용
-6. 데스크톱 글로벌 단축키·메뉴바(기획서 46~47절), 수익화(RevenueCat, 기획서 32~34절), 안드로이드
+6. 데스크톱 글로벌 단축키·메뉴바(기획서 46~47절), 수익화(RevenueCat, 기획서 32~34절)
+7. 안드로이드 — APK 자동 빌드는 완료(시험 설치용, 개발 서명).
+   플레이 출시용 키스토어 서명은 소유자가 키를 만든 뒤 붙이면 된다.
 
 ## 9. 알려진 함정 (시간 아끼는 지식)
 
