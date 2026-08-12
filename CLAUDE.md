@@ -100,5 +100,8 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
 - 새 언어 추가 시 손댈 곳: lib/l10n/ + ios·macos Info.plist CFBundleLocalizations +
   test/l10n/l10n_test.dart (tool/l10n_check.py 상단 체크리스트 참고)
 - 애플 메모장 수준의 미니멀리즘 유지 (이모지 사용 금지)
+- **UI/UX는 독자 설계하지 않는다 (2026-08-12 사용자 확정)** — 애플 메모장·CotEditor 등
+  유명 에디터의 관습을 따른다. 차별화는 기능으로만 한다. 관습에 없는 화면·조작을
+  추가하기 전에 그 에디터들이 같은 문제를 어떻게 푸는지 먼저 확인할 것.
 - 클라우드 세션 주의: 컨테이너에서 pub.dev·storage.googleapis.com 차단 →
   flutter 명령 로컬 실행 불가. 검증은 Flutter CI(푸시 후 Actions 확인)로 한다
