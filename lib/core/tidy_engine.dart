@@ -607,6 +607,7 @@ int dispWidth(String s) {
         (c <= 0x115F || // 한글 자모
             c == 0x2329 ||
             c == 0x232A ||
+            (c >= 0x2500 && c <= 0x257F) || // 박스 드로잉(─ 등) — CJK에서 두 칸
             (c >= 0x2E80 && c <= 0xA4CF && c != 0x303F) || // CJK 부수~이체자
             (c >= 0xAC00 && c <= 0xD7A3) || // 한글 음절
             (c >= 0xF900 && c <= 0xFAFF) || // CJK 호환 한자
@@ -658,7 +659,12 @@ String tableToAligned(TableGrid t) {
   }
 
   final total = widths.fold<int>(0, (a, b) => a + b) + gap.length * (cols - 1);
-  final rule = '─' * total; // 헤더와 데이터를 나누는 가로 구분선
+  // 구분선 길이는 '문자 수'가 아니라 '그려지는 폭'으로 맞춰야 한다.
+  // '─'(U+2500)는 CJK 환경에서 한글처럼 두 칸으로 그려지기 때문에, 표 폭만큼
+  // 개수를 찍으면 실제로는 두 배가 되어 줄이 넘어간다(실제 화면에서 확인).
+  final ruleW = dispWidth('─');
+  final ruleN = (total / ruleW).round();
+  final rule = '─' * (ruleN < 1 ? 1 : ruleN);
   return [fmtRow(header), rule, ...dataRows.map(fmtRow)].join('\n');
 }
 

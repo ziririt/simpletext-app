@@ -290,7 +290,9 @@ class AppSettings {
   int headingPadBelow = 1;
   int bulletIndent = 2;
   bool removeCitations = true;
-  bool monoEditor = false; // 편집기 등폭 글꼴 (CotEditor 관습 — 표 칸이 정확히 맞는다)
+  // 기본 켬 — 비례 글꼴에서는 공백 정렬이 원리적으로 맞을 수 없다.
+  // 이 앱의 핵심이 표라서 기본값을 켜는 쪽이 맞다(CotEditor도 등폭이 기본).
+  bool monoEditor = true;
   String aiKey = '';
   String aiModel = 'gemini-2.5-flash-lite';
   List<CustomRule> customRules = [];
