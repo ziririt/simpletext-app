@@ -24,7 +24,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok 등)을 붙여넣으면 바로 저장·�
   - `lib/core/tidy_engine.dart` — 정리 엔진 (Pure Dart, 플랫폼 API 금지)
   - `lib/core/wizard.dart` — AI 마법사 1층(자연어 규칙 명령 해석기) + NumberGuard
   - `lib/main.dart` — 앱 전체 UI (애플 메모장 스타일)
-  - `test/core/tidy_engine_test.dart` — 엔진 테스트 55개 (기획서 Acceptance Test 포함)
+  - `test/core/tidy_engine_test.dart` — 엔진 테스트 60개 (기획서 Acceptance Test 포함)
   - `.github/workflows/windows_build.yml` — push마다 Windows 빌드 자동 생성(Artifacts)
 - `ziririt/simpletext` — 웹앱(단일 index.html, GitHub Pages)
   - 배포 주소: https://ziririt.github.io/simpletext/
@@ -33,7 +33,7 @@ AI 답변(ChatGPT·Claude·Gemini·Grok 등)을 붙여넣으면 바로 저장·�
 ## 검증 명령
 
 ```
-flutter test        # 엔진 55개 테스트 — 전부 통과해야 함
+flutter test        # 엔진 60개 테스트 — 전부 통과해야 함
 flutter analyze     # 경고 0 유지 (info 수준은 허용)
 ```
 

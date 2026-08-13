@@ -352,6 +352,58 @@ class _Block {
   _Block(this.start, this.end, [this.kind = 'pipe']);
 }
 
+/// --------- 탭으로 구분된 표 (ChatGPT·클로드 앱에서 복사하면 이렇게 온다) ---------
+/// 2026-08-12 — 실제 사용 중 발견. 앱에서 렌더된 표를 복사하면 마크다운 파이프가
+/// 아니라 탭으로 넘어온다. 탐지가 '|'와 '─'만 보고 있어서 표를 통째로 놓쳤고,
+/// 사용자 화면에서 표가 줄글로 뭉개졌다. 붙여넣기의 가장 흔한 경로라 반드시 잡아야 한다.
+List<String> _splitTsvCells(String line) =>
+    line.split('\t').map((c) => c.trim()).toList();
+
+List<_Block> _detectTsvBlocks(List<String> lines) {
+  final blocks = <_Block>[];
+  var i = 0;
+  while (i < lines.length) {
+    final cells = lines[i].contains('\t') ? _splitTsvCells(lines[i]) : <String>[];
+    if (cells.where((c) => c.isNotEmpty).length >= 2) {
+      var j = i;
+      while (j + 1 < lines.length &&
+          lines[j + 1].contains('\t') &&
+          lines[j + 1].trim().isNotEmpty) {
+        j++;
+      }
+      // 한 줄짜리는 표로 보지 않는다(들여쓰기용 탭 한 줄 등 오탐 방지)
+      if (j > i) blocks.add(_Block(i, j, 'tsv'));
+      i = j + 1;
+    } else {
+      i++;
+    }
+  }
+  return blocks;
+}
+
+TableGrid _parseTsvTable(List<String> lines, String Function(String)? cellClean) {
+  String clean(String c) => cellClean != null ? cellClean(c) : c;
+  final rows = lines.map(_splitTsvCells).toList();
+  var colCount = 0;
+  for (final r in rows) {
+    if (r.length > colCount) colCount = r.length;
+  }
+  List<String> fit(List<String> r) {
+    final c = r.take(colCount).toList();
+    while (c.length < colCount) {
+      c.add('');
+    }
+    return c.map(clean).toList();
+  }
+
+  return TableGrid(
+    header: fit(rows.first),
+    aligns: List<String>.filled(colCount, 'left'),
+    rows: rows.skip(1).map(fit).toList(),
+    repaired: false,
+  );
+}
+
 /// --------- 정렬 텍스트 표 되읽기 (round-trip) ---------
 /// 2026-08-12 — tableToAligned가 만든 공백 정렬 표를 다시 표로 인식한다.
 /// 이게 없으면 "정리" 직후 표 도구가 표를 못 찾아 스프레드시트 복사가 끊긴다
@@ -450,6 +502,9 @@ List<_Block> _detectTableBlocks(List<String> lines, bool withRecords) {
   }
 
   for (final b in _detectAlignedBlocks(lines)) {
+    addIfFree(b);
+  }
+  for (final b in _detectTsvBlocks(lines)) {
     addIfFree(b);
   }
   if (withRecords) {
@@ -968,9 +1023,11 @@ List<String> _processTextSegment(
         final blockLines = lines.sublist(b.start, b.end + 1);
         final t = b.kind == 'record'
             ? _recordBlockToTable(b, cellClean)
-            : b.kind == 'aligned'
-                ? _parseAlignedTable(blockLines, cellClean)
-                : _parseTable(blockLines, w, cellClean);
+            : b.kind == 'tsv'
+                ? _parseTsvTable(blockLines, cellClean)
+                : b.kind == 'aligned'
+                    ? _parseAlignedTable(blockLines, cellClean)
+                    : _parseTable(blockLines, w, cellClean);
         warnings.addAll(w);
         if (t.repaired || w.isNotEmpty) rep.tablesRepaired++;
         tablesOut.add(t);
