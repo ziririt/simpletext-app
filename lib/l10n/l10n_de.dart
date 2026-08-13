@@ -293,9 +293,9 @@ class L10nDe extends L10n {
   @override
   String get citationsSub => 'Entfernt [1]: URL-Quellenblöcke und [1]-Marken im Text';
   @override
-  String get monoEditorTitle => 'Monospace-Schrift im Editor';
+  String get monoEditorTitle => 'Tabellen in Monospace';
   @override
-  String get monoEditorSub => 'Richtet Tabellenspalten exakt aus. Gilt für den gesamten Editor';
+  String get monoEditorSub => 'Richtet Tabellen- und Codespalten exakt aus. Fließtext behält die Geräteschrift';
   @override
   String get dashListTitle => 'Gedankenstrich-Reihen in Listen umwandeln';
   @override

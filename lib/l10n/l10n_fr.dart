@@ -293,9 +293,9 @@ class L10nFr extends L10n {
   @override
   String get citationsSub => 'Retire les blocs de citation [1]: URL et les marques [1] dans le texte';
   @override
-  String get monoEditorTitle => 'Police à chasse fixe';
+  String get monoEditorTitle => 'Tableaux à chasse fixe';
   @override
-  String get monoEditorSub => 'Aligne les colonnes des tableaux avec précision. S’applique à tout l’éditeur';
+  String get monoEditorSub => 'Aligne exactement les colonnes des tableaux et du code. Le texte garde la police de l’appareil';
   @override
   String get dashListTitle => 'Transformer les suites de tirets en listes';
   @override

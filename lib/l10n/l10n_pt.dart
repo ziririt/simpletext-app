@@ -292,9 +292,9 @@ class L10nPt extends L10n {
   @override
   String get citationsSub => 'Remove blocos de citação [1]: URL e marcas [1] no texto';
   @override
-  String get monoEditorTitle => 'Tipo de letra monoespaçado';
+  String get monoEditorTitle => 'Tabelas em monoespaçado';
   @override
-  String get monoEditorSub => 'Alinha as colunas das tabelas com precisão. Aplica-se a todo o editor';
+  String get monoEditorSub => 'Alinha com precisão as colunas de tabelas e código. O texto mantém o tipo de letra do dispositivo';
   @override
   String get dashListTitle => 'Converter sequências com travessão em listas';
   @override

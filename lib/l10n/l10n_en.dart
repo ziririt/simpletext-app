@@ -292,9 +292,9 @@ class L10nEn extends L10n {
   @override
   String get citationsSub => 'Removes [1]: URL citation blocks and in-text [1] marks';
   @override
-  String get monoEditorTitle => 'Monospaced editor font';
+  String get monoEditorTitle => 'Monospaced tables';
   @override
-  String get monoEditorSub => 'Aligns table columns exactly. Applies to the whole editor';
+  String get monoEditorSub => 'Aligns table and code columns exactly. Prose keeps your device font';
   @override
   String get dashListTitle => 'Split dash runs into lists';
   @override

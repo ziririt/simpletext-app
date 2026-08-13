@@ -290,9 +290,9 @@ class L10nJa extends L10n {
   @override
   String get citationsSub => '[1]: URL の出典ブロックと本文中の [1] 表記を除去';
   @override
-  String get monoEditorTitle => 'エディタを等幅フォントに';
+  String get monoEditorTitle => '表を等幅フォントで';
   @override
-  String get monoEditorSub => '表の桁がぴったり揃います。編集画面全体に適用されます';
+  String get monoEditorSub => '表とコードの桁がぴったり揃います。本文は端末の標準フォントのままです';
   @override
   String get dashListTitle => 'ダッシュ列挙のリスト化';
   @override

@@ -290,9 +290,9 @@ class L10nZhHans extends L10n {
   @override
   String get citationsSub => '去除 [1]: URL 引用块和正文中的 [1] 标记';
   @override
-  String get monoEditorTitle => '编辑器等宽字体';
+  String get monoEditorTitle => '表格使用等宽字体';
   @override
-  String get monoEditorSub => '表格各列精确对齐。将应用于整个编辑界面';
+  String get monoEditorSub => '表格与代码各列精确对齐。正文仍使用设备默认字体';
   @override
   String get dashListTitle => '破折号连排转列表';
   @override

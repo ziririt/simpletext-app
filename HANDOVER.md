@@ -74,6 +74,10 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 
 - lib/core/tidy_engine.dart — 정리+표 엔진. Pure Dart, 플랫폼 API 호출 금지
 - lib/core/wizard.dart — AI 마법사 1층(자연어 규칙 해석기) + numberGuard
+- lib/core/mono_spans.dart — 본문에서 "등폭으로 그려야 할 구간"(표·코드)만 골라내는
+  순수 함수. 화면을 모른다 → 테스트로 지킨다(test/core/mono_spans_test.dart)
+- lib/core/mono_controller.dart — 그 구간에만 D2Coding을 입히는 TextEditingController.
+  줄글은 기기 기본 글꼴 그대로. 한글 IME 조합 밑줄도 같이 살린다
 - lib/l10n/ — 다국어. l10n.dart(추상 L10n + 로케일 해석 + all 맵) + 언어별 9파일.
   UI 문자열은 반드시 여기에만 추가(9개 언어 전부). 검사: tool/l10n_check.py, test/l10n/
 - lib/main.dart — 전체 UI: Store(shared_preferences, 스키마 v2 {v,notes,tombstones}),
@@ -173,6 +177,13 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   - 웹: `fonts/D2Coding-core.ttf` / `-cjk.ttf`로 나누고 CSS `unicode-range`로 분기
     (한글만 쓰면 core 0.45MB만 내려받는다). sw.js가 core를 미리 캐시한다.
   - 글꼴을 빼거나 폴백을 되살리면 "한 칸씩 어긋난다"는 신고가 그대로 돌아온다.
+- **편집기 글꼴은 구간마다 다르다(2026-08-14~). 표·코드만 등폭, 줄글은 기기 기본.**
+  어디가 표인지 판단하는 규칙(mono_spans.dart)은 **엔진의 표 탐지와 같은 기준**이어야
+  한다. 서로 다르면 "화면에서 표로 보이는데 정리하면 표가 아니다"(또는 그 반대)가
+  된다. 엔진의 표 탐지를 고치면 mono_spans.dart도 같이 볼 것.
+  (테스트 '엔진이 만든 표는 반드시 등폭으로 잡힌다'가 이걸 지킨다)
+  웹은 이게 안 된다 — `<textarea>`는 글꼴이 하나뿐이라 줄마다 다른 글꼴을 줄 수 없다.
+  하려면 contenteditable로 갈아야 하는데 한글 IME가 깨질 위험이 커서 보류했다.
 - **`─`(U+2500)는 등폭 글꼴에서 정확히 한 칸이다.** 여기서 두 번 물렸다. 비례 글꼴에서
   재고 "선이 길다"고 판단해 절반으로 줄였다가(0.1.3) 이번엔 짧아졌다. 구분선 길이는
   항상 `'─' * total` — 표 폭 그대로다. dispWidth에서 박스 드로잉을 2칸으로 세지도 말 것.

@@ -13,6 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/mono_controller.dart';
 import 'core/tidy_engine.dart';
 import 'core/wizard.dart';
 import 'l10n/l10n.dart';
@@ -702,7 +703,8 @@ class _EditorScreenState extends State<EditorScreen> {
   final store = Store.instance;
   late Note note;
   late TextEditingController titleCtl;
-  late TextEditingController bodyCtl;
+  // 본문은 표·코드 구간만 등폭으로 그려야 해서 전용 컨트롤러를 쓴다.
+  late MonoTextController bodyCtl;
   late TextEditingController tagsCtl;
   bool _found = true;
   final FocusNode _titleFocus = FocusNode();
@@ -869,7 +871,7 @@ class _EditorScreenState extends State<EditorScreen> {
       note = store.notes[idx];
     }
     titleCtl = TextEditingController(text: note.title);
-    bodyCtl = TextEditingController(text: note.body);
+    bodyCtl = MonoTextController(text: note.body);
     tagsCtl = TextEditingController(text: note.tags.join(', '));
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
@@ -1355,6 +1357,8 @@ class _EditorScreenState extends State<EditorScreen> {
     if (!_found) {
       return Scaffold(body: Center(child: Text(l.noteNotFound)));
     }
+    // 설정을 바꾸면 다음 build에서 바로 반영된다(컨트롤러가 매번 이 값을 본다).
+    bodyCtl.monoEnabled = store.settings.monoEditor;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) _save();
@@ -1467,14 +1471,15 @@ class _EditorScreenState extends State<EditorScreen> {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
-                  // 등폭을 켜면 표의 칸이 정확히 맞는다 (CotEditor와 같은 방식).
-                  // 비례 글꼴에서는 공백 정렬이 원리적으로 맞을 수 없다.
-                  // D2Coding — 한글이 영문의 정확히 2배 너비인 글꼴. 이게 있어야
-                  // 공백 정렬이 화면에서 실제로 맞는다. 기기 기본 등폭 글꼴은 한글이
-                  // 1.66배쯤이라 계산이 맞아도 행마다 조금씩 어긋난다(2026-08-14 측정).
-                  style: store.settings.monoEditor
-                      ? const TextStyle(fontSize: 14.5, height: 1.5, fontFamily: 'D2Coding')
-                      : const TextStyle(fontSize: 16, height: 1.6),
+                  // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
+                  // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
+                  // core/mono_spans.dart가, 실제로 글꼴을 입히는 일은
+                  // core/mono_controller.dart가 한다.
+                  // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
+                  // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
+                  style: const TextStyle(
+                      fontSize: MonoTextController.bodyFontSize,
+                      height: MonoTextController.bodyHeight),
                   onChanged: (_) => _save(),
                 ),
               ),
