@@ -546,4 +546,67 @@ table = "A | B"
       expect(r.text.contains('apnews.com'), true);
     });
   });
+
+  // 2026-08-14 소유자 신고: "퍼플렉시티의 경우 각주 번호(예시 : [6][7][8])가 많다.
+  // 다 삭제해줘. 본문 하단의 출처 부분도 엄청 길게 나오는데 다 삭제해."
+  // 퍼플렉시티는 ChatGPT와 출처 형식이 다르다 — 콜론이 없고("[1] 제목 ... 주소"),
+  // 목록 위에 "출처" 제목이 따로 붙는다. 그래서 기존 규칙에 하나도 안 걸렸다.
+  group('퍼플렉시티식 출처·각주 제거 (2026-08-14)', () {
+    const pplxIn = '''2024~2025년
+  - 확인된 움직임 : 반복적인 실물 굿즈 프로모션을 운영.
+  - 해석 : 굿즈가 '팬덤 활성화' 장치로 자리 잡았음을 보여줍니다. [6][7][8]
+
+2026년 7월 공지, 8월 20일 적용 예정
+  - 확인된 움직임 : 이용약관에 상품과 판매자를 신설.[4][5]
+  - 해석 : '입점형 실물 커머스 플랫폼'의 기반을 마련한 것으로 읽힙니다. [2][1]
+
+출처
+[1] '전자책' 리디, 커머스로 영역 확장 https://www.techm.kr/news/articleView.html?idxno=153424
+[2] [공지] 이용약관 개정 안내 - 고객센터 - 리디 https://ridihelp.ridibooks.com/support/solutions/articles/154000259656
+[3] 리디, 책의 날 맞아 디지털 굿즈 배포 https://ridicorp.com/2021/04/2021-world-book-day-digital-goods/''';
+
+    test('각주 번호와 출처 목록이 모두 사라진다', () {
+      final out = tidy(pplxIn, aiOpts()).text;
+      expect(RegExp(r'\[\d+\]').hasMatch(out), false, reason: '각주 번호가 남았다');
+      expect(out.contains('techm.kr'), false, reason: '출처 목록이 남았다');
+      expect(out.contains('ridicorp.com'), false, reason: '출처 목록이 남았다');
+      expect(RegExp(r'^출처$', multiLine: true).hasMatch(out), false, reason: '출처 제목이 남았다');
+    });
+
+    test('본문은 그대로 남는다', () {
+      final out = tidy(pplxIn, aiOpts()).text;
+      expect(out.contains('팬덤 활성화'), true);
+      expect(out.contains('입점형 실물 커머스'), true);
+      expect(out.contains('2026년 7월 공지, 8월 20일 적용 예정'), true);
+    });
+
+    test('각주를 지운 자리에 공백이 남지 않는다', () {
+      // "...보여줍니다. [6][7][8]" → "...보여줍니다." (줄 끝 공백 금지)
+      final out = tidy(pplxIn, aiOpts()).text;
+      expect(RegExp(r'[ \t]+$', multiLine: true).hasMatch(out), false);
+      expect(out.contains('자리 잡았음을 보여줍니다.'), true);
+    });
+
+    test('두 번 정리해도 결과가 같다', () {
+      final once = tidy(pplxIn, aiOpts()).text;
+      expect(tidy(once, aiOpts()).text, once);
+    });
+
+    test('출처 목록이 없어도 붙어 있는 각주는 지운다', () {
+      // 본문만 잘라 붙여넣는 경우. [6][7][8]처럼 둘 이상 붙어 있으면 각주가 확실하다.
+      expect(tidy('자리 잡았음을 보여줍니다. [6][7][8]', aiOpts()).text, '자리 잡았음을 보여줍니다.');
+      expect(tidy('근거[1][2] 때문이다.', aiOpts()).text, '근거 때문이다.');
+    });
+
+    test('혼자 있는 [1]은 여전히 건드리지 않는다', () {
+      // 출처 목록이 없으면 "계약서 [1]항"처럼 본문일 수 있다.
+      expect(tidy('계약서 [1]항을 참조하라.', aiOpts()).text, '계약서 [1]항을 참조하라.');
+    });
+
+    test('본문에 "참고"라는 낱말이 있어도 지우지 않는다', () {
+      // 목록 제목은 바로 아래가 출처 줄일 때만 지운다.
+      const t = '참고\n이 부분은 나중에 다시 본다.';
+      expect(tidy(t, aiOpts()).text.contains('참고'), true);
+    });
+  });
 }

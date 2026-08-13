@@ -290,7 +290,7 @@ class L10nPt extends L10n {
   @override
   String get citationsTitle => 'Remover links de citação';
   @override
-  String get citationsSub => 'Remove blocos de citação [1]: URL e marcas [1] no texto';
+  String get citationsSub => 'Remove os números de nota no texto e a lista de fontes no fim';
   @override
   String get monoEditorTitle => 'Tabelas em monoespaçado';
   @override

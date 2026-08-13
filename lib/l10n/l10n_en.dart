@@ -290,7 +290,7 @@ class L10nEn extends L10n {
   @override
   String get citationsTitle => 'Remove citation links';
   @override
-  String get citationsSub => 'Removes [1]: URL citation blocks and in-text [1] marks';
+  String get citationsSub => 'Removes in-text footnote numbers and the “Sources” list at the end';
   @override
   String get monoEditorTitle => 'Monospaced tables';
   @override

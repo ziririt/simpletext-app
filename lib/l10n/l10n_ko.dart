@@ -288,7 +288,7 @@ class L10nKo extends L10n {
   @override
   String get citationsTitle => '출처 링크 제거';
   @override
-  String get citationsSub => '[1]: URL 출처 블록과 본문 [1] 표시 제거';
+  String get citationsSub => '본문의 각주 번호와 맨 아래 \'출처\' 목록을 함께 지웁니다';
   @override
   String get monoEditorTitle => '표를 등폭 글꼴로';
   @override

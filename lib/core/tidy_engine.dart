@@ -825,21 +825,44 @@ String tableToHTML(TableGrid t) {
 }
 
 /// ============ 출처(citation) 블록 제거 ============
+/// 두 가지 형식을 다룬다.
+///   (가) 마크다운 참조 정의:  [1]: https://...  "제목"     ← ChatGPT
+///   (나) 번호 목록형 출처:    [1] 기사 제목 ... https://... ← 퍼플렉시티
+/// 공통 조건: 줄이 [번호]로 시작하고, 같은 줄에 주소가 들어 있다.
+/// 파이프로 감싸져 표로 깨진 변형도 처리한다.
 bool isCitationLine(String line) {
   var c = line.trim();
   if (c.startsWith('|')) {
     c = c.replaceFirst(RegExp(r'^\|+'), '').replaceFirst(RegExp(r'\|+$'), '').trim();
   }
-  return RegExp(r'^\[\^?\d+\]:\s*(https?://|www\.)\S+').hasMatch(c);
+  if (RegExp(r'^\[\^?\d+\]:\s*(https?://|www\.)\S+').hasMatch(c)) return true;
+  return RegExp(r'^\[\^?\d+\]\s').hasMatch(c) && RegExp(r'(https?://|www\.)\S').hasMatch(c);
 }
+
+/// "출처", "참고문헌", "Sources" 같은 목록 제목. 바로 아래가 출처 줄일 때만
+/// 출처 블록의 일부로 보고 지운다(본문에 같은 낱말이 있어도 안전하도록).
+final RegExp _sourceHeading = RegExp(
+    r'^\s*#{0,6}\s*\**\s*(출처|참고|참고자료|참고 자료|참고문헌|인용|주석|각주'
+    r'|sources?|references?|citations?|bibliography|footnotes?)\s*\**\s*:?\s*$',
+    caseSensitive: false);
 
 List<String> _stripCitations(List<String> lines, TidyReport rep) {
   final cite = lines.map(isCitationLine).toList();
   if (!cite.contains(true)) return lines;
+  // 출처 줄 바로 앞의 목록 제목도 함께 지운다.
+  final drop = List<bool>.from(cite);
+  for (int i = 0; i < lines.length; i++) {
+    if (drop[i] || !_sourceHeading.hasMatch(lines[i])) continue;
+    int j = i + 1;
+    while (j < lines.length && lines[j].trim().isEmpty) {
+      j++;
+    }
+    if (j < lines.length && cite[j]) drop[i] = true;
+  }
   final out = <String>[];
   for (int i = 0; i < lines.length; i++) {
-    if (cite[i]) {
-      rep.citations++;
+    if (drop[i]) {
+      if (cite[i]) rep.citations++;
       continue;
     }
     final t = lines[i].trim();
@@ -900,10 +923,20 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
         .replaceAll(RegExp('&quot;', caseSensitive: false), '"')
         .replaceAll(RegExp('&#39;', caseSensitive: false), "'");
   }
-  // 본문 인라인 출처 마커 [1][2] — 출처 정의 블록이 있을 때만
+  // 본문 인라인 출처 마커 [1][2]
+  // 앞의 공백까지 같이 지운다 — 안 그러면 "...입니다. [6][7][8]"이
+  // "...입니다. "처럼 줄 끝에 공백만 남는다.
   if (o.inlineCites) {
-    t = t.replaceAllMapped(RegExp(r'\[\^?\d{1,2}\](?=[\s.,;:!?)\]]|\[|$)'), (m) {
+    // 문서에 출처 목록이 있으면 [n]은 전부 각주다.
+    t = t.replaceAllMapped(RegExp(r'[ \t]*\[\^?\d{1,3}\](?=[\s.,;:!?)\]]|\[|$)'), (m) {
       rep.citations++;
+      return '';
+    });
+  } else {
+    // 출처 목록이 없어도 [6][7][8]처럼 둘 이상 붙어 있으면 각주가 확실하다.
+    // (혼자 있는 "[1]"은 "계약서 [1]항" 같은 본문일 수 있어 건드리지 않는다)
+    t = t.replaceAllMapped(RegExp(r'[ \t]*(?:\[\^?\d{1,3}\]){2,}'), (m) {
+      rep.citations += RegExp(r'\[').allMatches(m.group(0)!).length;
       return '';
     });
   }

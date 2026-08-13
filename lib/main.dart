@@ -1800,9 +1800,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           // 버전은 여기서 눈으로 확인한다. 업데이트가 실제로 반영됐는지
           // 이 숫자 하나로 알 수 있어야 한다(소유자 요청 2026-08-12).
+          // 2026-08-14: 눈으로 읽고 옮겨 적는 대신 그대로 복사할 수 있어야 한다는
+          // 요청. SelectableText면 길게 눌러 선택 → 복사 — 애플 기본 방식 그대로다.
+          // (탭 한 번에 복사되는 식의 독자 동작은 만들지 않는다)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
-            child: Text(appVersionLabel,
+            child: SelectableText(appVersionLabel,
                 style: TextStyle(fontSize: 12, color: context.c.sub)),
           ),
         ],

@@ -291,7 +291,7 @@ class L10nFr extends L10n {
   @override
   String get citationsTitle => 'Retirer les liens de citation';
   @override
-  String get citationsSub => 'Retire les blocs de citation [1]: URL et les marques [1] dans le texte';
+  String get citationsSub => 'Supprime les numéros de note dans le texte et la liste des sources à la fin';
   @override
   String get monoEditorTitle => 'Tableaux à chasse fixe';
   @override

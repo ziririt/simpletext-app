@@ -288,7 +288,7 @@ class L10nZhHans extends L10n {
   @override
   String get citationsTitle => '去除引用链接';
   @override
-  String get citationsSub => '去除 [1]: URL 引用块和正文中的 [1] 标记';
+  String get citationsSub => '删除正文中的脚注编号和文末的“来源”列表';
   @override
   String get monoEditorTitle => '表格使用等宽字体';
   @override

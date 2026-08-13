@@ -288,7 +288,7 @@ class L10nJa extends L10n {
   @override
   String get citationsTitle => '出典リンクの除去';
   @override
-  String get citationsSub => '[1]: URL の出典ブロックと本文中の [1] 表記を除去';
+  String get citationsSub => '本文の脚注番号と末尾の「出典」一覧をまとめて削除します';
   @override
   String get monoEditorTitle => '表を等幅フォントで';
   @override

@@ -288,7 +288,7 @@ class L10nZhHant extends L10n {
   @override
   String get citationsTitle => '移除引用連結';
   @override
-  String get citationsSub => '移除 [1]: URL 引用區塊與內文中的 [1] 標記';
+  String get citationsSub => '刪除內文的註腳編號與文末的「來源」清單';
   @override
   String get monoEditorTitle => '表格使用等寬字型';
   @override

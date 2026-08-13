@@ -290,7 +290,7 @@ class L10nEs extends L10n {
   @override
   String get citationsTitle => 'Quitar enlaces de citas';
   @override
-  String get citationsSub => 'Quita los bloques de citas [1]: URL y las marcas [1] del texto';
+  String get citationsSub => 'Elimina los números de nota del texto y la lista de fuentes del final';
   @override
   String get monoEditorTitle => 'Tablas en monoespaciado';
   @override

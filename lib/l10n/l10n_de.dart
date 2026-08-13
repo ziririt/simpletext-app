@@ -291,7 +291,7 @@ class L10nDe extends L10n {
   @override
   String get citationsTitle => 'Quellenlinks entfernen';
   @override
-  String get citationsSub => 'Entfernt [1]: URL-Quellenblöcke und [1]-Marken im Text';
+  String get citationsSub => 'Entfernt Fußnotenzahlen im Text und die Quellenliste am Ende';
   @override
   String get monoEditorTitle => 'Tabellen in Monospace';
   @override
