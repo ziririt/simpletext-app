@@ -1469,12 +1469,11 @@ class _EditorScreenState extends State<EditorScreen> {
                   decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
                   // 등폭을 켜면 표의 칸이 정확히 맞는다 (CotEditor와 같은 방식).
                   // 비례 글꼴에서는 공백 정렬이 원리적으로 맞을 수 없다.
+                  // D2Coding — 한글이 영문의 정확히 2배 너비인 글꼴. 이게 있어야
+                  // 공백 정렬이 화면에서 실제로 맞는다. 기기 기본 등폭 글꼴은 한글이
+                  // 1.66배쯤이라 계산이 맞아도 행마다 조금씩 어긋난다(2026-08-14 측정).
                   style: store.settings.monoEditor
-                      ? const TextStyle(
-                          fontSize: 14.5,
-                          height: 1.5,
-                          fontFamily: 'Menlo',
-                          fontFamilyFallback: ['SF Mono', 'Consolas', 'monospace'])
+                      ? const TextStyle(fontSize: 14.5, height: 1.5, fontFamily: 'D2Coding')
                       : const TextStyle(fontSize: 16, height: 1.6),
                   onChanged: (_) => _save(),
                 ),

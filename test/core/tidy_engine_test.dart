@@ -28,7 +28,7 @@ void main() {
 · 그러나 과도한 AI CapEx 부담이 없다는 점은 오히려 긍정적이다.
 
 기업       AI CapEx 부담  시장 반응
-──────────────────
+───────────────────────────────────
 Microsoft  높음           긍정적
 Meta       높음           부정적
 Apple      낮음           혼재''';
@@ -53,7 +53,7 @@ Apple      낮음           혼재''';
 
     // 빈 셀(마이크로소프트 행의 비중)은 패딩 후 줄 끝 공백이 제거되므로 줄이 짧게 끝난다.
     const at03Exp = '''종목            티커  수익률  비중
-────────────────────
+────────────────────────────────────────
 애플            AAPL  +14.2%  12%
 마이크로소프트  MSFT  +21.5%
 엔비디아        NVDA  +48.9%  22% 추가셀
@@ -151,6 +151,21 @@ table = "A | B"
       expect(lines.indexOf(rules.first), 1, reason: '구분선은 헤더 바로 아래여야 한다');
     });
 
+    test('구분선 길이는 표에서 가장 넓은 줄과 정확히 같다', () {
+      // 2026-08-14 — 이 한 줄 때문에 두 번 물렸다. 처음엔 '─'가 한글처럼 두 칸으로
+      // 그려지는 줄 알고 개수를 절반으로 줄였다가 선이 너무 짧아졌고, 그 전에는
+      // 비례 글꼴에서 재는 바람에 너무 길어 보였다. 실제로 재 보니 '─'는 등폭
+      // 글꼴에서 정확히 한 칸이다. 그러니 '구분선 글자 수 = 표 폭'이 늘 참이어야 한다.
+      final lines = tidy(brokenIn, aiOpts()).text.split('\n');
+      final rule = lines.firstWhere((l) => RegExp(r'^─+$').hasMatch(l));
+      final bodyWidths = lines.where((l) => l != rule).map(dispWidth).toList();
+      // 줄 끝 공백은 지우므로 본문 줄이 더 짧을 수는 있어도 더 길 수는 없다.
+      expect(rule.length, bodyWidths.reduce((a, b) => a > b ? a : b));
+      for (final w in bodyWidths) {
+        expect(w <= rule.length, true, reason: '구분선보다 긴 줄이 있다');
+      }
+    });
+
     test('한글 폭 2칸 계산으로 열 시작 위치가 모든 줄에서 같다', () {
       // 이 프로젝트가 실제로 물렸던 지점: 문자 수로 패딩하면 '마이크로소프트'(7자/14칸)와
       // '애플'(2자/4칸) 행의 열이 어긋난다. 표시폭으로 패딩해야 등폭 글꼴에서 맞는다.
@@ -244,7 +259,7 @@ table = "A | B"
         ],
         repaired: false,
       );
-      expect(tableToAligned(t), '항목      값\n──────\n가\n나다라마  2');
+      expect(tableToAligned(t), '항목      값\n────────────\n가\n나다라마  2');
     });
   });
 
@@ -260,7 +275,7 @@ table = "A | B"
 
     test('탭 표를 표로 인식해 칸을 맞춘다', () {
       expect(tidy(tsvIn, aiOpts()).text, '역할                 예시 비중\n'
-          '───────────────\n'
+          '──────────────────────────────\n'
           '2~3년 은퇴 연결자금  20%\n'
           '미국시장 핵심지수    45%\n'
           '반도체·네트워크      10%');
