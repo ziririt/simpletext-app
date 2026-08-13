@@ -901,6 +901,12 @@ class _EditorScreenState extends State<EditorScreen> {
     await store.persist();
   }
 
+  /// 본문에서 뽑은 제목 — 비어 있지 않은 맨 윗줄, 최대 40자.
+  static String _titleFrom(String body) {
+    final first = body.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+    return first.length > 40 ? first.substring(0, 40) : first;
+  }
+
   Future<void> _runTidyWithPreset(Preset preset) async {
     await _save();
     final r = tidy(note.body, store.effOpts(preset));
@@ -916,11 +922,15 @@ class _EditorScreenState extends State<EditorScreen> {
       note.history.add(note.body);
       if (note.history.length > 30) note.history.removeAt(0);
       if (note.originalBody.isEmpty) note.originalBody = note.body;
+      // 제목은 "본문 맨 위 한 줄"이다(소유자 확정 2026-08-14).
+      // 정리하면서 맨 윗줄이 바뀔 수 있으므로(출력 시각 줄 제거 등) 다시 뽑는다.
+      // 단 사용자가 손으로 쓴 제목은 건드리지 않는다 — 정리 전 첫 줄과 같을 때만
+      // "자동으로 붙은 제목"으로 보고 갱신한다.
+      final wasAuto = note.title.isEmpty || note.title == _titleFrom(note.body);
       note.body = r.text;
       note.lastReport = r.summary;
-      if (note.title.isEmpty) {
-        note.title = r.text.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
-        if (note.title.length > 40) note.title = note.title.substring(0, 40);
+      if (wasAuto) {
+        note.title = _titleFrom(r.text);
         titleCtl.text = note.title;
       }
       bodyCtl.text = note.body;

@@ -302,6 +302,51 @@ List<_Segment> _splitSegments(String text) {
   return segs;
 }
 
+/// ============ 05a. 출력 시각 머리글 제거 ============
+/// "2026-08-03(월) 13:58 KST" 처럼 답변 맨 위에 찍히는 시각 줄. 제목으로도
+/// 본문으로도 쓸모가 없어 지운다(소유자 요청 2026-08-14).
+///
+/// 안전장치 — 아래 두 가지는 절대 건드리면 안 된다.
+///   "2024~2025년"                     ← 사용자가 쓴 소제목
+///   "2026년 7월 공지, 8월 20일 적용 예정" ← 날짜가 든 본문
+/// 그래서 (1) 문서 맨 위에서만 보고, (2) 줄 전체가 시각일 때만 지우고,
+/// (3) 시:분이 있거나 "출력 시각:" 같은 라벨이 붙어 있어야 한다.
+const String _tsLabel =
+    r'(?:출력|생성|작성|기준|수정|업데이트|최종\s*수정|발행|Generated|Created|Updated|Last\s+updated|As\s+of)\s*(?:시각|시간|일시|일자|일)?\s*[:：\-–—]\s*';
+const String _tsDate = r'\d{4}\s*[-./년]\s*\d{1,2}\s*[-./월]\s*\d{1,2}\s*일?\.?';
+const String _tsWd =
+    r'(?:\s*[(（]\s*(?:[월화수목금토일]|Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\s*[)）])?';
+const String _tsTime =
+    r'\s*(?:오전|오후|AM|PM|am|pm)?\s*\d{1,2}\s*[:시]\s*\d{2}(?:\s*[:분]\s*\d{2})?\s*초?\s*(?:AM|PM|am|pm)?';
+const String _tsTz =
+    r'(?:\s*[(（]?\s*(?:KST|UTC|GMT|JST|PST|PDT|EST|EDT|CST|CET)\s*[+-]?\d{0,2}(?::\d{2})?\s*[)）]?)?';
+final RegExp _timeHeader = RegExp('^(?:$_tsLabel)?$_tsDate$_tsWd$_tsTime$_tsTz' r'\.?$');
+final RegExp _timeHeaderLabeled = RegExp('^$_tsLabel$_tsDate$_tsWd$_tsTz' r'\.?$');
+
+bool isTimeHeader(String line) {
+  final t = line.trim();
+  if (t.isEmpty || t.length > 60) return false;
+  return _timeHeader.hasMatch(t) || _timeHeaderLabeled.hasMatch(t);
+}
+
+/// 맨 위에 이어지는 시각 줄을 모두 지운다. 지운 개수를 돌려준다.
+int _stripTimeHeader(List<String> lines) {
+  var removed = 0;
+  for (;;) {
+    var i = 0;
+    while (i < lines.length && lines[i].trim().isEmpty) {
+      i++;
+    }
+    if (i >= lines.length || !isTimeHeader(lines[i])) break;
+    lines.removeRange(0, i + 1);
+    while (lines.isNotEmpty && lines.first.trim().isEmpty) {
+      lines.removeAt(0);
+    }
+    removed++;
+  }
+  return removed;
+}
+
 /// ============ 05. AI Preamble Detection (보수적) ============
 final RegExp _preambleStart = RegExp(
     r"^(네[,.!\s]|넵[,.!\s]|물론(입니다|이죠|이에요)|알겠(습니다|어요)|안녕하세요|좋(습니다|아요)[,.!\s]|요청하신|말씀하신|아래는|다음은|정리해\s?드리|설명해\s?드리|도와드리|Sure[,.!\s]|Of course[,.!\s]|Certainly[,.!\s]|Absolutely[,.!\s]|Here('s| is| are)\b|Below (is|are)\b|I('|’)?ve\b|I('|’)?d be happy\b|Great question)",
@@ -1177,11 +1222,12 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
   if (o.removePreamble) {
     for (final s in segs) {
       if (s.type != 'text') continue;
+      rep.preamble += _stripTimeHeader(s.lines);
       final idx = _detectPreamble(s.lines);
       if (idx >= 0) {
         s.lines.removeAt(idx);
         if (idx < s.lines.length && s.lines[idx].isEmpty) s.lines.removeAt(idx);
-        rep.preamble = 1;
+        rep.preamble += 1;
       }
       break;
     }
