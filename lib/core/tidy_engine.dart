@@ -347,6 +347,30 @@ int _stripTimeHeader(List<String> lines) {
   return removed;
 }
 
+/// 맨 아래도 마찬가지. LLM은 출력 시각을 첫 줄 아니면 끝 줄에 찍는다
+/// (소유자 확인 2026-08-14). 문서 중간의 시각 표기는 본문 내용이므로 손대지 않는다.
+///
+/// [skipCites]: 끝에 출처 목록이 붙어 있으면 그 위를 본다. 출처는 어차피 곧
+/// 지워지므로, 출처 바로 위의 시각 줄도 사실상 '끝 줄'이다.
+int _stripTimeFooter(List<String> lines, bool skipCites) {
+  bool skippable(String l) =>
+      l.trim().isEmpty || (skipCites && (isCitationLine(l) || _sourceHeading.hasMatch(l)));
+  var removed = 0;
+  for (;;) {
+    var i = lines.length - 1;
+    while (i >= 0 && skippable(lines[i])) {
+      i--;
+    }
+    if (i < 0 || !isTimeHeader(lines[i])) break;
+    lines.removeAt(i);
+    removed++;
+  }
+  while (lines.isNotEmpty && lines.last.trim().isEmpty) {
+    lines.removeLast();
+  }
+  return removed;
+}
+
 /// ============ 05. AI Preamble Detection (보수적) ============
 final RegExp _preambleStart = RegExp(
     r"^(네[,.!\s]|넵[,.!\s]|물론(입니다|이죠|이에요)|알겠(습니다|어요)|안녕하세요|좋(습니다|아요)[,.!\s]|요청하신|말씀하신|아래는|다음은|정리해\s?드리|설명해\s?드리|도와드리|Sure[,.!\s]|Of course[,.!\s]|Certainly[,.!\s]|Absolutely[,.!\s]|Here('s| is| are)\b|Below (is|are)\b|I('|’)?ve\b|I('|’)?d be happy\b|Great question)",
@@ -1229,6 +1253,12 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
         if (idx < s.lines.length && s.lines[idx].isEmpty) s.lines.removeAt(idx);
         rep.preamble += 1;
       }
+      break;
+    }
+    // 끝 줄의 출력 시각도 지운다 — 마지막 text 조각에서만 본다.
+    for (final s in segs.reversed) {
+      if (s.type != 'text') continue;
+      rep.preamble += _stripTimeFooter(s.lines, o.removeCitations);
       break;
     }
   }

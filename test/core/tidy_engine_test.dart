@@ -671,5 +671,43 @@ table = "A | B"
       final r = tidy(raw, aiOpts().copyWith(removePreamble: false));
       expect(r.text.contains('13:58 KST'), true);
     });
+
+    // 2026-08-14 소유자 확정: "이런 줄들은 llm이 답변 출력한 시각이니 문서 맨위나
+    // 맨 아래에만 있다. (첫줄 또는 끝줄) 중간에 나오는 본문 내의 내용상의 시간
+    // 표시는 손대면 안된다."
+    test('끝 줄의 출력 시각도 지운다', () {
+      expect(tidy('본문 첫 줄입니다.\n둘째 줄입니다.\n\n2026-08-03(월) 13:58 KST', aiOpts()).text,
+          '본문 첫 줄입니다.\n둘째 줄입니다.');
+    });
+
+    test('첫 줄과 끝 줄에 모두 있으면 둘 다 지운다', () {
+      expect(tidy('2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n2026-08-03(월) 13:58 KST', aiOpts()).text,
+          '본문입니다.');
+    });
+
+    test('문서 중간의 시각은 절대 건드리지 않는다', () {
+      // 여기가 이 기능의 생명선이다. 본문 안의 시각은 내용이지 머리글이 아니다.
+      const mid = '회의 기록입니다.\n2026-08-03 13:58\n여기서 결정했다.\n마지막 줄입니다.';
+      expect(tidy(mid, aiOpts()).text, mid);
+
+      const mid2 = '첫 줄입니다.\n\n2026-08-03(월) 13:58 KST\n\n이때 발표가 있었다.';
+      expect(tidy(mid2, aiOpts()).text.contains('13:58 KST'), true);
+    });
+
+    test('출처 목록 위의 시각도 끝 줄로 본다', () {
+      // 출처는 곧 지워지므로, 그 위의 시각 줄이 사실상 마지막 줄이다.
+      const raw = '본문입니다.\n\n2026-08-03(월) 13:58 KST\n\n출처\n[1] 기사 제목 https://example.com/a';
+      expect(tidy(raw, aiOpts()).text, '본문입니다.');
+    });
+
+    test('끝 줄이 시각 없는 날짜면 남긴다', () {
+      const raw = '본문입니다.\n\n2026년 8월 3일';
+      expect(tidy(raw, aiOpts()).text, raw);
+    });
+
+    test('앞뒤 모두 지운 뒤에도 두 번 정리하면 같다', () {
+      final once = tidy('2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n2026-08-03 13:58', aiOpts()).text;
+      expect(tidy(once, aiOpts()).text, once);
+    });
   });
 }
