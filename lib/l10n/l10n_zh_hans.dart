@@ -11,6 +11,9 @@ class L10nZhHans extends L10n {
   String get appTitle => '简文本';
 
   @override
+  String get versionLabel => '版本';
+
+  @override
   String get homeTitle => '备忘录';
   @override
   String get settingsTooltip => '整理规则设置';

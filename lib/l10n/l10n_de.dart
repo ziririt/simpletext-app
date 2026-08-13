@@ -11,6 +11,9 @@ class L10nDe extends L10n {
   String get appTitle => 'SimpleText';
 
   @override
+  String get versionLabel => 'Version';
+
+  @override
   String get homeTitle => 'Notizen';
   @override
   String get settingsTooltip => 'Bereinigungsregeln';

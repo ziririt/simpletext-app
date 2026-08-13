@@ -11,6 +11,9 @@ class L10nKo extends L10n {
   String get appTitle => '심플텍스트';
 
   @override
+  String get versionLabel => '버전';
+
+  @override
   String get homeTitle => '메모';
   @override
   String get settingsTooltip => '정리 규칙 설정';

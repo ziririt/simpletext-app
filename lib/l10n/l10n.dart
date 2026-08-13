@@ -38,6 +38,10 @@ abstract class L10n {
   // ---------------- 앱 ----------------
   String get appTitle;
 
+  /// 설정 화면 맨 아래 버전 표시 앞에 붙는 낱말.
+  /// 업데이트가 실제로 반영됐는지 이 줄 하나로 확인한다(소유자 요청).
+  String get versionLabel;
+
   // ---------------- 홈 화면 ----------------
   String get homeTitle; // 상단 큰 제목 '메모'
   String get settingsTooltip;

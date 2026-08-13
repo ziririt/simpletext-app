@@ -11,6 +11,9 @@ class L10nJa extends L10n {
   String get appTitle => 'シンプルテキスト';
 
   @override
+  String get versionLabel => 'バージョン';
+
+  @override
   String get homeTitle => 'メモ';
   @override
   String get settingsTooltip => '整理ルール設定';

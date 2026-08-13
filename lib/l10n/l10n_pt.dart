@@ -11,6 +11,9 @@ class L10nPt extends L10n {
   String get appTitle => 'SimpleText';
 
   @override
+  String get versionLabel => 'Versão';
+
+  @override
   String get homeTitle => 'Notas';
   @override
   String get settingsTooltip => 'Regras de organização';

@@ -11,6 +11,9 @@ class L10nFr extends L10n {
   String get appTitle => 'SimpleText';
 
   @override
+  String get versionLabel => 'Version';
+
+  @override
   String get homeTitle => 'Notes';
   @override
   String get settingsTooltip => 'Règles de nettoyage';

@@ -11,6 +11,9 @@ class L10nEs extends L10n {
   String get appTitle => 'SimpleText';
 
   @override
+  String get versionLabel => 'Versión';
+
+  @override
   String get homeTitle => 'Notas';
   @override
   String get settingsTooltip => 'Reglas de limpieza';
