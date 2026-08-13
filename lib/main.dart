@@ -1796,7 +1796,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 이 숫자 하나로 알 수 있어야 한다(소유자 요청 2026-08-12).
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
-            child: Text('${l.versionLabel} $appVersionLabel',
+            child: Text(appVersionLabel,
                 style: TextStyle(fontSize: 12, color: context.c.sub)),
           ),
         ],

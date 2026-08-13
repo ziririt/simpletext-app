@@ -371,6 +371,7 @@ abstract class L10n {
         'rulesSectionDesc': rulesSectionDesc,
         'addRule': addRule,
         'settingsFooter': settingsFooter,
+        'versionLabel': versionLabel,
       };
 
   // ---------------- 로케일 해석 ----------------
