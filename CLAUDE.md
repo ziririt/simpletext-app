@@ -30,12 +30,25 @@ AI 답변(ChatGPT·Claude·Gemini·Grok 등)을 붙여넣으면 바로 저장·�
   - 배포 주소: https://ziririt.github.io/simpletext/
   - 같은 엔진의 JS 원본이 인라인으로 포함됨. Dart 엔진과 로직·테스트 동일 유지 필수.
 
-## 검증 명령
+## 검증 명령 — 이것부터 읽을 것
 
 ```
-flutter test        # 엔진 60개 테스트 — 전부 통과해야 함
-flutter analyze     # 경고 0 유지 (info 수준은 허용)
+tool/verify.sh      # 푸시 전 이 한 줄이면 된다 (CI와 같은 순서)
 ```
+
+**`flutter analyze`·`flutter test`만으로는 부족하다.** 이 저장소에는 언어 표준 도구가
+보지 않는 자기만의 검사기가 `tool/` 안에 따로 있고, CI는 그것들도 본다.
+
+| 검사기 | 무엇을 잡나 |
+|---|---|
+| `tool/l10n_check.py` | 추상 getter ↔ all 맵 ↔ 9개 언어 파일 불일치, 빈 값 |
+| `tool/version_check.py` | pubspec.yaml ↔ lib/version.dart 버전 어긋남 |
+| `tool/store_check.py` | 스토어 문구 누락·글자 수 초과·미번역 |
+| `tool/screenshot_check.py` | 촬영 후 빠진 언어 (맥에서 촬영 뒤 수동 실행) |
+
+2026-08-14에 세션 두 개가 나란히 같은 실수를 했다. analyze·test가 통과해서
+끝난 줄 알고 푸시했는데 `l10n_check.py`가 CI에서 잡았다. **처음 이 저장소에
+손대는 세션은 `ls tool/`부터 볼 것.** 그리고 푸시가 끝이 아니라 CI 통과가 끝이다.
 
 ## 엔진 파이프라인 (JS/Dart 동일)
 

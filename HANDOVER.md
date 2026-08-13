@@ -153,6 +153,10 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   맥에서 flutter pub get 후 lock 변경이 있으면 함께 커밋할 것.
 - 아이폰 설치는 폰이 잠겨 있으면 "Install failed" — 잠금 해제 후 재시도하면 됨
 - flutter analyze는 warning도 실패 처리 — 미사용 코드 남기지 말 것
+- **analyze·test 통과 = 끝이 아니다.** 이 저장소에는 tool/ 안에 자기만의 검사기가
+  따로 있고 CI가 그것들도 본다(l10n·version·store). 2026-08-14에 세션 두 개가
+  나란히 여기서 걸렸다 — 둘 다 flutter 도구만 돌리고 tool/ 폴더를 안 봤다.
+  푸시 전에 `tool/verify.sh` 한 줄로 전부 돌릴 것. 그리고 푸시가 아니라 CI 통과가 끝이다.
 - macOS 앱에서 외부 API 호출하려면 Release.entitlements에 com.apple.security.network.client 필요(적용됨)
 - 웹앱 사용자에게 구버전이 보이면: PWA 완전 종료 후 재실행(네트워크 우선이라 그러면 갱신됨)
 - 표 안 파이프(\|), 코드블록 보호, 서두 오탐 방지(확신도 낮으면 보존) 등은 테스트가 지키고 있음 —
