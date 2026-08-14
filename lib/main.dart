@@ -61,6 +61,23 @@ class AppC extends ThemeExtension<AppC> {
   // 날짜·부가정보용이고 이건 읽어야 하는 문장용이다. 둘을 섞지 말 것.
   //   라이트 #3A3A3C on #FFFFFF = 11.6:1   다크 #E5E5EA on #1C1C1E = 13.9:1
   final Color guideInk; // 설정 안내문구
+  // 2026-08-14 소유자 신고 둘: (1) 글자를 선택했을 때 씌워지는 블럭 색이
+  // 밝고 경쾌한 하늘색이 아니다 (2) 전체 선택 뒤 범위를 줄이려는데
+  // 드래그할 손잡이가 안 보인다.
+  //
+  // 원인은 하나였다 — 이 앱에는 선택 관련 색 설정이 **아예 없었다**.
+  // 그래서 머티리얼3 기본값이 그대로 나왔다. 기본 선택색은 seed에서
+  // 만들어진 흐린 보라빛이고, 손잡이도 같은 계열이라 배경에 묻힌다.
+  // 색을 안 정한 것이지 손잡이가 없는 게 아니었다.
+  //
+  // 값은 눈이 아니라 계산으로 정했다(반투명이라 배경과 섞인 뒤를 봐야 한다).
+  //   라이트: #4FC3F7 40% + 흰 배경 = #B9E7FC → 검정 글자 15.9:1
+  //   다크  : #4FC3F7 48% + 검정 배경 = #265E77 → 흰 글자 8.0:1
+  //   손잡이 라이트 #0288D1(흰 배경 3.9:1) / 다크 #4FC3F7(검정 10.5:1)
+  // 손잡이는 글자가 아니라 조작점이라 기준이 3:1이다 — 둘 다 넘는다.
+  // 선택색을 불투명하게 만들면 글자가 묻힌다. 반드시 알파를 남길 것.
+  final Color selBg; // 글자 선택 블럭
+  final Color selHandle; // 선택 손잡이·커서
   final Color tagBg; // 태그 블럭 배경
   final Color tagInk; // 태그 글자
   final Color tagLine; // 태그 테두리
@@ -82,6 +99,8 @@ class AppC extends ThemeExtension<AppC> {
     required this.pin,
     required this.danger,
     required this.guideInk,
+    required this.selBg,
+    required this.selHandle,
     required this.tagBg,
     required this.tagInk,
     required this.tagLine,
@@ -104,6 +123,8 @@ class AppC extends ThemeExtension<AppC> {
     pin: Color(0xFFF2B705),
     danger: Color(0xFFE53935),
     guideInk: Color(0xFF3A3A3C),
+    selBg: Color(0x664FC3F7),
+    selHandle: Color(0xFF0288D1),
     tagBg: Color(0xFFDFF1FF),
     tagInk: Color(0xFF0A66AA),
     tagLine: Color(0xFFB6E0FB),
@@ -126,6 +147,8 @@ class AppC extends ThemeExtension<AppC> {
     pin: Color(0xFFF2B705),
     danger: Color(0xFFFF453A),
     guideInk: Color(0xFFE5E5EA),
+    selBg: Color(0x7A4FC3F7),
+    selHandle: Color(0xFF4FC3F7),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
     tagLine: Color(0xFF1D5578),
@@ -149,6 +172,8 @@ class AppC extends ThemeExtension<AppC> {
     Color? pin,
     Color? danger,
     Color? guideInk,
+    Color? selBg,
+    Color? selHandle,
     Color? tagBg,
     Color? tagInk,
     Color? tagLine,
@@ -170,6 +195,8 @@ class AppC extends ThemeExtension<AppC> {
         pin: pin ?? this.pin,
         danger: danger ?? this.danger,
         guideInk: guideInk ?? this.guideInk,
+        selBg: selBg ?? this.selBg,
+        selHandle: selHandle ?? this.selHandle,
         tagBg: tagBg ?? this.tagBg,
         tagInk: tagInk ?? this.tagInk,
         tagLine: tagLine ?? this.tagLine,
@@ -195,6 +222,8 @@ class AppC extends ThemeExtension<AppC> {
       pin: Color.lerp(pin, other.pin, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       guideInk: Color.lerp(guideInk, other.guideInk, t)!,
+      selBg: Color.lerp(selBg, other.selBg, t)!,
+      selHandle: Color.lerp(selHandle, other.selHandle, t)!,
       tagBg: Color.lerp(tagBg, other.tagBg, t)!,
       tagInk: Color.lerp(tagInk, other.tagInk, t)!,
       tagLine: Color.lerp(tagLine, other.tagLine, t)!,
@@ -261,6 +290,13 @@ class SimpleTextApp extends StatelessWidget {
         backgroundColor: c.bg,
         elevation: 0,
         scrolledUnderElevation: 0.5,
+      ),
+      // 선택 블럭·손잡이·커서 색. 이걸 안 주면 머티리얼 기본값이 나오고,
+      // 손잡이가 배경에 묻혀 "드래그할 점이 안 보인다"는 신고가 된다.
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: c.selHandle,
+        selectionColor: c.selBg,
+        selectionHandleColor: c.selHandle,
       ),
       extensions: [c],
     );
