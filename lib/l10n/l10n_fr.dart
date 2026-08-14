@@ -75,6 +75,12 @@ class L10nFr extends L10n {
   String get autoTidy => 'Nettoyage auto';
 
   @override
+  String get bodyFontSizeTitle => 'Taille du texte';
+
+  @override
+  String get bodyFontSizeSample => 'Placez votre app de notes habituelle à côté et ajustez jusqu’à ce que cette ligne soit identique.';
+
+  @override
   String get wizardNothingToDo => 'Rien à modifier';
 
   @override

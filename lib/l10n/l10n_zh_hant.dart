@@ -75,6 +75,12 @@ class L10nZhHant extends L10n {
   String get autoTidy => '自動整理';
 
   @override
+  String get bodyFontSizeTitle => '內文字級';
+
+  @override
+  String get bodyFontSizeSample => '與常用的備忘錄 App 並排比較，調到這句話看起來一樣為止。';
+
+  @override
   String get wizardNothingToDo => '沒有需要變更的內容';
 
   @override

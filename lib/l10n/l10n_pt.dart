@@ -75,6 +75,12 @@ class L10nPt extends L10n {
   String get autoTidy => 'Limpeza automática';
 
   @override
+  String get bodyFontSizeTitle => 'Tamanho do texto';
+
+  @override
+  String get bodyFontSizeSample => 'Coloque a sua app de notas habitual ao lado e ajuste até esta linha ficar igual.';
+
+  @override
   String get wizardNothingToDo => 'Nada para alterar';
 
   @override

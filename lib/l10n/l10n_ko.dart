@@ -75,6 +75,12 @@ class L10nKo extends L10n {
   String get autoTidy => '자동 정리';
 
   @override
+  String get bodyFontSizeTitle => '본문 글자 크기';
+
+  @override
+  String get bodyFontSizeSample => '쓰시던 메모 앱과 나란히 놓고 이 문장이 같아 보일 때까지 맞추세요.';
+
+  @override
   String get wizardNothingToDo => '바꿀 것이 없습니다';
 
   @override

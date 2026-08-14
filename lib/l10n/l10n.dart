@@ -72,6 +72,12 @@ abstract class L10n {
   /// 상단 툴바의 한 번 누르면 'AI 답변 정리'가 도는 버튼
   String get autoTidy;
 
+  /// 설정의 본문 글자 크기
+  String get bodyFontSizeTitle;
+
+  /// 크기를 눈으로 맞출 때 쓰는 견본 문장
+  String get bodyFontSizeSample;
+
   /// 마법사에 지시가 비었거나 바꿀 게 없을 때
   String get wizardNothingToDo;
 
@@ -279,6 +285,8 @@ abstract class L10n {
         'seedBody': seedBody,
         'done': done,
         'autoTidy': autoTidy,
+        'bodyFontSizeTitle': bodyFontSizeTitle,
+        'bodyFontSizeSample': bodyFontSizeSample,
         'wizardNothingToDo': wizardNothingToDo,
         'skipPreviewCheck': skipPreviewCheck,
         'previewTitle2': previewTitle2,

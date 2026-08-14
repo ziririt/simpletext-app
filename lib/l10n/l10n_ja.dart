@@ -75,6 +75,12 @@ class L10nJa extends L10n {
   String get autoTidy => '自動整理';
 
   @override
+  String get bodyFontSizeTitle => '本文の文字サイズ';
+
+  @override
+  String get bodyFontSizeSample => 'いつものメモアプリと並べて、この文が同じに見えるまで合わせてください。';
+
+  @override
   String get wizardNothingToDo => '変更するものがありません';
 
   @override

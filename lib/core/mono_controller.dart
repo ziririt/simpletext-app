@@ -23,15 +23,26 @@ class MonoTextController extends TextEditingController {
   static const String fontFamily = 'D2Coding';
 
   /// 본문(줄글) 크기 — 기기 기본 글꼴을 그대로 쓴다.
-  /// 2026-08-14 소유자 선택: 16 → 17(애플 메모의 기본 본문 크기).
-  static const double bodyFontSize = 17;
+  ///
+  /// 2026-08-14: 처음엔 16, 다음엔 17로 고정값을 바꿔 가며 맞추려 했는데,
+  /// 한 번 고칠 때마다 빌드→설치→확인 왕복이 생겨 소유자가 쓰는 다른 앱과
+  /// 맞추기가 어려웠다. 그래서 고정값을 버리고 설정에서 직접 고르게 한다.
+  /// (CotEditor·Xcode 같은 편집기도 글자 크기를 사용자가 정한다)
+  static const double defaultBodyFontSize = 17;
+  static const double minBodyFontSize = 13;
+  static const double maxBodyFontSize = 24;
   static const double bodyHeight = 1.6;
 
+  /// 화면 build에서 설정값을 넣어 준다.
+  double bodyFontSize = defaultBodyFontSize;
+
   /// 등폭 구간 크기. 표가 가로로 덜 넘치도록 본문보다 조금 작게 쓴다.
-  static const double monoFontSize = 14.5;
+  /// 본문 크기를 바꾸면 같은 비율로 따라간다(17일 때 14.5).
+  static const double _monoRatio = 14.5 / defaultBodyFontSize;
+  double get monoFontSize => bodyFontSize * _monoRatio;
 
   /// 크기가 달라도 **줄 높이는 본문과 같아야** 표 근처에서 줄 간격이 튀지 않는다.
-  static const double monoHeight = bodyFontSize * bodyHeight / monoFontSize;
+  double get monoHeight => bodyFontSize * bodyHeight / monoFontSize;
 
   @override
   TextSpan buildTextSpan({

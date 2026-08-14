@@ -321,6 +321,10 @@ class AppSettings {
   /// 정리 결과를 먼저 보여 줄지. 미리보기 화면에서 '앞으로 생략'을 켜면 꺼지고,
   /// 설정에서 다시 켤 수 있다(2026-08-14 소유자 요청).
   bool previewBeforeApply = true;
+
+  /// 본문 글자 크기. 쓰던 메모앱과 눈으로 맞출 수 있게 설정에서 고른다
+  /// (2026-08-14 — 고정값을 바꿔 가며 맞추려니 매번 설치 왕복이 생겼다).
+  double bodyFontSize = MonoTextController.defaultBodyFontSize;
   String aiKey = '';
   String aiModel = 'gemini-2.5-flash-lite';
   List<CustomRule> customRules = [];
@@ -340,6 +344,7 @@ class AppSettings {
         'removeCitations': removeCitations,
         'monoEditor': monoEditor,
         'previewBeforeApply': previewBeforeApply,
+        'bodyFontSize': bodyFontSize,
         'aiKey': aiKey,
         'aiModel': aiModel,
         'customRules': customRules
@@ -363,6 +368,7 @@ class AppSettings {
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
     s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
     s.previewBeforeApply = (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
+    s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -1478,6 +1484,7 @@ class _EditorScreenState extends State<EditorScreen> {
     }
     // 설정을 바꾸면 다음 build에서 바로 반영된다(컨트롤러가 매번 이 값을 본다).
     bodyCtl.monoEnabled = store.settings.monoEditor;
+    bodyCtl.bodyFontSize = store.settings.bodyFontSize;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) _save();
@@ -1611,8 +1618,8 @@ class _EditorScreenState extends State<EditorScreen> {
                   // core/mono_controller.dart가 한다.
                   // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
                   // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
-                  style: const TextStyle(
-                      fontSize: MonoTextController.bodyFontSize,
+                  style: TextStyle(
+                      fontSize: store.settings.bodyFontSize,
                       height: MonoTextController.bodyHeight),
                   onChanged: (_) => _save(),
                 ),
@@ -1868,6 +1875,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
+          // 글자 크기 — 쓰던 앱과 눈으로 맞출 수 있게 견본을 같이 보여 준다.
+          // 숫자를 코드에 박아 두면 맞출 때마다 설치 왕복이 생긴다(2026-08-14).
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(l.bodyFontSizeTitle,
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                    ),
+                    Text('${s.bodyFontSize.round()}',
+                        style: TextStyle(fontSize: 13, color: context.c.sub)),
+                  ],
+                ),
+                Slider.adaptive(
+                  value: s.bodyFontSize,
+                  min: MonoTextController.minBodyFontSize,
+                  max: MonoTextController.maxBodyFontSize,
+                  divisions: (MonoTextController.maxBodyFontSize -
+                          MonoTextController.minBodyFontSize)
+                      .round(),
+                  onChanged: (v) => setState(() => s.bodyFontSize = v),
+                  onChangeEnd: (_) => store.persistSettings(),
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                      color: context.c.codeBg,
+                      border: Border.all(color: context.c.codeLine),
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Text(l.bodyFontSizeSample,
+                      style: TextStyle(
+                          fontSize: s.bodyFontSize, height: MonoTextController.bodyHeight)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
           // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
           SwitchListTile.adaptive(
             title: Text(l.previewTitle2, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),

@@ -75,6 +75,12 @@ class L10nDe extends L10n {
   String get autoTidy => 'Auto-Bereinigung';
 
   @override
+  String get bodyFontSizeTitle => 'Textgröße';
+
+  @override
+  String get bodyFontSizeSample => 'Legen Sie Ihre gewohnte Notizen-App daneben und passen Sie an, bis diese Zeile gleich aussieht.';
+
+  @override
   String get wizardNothingToDo => 'Nichts zu ändern';
 
   @override
