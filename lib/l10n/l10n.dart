@@ -138,6 +138,12 @@ abstract class L10n {
   // ---------------- 마법사 ----------------
   String get wizardTitle;
   String get wizardHint;
+  String get favSaveButton;
+  String get favListTitle;
+  String get favUse;
+  String get favEmpty;
+  String get favRemove;
+  String get favSavedToast;
   String appliedPrefix(String what);
   String unknownPrefix(String what);
   String get aiKeyPromo;
@@ -339,6 +345,12 @@ abstract class L10n {
         'copiedMarkdown': copiedMarkdown,
         'wizardTitle': wizardTitle,
         'wizardHint': wizardHint,
+        'favSaveButton': favSaveButton,
+        'favListTitle': favListTitle,
+        'favUse': favUse,
+        'favEmpty': favEmpty,
+        'favRemove': favRemove,
+        'favSavedToast': favSavedToast,
         'aiKeyPromo': aiKeyPromo,
         'aiRunUnknown': aiRunUnknown,
         'aiBusyLabel': aiBusyLabel,

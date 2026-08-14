@@ -180,6 +180,18 @@ class L10nZhHans extends L10n {
   @override
   String get wizardHint => '用自然语言下指令。例如：\n小标题上方空2行，下方空1行\n把微软替换成 Microsoft';
   @override
+  String get favSaveButton => '存为常用指令';
+  @override
+  String get favListTitle => '常用指令';
+  @override
+  String get favUse => '选用';
+  @override
+  String get favEmpty => '还没有保存的指令';
+  @override
+  String get favRemove => '删除';
+  @override
+  String get favSavedToast => '已保存';
+  @override
   String appliedPrefix(String what) => '已应用 · $what';
   @override
   String unknownPrefix(String what) => '无法解析为规则 · $what';

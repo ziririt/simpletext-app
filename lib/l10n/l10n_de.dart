@@ -181,6 +181,18 @@ class L10nDe extends L10n {
   String get wizardHint =>
       'Gib Anweisungen in deiner Sprache. Z. B.:\nVor Zwischenüberschriften 2 Leerzeilen, danach 1\nErsetze MS durch Microsoft';
   @override
+  String get favSaveButton => 'Als Favorit sichern';
+  @override
+  String get favListTitle => 'Favoriten';
+  @override
+  String get favUse => 'Verwenden';
+  @override
+  String get favEmpty => 'Noch keine gespeicherten Anweisungen';
+  @override
+  String get favRemove => 'Entfernen';
+  @override
+  String get favSavedToast => 'Gesichert';
+  @override
   String appliedPrefix(String what) => 'Angewendet · $what';
   @override
   String unknownPrefix(String what) => 'Nicht als Regel erkannt · $what';

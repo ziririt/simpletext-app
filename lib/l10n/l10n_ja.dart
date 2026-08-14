@@ -180,6 +180,18 @@ class L10nJa extends L10n {
   @override
   String get wizardHint => '言葉で指示してください。例：\n小見出しの上の空白は2行、下は1行にして\nマイクロソフトをMSに置換して';
   @override
+  String get favSaveButton => 'よく使う指示として登録';
+  @override
+  String get favListTitle => 'よく使う指示';
+  @override
+  String get favUse => '選択';
+  @override
+  String get favEmpty => '登録した指示はまだありません';
+  @override
+  String get favRemove => '削除';
+  @override
+  String get favSavedToast => '登録しました';
+  @override
   String appliedPrefix(String what) => '適用済み · $what';
   @override
   String unknownPrefix(String what) => 'ルールとして解釈できません · $what';

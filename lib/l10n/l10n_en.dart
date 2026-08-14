@@ -181,6 +181,18 @@ class L10nEn extends L10n {
   String get wizardHint =>
       'Tell it what to do. e.g.\nMake it 2 blank lines above headings, 1 below\nReplace MS with Microsoft';
   @override
+  String get favSaveButton => 'Save as a favorite';
+  @override
+  String get favListTitle => 'Favorite instructions';
+  @override
+  String get favUse => 'Use';
+  @override
+  String get favEmpty => 'No saved instructions yet';
+  @override
+  String get favRemove => 'Remove';
+  @override
+  String get favSavedToast => 'Saved';
+  @override
   String appliedPrefix(String what) => 'Applied · $what';
   @override
   String unknownPrefix(String what) => 'Not a recognized rule · $what';

@@ -181,6 +181,18 @@ class L10nEs extends L10n {
   String get wizardHint =>
       'Da instrucciones en tu idioma. Ej.:\nDeja 2 líneas antes de los subtítulos y 1 después\nReemplaza MS por Microsoft';
   @override
+  String get favSaveButton => 'Guardar como favorito';
+  @override
+  String get favListTitle => 'Instrucciones favoritas';
+  @override
+  String get favUse => 'Usar';
+  @override
+  String get favEmpty => 'Aún no hay instrucciones guardadas';
+  @override
+  String get favRemove => 'Quitar';
+  @override
+  String get favSavedToast => 'Guardado';
+  @override
   String appliedPrefix(String what) => 'Aplicado · $what';
   @override
   String unknownPrefix(String what) => 'No se reconoce como regla · $what';

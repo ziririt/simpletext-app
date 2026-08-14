@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/mono_controller.dart';
+import 'core/mru.dart';
 import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
 import 'core/wizard.dart';
@@ -366,6 +367,8 @@ class AppSettings {
   double bodyFontSize = MonoTextController.defaultBodyFontSize;
   String aiKey = '';
   String aiModel = 'gemini-2.5-flash-lite';
+  /// 마법사에서 등록해 둔 지시문. 최근에 쓴 것이 앞이다(core/mru.dart).
+  List<String> favPrompts = [];
   List<CustomRule> customRules = [];
 
   Map<String, dynamic> toJson() => {
@@ -386,6 +389,7 @@ class AppSettings {
         'bodyFontSize': bodyFontSize,
         'aiKey': aiKey,
         'aiModel': aiModel,
+        'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
             .toList(),
@@ -410,6 +414,8 @@ class AppSettings {
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
+    s.favPrompts =
+        ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
         .map((e) => CustomRule(
               find: (e['find'] ?? '') as String,
@@ -1419,6 +1425,105 @@ class _EditorScreenState extends State<EditorScreen> {
                         hintText: l.wizardHint,
                         border: const OutlineInputBorder(),
                       ),
+                    ),
+                    const SizedBox(height: 6),
+                    // 2026-08-14 소유자 요청: 자주 쓰는 지시문을 등록해 두고 골라 쓴다.
+                    // 같은 지시를 매번 다시 치지 않게 하는 것이 목적이다.
+                    //
+                    // '선택'은 입력칸에 채워 넣기만 하고 바로 실행하지 않는다.
+                    // 대개 "이번엔 조금 다르게"가 붙기 때문에 손볼 틈이 있어야 한다.
+                    // 소유자 지시도 "편집가능 상태로"였다.
+                    //
+                    // 고른 지시문은 다시 맨 위로 올라간다 — 등록만이 아니라
+                    // '사용'도 최근 기록이다. 순서 규칙은 core/mru.dart가 갖고
+                    // 있고 테스트로 고정돼 있다.
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          final t = cmdCtl.text.trim();
+                          if (t.isEmpty) return;
+                          mruInsert(store.settings.favPrompts, t);
+                          await store.persistSettings();
+                          setD(() {});
+                          if (mounted) _toast(context, L10n.of(context).favSavedToast);
+                        },
+                        icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+                        label: Text(l.favSaveButton),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2, bottom: 4),
+                      child: Text(l.favListTitle,
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.c.sub)),
+                    ),
+                    Container(
+                      // 등록이 늘어나도 창이 길어지지 않게 높이를 묶고 안에서 굴린다.
+                      height: 168,
+                      decoration: BoxDecoration(
+                        color: context.c.codeBg,
+                        border: Border.all(color: context.c.codeLine),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: store.settings.favPrompts.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Text(l.favEmpty,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 14, color: context.c.guideInk)),
+                              ),
+                            )
+                          : Scrollbar(
+                              child: ListView.separated(
+                                padding: EdgeInsets.zero,
+                                itemCount: store.settings.favPrompts.length,
+                                separatorBuilder: (_, __) =>
+                                    Divider(height: 1, color: context.c.codeLine),
+                                itemBuilder: (_, i) {
+                                  final p = store.settings.favPrompts[i];
+                                  return Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 4, 2, 4),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(p,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                  fontSize: 14, height: 1.3)),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            cmdCtl.text = p;
+                                            cmdCtl.selection = TextSelection.collapsed(
+                                                offset: cmdCtl.text.length);
+                                            mruInsert(store.settings.favPrompts, p);
+                                            await store.persistSettings();
+                                            setD(() {});
+                                          },
+                                          child: Text(l.favUse),
+                                        ),
+                                        IconButton(
+                                          tooltip: l.favRemove,
+                                          visualDensity: VisualDensity.compact,
+                                          icon: const Icon(Icons.close, size: 18),
+                                          onPressed: () async {
+                                            store.settings.favPrompts.remove(p);
+                                            await store.persistSettings();
+                                            setD(() {});
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                     ),
                     const SizedBox(height: 8),
                     for (final a in applied)

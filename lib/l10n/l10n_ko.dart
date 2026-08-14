@@ -180,6 +180,18 @@ class L10nKo extends L10n {
   @override
   String get wizardHint => '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘';
   @override
+  String get favSaveButton => '자주 쓰는 지시문으로 등록';
+  @override
+  String get favListTitle => '자주 쓰는 지시문';
+  @override
+  String get favUse => '선택';
+  @override
+  String get favEmpty => '아직 등록한 지시문이 없습니다';
+  @override
+  String get favRemove => '지우기';
+  @override
+  String get favSavedToast => '등록했습니다';
+  @override
   String appliedPrefix(String what) => '적용됨 · $what';
   @override
   String unknownPrefix(String what) => '규칙으로 해석 불가 · $what';

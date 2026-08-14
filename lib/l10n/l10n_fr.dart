@@ -181,6 +181,18 @@ class L10nFr extends L10n {
   String get wizardHint =>
       'Donnez vos consignes en langage naturel. Ex. :\nMets 2 lignes vides avant les sous-titres et 1 après\nRemplace MS par Microsoft';
   @override
+  String get favSaveButton => 'Enregistrer en favori';
+  @override
+  String get favListTitle => 'Instructions favorites';
+  @override
+  String get favUse => 'Utiliser';
+  @override
+  String get favEmpty => 'Aucune instruction enregistrée';
+  @override
+  String get favRemove => 'Retirer';
+  @override
+  String get favSavedToast => 'Enregistré';
+  @override
   String appliedPrefix(String what) => 'Appliqué · $what';
   @override
   String unknownPrefix(String what) => 'Non reconnu comme règle · $what';

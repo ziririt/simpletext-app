@@ -181,6 +181,18 @@ class L10nPt extends L10n {
   String get wizardHint =>
       'Dê instruções no seu idioma. Ex.:\nDeixe 2 linhas antes dos subtítulos e 1 depois\nSubstitua MS por Microsoft';
   @override
+  String get favSaveButton => 'Guardar como favorito';
+  @override
+  String get favListTitle => 'Instruções favoritas';
+  @override
+  String get favUse => 'Usar';
+  @override
+  String get favEmpty => 'Ainda não há instruções guardadas';
+  @override
+  String get favRemove => 'Remover';
+  @override
+  String get favSavedToast => 'Guardado';
+  @override
   String appliedPrefix(String what) => 'Aplicado · $what';
   @override
   String unknownPrefix(String what) => 'Não reconhecido como regra · $what';
