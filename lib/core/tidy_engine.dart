@@ -211,7 +211,23 @@ List<Preset> buildPresets() => [
     ];
 
 /// ================= 유틸 =================
+// 2026-08-14 — `flutter analyze`가 아래 정규식에 valid_regexps(info)를 매긴다.
+// 무시해도 되는 경고다. 다만 "info니까 무해하다"로 넘기지 않고 재현해서 확인했다.
+//
+// 원인: 이 린트는 RegExp의 `unicode:` 인자를 보지 않고 패턴 문자열만 검사한다.
+// unicode 모드가 아니면 `\p{...}`와 `\u{...}`가 문법 오류이므로 린트가 그대로
+// "무효한 정규식"이라고 보고한다. 실제로는 아래에서 unicode: true로 만든다.
+// 손으로 재현한 결과(dart 런타임):
+//   unicode: true  → 국기·피부톤·ZWJ 결합·키캡 네 갈래 전부 정상 매치
+//   unicode: false → FormatException: Range out of order in character class
+//
+// 그러니 경고를 없애겠다고 `\p{...}`를 ASCII 범위로 바꿔 쓰지 말 것.
+// 그 순간 국기(🇰🇷)와 ZWJ 이모지(👨‍💻)가 본문에 그대로 남는다.
+// 네 갈래를 각각 지키는 테스트가 있다 —
+// test/core/tidy_engine_test.dart 그룹 '이모지 제거 — 정규식 갈래별 (2026-08-14)'.
+// 웹(index.html)의 EMOJI_RE도 같은 패턴이다(u 플래그). 고칠 일이 있으면 양쪽 동시.
 final RegExp _emojiRe = RegExp(
+    // ignore: valid_regexps
     r'(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:[\u{1F3FB}-\u{1F3FF}])?(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*|[\u2600-\u27BF]\uFE0F?|[0-9#*]\uFE0F?\u20E3)',
     unicode: true);
 final RegExp _zwWithZwj = RegExp('[\u200B\u200C\u200D\u200E\u200F\u2060\uFEFF]');
@@ -1087,7 +1103,23 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
         .replaceAll(RegExp('[\u2013\u2014]'), '-')
         .replaceAll('\u2026', '...');
   }
-  if (o.removeEmoji) t = t.replaceAll(RegExp(' {2,}'), ' ');
+  if (o.removeEmoji) {
+    t = t.replaceAll(RegExp(' {2,}'), ' ');
+    // 2026-08-14 — 줄 맨 앞에 있던 이모지를 지우면 그 뒤 공백 한 칸이 그대로 남는다.
+    // "✅ 완료"가 " 완료"가 됐다. 바로 위 ' {2,}'→' ' 규칙은 두 칸 이상만 보기 때문에
+    // 이 한 칸을 못 잡는다. AI 답변은 줄 맨 앞에 이모지를 찍는 일이 흔해서
+    // (✅ 완료 / 🚀 출시 / 1️⃣ 첫째) 실사용에서 자주 밟히는 자리다.
+    //
+    // 줄 맨 앞만 깎는다. 여기는 인라인 단계라서 글머리 들여쓰기("  - ")가 아직
+    // 붙기 전이고, 들여쓰기는 뒤의 블록 단계에서 다시 넣는다 — 그래서 안전하다.
+    // (원본 들여쓰기를 무시하고 항상 2칸으로 고정하는 것은 확정된 제품 규칙이다)
+    //
+    // 재현 fixture: test/core/tidy_engine_test.dart
+    //   '갈래4 키캡 — 숫자·기호 키캡이 사라진다'
+    //   '네 갈래가 한 줄에 섞여 있어도 전부 사라진다'
+    // 웹(index.html)에도 같은 줄이 들어가 있다. 한쪽만 고치지 말 것.
+    t = t.replaceAll(RegExp(r'^[ \t]+', multiLine: true), '');
+  }
   return t;
 }
 

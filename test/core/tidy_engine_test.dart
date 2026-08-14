@@ -389,6 +389,79 @@ table = "A | B"
     expect(r.text, '안녕하세요 테스트입니다');
   });
 
+  // 2026-08-14 — 이 그룹이 생긴 경위를 남긴다.
+  //
+  // analyze가 _emojiRe에 valid_regexps(info)를 매겼다. "info면 무해하다"로 넘기지
+  // 않고, 정규식 리터럴이 정말 무효하면 그 경로를 처음 밟는 순간 런타임에서 터지므로
+  // dart 런타임으로 직접 재현했다. 결론은 린트의 오탐이었다 — 이 린트는 RegExp의
+  // `unicode:` 인자를 보지 않는다(자세한 내용은 lib/core/tidy_engine.dart의 주석).
+  //
+  // 그런데 재현하는 과정에서 진짜 구멍이 따로 드러났다.
+  // 바로 위 '이모지·제로폭 제거' 테스트의 fixture는 이모지 세 개뿐이고, 그 셋은
+  // 정규식 네 갈래 중 Extended_Pictographic 갈래 하나만 밟는다.
+  // 국기(Regional_Indicator 두 개)·피부톤 변형·ZWJ 결합·키캡은 어느 테스트도
+  // 밟지 않았다. 즉 그 세 갈래는 "돌아간다"가 아니라 "모른다"였다.
+  //
+  // 그래서 갈래마다 하나씩 건다. 앞으로 누가 린트 경고를 없애려고 \p{...}를
+  // ASCII 범위로 바꿔 쓰면 여기서 깨진다 — 그게 이 테스트의 목적이다.
+  group('이모지 제거 — 정규식 갈래별 (2026-08-14)', () {
+    test('갈래1 국기 — 지역표시자 두 개가 통째로 사라진다', () {
+      final r = tidy('오늘 🇰🇷 시장은 🇺🇸 보다 강했다', aiOpts());
+      expect(r.text, '오늘 시장은 보다 강했다');
+      expect(RegExp(r'[\u{1F1E6}-\u{1F1FF}]', unicode: true).hasMatch(r.text), false,
+          reason: '국기의 절반(지역표시자)만 지워지고 나머지가 남았다');
+    });
+
+    test('갈래2 피부톤 — 변형자까지 함께 사라진다', () {
+      final r = tidy('좋아요 👍🏻 감사합니다', aiOpts());
+      expect(r.text, '좋아요 감사합니다');
+      expect(RegExp(r'[\u{1F3FB}-\u{1F3FF}]', unicode: true).hasMatch(r.text), false,
+          reason: '피부톤 변형자가 홀로 남았다');
+    });
+
+    test('갈래3 ZWJ 결합 — 조각이 남지 않는다', () {
+      final r = tidy(
+          '개발자 👨‍💻 와 가족 👨‍👩‍👧‍👦 이야기',
+          aiOpts());
+      expect(r.text, '개발자 와 가족 이야기');
+      expect(r.text.contains('‍'), false, reason: 'ZWJ가 본문에 남았다');
+    });
+
+    test('갈래4 키캡 — 숫자·기호 키캡이 사라진다', () {
+      final r = tidy('1️⃣ 첫째 2️⃣ 둘째 #️⃣ 해시', aiOpts());
+      expect(r.text, '첫째 둘째 해시');
+      expect(r.text.contains('⃣'), false, reason: '키캡 결합문자가 남았다');
+    });
+
+    test('변형 선택자(U+FE0F)가 본문에 남지 않는다', () {
+      final r = tidy('확인 ✅️ 하트 ❤️ 끝', aiOpts());
+      expect(r.text.contains('️'), false, reason: 'FE0F가 홀로 남았다');
+      expect(r.text, '확인 하트 끝');
+    });
+
+    test('네 갈래가 한 줄에 섞여 있어도 전부 사라진다', () {
+      final r = tidy(
+          '🇰🇷 한국 👍🏻 좋아요 👨‍💻 개발 1️⃣ 첫째 ✅ 끝',
+          aiOpts());
+      expect(r.text, '한국 좋아요 개발 첫째 끝');
+    });
+
+    test('두 번 정리해도 결과가 같다', () {
+      const src = '🇰🇷 한국 👨‍💻 개발 1️⃣ 첫째';
+      final once = tidy(src, aiOpts()).text;
+      final twice = tidy(once, aiOpts()).text;
+      expect(twice, once);
+    });
+
+    test('이모지가 아닌 문자는 건드리지 않는다', () {
+      const src = '테슬라 2026년 3분기 EPS 0.72달러, 전년 대비 #1 상승';
+      final r = tidy(src, aiOpts());
+      expect(r.text.contains('#1'), true, reason: '키캡 규칙이 평범한 #1을 먹었다');
+      expect(r.text.contains('0.72달러'), true);
+      expect(r.text.contains('2026년 3분기'), true);
+    });
+  });
+
   group('v1.2 사용자 정리 규칙', () {
     const userIn = '''통장의 잔액보다 중요한 것이 **통장으로 들어오는 방향**이 된다.
 

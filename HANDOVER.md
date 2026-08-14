@@ -209,6 +209,16 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   저장되지 않는다 — 표는 매번 본문을 다시 파싱해서 찾는다. 그래서 출력 형식을 바꾸면
   반드시 탐지·파싱도 같이 바꾸고, "원본 → 정리 → 되읽기 TSV 일치" 테스트를 걸 것.
   (테스트 '정리한 표를 다시 표로 읽어낸다'가 이걸 지킨다)
+- **`flutter analyze`의 valid_regexps(info)는 tidy_engine.dart의 _emojiRe에서 오탐이다.**
+  2026-08-14 확인. 이 린트는 RegExp의 `unicode:` 인자를 보지 않고 패턴만 검사해서,
+  `\p{...}`·`\u{...}`를 무효로 판정한다. 런타임에서는 unicode: true라 정상이다
+  (dart로 직접 재현: unicode:false일 때만 FormatException). `// ignore: valid_regexps`와
+  긴 주석을 달아 뒀다. **경고를 없애겠다고 \p{...}를 ASCII 범위로 바꾸지 말 것** —
+  국기·ZWJ 이모지가 본문에 남는다.
+- **테스트가 안 밟는 갈래는 "돌아간다"가 아니라 "모른다"다.** 위 정규식은 갈래가 넷인데
+  2026-08-14 전까지 테스트 fixture가 밟는 갈래는 하나뿐이었다(평범한 이모지). 그래서
+  줄 맨 앞 이모지를 지운 자리에 공백이 남는 버그가 몇 판 동안 살아 있었다.
+  갈래가 여럿인 정규식을 고칠 때는 갈래마다 fixture를 건다.
 - 기획서 62절: 노션 경쟁 기능(폴더·협업·웹클리퍼·PDF 등) 추가 금지
 
 ## 10. 코워크/코드 세션 시작 지시문 예시
