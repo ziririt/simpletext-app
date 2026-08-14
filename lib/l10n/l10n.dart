@@ -68,6 +68,19 @@ abstract class L10n {
 
   // ---------------- 에디터 ----------------
   String get done;
+
+  /// 상단 툴바의 한 번 누르면 'AI 답변 정리'가 도는 버튼
+  String get autoTidy;
+
+  /// 마법사에 지시가 비었거나 바꿀 게 없을 때
+  String get wizardNothingToDo;
+
+  /// 미리보기 화면의 '앞으로 미리보기 생략' 체크
+  String get skipPreviewCheck;
+
+  /// 설정의 미리보기 항목
+  String get previewTitle2;
+  String get previewSub2;
   String get metaTooltip;
   String get pinTooltip;
   String get unpinTooltip;
@@ -80,6 +93,9 @@ abstract class L10n {
   String get noteNotFound;
   String get revertedToast;
   String appliedDone(String summary);
+
+  /// 마법사 지시를 전부 알아들었을 때 띄우는 알림
+  String wizardAppliedToast(int count);
 
   // 키보드 액세서리 바
   String get undoTip;
@@ -262,6 +278,11 @@ abstract class L10n {
         'seedTag': seedTag,
         'seedBody': seedBody,
         'done': done,
+        'autoTidy': autoTidy,
+        'wizardNothingToDo': wizardNothingToDo,
+        'skipPreviewCheck': skipPreviewCheck,
+        'previewTitle2': previewTitle2,
+        'previewSub2': previewSub2,
         'metaTooltip': metaTooltip,
         'pinTooltip': pinTooltip,
         'unpinTooltip': unpinTooltip,

@@ -28,7 +28,7 @@ class L10nPt extends L10n {
   @override
   String get newNoteTooltip => 'Nova nota';
   @override
-  String get pasteAndTidy => 'Colar e organizar';
+  String get pasteAndTidy => 'Nova nota a partir da área de transferência';
   @override
   String get clipboardEmpty => 'A área de transferência está vazia. Copie uma resposta de IA primeiro.';
   @override
@@ -70,6 +70,24 @@ class L10nPt extends L10n {
 
   @override
   String get done => 'OK';
+
+  @override
+  String get autoTidy => 'Limpeza automática';
+
+  @override
+  String get wizardNothingToDo => 'Nada para alterar';
+
+  @override
+  String wizardAppliedToast(int count) => '\$count instrução(ões) aplicada(s)';
+
+  @override
+  String get skipPreviewCheck => 'Ignorar a pré-visualização a partir de agora';
+
+  @override
+  String get previewTitle2 => 'Pré-visualizar antes de aplicar';
+
+  @override
+  String get previewSub2 => 'Mostra o resultado e pergunta antes de aplicar';
   @override
   String get metaTooltip => 'Fonte e tags';
   @override
@@ -79,7 +97,7 @@ class L10nPt extends L10n {
   @override
   String get deleteTooltip => 'Excluir';
   @override
-  String get titleHint => 'Título';
+  String get titleHint => 'Título (automático)';
   @override
   String get sourceNone => 'Sem fonte';
   @override

@@ -28,7 +28,7 @@ class L10nEn extends L10n {
   @override
   String get newNoteTooltip => 'New note';
   @override
-  String get pasteAndTidy => 'Paste & Tidy';
+  String get pasteAndTidy => 'New note from clipboard';
   @override
   String get clipboardEmpty => 'Clipboard is empty. Copy an AI answer first.';
   @override
@@ -70,6 +70,24 @@ class L10nEn extends L10n {
 
   @override
   String get done => 'Done';
+
+  @override
+  String get autoTidy => 'Auto tidy';
+
+  @override
+  String get wizardNothingToDo => 'Nothing to change';
+
+  @override
+  String wizardAppliedToast(int count) => 'Applied \$count instruction(s)';
+
+  @override
+  String get skipPreviewCheck => 'Skip preview from now on';
+
+  @override
+  String get previewTitle2 => 'Preview before applying';
+
+  @override
+  String get previewSub2 => 'Shows the result first and asks before applying';
   @override
   String get metaTooltip => 'Source & tags';
   @override
@@ -79,7 +97,7 @@ class L10nEn extends L10n {
   @override
   String get deleteTooltip => 'Delete';
   @override
-  String get titleHint => 'Title';
+  String get titleHint => 'Title (auto)';
   @override
   String get sourceNone => 'No source';
   @override

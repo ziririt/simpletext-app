@@ -26,9 +26,9 @@ class L10nKo extends L10n {
   @override
   String get notesLabel => '메모';
   @override
-  String get newNoteTooltip => '새 메모';
+  String get newNoteTooltip => '새 문서 만들기';
   @override
-  String get pasteAndTidy => '붙여넣고 정리';
+  String get pasteAndTidy => '새 문서 만들어 붙여넣고 정리';
   @override
   String get clipboardEmpty => '클립보드가 비어 있습니다. AI 답변을 먼저 복사해 주세요.';
   @override
@@ -70,6 +70,24 @@ class L10nKo extends L10n {
 
   @override
   String get done => '완료';
+
+  @override
+  String get autoTidy => '자동 정리';
+
+  @override
+  String get wizardNothingToDo => '바꿀 것이 없습니다';
+
+  @override
+  String wizardAppliedToast(int count) => '지시 \$count개를 적용했습니다';
+
+  @override
+  String get skipPreviewCheck => '앞으로 미리보기 생략';
+
+  @override
+  String get previewTitle2 => '정리 전 미리보기';
+
+  @override
+  String get previewSub2 => '정리 결과를 먼저 보여 주고 적용할지 묻습니다';
   @override
   String get metaTooltip => '출처·태그';
   @override
@@ -79,7 +97,7 @@ class L10nKo extends L10n {
   @override
   String get deleteTooltip => '삭제';
   @override
-  String get titleHint => '제목';
+  String get titleHint => '제목(자동)';
   @override
   String get sourceNone => '출처 없음';
   @override

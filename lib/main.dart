@@ -294,6 +294,10 @@ class AppSettings {
   // 기본 켬 — 비례 글꼴에서는 공백 정렬이 원리적으로 맞을 수 없다.
   // 이 앱의 핵심이 표라서 기본값을 켜는 쪽이 맞다(CotEditor도 등폭이 기본).
   bool monoEditor = true;
+
+  /// 정리 결과를 먼저 보여 줄지. 미리보기 화면에서 '앞으로 생략'을 켜면 꺼지고,
+  /// 설정에서 다시 켤 수 있다(2026-08-14 소유자 요청).
+  bool previewBeforeApply = true;
   String aiKey = '';
   String aiModel = 'gemini-2.5-flash-lite';
   List<CustomRule> customRules = [];
@@ -312,6 +316,7 @@ class AppSettings {
         'bulletIndent': bulletIndent,
         'removeCitations': removeCitations,
         'monoEditor': monoEditor,
+        'previewBeforeApply': previewBeforeApply,
         'aiKey': aiKey,
         'aiModel': aiModel,
         'customRules': customRules
@@ -334,6 +339,7 @@ class AppSettings {
     s.bulletIndent = (j['bulletIndent'] ?? s.bulletIndent) as int;
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
     s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
+    s.previewBeforeApply = (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -560,9 +566,13 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          FloatingActionButton.small(
+          // 2026-08-14 소유자 요청: 아이콘만으로는 무슨 버튼인지 알 수 없어
+          // 두 버튼 다 글자를 붙인다.
+          FloatingActionButton.extended(
             heroTag: 'new',
             tooltip: l.newNoteTooltip,
+            backgroundColor: context.c.panel,
+            foregroundColor: context.c.accent,
             onPressed: () async {
               final note = Note.fresh();
               store.notes.insert(0, note);
@@ -570,7 +580,8 @@ class _HomeScreenState extends State<HomeScreen> {
               if (!mounted) return;
               Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: note.id)));
             },
-            child: const Icon(Icons.add),
+            icon: const Icon(Icons.add),
+            label: Text(l.newNoteTooltip, style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 10),
           FloatingActionButton.extended(
@@ -912,12 +923,18 @@ class _EditorScreenState extends State<EditorScreen> {
     final r = tidy(note.body, store.effOpts(preset));
     if (!mounted) return;
     final l = L10n.of(context);
-    final apply = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-          builder: (_) => PreviewScreen(
-              presetName: l.presetName(preset.id, preset.name), before: note.body, result: r)),
-    );
+    // 미리보기를 끈 사람은 바로 적용된다. 되돌리기가 있으니 안전하다
+    // (2026-08-14 소유자 요청 — 매번 미리보기를 거치는 게 번거롭다).
+    final apply = store.settings.previewBeforeApply
+        ? await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+                builder: (_) => PreviewScreen(
+                    presetName: l.presetName(preset.id, preset.name),
+                    before: note.body,
+                    result: r)),
+          )
+        : true;
     if (apply == true) {
       note.history.add(note.body);
       if (note.history.length > 30) note.history.removeAt(0);
@@ -1088,15 +1105,25 @@ class _EditorScreenState extends State<EditorScreen> {
     String? aiResult;
     String aiGuard = '';
     bool aiBusy = false;
-    await showAdaptiveDialog<void>(
+    // 2026-08-14 소유자 지적: 애플식 알림창(AlertDialog.adaptive)은 폭이 좁고
+    // 버튼이 가장자리까지 꽉 차 답답하다. 이 창은 '알림'이 아니라 입력+결과를
+    // 보여 주는 작업창이므로 여백을 갖춘 일반 대화상자로 쓴다.
+    await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
           final l = L10n.of(ctx);
-          return AlertDialog.adaptive(
+          final w = MediaQuery.of(ctx).size.width;
+          return AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            titlePadding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
+            contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text(l.wizardTitle),
             content: SizedBox(
-              width: 480,
+              // 화면이 좁으면 화면을 꽉 채우고(양옆 여백만 남기고), 넓으면 480에서 멈춘다.
+              width: w < 520 ? w : 480,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1198,7 +1225,10 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.close)),
+              const SizedBox(width: 8),
               FilledButton(
+                style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12)),
                 onPressed: () async {
                   final r = applyWizard(
                       command: cmdCtl.text, settings: store.settings, body: bodyCtl.text);
@@ -1209,12 +1239,26 @@ class _EditorScreenState extends State<EditorScreen> {
                   }
                   await store.persistSettings();
                   await _save();
+                  if (mounted) setState(() {});
+                  // 다 해석됐으면 창을 닫는다. 창이 그대로 남아 있으면 "적용이 된 건가?"
+                  // 하고 헷갈린다(2026-08-14 소유자 지적). 못 알아들은 지시가 있을
+                  // 때만 남겨서 무엇이 안 됐는지 보여 준다.
+                  if (r.unknown.isEmpty) {
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (mounted) {
+                      _toast(
+                          context,
+                          r.applied.isEmpty
+                              ? L10n.of(context).wizardNothingToDo
+                              : L10n.of(context).wizardAppliedToast(r.applied.length));
+                    }
+                    return;
+                  }
                   setD(() {
                     applied = r.applied;
                     unknown = r.unknown;
                     aiResult = null;
                   });
-                  if (mounted) setState(() {});
                 },
                 child: Text(l.interpretApply),
               ),
@@ -1384,6 +1428,14 @@ class _EditorScreenState extends State<EditorScreen> {
                 onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
+            // 붙여넣고 바로 누르는 버튼 — 'AI 답변 정리'를 한 번에 돌린다
+            // (2026-08-14 소유자 요청). 아래 도구 막대의 '정리'와 같은 동작이지만
+            // 손이 위에 있을 때 바로 누를 수 있어야 한다.
+            if (!_editing)
+              TextButton(
+                onPressed: () => _runTidyWithPreset(buildPresets().first),
+                child: Text(l.autoTidy, style: const TextStyle(fontWeight: FontWeight.w800)),
+              ),
             IconButton(
               icon: Icon(_showMeta ? Icons.sell : Icons.sell_outlined),
               tooltip: l.metaTooltip,
@@ -1544,11 +1596,25 @@ class _EditorScreenState extends State<EditorScreen> {
 }
 
 /// ---------------- 정리 미리보기 ----------------
-class PreviewScreen extends StatelessWidget {
+/// 2026-08-14 소유자 요청: 미리보기를 건너뛸 수 있어야 한다. '적용' 바로 위에
+/// 체크를 두고, 켜면 다음부터 정리가 바로 적용된다. 되돌리려면 설정에서 켠다.
+class PreviewScreen extends StatefulWidget {
   final String presetName;
   final String before;
   final TidyResult result;
   const PreviewScreen({super.key, required this.presetName, required this.before, required this.result});
+
+  @override
+  State<PreviewScreen> createState() => _PreviewScreenState();
+}
+
+class _PreviewScreenState extends State<PreviewScreen> {
+  final store = Store.instance;
+  bool _skipNext = false;
+
+  String get presetName => widget.presetName;
+  String get before => widget.before;
+  TidyResult get result => widget.result;
 
   @override
   Widget build(BuildContext context) {
@@ -1601,18 +1667,51 @@ class PreviewScreen extends StatelessWidget {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+              // 버튼 바로 위 — 여기서 켜면 다음부터 이 화면을 건너뛴다.
+              InkWell(
+                onTap: () => setState(() => _skipNext = !_skipNext),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  child: Row(
+                    children: [
+                      Checkbox.adaptive(
+                        value: _skipNext,
+                        onChanged: (v) => setState(() => _skipNext = v ?? false),
+                      ),
+                      Expanded(
+                        child: Text(l.skipPreviewCheck,
+                            style: TextStyle(fontSize: 13, color: context.c.sub)),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: FilledButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text(l.apply, style: const TextStyle(fontWeight: FontWeight.w700))),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton(
+                        onPressed: () async {
+                          // 체크는 '적용'할 때만 반영한다. 취소하면서 끄는 것은
+                          // 뜻이 애매하다.
+                          if (_skipNext) {
+                            store.settings.previewBeforeApply = false;
+                            await store.persistSettings();
+                          }
+                          if (context.mounted) Navigator.pop(context, true);
+                        },
+                        child: Text(l.apply, style: const TextStyle(fontWeight: FontWeight.w700))),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1693,6 +1792,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: s.headingPad,
             onChanged: (v) {
               s.headingPad = v;
+              store.persistSettings();
+              setState(() {});
+            },
+          ),
+          // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
+          SwitchListTile.adaptive(
+            title: Text(l.previewTitle2, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            subtitle: Text(l.previewSub2, style: const TextStyle(fontSize: 12)),
+            value: s.previewBeforeApply,
+            onChanged: (v) {
+              s.previewBeforeApply = v;
               store.persistSettings();
               setState(() {});
             },

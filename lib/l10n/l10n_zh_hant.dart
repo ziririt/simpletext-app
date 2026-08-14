@@ -28,7 +28,7 @@ class L10nZhHant extends L10n {
   @override
   String get newNoteTooltip => '新增備忘錄';
   @override
-  String get pasteAndTidy => '貼上並整理';
+  String get pasteAndTidy => '新增並貼上整理';
   @override
   String get clipboardEmpty => '剪貼簿是空的。請先複製一段 AI 回答。';
   @override
@@ -70,6 +70,24 @@ class L10nZhHant extends L10n {
 
   @override
   String get done => '完成';
+
+  @override
+  String get autoTidy => '自動整理';
+
+  @override
+  String get wizardNothingToDo => '沒有需要變更的內容';
+
+  @override
+  String wizardAppliedToast(int count) => '已套用 \$count 條指令';
+
+  @override
+  String get skipPreviewCheck => '以後略過預覽';
+
+  @override
+  String get previewTitle2 => '套用前預覽';
+
+  @override
+  String get previewSub2 => '先顯示整理結果，再詢問是否套用';
   @override
   String get metaTooltip => '來源·標籤';
   @override
@@ -79,7 +97,7 @@ class L10nZhHant extends L10n {
   @override
   String get deleteTooltip => '刪除';
   @override
-  String get titleHint => '標題';
+  String get titleHint => '標題（自動）';
   @override
   String get sourceNone => '無來源';
   @override

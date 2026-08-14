@@ -28,7 +28,7 @@ class L10nEs extends L10n {
   @override
   String get newNoteTooltip => 'Nueva nota';
   @override
-  String get pasteAndTidy => 'Pegar y ordenar';
+  String get pasteAndTidy => 'Nueva nota desde el portapapeles';
   @override
   String get clipboardEmpty => 'El portapapeles está vacío. Copia primero una respuesta de IA.';
   @override
@@ -70,6 +70,24 @@ class L10nEs extends L10n {
 
   @override
   String get done => 'OK';
+
+  @override
+  String get autoTidy => 'Limpieza automática';
+
+  @override
+  String get wizardNothingToDo => 'No hay nada que cambiar';
+
+  @override
+  String wizardAppliedToast(int count) => 'Se aplicaron \$count instrucción(es)';
+
+  @override
+  String get skipPreviewCheck => 'Omitir la vista previa en adelante';
+
+  @override
+  String get previewTitle2 => 'Vista previa antes de aplicar';
+
+  @override
+  String get previewSub2 => 'Muestra el resultado y pregunta antes de aplicar';
   @override
   String get metaTooltip => 'Fuente y etiquetas';
   @override
@@ -79,7 +97,7 @@ class L10nEs extends L10n {
   @override
   String get deleteTooltip => 'Eliminar';
   @override
-  String get titleHint => 'Título';
+  String get titleHint => 'Título (automático)';
   @override
   String get sourceNone => 'Sin fuente';
   @override

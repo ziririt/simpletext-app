@@ -28,7 +28,7 @@ class L10nDe extends L10n {
   @override
   String get newNoteTooltip => 'Neue Notiz';
   @override
-  String get pasteAndTidy => 'Einfügen & bereinigen';
+  String get pasteAndTidy => 'Neue Notiz aus Zwischenablage';
   @override
   String get clipboardEmpty => 'Die Zwischenablage ist leer. Kopiere zuerst eine KI-Antwort.';
   @override
@@ -70,6 +70,24 @@ class L10nDe extends L10n {
 
   @override
   String get done => 'Fertig';
+
+  @override
+  String get autoTidy => 'Auto-Bereinigung';
+
+  @override
+  String get wizardNothingToDo => 'Nichts zu ändern';
+
+  @override
+  String wizardAppliedToast(int count) => '\$count Anweisung(en) angewendet';
+
+  @override
+  String get skipPreviewCheck => 'Vorschau künftig überspringen';
+
+  @override
+  String get previewTitle2 => 'Vorschau vor dem Anwenden';
+
+  @override
+  String get previewSub2 => 'Zeigt das Ergebnis zuerst und fragt vor dem Anwenden';
   @override
   String get metaTooltip => 'Quelle & Tags';
   @override
@@ -79,7 +97,7 @@ class L10nDe extends L10n {
   @override
   String get deleteTooltip => 'Löschen';
   @override
-  String get titleHint => 'Titel';
+  String get titleHint => 'Titel (automatisch)';
   @override
   String get sourceNone => 'Keine Quelle';
   @override

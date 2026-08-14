@@ -28,7 +28,7 @@ class L10nFr extends L10n {
   @override
   String get newNoteTooltip => 'Nouvelle note';
   @override
-  String get pasteAndTidy => 'Coller et nettoyer';
+  String get pasteAndTidy => 'Nouvelle note depuis le presse-papiers';
   @override
   String get clipboardEmpty => 'Le presse-papiers est vide. Copiez d\'abord une réponse d\'IA.';
   @override
@@ -70,6 +70,24 @@ class L10nFr extends L10n {
 
   @override
   String get done => 'OK';
+
+  @override
+  String get autoTidy => 'Nettoyage auto';
+
+  @override
+  String get wizardNothingToDo => 'Rien à modifier';
+
+  @override
+  String wizardAppliedToast(int count) => '\$count instruction(s) appliquée(s)';
+
+  @override
+  String get skipPreviewCheck => 'Ignorer l’aperçu à l’avenir';
+
+  @override
+  String get previewTitle2 => 'Aperçu avant application';
+
+  @override
+  String get previewSub2 => 'Affiche le résultat puis demande avant d’appliquer';
   @override
   String get metaTooltip => 'Source et tags';
   @override
@@ -79,7 +97,7 @@ class L10nFr extends L10n {
   @override
   String get deleteTooltip => 'Supprimer';
   @override
-  String get titleHint => 'Titre';
+  String get titleHint => 'Titre (automatique)';
   @override
   String get sourceNone => 'Aucune source';
   @override

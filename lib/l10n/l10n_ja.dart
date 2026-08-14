@@ -28,7 +28,7 @@ class L10nJa extends L10n {
   @override
   String get newNoteTooltip => '新規メモ';
   @override
-  String get pasteAndTidy => '貼り付けて整理';
+  String get pasteAndTidy => '貼り付けて整理（新規メモ）';
   @override
   String get clipboardEmpty => 'クリップボードが空です。先にAIの回答をコピーしてください。';
   @override
@@ -70,6 +70,24 @@ class L10nJa extends L10n {
 
   @override
   String get done => '完了';
+
+  @override
+  String get autoTidy => '自動整理';
+
+  @override
+  String get wizardNothingToDo => '変更するものがありません';
+
+  @override
+  String wizardAppliedToast(int count) => '指示 \$count 件を適用しました';
+
+  @override
+  String get skipPreviewCheck => '今後プレビューを省略';
+
+  @override
+  String get previewTitle2 => '適用前にプレビュー';
+
+  @override
+  String get previewSub2 => '結果を先に表示して適用するか確認します';
   @override
   String get metaTooltip => '出典・タグ';
   @override
@@ -79,7 +97,7 @@ class L10nJa extends L10n {
   @override
   String get deleteTooltip => '削除';
   @override
-  String get titleHint => 'タイトル';
+  String get titleHint => 'タイトル（自動）';
   @override
   String get sourceNone => '出典なし';
   @override
