@@ -983,6 +983,11 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+  /// 표 도구.
+  ///
+  /// 2026-08-14 소유자 지적: "표1 · 3열 5행"만 봐서는 본문의 어느 표인지 알 수 없다.
+  /// 그래서 표를 실제 모양 그대로(등폭·칸 맞춰) 보여 주고, 큰 창에서 세로로
+  /// 넘겨 보며 고르게 한다. 표가 가로로 길 수 있으니 가로 스크롤도 둔다.
   Future<void> _showTables() async {
     await _save();
     final r = extractTables(note.body);
@@ -990,45 +995,82 @@ class _EditorScreenState extends State<EditorScreen> {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: r.tables.isEmpty
-            ? Padding(padding: const EdgeInsets.all(30), child: Text(L10n.of(ctx).noTablesFound))
-            : ListView(
-                shrinkWrap: true,
-                children: [
-                  for (int i = 0; i < r.tables.length; i++)
-                    ListTile(
-                      title: Text(L10n.of(ctx)
-                          .tableInfo(i + 1, r.tables[i].header.length, r.tables[i].rows.length)),
-                      subtitle: Wrap(spacing: 8, children: [
-                        FilledButton.tonal(
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: tableToTSV(r.tables[i])));
-                            Navigator.pop(ctx);
-                            _toast(context, L10n.of(context).copiedSpreadsheet);
-                          },
-                          child: Text(L10n.of(ctx).forSpreadsheet),
+      isScrollControlled: true, // 큰 창으로 — 기본 절반 높이로는 표가 안 보인다
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.85,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (ctx, scrollCtl) => SafeArea(
+          child: r.tables.isEmpty
+              ? Padding(padding: const EdgeInsets.all(30), child: Text(L10n.of(ctx).noTablesFound))
+              : ListView.separated(
+                  controller: scrollCtl,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  itemCount: r.tables.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 18),
+                  itemBuilder: (ctx, i) {
+                    final t = r.tables[i];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L10n.of(ctx).tableInfo(i + 1, t.header.length, t.rows.length),
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700, color: context.c.sub),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: tableToCSV(r.tables[i])));
-                            Navigator.pop(ctx);
-                            _toast(context, L10n.of(context).copiedCsv);
-                          },
-                          child: const Text('CSV'),
+                        const SizedBox(height: 6),
+                        // 본문에 보이는 그 모양 그대로. 이게 있어야 "아, 그 표"가 된다.
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              color: context.c.codeBg,
+                              border: Border.all(color: context.c.codeLine),
+                              borderRadius: BorderRadius.circular(10)),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Text(
+                              tableToAligned(t),
+                              style: const TextStyle(
+                                  fontFamily: MonoTextController.fontFamily,
+                                  fontSize: 12.5,
+                                  height: 1.5),
+                            ),
+                          ),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: tableToMarkdown(r.tables[i])));
-                            Navigator.pop(ctx);
-                            _toast(context, L10n.of(context).copiedMarkdown);
-                          },
-                          child: const Text('Markdown'),
-                        ),
-                      ]),
-                    ),
-                ],
-              ),
+                        const SizedBox(height: 6),
+                        Wrap(spacing: 8, children: [
+                          FilledButton.tonal(
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: tableToTSV(t)));
+                              Navigator.pop(ctx);
+                              _toast(context, L10n.of(context).copiedSpreadsheet);
+                            },
+                            child: Text(L10n.of(ctx).forSpreadsheet),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: tableToCSV(t)));
+                              Navigator.pop(ctx);
+                              _toast(context, L10n.of(context).copiedCsv);
+                            },
+                            child: const Text('CSV'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: tableToMarkdown(t)));
+                              Navigator.pop(ctx);
+                              _toast(context, L10n.of(context).copiedMarkdown);
+                            },
+                            child: const Text('Markdown'),
+                          ),
+                        ]),
+                      ],
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }
@@ -1532,6 +1574,12 @@ class _EditorScreenState extends State<EditorScreen> {
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
+                  // 선택 손잡이를 끌 때 글자를 확대해 보여 주는 돋보기. 애플 메모장에
+                  // 있는 그것이다. 이게 없으면 손가락에 가려 어디를 잡았는지 안 보여
+                  // 정확히 집을 수가 없다(2026-08-14 소유자 지적).
+                  magnifierConfiguration: TextMagnifierConfiguration.adaptiveMagnifierConfiguration,
+                  // 튕기는 스크롤은 선택 중에 문서가 더 크게 흔들려 보이게 한다.
+                  scrollPhysics: const ClampingScrollPhysics(),
                   decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
                   // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
                   // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
