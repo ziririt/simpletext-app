@@ -329,15 +329,29 @@ bool isTimeHeader(String line) {
   return _timeHeader.hasMatch(t) || _timeHeaderLabeled.hasMatch(t);
 }
 
-/// 맨 위에 이어지는 시각 줄을 모두 지운다. 지운 개수를 돌려준다.
-int _stripTimeHeader(List<String> lines) {
+/// 홀로 있는 구분선("---", "***", "═══" 등). 같은 기호만 3개 이상인 줄.
+/// 문서 맨 위·맨 아래에 있으면 내용이 없으므로 지운다(소유자 신고 2026-08-14:
+/// 맨 위 "---" 때문에 제목이 "---"로 붙었다). 문서 중간의 구분선은 글을 나누는
+/// 뜻이 있으므로 그대로 둔다.
+bool isLoneDivider(String line) {
+  final c = line.trim().replaceAll(RegExp(r'\s'), '');
+  if (c.length < 3) return false;
+  if (!RegExp(r'^[-*_=─━═]+$').hasMatch(c)) return false;
+  return c.split('').toSet().length == 1; // 한 가지 기호로만 이루어질 것
+}
+
+/// 문서 가장자리에서 지워도 되는 줄 — 출력 시각, 홀로 있는 구분선.
+bool _isEdgeNoise(String line) => isTimeHeader(line) || isLoneDivider(line);
+
+/// 맨 위에 이어지는 군더더기 줄을 모두 지운다. 지운 개수를 돌려준다.
+int _stripTopNoise(List<String> lines) {
   var removed = 0;
   for (;;) {
     var i = 0;
     while (i < lines.length && lines[i].trim().isEmpty) {
       i++;
     }
-    if (i >= lines.length || !isTimeHeader(lines[i])) break;
+    if (i >= lines.length || !_isEdgeNoise(lines[i])) break;
     lines.removeRange(0, i + 1);
     while (lines.isNotEmpty && lines.first.trim().isEmpty) {
       lines.removeAt(0);
@@ -348,11 +362,11 @@ int _stripTimeHeader(List<String> lines) {
 }
 
 /// 맨 아래도 마찬가지. LLM은 출력 시각을 첫 줄 아니면 끝 줄에 찍는다
-/// (소유자 확인 2026-08-14). 문서 중간의 시각 표기는 본문 내용이므로 손대지 않는다.
+/// (소유자 확인 2026-08-14). 문서 중간의 시각·구분선은 내용이므로 손대지 않는다.
 ///
 /// [skipCites]: 끝에 출처 목록이 붙어 있으면 그 위를 본다. 출처는 어차피 곧
-/// 지워지므로, 출처 바로 위의 시각 줄도 사실상 '끝 줄'이다.
-int _stripTimeFooter(List<String> lines, bool skipCites) {
+/// 지워지므로, 출처 바로 위의 줄도 사실상 '끝 줄'이다.
+int _stripBottomNoise(List<String> lines, bool skipCites) {
   bool skippable(String l) =>
       l.trim().isEmpty || (skipCites && (isCitationLine(l) || _sourceHeading.hasMatch(l)));
   var removed = 0;
@@ -361,7 +375,7 @@ int _stripTimeFooter(List<String> lines, bool skipCites) {
     while (i >= 0 && skippable(lines[i])) {
       i--;
     }
-    if (i < 0 || !isTimeHeader(lines[i])) break;
+    if (i < 0 || !_isEdgeNoise(lines[i])) break;
     lines.removeAt(i);
     removed++;
   }
@@ -1246,19 +1260,21 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
   if (o.removePreamble) {
     for (final s in segs) {
       if (s.type != 'text') continue;
-      rep.preamble += _stripTimeHeader(s.lines);
+      rep.preamble += _stripTopNoise(s.lines);
       final idx = _detectPreamble(s.lines);
       if (idx >= 0) {
         s.lines.removeAt(idx);
         if (idx < s.lines.length && s.lines[idx].isEmpty) s.lines.removeAt(idx);
         rep.preamble += 1;
+        // 서두를 걷어내니 그 밑에 구분선이 드러나는 경우가 있다.
+        rep.preamble += _stripTopNoise(s.lines);
       }
       break;
     }
-    // 끝 줄의 출력 시각도 지운다 — 마지막 text 조각에서만 본다.
+    // 끝 줄의 군더더기도 지운다 — 마지막 text 조각에서만 본다.
     for (final s in segs.reversed) {
       if (s.type != 'text') continue;
-      rep.preamble += _stripTimeFooter(s.lines, o.removeCitations);
+      rep.preamble += _stripBottomNoise(s.lines, o.removeCitations);
       break;
     }
   }

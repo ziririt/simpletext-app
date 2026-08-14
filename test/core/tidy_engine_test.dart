@@ -710,4 +710,58 @@ table = "A | B"
       expect(tidy(once, aiOpts()).text, once);
     });
   });
+
+  // 2026-08-14 소유자 신고: "제목이 자동으로 '---'이더라. 보니 본문 맨 위에 '---'
+  // 이게 있어서였다. 이런 구분선도 맨 위나 맨 아래에 홀로 있다면 이것도 삭제해줘."
+  //
+  // 이 테스트는 구분선을 '유지'로 두고 본다. 그래야 "가장자리만 지우고 중간은
+  // 남긴다"를 실제로 확인할 수 있다(구분선 제거를 켜면 어차피 다 지워지므로
+  // 이 기능이 도는지 알 수 없다). 구분선 기본은 유지 — 제품 확정 사항이다.
+  group('가장자리 구분선 제거 (2026-08-14)', () {
+    TidyOptions keepHr() => aiOpts().copyWith(hrMode: 'keep', removeHr: false);
+    String out(String raw) => tidy(raw, keepHr()).text;
+    String firstLineOf(String raw) =>
+        out(raw).split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+
+    test('신고 상황 — 맨 위 ---가 사라지고 본문 첫 줄이 제목감이 된다', () {
+      expect(firstLineOf('---\n\n오늘 회의 정리입니다.\n둘째 줄.'), '오늘 회의 정리입니다.');
+    });
+
+    test('여러 모양의 구분선을 맨 위에서 지운다', () {
+      for (final d in ['---', '***', '___', '===', '─────', '━━━━', '═══', '- - -', '* * *']) {
+        expect(firstLineOf('$d\n\n본문 첫 줄입니다.'), '본문 첫 줄입니다.', reason: '"$d"를 못 지웠다');
+      }
+    });
+
+    test('맨 아래 구분선도 지운다', () {
+      expect(out('본문입니다.\n\n---'), '본문입니다.');
+      expect(out('---\n본문입니다.\n---'), '본문입니다.');
+    });
+
+    test('문서 중간의 구분선은 남긴다', () {
+      // 중간 구분선은 글을 나누는 뜻이 있다. 지우면 문단 경계가 사라진다.
+      expect(out('앞 단락입니다.\n\n---\n\n뒤 단락입니다.').contains('---'), true);
+      expect(out('제목입니다\n---\n본문입니다.').contains('---'), true);
+    });
+
+    test('구분선과 출력 시각이 겹쳐 있어도 둘 다 지운다', () {
+      expect(firstLineOf('---\n2026-08-03(월) 13:58 KST\n\n본문 첫 줄입니다.'), '본문 첫 줄입니다.');
+      expect(firstLineOf('2026-08-03(월) 13:58 KST\n---\n\n본문 첫 줄입니다.'), '본문 첫 줄입니다.');
+    });
+
+    test('기호가 섞였거나 3개 미만이면 구분선이 아니다', () {
+      expect(out('--\n본문입니다.').contains('--'), true);
+    });
+
+    test('표의 가로 구분선은 건드리지 않는다', () {
+      // 표 안의 ─ 줄은 가장자리가 아니라 표의 일부다.
+      final t = out('종목    비중\n────────────\n애플    12%');
+      expect(RegExp(r'^종목\s+비중\n─+\n애플\s+12%$').hasMatch(t), true, reason: '표가 깨졌다: $t');
+    });
+
+    test('두 번 정리해도 결과가 같다', () {
+      final once = out('---\n2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n---');
+      expect(out(once), once);
+    });
+  });
 }
