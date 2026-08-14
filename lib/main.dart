@@ -1574,10 +1574,11 @@ class _EditorScreenState extends State<EditorScreen> {
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
-                  // 선택 손잡이를 끌 때 글자를 확대해 보여 주는 돋보기. 애플 메모장에
-                  // 있는 그것이다. 이게 없으면 손가락에 가려 어디를 잡았는지 안 보여
-                  // 정확히 집을 수가 없다(2026-08-14 소유자 지적).
-                  magnifierConfiguration: TextMagnifierConfiguration.adaptiveMagnifierConfiguration,
+                  // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
+                  // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
+                  // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은
+                  // 돋보기가 아니다 — 기기에서 직접 만져 보며 찾아야 한다.
+                  //
                   // 튕기는 스크롤은 선택 중에 문서가 더 크게 흔들려 보이게 한다.
                   scrollPhysics: const ClampingScrollPhysics(),
                   decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
