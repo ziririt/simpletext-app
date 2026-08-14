@@ -111,6 +111,18 @@ class L10nKo extends L10n {
   @override
   String get tagsHint => '태그 (쉼표로 구분)';
   @override
+  String get tagAiButton => '태그 AI 자동입력';
+  @override
+  String get tagAiWorking => '태그를 뽑는 중…';
+  @override
+  String get tagAiNone => '뽑을 만한 키워드를 찾지 못했습니다';
+  @override
+  String get tagAiLocalNote => 'AI 키가 없어 앱이 직접 골랐습니다';
+  @override
+  String get tagsBoxHint => '태그 입력 후 쉼표';
+  @override
+  String get tagRemoveTip => '태그 삭제';
+  @override
   String get bodyHint => '여기에 붙여넣거나 입력하세요';
   @override
   String get noteNotFound => '메모를 찾을 수 없습니다';

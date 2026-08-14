@@ -95,6 +95,12 @@ abstract class L10n {
   String get sourceNone;
   String get sourceOther;
   String get tagsHint;
+  String get tagAiButton;
+  String get tagAiWorking;
+  String get tagAiNone;
+  String get tagAiLocalNote;
+  String get tagsBoxHint;
+  String get tagRemoveTip;
   String get bodyHint;
   String get noteNotFound;
   String get revertedToast;
@@ -299,6 +305,12 @@ abstract class L10n {
         'sourceNone': sourceNone,
         'sourceOther': sourceOther,
         'tagsHint': tagsHint,
+        'tagAiButton': tagAiButton,
+        'tagAiWorking': tagAiWorking,
+        'tagAiNone': tagAiNone,
+        'tagAiLocalNote': tagAiLocalNote,
+        'tagsBoxHint': tagsBoxHint,
+        'tagRemoveTip': tagRemoveTip,
         'bodyHint': bodyHint,
         'noteNotFound': noteNotFound,
         'revertedToast': revertedToast,

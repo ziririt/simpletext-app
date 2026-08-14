@@ -111,6 +111,18 @@ class L10nZhHant extends L10n {
   @override
   String get tagsHint => '標籤（以逗號分隔）';
   @override
+  String get tagAiButton => 'AI 自動填標籤';
+  @override
+  String get tagAiWorking => '正在擷取標籤…';
+  @override
+  String get tagAiNone => '找不到關鍵字';
+  @override
+  String get tagAiLocalNote => '沒有 AI 金鑰，已在本機擷取';
+  @override
+  String get tagsBoxHint => '輸入標籤後加逗號';
+  @override
+  String get tagRemoveTip => '刪除標籤';
+  @override
   String get bodyHint => '在此貼上或輸入';
   @override
   String get noteNotFound => '找不到這則備忘錄';

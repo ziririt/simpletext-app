@@ -111,6 +111,18 @@ class L10nFr extends L10n {
   @override
   String get tagsHint => 'Tags (séparés par des virgules)';
   @override
+  String get tagAiButton => 'Tags par IA';
+  @override
+  String get tagAiWorking => 'Recherche de tags…';
+  @override
+  String get tagAiNone => 'Aucun mot-clé trouvé';
+  @override
+  String get tagAiLocalNote => 'Pas de clé IA : sélection locale';
+  @override
+  String get tagsBoxHint => 'Saisissez un tag, puis une virgule';
+  @override
+  String get tagRemoveTip => 'Supprimer le tag';
+  @override
   String get bodyHint => 'Collez ou saisissez ici';
   @override
   String get noteNotFound => 'Note introuvable';

@@ -111,6 +111,18 @@ class L10nPt extends L10n {
   @override
   String get tagsHint => 'Tags (separadas por vírgula)';
   @override
+  String get tagAiButton => 'Etiquetas com IA';
+  @override
+  String get tagAiWorking => 'A procurar etiquetas…';
+  @override
+  String get tagAiNone => 'Nenhuma palavra-chave encontrada';
+  @override
+  String get tagAiLocalNote => 'Sem chave de IA: escolhidas no dispositivo';
+  @override
+  String get tagsBoxHint => 'Escreva uma etiqueta e uma vírgula';
+  @override
+  String get tagRemoveTip => 'Remover etiqueta';
+  @override
   String get bodyHint => 'Cole ou digite aqui';
   @override
   String get noteNotFound => 'Nota não encontrada';

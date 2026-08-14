@@ -111,6 +111,18 @@ class L10nZhHans extends L10n {
   @override
   String get tagsHint => '标签（逗号分隔）';
   @override
+  String get tagAiButton => 'AI 自动填标签';
+  @override
+  String get tagAiWorking => '正在提取标签…';
+  @override
+  String get tagAiNone => '未找到关键词';
+  @override
+  String get tagAiLocalNote => '没有 AI 密钥，已在本机提取';
+  @override
+  String get tagsBoxHint => '输入标签后加逗号';
+  @override
+  String get tagRemoveTip => '删除标签';
+  @override
   String get bodyHint => '在此粘贴或输入';
   @override
   String get noteNotFound => '找不到该备忘录';

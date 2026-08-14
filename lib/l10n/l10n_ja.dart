@@ -111,6 +111,18 @@ class L10nJa extends L10n {
   @override
   String get tagsHint => 'タグ（カンマ区切り）';
   @override
+  String get tagAiButton => 'タグをAIで自動入力';
+  @override
+  String get tagAiWorking => 'タグを抽出中…';
+  @override
+  String get tagAiNone => 'キーワードが見つかりませんでした';
+  @override
+  String get tagAiLocalNote => 'AIキーがないため端末で抽出しました';
+  @override
+  String get tagsBoxHint => 'タグを入力してカンマ';
+  @override
+  String get tagRemoveTip => 'タグを削除';
+  @override
   String get bodyHint => 'ここに貼り付けるか入力';
   @override
   String get noteNotFound => 'メモが見つかりません';

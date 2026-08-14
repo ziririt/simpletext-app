@@ -111,6 +111,18 @@ class L10nEs extends L10n {
   @override
   String get tagsHint => 'Etiquetas (separadas por comas)';
   @override
+  String get tagAiButton => 'Etiquetas con IA';
+  @override
+  String get tagAiWorking => 'Buscando etiquetas…';
+  @override
+  String get tagAiNone => 'No se encontraron palabras clave';
+  @override
+  String get tagAiLocalNote => 'Sin clave de IA: elegidas en el dispositivo';
+  @override
+  String get tagsBoxHint => 'Escribe una etiqueta y una coma';
+  @override
+  String get tagRemoveTip => 'Eliminar etiqueta';
+  @override
   String get bodyHint => 'Pega o escribe aquí';
   @override
   String get noteNotFound => 'Nota no encontrada';

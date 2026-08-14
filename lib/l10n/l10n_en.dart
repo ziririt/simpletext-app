@@ -111,6 +111,18 @@ class L10nEn extends L10n {
   @override
   String get tagsHint => 'Tags (comma separated)';
   @override
+  String get tagAiButton => 'AI tags';
+  @override
+  String get tagAiWorking => 'Finding tags…';
+  @override
+  String get tagAiNone => 'No keywords found';
+  @override
+  String get tagAiLocalNote => 'No AI key — picked on this device';
+  @override
+  String get tagsBoxHint => 'Type a tag, then comma';
+  @override
+  String get tagRemoveTip => 'Remove tag';
+  @override
   String get bodyHint => 'Paste or type here';
   @override
   String get noteNotFound => 'Note not found';

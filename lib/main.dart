@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/mono_controller.dart';
+import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
 import 'core/wizard.dart';
 import 'l10n/l10n.dart';
@@ -48,6 +49,14 @@ class AppC extends ThemeExtension<AppC> {
   final Color codeLine;
   final Color pin; // 고정 표시
   final Color danger; // 삭제
+  // 2026-08-14 소유자 요청: 태그 블럭은 '밝고 경쾌한 하늘색'.
+  // 다만 밝기만 좇으면 라이트에서 글자가 안 읽히고 다크에서는 눈이 부시다.
+  // 그래서 눈으로 고르지 않고 명암비를 계산해서 정했다(WCAG 기준 4.5:1).
+  //   라이트 #0A66AA on #DFF1FF = 5.2:1   다크 #7ACBFF on #10344F = 7.3:1
+  // 값을 바꿀 일이 생기면 반드시 명암비를 다시 계산하고 바꿀 것.
+  final Color tagBg; // 태그 블럭 배경
+  final Color tagInk; // 태그 글자
+  final Color tagLine; // 태그 테두리
 
   const AppC({
     required this.bg,
@@ -65,6 +74,9 @@ class AppC extends ThemeExtension<AppC> {
     required this.codeLine,
     required this.pin,
     required this.danger,
+    required this.tagBg,
+    required this.tagInk,
+    required this.tagLine,
   });
 
   static const light = AppC(
@@ -83,6 +95,9 @@ class AppC extends ThemeExtension<AppC> {
     codeLine: Color(0xFFE4E4E0),
     pin: Color(0xFFF2B705),
     danger: Color(0xFFE53935),
+    tagBg: Color(0xFFDFF1FF),
+    tagInk: Color(0xFF0A66AA),
+    tagLine: Color(0xFFB6E0FB),
   );
 
   static const dark = AppC(
@@ -101,6 +116,9 @@ class AppC extends ThemeExtension<AppC> {
     codeLine: Color(0xFF2C2C2E),
     pin: Color(0xFFF2B705),
     danger: Color(0xFFFF453A),
+    tagBg: Color(0xFF10344F),
+    tagInk: Color(0xFF7ACBFF),
+    tagLine: Color(0xFF1D5578),
   );
 
   @override
@@ -120,6 +138,9 @@ class AppC extends ThemeExtension<AppC> {
     Color? codeLine,
     Color? pin,
     Color? danger,
+    Color? tagBg,
+    Color? tagInk,
+    Color? tagLine,
   }) =>
       AppC(
         bg: bg ?? this.bg,
@@ -137,6 +158,9 @@ class AppC extends ThemeExtension<AppC> {
         codeLine: codeLine ?? this.codeLine,
         pin: pin ?? this.pin,
         danger: danger ?? this.danger,
+        tagBg: tagBg ?? this.tagBg,
+        tagInk: tagInk ?? this.tagInk,
+        tagLine: tagLine ?? this.tagLine,
       );
 
   @override
@@ -158,6 +182,9 @@ class AppC extends ThemeExtension<AppC> {
       codeLine: Color.lerp(codeLine, other.codeLine, t)!,
       pin: Color.lerp(pin, other.pin, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
+      tagBg: Color.lerp(tagBg, other.tagBg, t)!,
+      tagInk: Color.lerp(tagInk, other.tagInk, t)!,
+      tagLine: Color.lerp(tagLine, other.tagLine, t)!,
     );
   }
 }
@@ -969,7 +996,9 @@ class _EditorScreenState extends State<EditorScreen> {
     }
     titleCtl = TextEditingController(text: note.title);
     bodyCtl = MonoTextController(text: note.body);
-    tagsCtl = TextEditingController(text: note.tags.join(', '));
+    // 태그의 진짜 값은 note.tags 하나뿐이다. 이 입력칸은 '새로 칠 것'만 담는다.
+    // (전에는 입력칸의 글자가 곧 태그였다 — 그러면 블럭을 지우는 조작을 만들 수 없다)
+    tagsCtl = TextEditingController();
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
     }
@@ -990,10 +1019,122 @@ class _EditorScreenState extends State<EditorScreen> {
     super.dispose();
   }
 
+  /// 태그 블럭 하나. 색은 반드시 context.c를 거친다(다크 모드).
+  Widget _tagChip(String t) {
+    final c = context.c;
+    return Container(
+      decoration: BoxDecoration(
+        color: c.tagBg,
+        border: Border.all(color: c.tagLine),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(t,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: c.tagInk)),
+          const SizedBox(width: 2),
+          Semantics(
+            button: true,
+            label: L10n.of(context).tagRemoveTip,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                note.tags.remove(t);
+                await _save();
+                if (mounted) setState(() {});
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: Icon(Icons.close, size: 14, color: c.tagInk),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 쉼표나 줄바꿈이 나오면 그 앞까지를 태그로 확정하고, 뒤는 입력칸에 남긴다.
+  void _onTagTyped(String v) {
+    if (!v.contains(',') && !v.contains('\n')) return;
+    final parts = v.split(RegExp(r'[,\n]'));
+    final rest = parts.removeLast();
+    _commitTags(parts.join(','), clear: false);
+    tagsCtl.text = rest;
+    tagsCtl.selection = TextSelection.collapsed(offset: rest.length);
+  }
+
+  /// 문자열을 태그로 확정한다. 앞의 #은 떼고, 중복(대소문자 무시)은 버린다.
+  Future<void> _commitTags(String raw, {required bool clear}) async {
+    var changed = false;
+    for (var t in raw.split(RegExp(r'[,\n]'))) {
+      t = t.trim().replaceFirst(RegExp(r'^#+'), '').trim();
+      if (t.isEmpty || t.length > 24) continue;
+      if (note.tags.any((e) => e.toLowerCase() == t.toLowerCase())) continue;
+      note.tags.add(t);
+      changed = true;
+    }
+    if (clear) tagsCtl.clear();
+    if (changed || clear) {
+      await _save();
+      if (mounted) setState(() {});
+    }
+  }
+
+  /// 태그 뽑기 전용 시스템 규칙. 편집용(_aiSys)과 목적이 달라 따로 둔다.
+  static const _tagSys =
+      '너는 문서에서 태그(키워드)를 뽑는 도구다. 규칙: 원문에 실제로 나오는 말만 쓴다. '
+      '새 개념을 지어내지 않는다. 각 태그는 24자 이내의 짧은 명사구다. '
+      '3~5개를 쉼표로만 구분해 한 줄로 출력한다. 번호·설명·따옴표·해시(#)·코드펜스는 붙이지 않는다. '
+      '입력 언어를 그대로 유지한다.';
+
+  bool _tagAiBusy = false;
+
+  /// 제목과 본문 앞부분에서 태그를 뽑아 넣는다.
+  ///
+  /// AI 키가 있으면 AI가, 없거나 실패하면 앱이 뽑는다(소유자 확정 2026-08-14).
+  /// 앱이 뽑았을 때는 그 사실을 알려 준다 — 어느 쪽이 뽑았는지 모르면
+  /// 사용자가 결과 품질을 오해한다.
+  Future<void> _autoTags() async {
+    final l = L10n.of(context);
+    setState(() => _tagAiBusy = true);
+    final head = note.body.length > 1200 ? note.body.substring(0, 1200) : note.body;
+    var got = <String>[];
+    var byAi = false;
+    try {
+      if (store.settings.aiKey.trim().isNotEmpty) {
+        final out = await _aiEditCall(
+          '이 글의 태그를 뽑아라.',
+          '[제목]\n${note.title}\n\n[본문 앞부분]\n$head',
+          system: _tagSys,
+        );
+        got = out
+            .split(RegExp(r'[,\n]'))
+            .map((s) => s.trim().replaceFirst(RegExp(r'^#+'), '').trim())
+            .where((s) => s.isNotEmpty && s.length <= 24)
+            .take(5)
+            .toList();
+        byAi = got.isNotEmpty;
+      }
+    } catch (_) {
+      got = const [];
+    }
+    if (got.isEmpty) got = suggestTags(note.title, head);
+    if (!mounted) return;
+    setState(() => _tagAiBusy = false);
+    if (got.isEmpty) {
+      _toast(context, l.tagAiNone);
+      return;
+    }
+    await _commitTags(got.join(','), clear: false);
+    if (mounted && !byAi) _toast(context, l.tagAiLocalNote);
+  }
+
   Future<void> _save() async {
     note.title = titleCtl.text;
     note.body = bodyCtl.text;
-    note.tags = tagsCtl.text.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
     note.updatedAt = DateTime.now().millisecondsSinceEpoch;
     await store.persist();
   }
@@ -1164,7 +1305,9 @@ class _EditorScreenState extends State<EditorScreen> {
   static const _aiSys =
       '너는 텍스트 편집 도구다. 사용자의 지시대로만 본문을 편집한다. 규칙: 숫자·날짜·통화·퍼센트·고유명사·URL은 절대 바꾸지 않는다. 요청하지 않은 사실을 추가하지 않고, 요청하지 않은 내용을 삭제하지 않는다. 입력 언어를 유지한다. 결과 본문만 출력하고 설명·인사·코드펜스는 붙이지 않는다.';
 
-  Future<String> _aiEditCall(String instruction, String body) async {
+  /// [system]을 주면 그 규칙으로 부른다(태그 뽑기처럼 편집이 아닌 용도).
+  Future<String> _aiEditCall(String instruction, String body, {String? system}) async {
+    final sys = system ?? _aiSys;
     final s = store.settings;
     final user = '[지시]\n$instruction\n\n[본문]\n$body';
     if (s.aiModel.startsWith('gemini')) {
@@ -1173,7 +1316,7 @@ class _EditorScreenState extends State<EditorScreen> {
             'https://generativelanguage.googleapis.com/v1beta/models/${s.aiModel}:generateContent?key=${Uri.encodeComponent(s.aiKey)}'),
         headers: {'content-type': 'application/json'},
         body: jsonEncode({
-          'system_instruction': {'parts': [{'text': _aiSys}]},
+          'system_instruction': {'parts': [{'text': sys}]},
           'contents': [{'role': 'user', 'parts': [{'text': user}]}],
         }),
       );
@@ -1195,7 +1338,7 @@ class _EditorScreenState extends State<EditorScreen> {
         body: jsonEncode({
           'model': s.aiModel,
           'max_tokens': 8000,
-          'system': _aiSys,
+          'system': sys,
           'messages': [{'role': 'user', 'content': user}],
         }),
       );
@@ -1215,7 +1358,7 @@ class _EditorScreenState extends State<EditorScreen> {
       body: jsonEncode({
         'model': s.aiModel,
         'messages': [
-          {'role': 'system', 'content': _aiSys},
+          {'role': 'system', 'content': sys},
           {'role': 'user', 'content': user},
         ],
       }),
@@ -1639,18 +1782,67 @@ class _EditorScreenState extends State<EditorScreen> {
                       setState(() {});
                     },
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: tagsCtl,
-                      focusNode: _tagsFocus,
-                      decoration: InputDecoration(hintText: l.tagsHint, isDense: true),
-                      onChanged: (_) => _save(),
-                    ),
+                  const Spacer(),
+                  // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
+                  // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
+                  TextButton.icon(
+                    onPressed: _tagAiBusy ? null : _autoTags,
+                    icon: _tagAiBusy
+                        ? const SizedBox(
+                            width: 14, height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.auto_awesome, size: 18),
+                    label: Text(_tagAiBusy ? l.tagAiWorking : l.tagAiButton,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
             ),
+            // 태그 상자.
+            // 소유자 요청: 한 줄이 아니라 '입력칸처럼' 보이고 여러 줄로 늘어날 것,
+            // 그리고 태그 하나하나를 쉽게 지울 수 있을 것.
+            // 그래서 블럭(칩) + 뒤따르는 입력칸을 한 상자 안에 넣는다.
+            // 블럭이 늘어나면 상자가 저절로 여러 줄이 된다.
+            if (_showMeta)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _tagsFocus.requestFocus(),
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(minHeight: 56),
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                    decoration: BoxDecoration(
+                      color: context.c.panel,
+                      border: Border.all(color: context.c.line),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        for (final t in note.tags) _tagChip(t),
+                        SizedBox(
+                          width: 170,
+                          child: TextField(
+                            controller: tagsCtl,
+                            focusNode: _tagsFocus,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              hintText: note.tags.isEmpty ? l.tagsHint : l.tagsBoxHint,
+                            ),
+                            onChanged: _onTagTyped,
+                            onSubmitted: (v) => _commitTags(v, clear: true),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

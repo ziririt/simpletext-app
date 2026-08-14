@@ -111,6 +111,18 @@ class L10nDe extends L10n {
   @override
   String get tagsHint => 'Tags (durch Komma getrennt)';
   @override
+  String get tagAiButton => 'Tags per KI';
+  @override
+  String get tagAiWorking => 'Tags werden gesucht …';
+  @override
+  String get tagAiNone => 'Keine Schlagwörter gefunden';
+  @override
+  String get tagAiLocalNote => 'Kein KI-Schlüssel – lokal ausgewählt';
+  @override
+  String get tagsBoxHint => 'Tag eingeben, dann Komma';
+  @override
+  String get tagRemoveTip => 'Tag entfernen';
+  @override
   String get bodyHint => 'Hier einfügen oder tippen';
   @override
   String get noteNotFound => 'Notiz nicht gefunden';
