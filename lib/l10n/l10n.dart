@@ -225,6 +225,10 @@ abstract class L10n {
 
   // ---------------- 설정 화면 ----------------
   String get settingsTitle;
+  String get settingsSecView;
+  String get settingsSecTidy;
+  String get settingsSecWhen;
+  String get settingsSecInfo;
   String get emphTitle;
   String get emphSub;
   String get emphQuoteSingle;
@@ -373,6 +377,10 @@ abstract class L10n {
         'presetBlogName': presetBlogName,
         'presetBlogDesc': presetBlogDesc,
         'settingsTitle': settingsTitle,
+        'settingsSecView': settingsSecView,
+        'settingsSecTidy': settingsSecTidy,
+        'settingsSecWhen': settingsSecWhen,
+        'settingsSecInfo': settingsSecInfo,
         'emphTitle': emphTitle,
         'emphSub': emphSub,
         'emphQuoteSingle': emphQuoteSingle,

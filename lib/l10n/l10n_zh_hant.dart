@@ -78,7 +78,8 @@ class L10nZhHant extends L10n {
   String get bodyFontSizeTitle => '內文字級';
 
   @override
-  String get bodyFontSizeSample => '與常用的備忘錄 App 並排比較，調到這句話看起來一樣為止。';
+  String get bodyFontSizeSample =>
+      '遇見一個把腦中紛雜思緒整理得 Simplicity 而 Smart 的工作空間。貼上後點一次「整理」，一切都變得 Clean。';
 
   @override
   String get wizardNothingToDo => '沒有需要變更的內容';
@@ -273,6 +274,14 @@ class L10nZhHant extends L10n {
 
   @override
   String get settingsTitle => '整理規則設定';
+  @override
+  String get settingsSecView => '顯示';
+  @override
+  String get settingsSecTidy => '整理規則';
+  @override
+  String get settingsSecWhen => '整理時';
+  @override
+  String get settingsSecInfo => '關於';
   @override
   String get emphTitle => '粗體強調 (**文字**)';
   @override

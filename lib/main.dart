@@ -54,6 +54,12 @@ class AppC extends ThemeExtension<AppC> {
   // 그래서 눈으로 고르지 않고 명암비를 계산해서 정했다(WCAG 기준 4.5:1).
   //   라이트 #0A66AA on #DFF1FF = 5.2:1   다크 #7ACBFF on #10344F = 7.3:1
   // 값을 바꿀 일이 생기면 반드시 명암비를 다시 계산하고 바꿀 것.
+  // 2026-08-14 소유자 요청: 설정의 안내문구가 너무 작고 흐리다.
+  // 크기는 본문과 같게 하고 색은 '아주 진한 회색', 다크에서는 반대로
+  // '흰색에 가까운 회색'으로. sub(#8E8E93)보다 훨씬 진하다 — sub는
+  // 날짜·부가정보용이고 이건 읽어야 하는 문장용이다. 둘을 섞지 말 것.
+  //   라이트 #3A3A3C on #FFFFFF = 11.6:1   다크 #E5E5EA on #1C1C1E = 13.9:1
+  final Color guideInk; // 설정 안내문구
   final Color tagBg; // 태그 블럭 배경
   final Color tagInk; // 태그 글자
   final Color tagLine; // 태그 테두리
@@ -74,6 +80,7 @@ class AppC extends ThemeExtension<AppC> {
     required this.codeLine,
     required this.pin,
     required this.danger,
+    required this.guideInk,
     required this.tagBg,
     required this.tagInk,
     required this.tagLine,
@@ -95,6 +102,7 @@ class AppC extends ThemeExtension<AppC> {
     codeLine: Color(0xFFE4E4E0),
     pin: Color(0xFFF2B705),
     danger: Color(0xFFE53935),
+    guideInk: Color(0xFF3A3A3C),
     tagBg: Color(0xFFDFF1FF),
     tagInk: Color(0xFF0A66AA),
     tagLine: Color(0xFFB6E0FB),
@@ -116,6 +124,7 @@ class AppC extends ThemeExtension<AppC> {
     codeLine: Color(0xFF2C2C2E),
     pin: Color(0xFFF2B705),
     danger: Color(0xFFFF453A),
+    guideInk: Color(0xFFE5E5EA),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
     tagLine: Color(0xFF1D5578),
@@ -138,6 +147,7 @@ class AppC extends ThemeExtension<AppC> {
     Color? codeLine,
     Color? pin,
     Color? danger,
+    Color? guideInk,
     Color? tagBg,
     Color? tagInk,
     Color? tagLine,
@@ -158,6 +168,7 @@ class AppC extends ThemeExtension<AppC> {
         codeLine: codeLine ?? this.codeLine,
         pin: pin ?? this.pin,
         danger: danger ?? this.danger,
+        guideInk: guideInk ?? this.guideInk,
         tagBg: tagBg ?? this.tagBg,
         tagInk: tagInk ?? this.tagInk,
         tagLine: tagLine ?? this.tagLine,
@@ -182,6 +193,7 @@ class AppC extends ThemeExtension<AppC> {
       codeLine: Color.lerp(codeLine, other.codeLine, t)!,
       pin: Color.lerp(pin, other.pin, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
+      guideInk: Color.lerp(guideInk, other.guideInk, t)!,
       tagBg: Color.lerp(tagBg, other.tagBg, t)!,
       tagInk: Color.lerp(tagInk, other.tagInk, t)!,
       tagLine: Color.lerp(tagLine, other.tagLine, t)!,
@@ -2062,8 +2074,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _dropRow<T>(String label, String? sub, T value, List<(T, String)> options, ValueChanged<T> onChanged) {
     return ListTile(
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-      subtitle: sub != null ? Text(sub, style: const TextStyle(fontSize: 12)) : null,
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+      subtitle: sub == null
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(sub,
+                  style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+            ),
       trailing: DropdownButton<T>(
         value: value,
         items: options.map((o) => DropdownMenuItem(value: o.$1, child: Text(o.$2))).toList(),
@@ -2078,6 +2096,101 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// 애플 설정 앱식 작은 회색 머리글.
+  Widget _secHeader(String t) => Padding(
+        padding: const EdgeInsets.fromLTRB(32, 22, 16, 6),
+        child: Text(t,
+            style: TextStyle(
+                fontSize: 15, fontWeight: FontWeight.w600, color: context.c.sub)),
+      );
+
+  /// 둥근 카드 한 장.
+  ///
+  /// Material로 감싸는 이유가 있다. 색 있는 Container 안에 ListTile을 넣으면
+  /// 프레임워크가 "ink splashes may be invisible" assertion을 던진다 —
+  /// 2026-08-14에 홈 목록에서 실제로 겪었다. Material을 직접 두면 그 경고가
+  /// 사라지고 눌렀을 때 반응도 제대로 보인다. 여기도 안에 ListTile이 들어간다.
+  Widget _card(List<Widget> children) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Material(
+            color: context.c.panel,
+            child: Column(children: children),
+          ),
+        ),
+      );
+
+  Widget _sep() => Divider(height: 1, indent: 16, color: context.c.line);
+
+  Widget _switchRow(String title, String? sub, bool value, ValueChanged<bool> apply) =>
+      SwitchListTile.adaptive(
+        // 2026-08-14 소유자 요청: 설정 글자가 너무 작다. 항목은 기본 크기(17),
+        // 안내문구도 같은 17에 아주 진한 회색(다크에서는 흰색에 가까운 회색).
+        // 애플 설정 앱은 안내문구를 13pt 회색으로 쓰지만, 여기서는 소유자가
+        // 명시적으로 크게 해 달라고 했다 — 관습보다 사용자 지시가 우선이다.
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+        subtitle: sub == null
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(sub,
+                    style: TextStyle(
+                        fontSize: 17, height: 1.35, color: context.c.guideInk)),
+              ),
+        value: value,
+        onChanged: (v) {
+          apply(v);
+          store.persistSettings();
+          setState(() {});
+        },
+      );
+
+  /// 글자 크기 — 쓰던 앱과 눈으로 맞출 수 있게 견본을 같이 보여 준다.
+  /// 숫자를 코드에 박아 두면 맞출 때마다 설치 왕복이 생긴다(2026-08-14).
+  /// 견본 문장은 소유자 지정: 자국어와 영어가 섞인 세 줄짜리 문장이다.
+  /// 한쪽 글자만 보고 맞추면 다른 쪽이 어긋나기 때문이다.
+  Widget _fontSizeBlock(L10n l, AppSettings s) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(l.bodyFontSizeTitle,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+                ),
+                Text('${s.bodyFontSize.round()}',
+                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+              ],
+            ),
+            Slider.adaptive(
+              value: s.bodyFontSize,
+              min: MonoTextController.minBodyFontSize,
+              max: MonoTextController.maxBodyFontSize,
+              divisions: (MonoTextController.maxBodyFontSize -
+                      MonoTextController.minBodyFontSize)
+                  .round(),
+              onChanged: (v) => setState(() => s.bodyFontSize = v),
+              onChangeEnd: (_) => store.persistSettings(),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: context.c.codeBg,
+                  border: Border.all(color: context.c.codeLine),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Text(l.bodyFontSizeSample,
+                  style: TextStyle(
+                      fontSize: s.bodyFontSize, height: MonoTextController.bodyHeight)),
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
@@ -2085,219 +2198,173 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l.settingsTitle)),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 8),
         children: [
-          _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
-            ('quoteSingle', l.emphQuoteSingle),
-            ('quoteDouble', l.emphQuoteDouble),
-            ('remove', l.removeLabel),
-            ('keep', l.keepLabel),
-          ], (v) => s.emphStyle = v),
-          _dropRow(l.hrTitle, null, s.hrMode, [
-            ('keep', l.keepLabel),
-            ('remove', l.removeLabel),
-          ], (v) => s.hrMode = v),
-          _dropRow(l.headingTitle, null, s.headingMode, [
-            ('strip', l.headingStrip),
-            ('keep', l.headingKeep),
-            ('prefix', l.headingPrefix),
-            ('bracket', l.headingBracket),
-          ], (v) => s.headingMode = v),
-          _dropRow(l.bulletTitle, null, s.bulletChar, [
-            ('-', l.bulletHyphen),
-            ('·', l.bulletMiddot),
-            ('•', l.bulletDot),
-            ('◦', l.bulletWhite),
-            ('keep', l.bulletKeep),
-          ], (v) => s.bulletChar = v),
-          _dropRow(l.bulletIndentTitle, null, s.bulletIndent, [
-            (2, l.indent2),
-            (4, l.indent4),
-            (0, l.indentNone),
-          ], (v) => s.bulletIndent = v),
-          SwitchListTile.adaptive(
-            title: Text(l.headingPadTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: Text(l.headingPadSub, style: const TextStyle(fontSize: 12)),
-            value: s.headingPad,
-            onChanged: (v) {
-              s.headingPad = v;
-              store.persistSettings();
-              setState(() {});
-            },
-          ),
-          // 글자 크기 — 쓰던 앱과 눈으로 맞출 수 있게 견본을 같이 보여 준다.
-          // 숫자를 코드에 박아 두면 맞출 때마다 설치 왕복이 생긴다(2026-08-14).
+          // 2026-08-14 소유자 요청: 설정 메뉴를 그룹으로 묶는다.
+          //
+          // 전에는 열여섯 줄이 한 줄로 늘어서 있었고, 성격이 다른 것들이 섞여
+          // 있었다 — 글자 크기(화면) 다음에 미리보기(동작), 그 다음에 등폭
+          // 글꼴(화면), 그 다음에 출처 제거(정리 규칙) 하는 식이었다.
+          // 사용자는 목록을 위에서 아래로 훑으며 "지금 내가 무엇을 고르는
+          // 중이지?"를 계속 다시 물어야 했다.
+          //
+          // 묶는 기준은 사용자가 던지는 질문으로 잡았다.
+          //   "이 앱이 어떻게 보이나"        → 보기
+          //   "정리를 누르면 무엇이 바뀌나"   → 정리 규칙
+          //   "정리를 누르면 어떻게 되나"     → 정리할 때
+          // 화면 생김새는 애플 설정 앱의 관습을 그대로 따른다(작은 회색
+          // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
+          _secHeader(l.settingsSecView),
+          _card([
+            _fontSizeBlock(l, s),
+            _sep(),
+            _switchRow(l.monoEditorTitle, l.monoEditorSub, s.monoEditor,
+                (v) => s.monoEditor = v),
+          ]),
+          _secHeader(l.settingsSecTidy),
+          _card([
+            _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
+              ('quoteSingle', l.emphQuoteSingle),
+              ('quoteDouble', l.emphQuoteDouble),
+              ('remove', l.removeLabel),
+              ('keep', l.keepLabel),
+            ], (v) => s.emphStyle = v),
+            _sep(),
+            _dropRow(l.headingTitle, null, s.headingMode, [
+              ('strip', l.headingStrip),
+              ('keep', l.headingKeep),
+              ('prefix', l.headingPrefix),
+              ('bracket', l.headingBracket),
+            ], (v) => s.headingMode = v),
+            _sep(),
+            _dropRow(l.hrTitle, null, s.hrMode, [
+              ('keep', l.keepLabel),
+              ('remove', l.removeLabel),
+            ], (v) => s.hrMode = v),
+            _sep(),
+            _dropRow(l.bulletTitle, null, s.bulletChar, [
+              ('-', l.bulletHyphen),
+              ('·', l.bulletMiddot),
+              ('•', l.bulletDot),
+              ('◦', l.bulletWhite),
+              ('keep', l.bulletKeep),
+            ], (v) => s.bulletChar = v),
+            _sep(),
+            _dropRow(l.bulletIndentTitle, null, s.bulletIndent, [
+              (2, l.indent2),
+              (4, l.indent4),
+              (0, l.indentNone),
+            ], (v) => s.bulletIndent = v),
+            _sep(),
+            _switchRow(l.headingPadTitle, l.headingPadSub, s.headingPad,
+                (v) => s.headingPad = v),
+            _sep(),
+            _switchRow(l.fillerHeadingTitle, l.fillerHeadingSub, s.smartFillerHeading,
+                (v) => s.smartFillerHeading = v),
+            _sep(),
+            _switchRow(l.dashListTitle, l.dashListSub, s.smartDashList,
+                (v) => s.smartDashList = v),
+            _sep(),
+            _switchRow(l.citationsTitle, l.citationsSub, s.removeCitations,
+                (v) => s.removeCitations = v),
+          ]),
+          _secHeader(l.settingsSecWhen),
+          _card([
+            // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
+            _switchRow(l.previewTitle2, l.previewSub2, s.previewBeforeApply,
+                (v) => s.previewBeforeApply = v),
+          ]),
+          _secHeader(l.aiSectionTitle),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(l.bodyFontSizeTitle,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
+            child: Text(l.aiSectionDesc,
+                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+          ),
+          _card([
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: s.aiKey,
+                      obscureText: true,
+                      decoration: InputDecoration(hintText: l.aiKeyHint, isDense: true),
+                      onChanged: (v) {
+                        s.aiKey = v.trim();
+                        store.persistSettings();
+                      },
                     ),
-                    Text('${s.bodyFontSize.round()}',
-                        style: TextStyle(fontSize: 13, color: context.c.sub)),
-                  ],
-                ),
-                Slider.adaptive(
-                  value: s.bodyFontSize,
-                  min: MonoTextController.minBodyFontSize,
-                  max: MonoTextController.maxBodyFontSize,
-                  divisions: (MonoTextController.maxBodyFontSize -
-                          MonoTextController.minBodyFontSize)
-                      .round(),
-                  onChanged: (v) => setState(() => s.bodyFontSize = v),
-                  onChangeEnd: (_) => store.persistSettings(),
-                ),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                      color: context.c.codeBg,
-                      border: Border.all(color: context.c.codeLine),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Text(l.bodyFontSizeSample,
-                      style: TextStyle(
-                          fontSize: s.bodyFontSize, height: MonoTextController.bodyHeight)),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
-          SwitchListTile.adaptive(
-            title: Text(l.previewTitle2, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: Text(l.previewSub2, style: const TextStyle(fontSize: 12)),
-            value: s.previewBeforeApply,
-            onChanged: (v) {
-              s.previewBeforeApply = v;
-              store.persistSettings();
-              setState(() {});
-            },
-          ),
-          SwitchListTile.adaptive(
-            title: Text(l.monoEditorTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: Text(l.monoEditorSub, style: const TextStyle(fontSize: 12)),
-            value: s.monoEditor,
-            onChanged: (v) {
-              s.monoEditor = v;
-              store.persistSettings();
-              setState(() {});
-            },
-          ),
-          SwitchListTile.adaptive(
-            title: Text(l.citationsTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: Text(l.citationsSub, style: const TextStyle(fontSize: 12)),
-            value: s.removeCitations,
-            onChanged: (v) {
-              s.removeCitations = v;
-              store.persistSettings();
-              setState(() {});
-            },
-          ),
-          SwitchListTile.adaptive(
-            title: Text(l.dashListTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: Text(l.dashListSub, style: const TextStyle(fontSize: 12)),
-            value: s.smartDashList,
-            onChanged: (v) {
-              s.smartDashList = v;
-              store.persistSettings();
-              setState(() {});
-            },
-          ),
-          SwitchListTile.adaptive(
-            title: Text(l.fillerHeadingTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            subtitle: Text(l.fillerHeadingSub, style: const TextStyle(fontSize: 12)),
-            value: s.smartFillerHeading,
-            onChanged: (v) {
-              s.smartFillerHeading = v;
-              store.persistSettings();
-              setState(() {});
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
-            child: Text(l.aiSectionTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(l.aiSectionDesc, style: TextStyle(fontSize: 12, color: context.c.sub)),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: s.aiKey,
-                    obscureText: true,
-                    decoration: InputDecoration(hintText: l.aiKeyHint, isDense: true),
+                  ),
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: s.aiModel,
+                    items: const [
+                      DropdownMenuItem(value: 'gemini-2.5-flash-lite', child: Text('Gemini Flash-Lite')),
+                      DropdownMenuItem(value: 'gemini-2.5-flash', child: Text('Gemini Flash')),
+                      DropdownMenuItem(value: 'claude-haiku-4-5-20251001', child: Text('Claude Haiku')),
+                      DropdownMenuItem(value: 'claude-sonnet-5', child: Text('Claude Sonnet')),
+                      DropdownMenuItem(value: 'gpt-5-mini', child: Text('ChatGPT (GPT-5 Mini)')),
+                      DropdownMenuItem(value: 'gpt-5-nano', child: Text('ChatGPT (GPT-5 Nano)')),
+                      DropdownMenuItem(value: 'grok-4.1-fast', child: Text('Grok (4.1 Fast)')),
+                    ],
                     onChanged: (v) {
-                      s.aiKey = v.trim();
-                      store.persistSettings();
+                      if (v != null) {
+                        s.aiModel = v;
+                        store.persistSettings();
+                        setState(() {});
+                      }
                     },
                   ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: s.aiModel,
-                  items: const [
-                    DropdownMenuItem(value: 'gemini-2.5-flash-lite', child: Text('Gemini Flash-Lite')),
-                    DropdownMenuItem(value: 'gemini-2.5-flash', child: Text('Gemini Flash')),
-                    DropdownMenuItem(value: 'claude-haiku-4-5-20251001', child: Text('Claude Haiku')),
-                    DropdownMenuItem(value: 'claude-sonnet-5', child: Text('Claude Sonnet')),
-                    DropdownMenuItem(value: 'gpt-5-mini', child: Text('ChatGPT (GPT-5 Mini)')),
-                    DropdownMenuItem(value: 'gpt-5-nano', child: Text('ChatGPT (GPT-5 Nano)')),
-                    DropdownMenuItem(value: 'grok-4.1-fast', child: Text('Grok (4.1 Fast)')),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) {
-                      s.aiModel = v;
-                      store.persistSettings();
-                      setState(() {});
-                    }
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ]),
+          _secHeader(l.rulesSectionTitle),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
-            child: Text(l.rulesSectionTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
+            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
+            child: Text(l.rulesSectionDesc,
+                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(l.rulesSectionDesc, style: TextStyle(fontSize: 12, color: context.c.sub)),
-          ),
-          for (int i = 0; i < s.customRules.length; i++) _ruleRow(i),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                s.customRules.add(const CustomRule(find: ''));
-                store.persistSettings();
-                setState(() {});
-              },
-              icon: const Icon(Icons.add),
-              label: Text(l.addRule),
+          _card([
+            for (int i = 0; i < s.customRules.length; i++) ...[
+              if (i > 0) _sep(),
+              _ruleRow(i),
+            ],
+            if (s.customRules.isNotEmpty) _sep(),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  s.customRules.add(const CustomRule(find: ''));
+                  store.persistSettings();
+                  setState(() {});
+                },
+                icon: const Icon(Icons.add),
+                label: Text(l.addRule),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            child: Text(l.settingsFooter, style: TextStyle(fontSize: 12, color: context.c.sub)),
-          ),
-          // 버전은 여기서 눈으로 확인한다. 업데이트가 실제로 반영됐는지
-          // 이 숫자 하나로 알 수 있어야 한다(소유자 요청 2026-08-12).
-          // 2026-08-14: 눈으로 읽고 옮겨 적는 대신 그대로 복사할 수 있어야 한다는
-          // 요청. SelectableText면 길게 눌러 선택 → 복사 — 애플 기본 방식 그대로다.
-          // (탭 한 번에 복사되는 식의 독자 동작은 만들지 않는다)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
-            child: SelectableText(appVersionLabel,
-                style: TextStyle(fontSize: 12, color: context.c.sub)),
-          ),
+          ]),
+          _secHeader(l.settingsSecInfo),
+          _card([
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+              child: Text(l.settingsFooter,
+                  style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+            ),
+            _sep(),
+            // 버전은 여기서 눈으로 확인한다. 업데이트가 실제로 반영됐는지
+            // 이 숫자 하나로 알 수 있어야 한다(소유자 요청 2026-08-12).
+            // 2026-08-14: 눈으로 읽고 옮겨 적는 대신 그대로 복사할 수 있어야
+            // 한다는 요청. SelectableText면 길게 눌러 선택 → 복사 —
+            // 애플 기본 방식 그대로다(탭 한 번에 복사되는 독자 동작은 안 만든다).
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: SelectableText(appVersionLabel,
+                  style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+            ),
+          ]),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -2340,7 +2407,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() {});
             },
           ),
-          Text(l.regexLabel, style: const TextStyle(fontSize: 11)),
+          Text(l.regexLabel, style: const TextStyle(fontSize: 15)),
           IconButton(
             icon: const Icon(Icons.close, size: 18),
             onPressed: () {

@@ -78,7 +78,8 @@ class L10nKo extends L10n {
   String get bodyFontSizeTitle => '본문 글자 크기';
 
   @override
-  String get bodyFontSizeSample => '쓰시던 메모 앱과 나란히 놓고 이 문장이 같아 보일 때까지 맞추세요.';
+  String get bodyFontSizeSample =>
+      '머릿속의 수많은 생각을 Simplicity하게 깔끔히 정돈해 주는 Smart한 작업 공간을 만나보세요. 붙여넣고 정리 한 번이면 Clean하게 끝납니다.';
 
   @override
   String get wizardNothingToDo => '바꿀 것이 없습니다';
@@ -273,6 +274,14 @@ class L10nKo extends L10n {
 
   @override
   String get settingsTitle => '정리 규칙 설정';
+  @override
+  String get settingsSecView => '보기';
+  @override
+  String get settingsSecTidy => '정리 규칙';
+  @override
+  String get settingsSecWhen => '정리할 때';
+  @override
+  String get settingsSecInfo => '정보';
   @override
   String get emphTitle => '굵은 강조 (**텍스트**)';
   @override

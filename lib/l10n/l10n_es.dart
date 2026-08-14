@@ -78,7 +78,8 @@ class L10nEs extends L10n {
   String get bodyFontSizeTitle => 'Tamaño del texto';
 
   @override
-  String get bodyFontSizeSample => 'Ponga su app de notas habitual al lado y ajuste hasta que esta línea se vea igual.';
+  String get bodyFontSizeSample =>
+      'Descubre un espacio de trabajo Smart que ordena las muchas ideas de tu cabeza con pura Simplicity. Pega el texto, pulsa Limpiar y todo queda Clean.';
 
   @override
   String get wizardNothingToDo => 'No hay nada que cambiar';
@@ -274,6 +275,14 @@ class L10nEs extends L10n {
 
   @override
   String get settingsTitle => 'Reglas de limpieza';
+  @override
+  String get settingsSecView => 'Pantalla';
+  @override
+  String get settingsSecTidy => 'Reglas de limpieza';
+  @override
+  String get settingsSecWhen => 'Al limpiar';
+  @override
+  String get settingsSecInfo => 'Información';
   @override
   String get emphTitle => 'Énfasis en negrita (**texto**)';
   @override

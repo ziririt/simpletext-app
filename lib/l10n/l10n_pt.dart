@@ -78,7 +78,8 @@ class L10nPt extends L10n {
   String get bodyFontSizeTitle => 'Tamanho do texto';
 
   @override
-  String get bodyFontSizeSample => 'Coloque a sua app de notas habitual ao lado e ajuste até esta linha ficar igual.';
+  String get bodyFontSizeSample =>
+      'Conheça um espaço de trabalho Smart que organiza as muitas ideias da sua cabeça com pura Simplicity. Cole o texto, toque em Limpar e tudo fica Clean.';
 
   @override
   String get wizardNothingToDo => 'Nada para alterar';
@@ -274,6 +275,14 @@ class L10nPt extends L10n {
 
   @override
   String get settingsTitle => 'Regras de organização';
+  @override
+  String get settingsSecView => 'Visualização';
+  @override
+  String get settingsSecTidy => 'Regras de limpeza';
+  @override
+  String get settingsSecWhen => 'Ao limpar';
+  @override
+  String get settingsSecInfo => 'Informação';
   @override
   String get emphTitle => 'Ênfase em negrito (**texto**)';
   @override

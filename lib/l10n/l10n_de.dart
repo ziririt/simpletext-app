@@ -78,7 +78,8 @@ class L10nDe extends L10n {
   String get bodyFontSizeTitle => 'Textgröße';
 
   @override
-  String get bodyFontSizeSample => 'Legen Sie Ihre gewohnte Notizen-App daneben und passen Sie an, bis diese Zeile gleich aussieht.';
+  String get bodyFontSizeSample =>
+      'Entdecken Sie einen Smart Arbeitsbereich, der die vielen Gedanken in Ihrem Kopf mit purer Simplicity ordnet. Einfügen, einmal Aufräumen tippen, alles Clean.';
 
   @override
   String get wizardNothingToDo => 'Nichts zu ändern';
@@ -275,6 +276,14 @@ class L10nDe extends L10n {
 
   @override
   String get settingsTitle => 'Bereinigungsregeln';
+  @override
+  String get settingsSecView => 'Anzeige';
+  @override
+  String get settingsSecTidy => 'Aufräumregeln';
+  @override
+  String get settingsSecWhen => 'Beim Aufräumen';
+  @override
+  String get settingsSecInfo => 'Info';
   @override
   String get emphTitle => 'Fette Hervorhebung (**Text**)';
   @override

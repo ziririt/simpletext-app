@@ -78,7 +78,8 @@ class L10nEn extends L10n {
   String get bodyFontSizeTitle => 'Body text size';
 
   @override
-  String get bodyFontSizeSample => 'Put your usual notes app side by side and match until this line looks the same.';
+  String get bodyFontSizeSample =>
+      'Meet a Smart workspace that turns the many thoughts in your head into pure Simplicity. Paste it, tap Tidy once, and everything comes out Clean.';
 
   @override
   String get wizardNothingToDo => 'Nothing to change';
@@ -274,6 +275,14 @@ class L10nEn extends L10n {
 
   @override
   String get settingsTitle => 'Tidy rules';
+  @override
+  String get settingsSecView => 'Display';
+  @override
+  String get settingsSecTidy => 'Tidy rules';
+  @override
+  String get settingsSecWhen => 'When tidying';
+  @override
+  String get settingsSecInfo => 'About';
   @override
   String get emphTitle => 'Bold emphasis (**text**)';
   @override

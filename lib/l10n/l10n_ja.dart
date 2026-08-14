@@ -78,7 +78,8 @@ class L10nJa extends L10n {
   String get bodyFontSizeTitle => '本文の文字サイズ';
 
   @override
-  String get bodyFontSizeSample => 'いつものメモアプリと並べて、この文が同じに見えるまで合わせてください。';
+  String get bodyFontSizeSample =>
+      '頭の中のたくさんの考えを Simplicity に整えてくれる Smart なワークスペース。貼り付けて「整理」を一度押すだけで Clean に片づきます。';
 
   @override
   String get wizardNothingToDo => '変更するものがありません';
@@ -273,6 +274,14 @@ class L10nJa extends L10n {
 
   @override
   String get settingsTitle => '整理ルール設定';
+  @override
+  String get settingsSecView => '表示';
+  @override
+  String get settingsSecTidy => '整理ルール';
+  @override
+  String get settingsSecWhen => '整理するとき';
+  @override
+  String get settingsSecInfo => '情報';
   @override
   String get emphTitle => '太字強調 (**テキスト**)';
   @override

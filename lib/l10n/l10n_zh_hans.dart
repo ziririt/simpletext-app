@@ -78,7 +78,8 @@ class L10nZhHans extends L10n {
   String get bodyFontSizeTitle => '正文字号';
 
   @override
-  String get bodyFontSizeSample => '与常用的备忘录应用并排比较，调到这句话看起来一样为止。';
+  String get bodyFontSizeSample =>
+      '遇见一个把脑中纷杂思绪整理得 Simplicity 而 Smart 的工作空间。粘贴后点一次"整理"，一切都变得 Clean。';
 
   @override
   String get wizardNothingToDo => '没有需要更改的内容';
@@ -273,6 +274,14 @@ class L10nZhHans extends L10n {
 
   @override
   String get settingsTitle => '整理规则设置';
+  @override
+  String get settingsSecView => '显示';
+  @override
+  String get settingsSecTidy => '整理规则';
+  @override
+  String get settingsSecWhen => '整理时';
+  @override
+  String get settingsSecInfo => '关于';
   @override
   String get emphTitle => '加粗强调 (**文本**)';
   @override
