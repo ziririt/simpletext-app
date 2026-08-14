@@ -488,6 +488,15 @@ void _toast(BuildContext context, String msg) {
 }
 
 /// ---------------- 홈 화면 ----------------
+/// 목록 행의 "카드 안쪽 왼쪽 여백".
+///
+/// 2026-08-14 — 애플 메모와 나란히 놓고 눈으로 맞추지 않고, 아이폰 16(3x)
+/// 스크린샷을 픽셀로 재서 정한 값이다(노하우 3절: 추정하지 말고 숫자를 쥔다).
+///   애플 메모: 카드 좌여백 48px(16pt), 글자 좌측 133px(44.3pt) → 안쪽 여백 28pt
+///   구분선도 글자 왼쪽 끝(44pt)에서 시작한다. 그래서 같은 값을 쓴다.
+/// 한쪽만 바꾸면 글자와 줄이 어긋난다.
+const double kListRowInset = 28;
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -626,9 +635,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _groupLabel(String label) => SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 12, 16, 6),
+          // 애플 메모의 '고정된 메모' 헤더 실측: 글자높이 52px, 좌측 135px(45pt).
+          // 제목 46px=17pt 비율로 환산하면 19.2pt → 애플 .title3(20pt) 굵게.
+          // 색도 회색이 아니라 본문색이다.
+          padding: const EdgeInsets.fromLTRB(kListRowInset + 16, 18, 16, 8),
           child: Text(label,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: context.c.sub)),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         ),
       );
 
@@ -643,7 +655,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   for (int i = 0; i < group.length; i++) ...[
                     if (i > 0)
-                      Divider(height: 1, indent: 16, color: context.c.line),
+                      Divider(height: 1, indent: kListRowInset, color: context.c.line),
                     _noteTile(group[i]),
                   ],
                 ],
@@ -701,29 +713,74 @@ class _HomeScreenState extends State<HomeScreen> {
         if (ok == true) store.deleteNote(n.id);
         return ok == true;
       },
-      child: ListTile(
-        tileColor: context.c.panel,
-        title: Text(
-          n.title.isNotEmpty ? n.title : (firstLine.isNotEmpty ? firstLine : l.untitled),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-        ),
-        subtitle: Row(
-          children: [
-            Text(_listDate(l, n.updatedAt), style: TextStyle(fontSize: 13, color: context.c.sub)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(firstLine,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: context.c.sub)),
+      // 2026-08-14 소유자 요청: "목록도 메모 앱과 같은 스타일·글자 크기·글꼴로".
+      //
+      // 눈으로 맞추지 않고 아이폰 16(3x) 스크린샷을 픽셀로 쟀다.
+      //             애플 메모      심플텍스트(전)
+      //   제목 글자   46px          41px
+      //   부제 글자   39px          34px
+      //   행 피치    181px(60.3pt)  219px(73pt)
+      //   글자 좌측  133px(44.3pt)   98px(32.7pt)
+      // 제목 46px를 17pt로 환산(한글 글리프/em 비율 약 0.90)하면 제목 17 · 부제 15가
+      // 나오고, 비율(46/41=1.12, 39/34=1.15)도 17/15 · 15/13과 맞아떨어진다.
+      // 즉 심플텍스트는 글자가 작으면서 행은 오히려 더 높았다 —
+      // 키울 것은 글자, 줄일 것은 행이다.
+      //
+      // ListTile을 쓰지 않는 이유가 둘 있다.
+      //   1) ListTile은 높이를 정확히 못 잡는다. 60.3pt를 맞추려면 패딩을 직접 준다.
+      //   2) ListTile을 색 있는 Container 안에 넣으면 프레임워크가
+      //      "ink splashes may be invisible" assertion을 던진다(디버그에서 실제로 떴다).
+      //      Material을 직접 두면 그 경고가 사라지고 누를 때 반응도 제대로 보인다.
+      // 글꼴은 지정하지 않는다 — 기기 시스템 글꼴을 그대로 쓴다(테마의 한글 폴백만 적용).
+      // 숫자를 바꿀 일이 생기면 시뮬레이터 스크린샷을 다시 재고 바꿀 것.
+      child: Material(
+        color: context.c.panel,
+        child: InkWell(
+          onTap: () =>
+              Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(kListRowInset, 10, 16, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        n.title.isNotEmpty
+                            ? n.title
+                            : (firstLine.isNotEmpty ? firstLine : l.untitled),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w600, height: 1.25),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text(_listDate(l, n.updatedAt),
+                              style: TextStyle(fontSize: 15, height: 1.2, color: context.c.sub)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(firstLine,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 15, height: 1.2, color: context.c.sub)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (n.pinned)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Icon(Icons.push_pin, size: 17, color: context.c.pin),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
-        trailing: n.pinned ? Icon(Icons.push_pin, size: 15, color: context.c.pin) : null,
-        onTap: () =>
-            Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
       ),
     );
   }
