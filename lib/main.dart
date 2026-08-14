@@ -194,18 +194,41 @@ class SimpleTextApp extends StatelessWidget {
     );
   }
 
-  static ThemeData _theme(Brightness b, AppC c) => ThemeData(
-        useMaterial3: true,
-        brightness: b,
-        colorScheme: ColorScheme.fromSeed(seedColor: _accent, brightness: b),
-        scaffoldBackgroundColor: c.bg,
-        appBarTheme: AppBarTheme(
-          backgroundColor: c.bg,
-          elevation: 0,
-          scrolledUnderElevation: 0.5,
-        ),
-        extensions: [c],
-      );
+  /// 한글을 그릴 때 쓸 글꼴을 못 박는다.
+  ///
+  /// 2026-08-14 소유자 신고: 본문 글꼴이 아이폰 기본 글꼴과 달라 보인다.
+  /// 코드에는 글꼴 지정이 없어 기기 기본값을 쓰고 있었는데, 문제는 "기기 기본값"이
+  /// 한 가지가 아니라는 점이다. Flutter는 영문 글꼴(SF)만 지정하고 한글은 시스템의
+  /// 대체 글꼴 목록에 맡기는데, 그 목록은 기기 언어 설정에 따라 일본어·중국어
+  /// 글꼴이 먼저 걸릴 수 있다. 한글 글자 모양이 미묘하게 달라 보이는 전형적인 원인이다.
+  ///
+  /// 그래서 한글 대체 글꼴을 애플·안드로이드·윈도우의 '진짜' 시스템 글꼴로 못 박는다.
+  /// 영문은 여전히 각 기기의 기본 글꼴(SF/Roboto/Segoe)이 그린다 — 순서상 먼저다.
+  /// 없는 이름은 그냥 무시되므로 어느 기기에서도 안전하다.
+  static const List<String> _hangulFallback = [
+    'Apple SD Gothic Neo', // iOS·macOS
+    'Noto Sans KR', // Android
+    'Malgun Gothic', // Windows
+  ];
+
+  static ThemeData _theme(Brightness b, AppC c) {
+    final base = ThemeData(
+      useMaterial3: true,
+      brightness: b,
+      colorScheme: ColorScheme.fromSeed(seedColor: _accent, brightness: b),
+      scaffoldBackgroundColor: c.bg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: c.bg,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+      ),
+      extensions: [c],
+    );
+    return base.copyWith(
+      textTheme: base.textTheme.apply(fontFamilyFallback: _hangulFallback),
+      primaryTextTheme: base.primaryTextTheme.apply(fontFamilyFallback: _hangulFallback),
+    );
+  }
 }
 
 /// ---------------- 데이터 모델 ----------------

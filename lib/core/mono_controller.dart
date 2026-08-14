@@ -23,7 +23,8 @@ class MonoTextController extends TextEditingController {
   static const String fontFamily = 'D2Coding';
 
   /// 본문(줄글) 크기 — 기기 기본 글꼴을 그대로 쓴다.
-  static const double bodyFontSize = 16;
+  /// 2026-08-14 소유자 선택: 16 → 17(애플 메모의 기본 본문 크기).
+  static const double bodyFontSize = 17;
   static const double bodyHeight = 1.6;
 
   /// 등폭 구간 크기. 표가 가로로 덜 넘치도록 본문보다 조금 작게 쓴다.
