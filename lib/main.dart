@@ -7,6 +7,9 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
+// material.dart는 defaultTargetPlatform을 내보내지 않는다(TargetPlatform은 내보낸다).
+// 2026-08-14에 이걸 몰라서 analyze가 undefined_identifier로 잡았다.
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -378,7 +381,18 @@ class Note {
 
 /// 사용자 정리 규칙 설정 (웹 프로토타입과 동일 기본값)
 class AppSettings {
-  String emphStyle = 'quoteSingle';
+  /// 저장된 설정의 판(版). 기본값을 바꿀 때 '한 번만' 갈아엎기 위해 쓴다.
+  static const int settingsRev = 1;
+
+  // 2026-08-14 소유자 신고 — **굵게**가 '굵게'로 바뀌어 나온다.
+  // 따옴표가 필요 없는 자리에까지 따옴표가 붙어서 붙여넣기 뒤에 손이 간다.
+  // 소유자 지시: "**를 모두 삭제처리해줘. 외따옴표 처리하지 말고.
+  // 기본 정리 규칙에도 넣어줘."
+  //
+  // 엔진(TidyOptions)의 기본값은 원래부터 'remove'였다. 따옴표는 여기,
+  // 앱 설정의 기본값이 'quoteSingle'이라서 붙던 것이다(effOpts가 엔진
+  // 기본값을 덮어쓴다). 그래서 고칠 자리는 엔진이 아니라 여기다.
+  String emphStyle = 'remove';
   String hrMode = 'keep';
   String headingMode = 'strip';
   String headingSymbol = '■';
@@ -408,6 +422,7 @@ class AppSettings {
   List<CustomRule> customRules = [];
 
   Map<String, dynamic> toJson() => {
+        'rev': settingsRev,
         'emphStyle': emphStyle,
         'hrMode': hrMode,
         'headingMode': headingMode,
@@ -434,6 +449,15 @@ class AppSettings {
   static AppSettings fromJson(Map<String, dynamic> j) {
     final s = AppSettings();
     s.emphStyle = (j['emphStyle'] ?? s.emphStyle) as String;
+    // 2026-08-14 — 기본값만 바꾸면 이미 쓰던 기기는 아무것도 안 바뀐다.
+    // 저장된 'quoteSingle'을 그대로 읽어 오기 때문이다. 소유자 기기가
+    // 그 상태였다 — 코드를 고쳐도 따옴표가 계속 붙는다.
+    // 그래서 판(rev)이 없던 옛 설정에 한해 한 번만 갈아엎는다.
+    // rev를 안 남기면, 사용자가 일부러 따옴표로 되돌려 놔도 다음 실행에서
+    // 또 지워 버린다. 그건 고치는 게 아니라 설정을 뺏는 것이다.
+    if (((j['rev'] ?? 0) as int) < settingsRev && s.emphStyle == 'quoteSingle') {
+      s.emphStyle = 'remove';
+    }
     s.hrMode = (j['hrMode'] ?? s.hrMode) as String;
     s.headingMode = (j['headingMode'] ?? s.headingMode) as String;
     s.headingSymbol = (j['headingSymbol'] ?? s.headingSymbol) as String;
@@ -993,13 +1017,36 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
-  Widget _accessoryBar() {
+  /// 소프트 키보드가 없는 판인가.
+  ///
+  /// dart:io의 Platform 대신 defaultTargetPlatform을 쓴다. 테스트에서
+  /// debugDefaultTargetPlatformOverride로 갈아 끼울 수 있어야 배치를
+  /// 테스트로 고정할 수 있고, 웹으로 빌드해도 깨지지 않는다.
+  bool get _isDesktop =>
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux;
+
+  /// 문자 입력 도구 막대(되돌리기·괄호·따옴표·커서 이동 등).
+  ///
+  /// 2026-08-14 소유자 요청 — 맥/PC에서는 이 막대를 위로 올리고 기능
+  /// 탭바(정리·마법사·표·찾기·복사·되돌리기)를 아래에 항상 고정한다.
+  ///
+  /// 왜 갈렸나: 휴대폰에서 이 막대는 '키보드 위에 붙는 보조 막대'다.
+  /// 그래서 본문에 커서가 있으면 기능 탭바 자리를 차지하는 게 맞다.
+  /// 그런데 데스크톱에는 올라올 키보드가 없다. 그 결과 맥에서는 글을
+  /// 쓰기 시작하는 순간 기능 탭바가 통째로 사라져 버렸다 — 정리 버튼을
+  /// 누르려면 본문 밖을 한 번 눌러 포커스를 풀어야 했다.
+  Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
     return Container(
       height: 44,
       decoration: BoxDecoration(
         color: context.c.toolbar,
-        border: Border(top: BorderSide(color: context.c.toolbarLine)),
+        // 위에 붙을 때는 경계선도 아래쪽에 그어야 한다.
+        border: atTop
+            ? Border(bottom: BorderSide(color: context.c.toolbarLine))
+            : Border(top: BorderSide(color: context.c.toolbarLine)),
       ),
       child: Row(
         children: [
@@ -1027,12 +1074,15 @@ class _EditorScreenState extends State<EditorScreen> {
               ],
             ),
           ),
-          Container(width: 1, height: 26, color: context.c.toolbarLine),
-          _kbBtn(
-            icon: Icons.keyboard_hide_outlined,
-            tip: l.hideKeyboardTip,
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          ),
+          // 내릴 키보드가 없는 데스크톱에서는 이 버튼이 뜻이 없다.
+          if (!atTop) ...[
+            Container(width: 1, height: 26, color: context.c.toolbarLine),
+            _kbBtn(
+              icon: Icons.keyboard_hide_outlined,
+              tip: l.hideKeyboardTip,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            ),
+          ],
         ],
       ),
     );
@@ -1901,6 +1951,8 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
         body: Column(
           children: [
+            // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
+            if (_isDesktop) _accessoryBar(atTop: true),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: TextField(
@@ -2043,7 +2095,7 @@ class _EditorScreenState extends State<EditorScreen> {
         bottomNavigationBar: Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: SafeArea(
-            child: _bodyFocus.hasFocus
+            child: (_bodyFocus.hasFocus && !_isDesktop)
                 ? _accessoryBar()
                 : Row(
                     children: [
@@ -2364,10 +2416,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ]),
           _secHeader(l.settingsSecTidy),
           _card([
+            // 기본값이 '제거'라서 맨 위에 둔다.
             _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
+              ('remove', l.removeLabel),
               ('quoteSingle', l.emphQuoteSingle),
               ('quoteDouble', l.emphQuoteDouble),
-              ('remove', l.removeLabel),
               ('keep', l.keepLabel),
             ], (v) => s.emphStyle = v),
             _sep(),

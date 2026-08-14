@@ -1079,6 +1079,22 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
         rep.markers++;
         return wrap(m.group(1)!);
       });
+      // 2026-08-14 소유자 지시 — "**를 모두 삭제처리해줘".
+      // 위의 `\*\*(...)\*\*`는 한 줄 안에서 짝이 맞을 때만 잡는다. 그런데
+      // AI 답변에는 짝이 깨진 **가 흔하다. 문단을 통째로 강조하다 줄이
+      // 바뀌거나(**앞줄\n뒷줄**), 한쪽만 찍혀 오거나, 마침표 뒤에 **만
+      // 남는 식이다. 그런 **는 지금까지 본문에 그대로 박혀 나왔다.
+      //
+      // 딱 두 개짜리만 지운다. ***는 구분선(HR)이고 그건 뒤의 블록 단계가
+      // 판정한다 — 여기서 앞의 두 개만 떼면 *가 하나 남아 구분선이 아니게
+      // 되고, 구분선 제거가 통째로 깨진다. 그래서 길이를 세서 2일 때만.
+      // 웹(index.html)에도 같은 줄이 들어가 있다. 한쪽만 고치지 말 것.
+      t = t.replaceAllMapped(RegExp(r'\*{2,}'), (m) {
+        final run = m.group(0)!;
+        if (run.length != 2) return run;
+        rep.markers++;
+        return '';
+      });
       rep.markers += count(RegExp(r'\*[^*\s][^*\n]*\*'));
       t = t.replaceAllMapped(RegExp(r'\*([^*\s][^*\n]*?)\*'), (m) => m.group(1)!);
       t = t.replaceAllMapped(RegExp('(^|[\\s([{"\'])_([^_\\n]+)_(?=\$|[\\s)\\]}.,!?:;"\'])'), (m) {
