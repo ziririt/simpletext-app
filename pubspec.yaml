@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.3.0+1
+version: 0.3.1+1
 
 environment:
   sdk: ^3.12.2
@@ -42,6 +42,7 @@ dependencies:
   http: ^1.6.0
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
@@ -104,3 +105,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# 앱 아이콘 (Skyblue Note, 2026-08-16 소유자 확정 B안: 하늘 그라데이션 +
+# 구름 + 정돈된 글줄). 원본은 assets/icon/app_icon.png 하나이고, 아래
+# 도구가 iOS·안드로이드·맥 전 크기를 만들어 채운다:
+#   dart run flutter_launcher_icons
+# 아이콘을 바꿀 때 각 플랫폼 폴더의 PNG를 손으로 만지지 말 것.
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
