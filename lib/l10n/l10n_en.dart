@@ -366,7 +366,25 @@ class L10nEn extends L10n {
   String get aiSectionDesc =>
       'With an API key, the Wizard handles free-form commands like "make this more concise". The key is stored only on this device.';
   @override
-  String get aiKeyHint => 'API key (Google AI or Anthropic)';
+  String get aiKeyHint => 'API key (Gemini · Claude · ChatGPT · Grok)';
+  @override
+  String get aiKeyVerify => 'Verify key';
+  @override
+  String get aiKeyChecking => 'Checking…';
+  @override
+  String get aiKeyUnknownFormat => 'Unrecognized key format. Set the model manually under Advanced.';
+  @override
+  String get aiAdvancedLabel => 'Advanced — choose the model yourself';
+  @override
+  String get aiManualModelHint => 'Type a model name (e.g. gemini-2.5-flash-lite)';
+  @override
+  String aiAutoLabel(String provider, String model) => 'Auto: $provider · $model';
+  @override
+  String aiModelsFound(int n) => '$n models available.';
+  @override
+  String aiListFailed(String error) => "Couldn't fetch the model list ($error). Using the built-in fallback list.";
+  @override
+  String aiModelSwitched(String model) => 'Switched to $model because the previous model stopped responding.';
   @override
   String get rulesSectionTitle => 'Auto-replace rules';
   @override

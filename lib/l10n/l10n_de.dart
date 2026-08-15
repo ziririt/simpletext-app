@@ -367,7 +367,25 @@ class L10nDe extends L10n {
   String get aiSectionDesc =>
       'Mit einem API-Schlüssel verarbeitet der Assistent freie Befehle wie „mach das knapper". Der Schlüssel wird nur auf diesem Gerät gespeichert.';
   @override
-  String get aiKeyHint => 'API-Schlüssel (Google AI oder Anthropic)';
+  String get aiKeyHint => 'API-Schlüssel (Gemini · Claude · ChatGPT · Grok)';
+  @override
+  String get aiKeyVerify => 'Schlüssel prüfen';
+  @override
+  String get aiKeyChecking => 'Prüfe…';
+  @override
+  String get aiKeyUnknownFormat => 'Schlüsselformat nicht erkannt. Modell unter „Erweitert“ manuell festlegen.';
+  @override
+  String get aiAdvancedLabel => 'Erweitert — Modell selbst wählen';
+  @override
+  String get aiManualModelHint => 'Modellnamen eingeben (z. B. gemini-2.5-flash-lite)';
+  @override
+  String aiAutoLabel(String provider, String model) => 'Automatisch: $provider · $model';
+  @override
+  String aiModelsFound(int n) => '$n verfügbare Modelle bestätigt.';
+  @override
+  String aiListFailed(String error) => 'Modellliste konnte nicht geladen werden ($error). Die eingebaute Ersatzliste wird verwendet.';
+  @override
+  String aiModelSwitched(String model) => 'Das bisherige Modell antwortete nicht mehr – gewechselt zu $model.';
   @override
   String get rulesSectionTitle => 'Auto-Ersetzungsregeln';
   @override

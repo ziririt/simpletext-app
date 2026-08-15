@@ -363,7 +363,25 @@ class L10nZhHant extends L10n {
   @override
   String get aiSectionDesc => '填入 API 金鑰後，精靈可處理「寫得更簡潔些」這類自由編輯指令。金鑰只儲存在這部裝置上。';
   @override
-  String get aiKeyHint => 'API 金鑰（Google AI 或 Anthropic）';
+  String get aiKeyHint => 'API 金鑰（Gemini · Claude · ChatGPT · Grok）';
+  @override
+  String get aiKeyVerify => '驗證金鑰';
+  @override
+  String get aiKeyChecking => '驗證中…';
+  @override
+  String get aiKeyUnknownFormat => '無法識別金鑰格式。請在進階選項中手動指定模型。';
+  @override
+  String get aiAdvancedLabel => '進階 — 手動選擇模型';
+  @override
+  String get aiManualModelHint => '輸入模型名稱（例如 gemini-2.5-flash-lite）';
+  @override
+  String aiAutoLabel(String provider, String model) => '自動選擇：$provider · $model';
+  @override
+  String aiModelsFound(int n) => '已確認 $n 個可用模型。';
+  @override
+  String aiListFailed(String error) => '無法取得模型清單（$error）。將使用內建備用清單。';
+  @override
+  String aiModelSwitched(String model) => '原模型無回應，已切換至 $model。';
   @override
   String get rulesSectionTitle => '自動取代規則';
   @override

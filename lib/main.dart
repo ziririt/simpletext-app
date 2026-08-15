@@ -16,6 +16,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/ai_provider.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
 import 'core/tag_suggest.dart';
@@ -416,7 +417,14 @@ class AppSettings {
   /// (2026-08-14 — 고정값을 바꿔 가며 맞추려니 매번 설치 왕복이 생겼다).
   double bodyFontSize = MonoTextController.defaultBodyFontSize;
   String aiKey = '';
+  // 2026-08-16 소유자 승인 — 모델은 키에서 자동으로 정한다.
+  // 키 앞글자로 회사를 판정하고, 그 회사의 모델 목록을 받아 와서 제일 싼
+  // 등급의 최신을 고른다. 버전 번호를 코드에 박으면 그 모델이 폐지되는
+  // 날 앱이 죽는다. 등급 이름(flash-lite·haiku·nano·fast)은 안 바뀐다.
+  // 판정·선별 규칙과 예비 사다리는 core/ai_provider.dart (테스트로 고정).
+  String aiProvider = ''; // google | anthropic | openai | xai | ''(미판정)
   String aiModel = 'gemini-2.5-flash-lite';
+  List<String> aiModels = []; // '키 확인' 때 받아 온 실제 모델 목록
   /// 마법사에서 등록해 둔 지시문. 최근에 쓴 것이 앞이다(core/mru.dart).
   List<String> favPrompts = [];
   List<CustomRule> customRules = [];
@@ -439,7 +447,9 @@ class AppSettings {
         'previewBeforeApply': previewBeforeApply,
         'bodyFontSize': bodyFontSize,
         'aiKey': aiKey,
+        'aiProvider': aiProvider,
         'aiModel': aiModel,
+        'aiModels': aiModels,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -473,7 +483,9 @@ class AppSettings {
     s.previewBeforeApply = (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
+    s.aiProvider = (j['aiProvider'] ?? s.aiProvider) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
+    s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -1410,28 +1422,79 @@ class _EditorScreenState extends State<EditorScreen> {
       '너는 텍스트 편집 도구다. 사용자의 지시대로만 본문을 편집한다. 규칙: 숫자·날짜·통화·퍼센트·고유명사·URL은 절대 바꾸지 않는다. 요청하지 않은 사실을 추가하지 않고, 요청하지 않은 내용을 삭제하지 않는다. 입력 언어를 유지한다. 결과 본문만 출력하고 설명·인사·코드펜스는 붙이지 않는다.';
 
   /// [system]을 주면 그 규칙으로 부른다(태그 뽑기처럼 편집이 아닌 용도).
+  ///
+  /// 2026-08-16 — 회사(엔드포인트) 판정을 모델 이름이 아니라 키에서 한다.
+  /// 전에는 모델 드롭다운이 회사 선택을 겸했다. 그래서 OpenAI 키를 넣어도
+  /// 기본 모델이 Gemini면 구글 서버로 가서 무조건 거절당했다 — 소유자의
+  /// "키를 넣어도 마법사가 안 된다"가 정확히 이것이었다.
+  ///
+  /// 모델 폐지도 여기서 스스로 회복한다. 쓰던 모델이 거절되면 예비
+  /// 사다리(core/ai_provider.dart)를 위에서부터 시도하고, 성공한 모델을
+  /// 설정에 저장한 뒤 한 줄로 알린다. 1년에 두어 번 있는 "제일 싼 모델
+  /// 폐지"가 앱 업데이트 없이 지나가게 하기 위한 장치다(소유자 질문).
   Future<String> _aiEditCall(String instruction, String body, {String? system}) async {
-    final sys = system ?? _aiSys;
+    final s = store.settings;
+    final p = s.aiProvider.isNotEmpty
+        ? s.aiProvider
+        : (providerOfKey(s.aiKey) ?? providerOfModel(s.aiModel) ?? 'google');
+    final cands = <String>[
+      if (s.aiModel.isNotEmpty && modelMatchesProvider(s.aiModel, p)) s.aiModel,
+      ...defaultLadder(p).where((m) => m != s.aiModel),
+    ];
+    Object lastErr = Exception('no model');
+    for (var i = 0; i < cands.length; i++) {
+      try {
+        final out = await _aiCallOnce(p, cands[i], system ?? _aiSys, instruction, body);
+        if (s.aiModel != cands[i] || s.aiProvider != p) {
+          s.aiModel = cands[i];
+          s.aiProvider = p;
+          await store.persistSettings();
+          if (mounted) _toast(context, L10n.of(context).aiModelSwitched(cands[i]));
+        }
+        return out;
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw Exception('$lastErr');
+  }
+
+  /// 오류 본문에서 사람이 읽을 한 줄을 뽑는다. 전에는 'API 400'만 던져서
+  /// 무엇이 문제인지(키가 틀렸는지, 모델이 없는지) 알 수 없었다.
+  static String _apiErr(int code, List<int> bodyBytes) {
+    try {
+      final j = jsonDecode(utf8.decode(bodyBytes));
+      final e = j is Map ? j['error'] : null;
+      final m = (e is Map ? e['message'] : e)?.toString() ?? '';
+      if (m.isNotEmpty) {
+        return 'API $code: ${m.length > 140 ? m.substring(0, 140) : m}';
+      }
+    } catch (_) {}
+    return 'API $code';
+  }
+
+  Future<String> _aiCallOnce(
+      String provider, String model, String sys, String instruction, String body) async {
     final s = store.settings;
     final user = '[지시]\n$instruction\n\n[본문]\n$body';
-    if (s.aiModel.startsWith('gemini')) {
+    if (provider == 'google') {
       final res = await http.post(
         Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models/${s.aiModel}:generateContent?key=${Uri.encodeComponent(s.aiKey)}'),
+            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${Uri.encodeComponent(s.aiKey)}'),
         headers: {'content-type': 'application/json'},
         body: jsonEncode({
           'system_instruction': {'parts': [{'text': sys}]},
           'contents': [{'role': 'user', 'parts': [{'text': user}]}],
         }),
       );
-      if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
+      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
       final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       final cands = (j['candidates'] ?? []) as List;
       if (cands.isEmpty) return '';
       final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
       return parts.map((p) => (p['text'] ?? '') as String).join();
     }
-    if (s.aiModel.startsWith('claude')) {
+    if (provider == 'anthropic') {
       final res = await http.post(
         Uri.parse('https://api.anthropic.com/v1/messages'),
         headers: {
@@ -1440,19 +1503,19 @@ class _EditorScreenState extends State<EditorScreen> {
           'anthropic-version': '2023-06-01',
         },
         body: jsonEncode({
-          'model': s.aiModel,
+          'model': model,
           'max_tokens': 8000,
           'system': sys,
           'messages': [{'role': 'user', 'content': user}],
         }),
       );
-      if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
+      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
       final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       final content = (j['content'] ?? []) as List;
       return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
     }
     // OpenAI(ChatGPT)와 xAI(Grok)는 동일한 chat/completions 형식
-    final base = s.aiModel.startsWith('grok') ? 'https://api.x.ai' : 'https://api.openai.com';
+    final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
     final res = await http.post(
       Uri.parse('$base/v1/chat/completions'),
       headers: {
@@ -1460,14 +1523,14 @@ class _EditorScreenState extends State<EditorScreen> {
         'authorization': 'Bearer ${s.aiKey}',
       },
       body: jsonEncode({
-        'model': s.aiModel,
+        'model': model,
         'messages': [
           {'role': 'system', 'content': sys},
           {'role': 'user', 'content': user},
         ],
       }),
     );
-    if (res.statusCode != 200) throw Exception('API ${res.statusCode}');
+    if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
     final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     final choices = (j['choices'] ?? []) as List;
     return choices.isEmpty ? '' : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
@@ -2264,6 +2327,119 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final store = Store.instance;
+  bool _aiChecking = false;
+  bool _aiAdvOpen = false;
+  String _aiMsg = '';
+
+  /// 고급에서 보여 줄 모델 후보. 받아 온 목록이 있으면 그것을, 없으면
+  /// 예비 사다리를 보여 준다.
+  List<String> _aiPickList() {
+    final s = store.settings;
+    final p = s.aiProvider.isNotEmpty ? s.aiProvider : (providerOfKey(s.aiKey) ?? '');
+    if (s.aiModels.isNotEmpty && p.isNotEmpty) {
+      final f = filterChatModels(p, s.aiModels);
+      if (f.isNotEmpty) return f;
+    }
+    return p.isEmpty ? const [] : defaultLadder(p);
+  }
+
+  String _aiStatusLine(L10n l) {
+    final s = store.settings;
+    if (s.aiKey.trim().isEmpty) return '';
+    final p = s.aiProvider.isNotEmpty ? s.aiProvider : providerOfKey(s.aiKey);
+    if (p == null || p.isEmpty) return l.aiKeyUnknownFormat;
+    final m = s.aiModel.isNotEmpty ? s.aiModel : defaultLadder(p).first;
+    return l.aiAutoLabel(providerLabel(p), m);
+  }
+
+  /// 회사별 '모델 목록' API. 여기가 이 설계의 심장이다 — 오늘 무슨 모델이
+  /// 있는지는 코드가 아니라 회사에 물어본다.
+  Future<List<String>> _fetchModelIds(String provider, String key) async {
+    if (provider == 'google') {
+      final ids = <String>[];
+      var page = '';
+      for (var i = 0; i < 5; i++) {
+        final res = await http.get(Uri.parse(
+            'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${Uri.encodeComponent(key)}${page.isEmpty ? '' : '&pageToken=$page'}'));
+        if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+        final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+        for (final m in (j['models'] ?? []) as List) {
+          final methods =
+              List<String>.from(((m as Map)['supportedGenerationMethods'] ?? const []) as List);
+          if (!methods.contains('generateContent')) continue;
+          ids.add(((m['name'] ?? '') as String).replaceFirst('models/', ''));
+        }
+        page = (j['nextPageToken'] ?? '') as String;
+        if (page.isEmpty) break;
+      }
+      return ids;
+    }
+    if (provider == 'anthropic') {
+      final res = await http.get(Uri.parse('https://api.anthropic.com/v1/models?limit=100'),
+          headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'});
+      if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
+    }
+    final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
+    final res = await http.get(Uri.parse('$base/v1/models'),
+        headers: {'authorization': 'Bearer $key'});
+    if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
+  }
+
+  static String _apiErr2(int code, List<int> bodyBytes) {
+    try {
+      final j = jsonDecode(utf8.decode(bodyBytes));
+      final e = j is Map ? j['error'] : null;
+      final m = (e is Map ? e['message'] : e)?.toString() ?? '';
+      if (m.isNotEmpty) {
+        return 'API $code: ${m.length > 140 ? m.substring(0, 140) : m}';
+      }
+    } catch (_) {}
+    return 'API $code';
+  }
+
+  Future<void> _verifyAiKey() async {
+    final s = store.settings;
+    final key = s.aiKey.trim();
+    if (key.isEmpty) return;
+    final p = providerOfKey(key);
+    if (p == null) {
+      setState(() => _aiMsg = L10n.of(context).aiKeyUnknownFormat);
+      return;
+    }
+    setState(() {
+      _aiChecking = true;
+      _aiMsg = '';
+    });
+    try {
+      final ids = await _fetchModelIds(p, key);
+      s.aiProvider = p;
+      s.aiModels = ids;
+      final pick = pickCheapest(p, ids);
+      if (pick != null) s.aiModel = pick;
+      await store.persistSettings();
+      if (!mounted) return;
+      setState(() {
+        _aiChecking = false;
+        _aiMsg = L10n.of(context).aiModelsFound(filterChatModels(p, ids).length);
+      });
+    } catch (e) {
+      // 목록을 못 받아도 회사 판정은 살리고 예비 사다리로 넘어간다.
+      s.aiProvider = p;
+      if (s.aiModel.isEmpty || !modelMatchesProvider(s.aiModel, p)) {
+        s.aiModel = defaultLadder(p).first;
+      }
+      await store.persistSettings();
+      if (!mounted) return;
+      setState(() {
+        _aiChecking = false;
+        _aiMsg = L10n.of(context).aiListFailed('$e');
+      });
+    }
+  }
 
   Widget _dropRow<T>(String label, String? sub, T value, List<(T, String)> options, ValueChanged<T> onChanged) {
     return ListTile(
@@ -2477,39 +2653,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _card([
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      initialValue: s.aiKey,
-                      obscureText: true,
-                      decoration: InputDecoration(hintText: l.aiKeyHint, isDense: true),
-                      onChanged: (v) {
-                        s.aiKey = v.trim();
-                        store.persistSettings();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  DropdownButton<String>(
-                    value: s.aiModel,
-                    items: const [
-                      DropdownMenuItem(value: 'gemini-2.5-flash-lite', child: Text('Gemini Flash-Lite')),
-                      DropdownMenuItem(value: 'gemini-2.5-flash', child: Text('Gemini Flash')),
-                      DropdownMenuItem(value: 'claude-haiku-4-5-20251001', child: Text('Claude Haiku')),
-                      DropdownMenuItem(value: 'claude-sonnet-5', child: Text('Claude Sonnet')),
-                      DropdownMenuItem(value: 'gpt-5-mini', child: Text('ChatGPT (GPT-5 Mini)')),
-                      DropdownMenuItem(value: 'gpt-5-nano', child: Text('ChatGPT (GPT-5 Nano)')),
-                      DropdownMenuItem(value: 'grok-4.1-fast', child: Text('Grok (4.1 Fast)')),
+                  // 키 한 칸이 전부다. 회사도 모델도 키에서 알아낸다.
+                  // (소유자: "키 발급 시 모델을 알려주지 않는데?" — 맞는 말이라
+                  //  모델 선택을 기본 화면에서 치웠다. 2026-08-16 승인)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: s.aiKey,
+                          obscureText: true,
+                          decoration: InputDecoration(hintText: l.aiKeyHint, isDense: true),
+                          onChanged: (v) {
+                            s.aiKey = v.trim();
+                            store.persistSettings();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.tonal(
+                        onPressed: _aiChecking ? null : _verifyAiKey,
+                        child: Text(_aiChecking ? l.aiKeyChecking : l.aiKeyVerify),
+                      ),
                     ],
-                    onChanged: (v) {
-                      if (v != null) {
-                        s.aiModel = v;
+                  ),
+                  if (_aiStatusLine(l).isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(_aiStatusLine(l),
+                          style: TextStyle(fontSize: 14, height: 1.3, color: context.c.guideInk)),
+                    ),
+                  if (_aiMsg.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(_aiMsg,
+                          style: TextStyle(fontSize: 14, height: 1.3, color: context.c.guideInk)),
+                    ),
+                  TextButton(
+                    onPressed: () => setState(() => _aiAdvOpen = !_aiAdvOpen),
+                    child: Text(l.aiAdvancedLabel),
+                  ),
+                  if (_aiAdvOpen) ...[
+                    if (_aiPickList().isNotEmpty)
+                      DropdownButton<String>(
+                        isExpanded: true,
+                        value: _aiPickList().contains(s.aiModel) ? s.aiModel : null,
+                        hint: Text(s.aiModel, overflow: TextOverflow.ellipsis),
+                        items: [
+                          for (final m in _aiPickList())
+                            DropdownMenuItem(
+                                value: m, child: Text(m, overflow: TextOverflow.ellipsis)),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            s.aiModel = v;
+                            store.persistSettings();
+                            setState(() {});
+                          }
+                        },
+                      ),
+                    // 목록에도 사다리에도 없는 신형을 쓸 때의 비상구.
+                    TextFormField(
+                      initialValue: s.aiModel,
+                      decoration: InputDecoration(hintText: l.aiManualModelHint, isDense: true),
+                      onFieldSubmitted: (v) {
+                        if (v.trim().isEmpty) return;
+                        s.aiModel = v.trim();
                         store.persistSettings();
                         setState(() {});
-                      }
-                    },
-                  ),
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

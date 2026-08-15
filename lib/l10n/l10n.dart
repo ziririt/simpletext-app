@@ -270,6 +270,15 @@ abstract class L10n {
   String get aiSectionTitle;
   String get aiSectionDesc;
   String get aiKeyHint;
+  String get aiKeyVerify;
+  String get aiKeyChecking;
+  String get aiKeyUnknownFormat;
+  String get aiAdvancedLabel;
+  String get aiManualModelHint;
+  String aiAutoLabel(String provider, String model);
+  String aiModelsFound(int n);
+  String aiListFailed(String error);
+  String aiModelSwitched(String model);
   String get rulesSectionTitle;
   String get rulesSectionDesc;
   String get addRule;
@@ -428,6 +437,11 @@ abstract class L10n {
         'aiSectionTitle': aiSectionTitle,
         'aiSectionDesc': aiSectionDesc,
         'aiKeyHint': aiKeyHint,
+        'aiKeyVerify': aiKeyVerify,
+        'aiKeyChecking': aiKeyChecking,
+        'aiKeyUnknownFormat': aiKeyUnknownFormat,
+        'aiAdvancedLabel': aiAdvancedLabel,
+        'aiManualModelHint': aiManualModelHint,
         'rulesSectionTitle': rulesSectionTitle,
         'rulesSectionDesc': rulesSectionDesc,
         'addRule': addRule,

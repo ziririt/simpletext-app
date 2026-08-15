@@ -363,7 +363,25 @@ class L10nZhHans extends L10n {
   @override
   String get aiSectionDesc => '填入 API 密钥后，向导可处理"写得更简洁些"这类自由编辑指令。密钥仅保存在本设备上。';
   @override
-  String get aiKeyHint => 'API 密钥（Google AI 或 Anthropic）';
+  String get aiKeyHint => 'API 密钥（Gemini · Claude · ChatGPT · Grok）';
+  @override
+  String get aiKeyVerify => '验证密钥';
+  @override
+  String get aiKeyChecking => '验证中…';
+  @override
+  String get aiKeyUnknownFormat => '无法识别密钥格式。请在高级选项中手动指定模型。';
+  @override
+  String get aiAdvancedLabel => '高级 — 手动选择模型';
+  @override
+  String get aiManualModelHint => '输入模型名称（例如 gemini-2.5-flash-lite）';
+  @override
+  String aiAutoLabel(String provider, String model) => '自动选择：$provider · $model';
+  @override
+  String aiModelsFound(int n) => '已确认 $n 个可用模型。';
+  @override
+  String aiListFailed(String error) => '无法获取模型列表（$error）。将使用内置备用列表。';
+  @override
+  String aiModelSwitched(String model) => '原模型无响应，已切换到 $model。';
   @override
   String get rulesSectionTitle => '自动替换规则';
   @override

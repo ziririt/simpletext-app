@@ -364,7 +364,25 @@ class L10nJa extends L10n {
   String get aiSectionDesc =>
       'APIキーを入れると「もっと簡潔にして」のような自由編集の指示をウィザードが処理します。キーはこの端末にのみ保存されます。';
   @override
-  String get aiKeyHint => 'APIキー（Google AI または Anthropic）';
+  String get aiKeyHint => 'APIキー (Gemini · Claude · ChatGPT · Grok)';
+  @override
+  String get aiKeyVerify => 'キーを確認';
+  @override
+  String get aiKeyChecking => '確認中…';
+  @override
+  String get aiKeyUnknownFormat => 'キー形式を認識できませんでした。詳細設定でモデルを直接指定してください。';
+  @override
+  String get aiAdvancedLabel => '詳細 — モデルを直接選択';
+  @override
+  String get aiManualModelHint => 'モデル名を入力（例: gemini-2.5-flash-lite）';
+  @override
+  String aiAutoLabel(String provider, String model) => '自動選択: $provider · $model';
+  @override
+  String aiModelsFound(int n) => '利用可能なモデルを$n件確認しました。';
+  @override
+  String aiListFailed(String error) => 'モデル一覧を取得できませんでした（$error）。内蔵の予備リストで動作します。';
+  @override
+  String aiModelSwitched(String model) => '以前のモデルが応答しないため、$model に切り替えました。';
   @override
   String get rulesSectionTitle => '自動置換ルール';
   @override

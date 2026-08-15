@@ -364,7 +364,25 @@ class L10nKo extends L10n {
   String get aiSectionDesc =>
       'API 키를 넣으면 "더 간결하게 써줘" 같은 자유 편집 명령을 마법사가 처리합니다. 키는 이 기기에만 저장됩니다.';
   @override
-  String get aiKeyHint => 'API 키 (Google AI 또는 Anthropic)';
+  String get aiKeyHint => 'API 키 (Gemini · Claude · ChatGPT · Grok)';
+  @override
+  String get aiKeyVerify => '키 확인';
+  @override
+  String get aiKeyChecking => '확인 중…';
+  @override
+  String get aiKeyUnknownFormat => '키 형식을 인식하지 못했습니다. 고급에서 모델을 직접 지정해 주세요.';
+  @override
+  String get aiAdvancedLabel => '고급 — 모델 직접 선택';
+  @override
+  String get aiManualModelHint => '모델 이름 직접 입력 (예: gemini-2.5-flash-lite)';
+  @override
+  String aiAutoLabel(String provider, String model) => '자동 선택: $provider · $model';
+  @override
+  String aiModelsFound(int n) => '사용 가능한 모델 $n개를 확인했습니다.';
+  @override
+  String aiListFailed(String error) => '모델 목록을 받지 못했습니다($error). 내장 예비 목록으로 동작합니다.';
+  @override
+  String aiModelSwitched(String model) => '쓰던 모델이 응답하지 않아 $model(으)로 바꿨습니다.';
   @override
   String get rulesSectionTitle => '자동 바꾸기 규칙';
   @override

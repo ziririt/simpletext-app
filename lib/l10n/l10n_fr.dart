@@ -367,7 +367,25 @@ class L10nFr extends L10n {
   String get aiSectionDesc =>
       'Avec une clé d\'API, l\'Assistant traite des commandes libres comme « rends ça plus concis ». La clé n\'est stockée que sur cet appareil.';
   @override
-  String get aiKeyHint => 'Clé d\'API (Google AI ou Anthropic)';
+  String get aiKeyHint => 'Clé API (Gemini · Claude · ChatGPT · Grok)';
+  @override
+  String get aiKeyVerify => 'Vérifier la clé';
+  @override
+  String get aiKeyChecking => 'Vérification…';
+  @override
+  String get aiKeyUnknownFormat => 'Format de clé non reconnu. Définissez le modèle dans Avancé.';
+  @override
+  String get aiAdvancedLabel => 'Avancé — choisir le modèle soi-même';
+  @override
+  String get aiManualModelHint => 'Saisir le nom du modèle (ex. : gemini-2.5-flash-lite)';
+  @override
+  String aiAutoLabel(String provider, String model) => 'Automatique : $provider · $model';
+  @override
+  String aiModelsFound(int n) => '$n modèles disponibles confirmés.';
+  @override
+  String aiListFailed(String error) => 'Impossible de récupérer la liste des modèles ($error). La liste de secours intégrée sera utilisée.';
+  @override
+  String aiModelSwitched(String model) => "L'ancien modèle ne répondait plus – passage à $model.";
   @override
   String get rulesSectionTitle => 'Règles de remplacement automatique';
   @override
