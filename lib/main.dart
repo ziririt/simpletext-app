@@ -4283,17 +4283,16 @@ class _EditorScreenState extends State<EditorScreen> {
                 ]),
               ),
             ),
-            if (note.lastReport.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(note.lastReport,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: context.c.accent, fontWeight: FontWeight.w600)),
-                ),
-              ),
+            // 2026-08-17 소유자 지시 — "편집 화면 맨 아래에 정리된 내역을
+            // 한 줄로 보여 주는 거 없애 줘. 아무 의미 없다."
+            //
+            // 맞다. '마커 51개 제거 · 제목 5개 정리'는 **우리가 열심히
+            // 했다는 증거**지 사용자가 알고 싶은 것이 아니다. 알고 싶은
+            // 것은 '글이 깨끗해졌나' 하나뿐이고 그건 글을 보면 안다.
+            //
+            // 값(note.lastReport)은 남겨 둔다. 저장 형식을 바꾸면 예전
+            // 저장본과 아이클라우드에 올라간 파일까지 건드리게 되는데,
+            // 화면에서 한 줄 빼자고 치를 값이 아니다. 안 보여 줄 뿐이다.
           ],
         ),
         bottomNavigationBar: Padding(
@@ -5190,17 +5189,17 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   ]),
                 ),
               ],
-              // 사실 한 줄. 사람이 읽는 문장이 아니라 기기가 답한 값
-              // 그대로다(2026-08-17). 뭐가 잘못됐는지 화면 하나로 알 수
-              // 있어야 한다 — 이게 없어서 짐작으로 세 판을 썼다.
-              const SizedBox(height: 14),
-              Text(ICloudSync.instance.facts,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 12,
-                      height: 1.4,
-                      fontFamily: 'Menlo',
-                      color: c.sub)),
+              // 2026-08-17 — 여기 '사실 한 줄'을 잠깐 뒀다가 내렸다.
+              //
+              // 그 줄이 결정적인 답을 줬다("No implementation found for
+              // method root on channel skyblue/icloud" — 다리가 아예 연결된
+              // 적이 없었다). 짐작으로 세 판을 쓴 뒤였다.
+              //
+              // 그리고 소유자 지적대로 내린다 — "이런 것은 사용자에게 굳이
+              // 보여 줄 필요 없다. 복잡하고 어렵게만 보일 뿐이다." 맞다.
+              // 그건 **나를 위한 줄**이었지 쓰는 사람을 위한 줄이 아니었다.
+              // 제 몫을 했으니 내린다. 값 자체(ICloudSync.facts)는 남겨
+              // 둔다 — 다음에 또 막히면 한 줄만 도로 붙이면 된다.
               const SizedBox(height: 12),
               Text(l.syncHelpNote,
                   textAlign: TextAlign.center,
@@ -5293,6 +5292,186 @@ class PremiumScreen extends StatelessWidget {
   }
 }
 
+/// 설정 화면들이 함께 쓰는 '줄 그리기'.
+///
+/// 2026-08-17 — 정리 규칙 세부를 한 화면 안쪽으로 옮기면서 뺐다. 두 화면이
+/// 같은 모양의 줄을 그려야 하는데, 복사해서 두 벌로 두면 반드시 어긋난다.
+/// 이 프로젝트에서만 이미 세 번 겪었다(아이클라우드 다리의 스위프트 두 벌,
+/// 되돌리기 두 벌, 그리고 그때마다 analyze나 사고가 알려 줬다).
+///
+/// 타입 인자를 W로 둔 이유: 안에 있는 _dropRow<T>의 T와 이름이 겹치면
+/// 다트가 어느 T인지 가리지 못한다.
+mixin SettingsRows<W extends StatefulWidget> on State<W> {
+  Store get store => Store.instance;
+
+  Widget _dropRow<T>(String label, String? sub, T value, List<(T, String)> options, ValueChanged<T> onChanged) {
+    return ListTile(
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+      subtitle: sub == null
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(sub,
+                  style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+            ),
+      trailing: DropdownButton<T>(
+        value: value,
+        items: options.map((o) => DropdownMenuItem(value: o.$1, child: Text(o.$2))).toList(),
+        onChanged: (v) {
+          if (v != null) {
+            onChanged(v);
+            store.persistSettings();
+            setState(() {});
+          }
+        },
+      ),
+    );
+  }
+
+  /// 애플 설정 앱식 작은 회색 머리글.
+  Widget _secHeader(String t) => Padding(
+        padding: const EdgeInsets.fromLTRB(32, 22, 16, 6),
+        child: Text(t,
+            style: TextStyle(
+                fontSize: 15, fontWeight: FontWeight.w600, color: context.c.sub)),
+      );
+
+  /// 둥근 카드 한 장.
+  ///
+  /// Material로 감싸는 이유가 있다. 색 있는 Container 안에 ListTile을 넣으면
+  /// 프레임워크가 "ink splashes may be invisible" assertion을 던진다 —
+  /// 2026-08-14에 홈 목록에서 실제로 겪었다. Material을 직접 두면 그 경고가
+  /// 사라지고 눌렀을 때 반응도 제대로 보인다. 여기도 안에 ListTile이 들어간다.
+  Widget _card(List<Widget> children) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Material(
+            color: context.c.panel,
+            child: Column(children: children),
+          ),
+        ),
+      );
+
+  Widget _sep() => Divider(height: 1, indent: 16, color: context.c.line);
+
+  Widget _switchRow(String title, String? sub, bool value, ValueChanged<bool> apply) =>
+      SwitchListTile.adaptive(
+        // 2026-08-14 소유자 요청: 설정 글자가 너무 작다. 항목은 기본 크기(17),
+        // 안내문구도 같은 17에 아주 진한 회색(다크에서는 흰색에 가까운 회색).
+        // 애플 설정 앱은 안내문구를 13pt 회색으로 쓰지만, 여기서는 소유자가
+        // 명시적으로 크게 해 달라고 했다 — 관습보다 사용자 지시가 우선이다.
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+        subtitle: sub == null
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(sub,
+                    style: TextStyle(
+                        fontSize: 17, height: 1.35, color: context.c.guideInk)),
+              ),
+        value: value,
+        onChanged: (v) {
+          apply(v);
+          store.persistSettings();
+          setState(() {});
+        },
+      );
+}
+
+/// 정리 규칙 세부 화면.
+///
+/// 2026-08-17 소유자 지적 — "설정에서 정리 규칙의 세부는 한 뎁스 더 들어가서
+/// 설정하게. 너무 다 꺼내 놓는 게 마음에 안 든다."
+///
+/// 아홉 줄이 설정 첫 화면에 통째로 펼쳐져 있었다. 그중 여덟은 한 번 정하고
+/// 다시 안 여는 것들이다. 애플 설정 앱이 하는 방식이 이것이다 — 첫 화면에는
+/// 이름만, 세부는 들어가서.
+///
+/// 줄을 그리는 도구는 SettingsRows를 함께 쓴다. 복사해서 두 벌로 두면
+/// 반드시 어긋난다.
+class TidyRulesScreen extends StatefulWidget {
+  const TidyRulesScreen({super.key});
+
+  @override
+  State<TidyRulesScreen> createState() => _TidyRulesScreenState();
+}
+
+class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final s = store.settings;
+    return Scaffold(
+      backgroundColor: context.c.bg,
+      appBar: AppBar(
+        backgroundColor: context.c.bg,
+        title: Text(l.tidyRulesTitle,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.only(top: 6, bottom: 40),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 0, 16, 12),
+            child: Text(l.tidyRulesSub,
+                style: TextStyle(
+                    fontSize: 15, height: 1.35, color: context.c.guideInk)),
+          ),
+          _card([
+            // 기본값이 '제거'라서 맨 위에 둔다.
+            _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
+              ('remove', l.removeLabel),
+              ('quoteSingle', l.emphQuoteSingle),
+              ('quoteDouble', l.emphQuoteDouble),
+              ('keep', l.keepLabel),
+            ], (v) => s.emphStyle = v),
+            _sep(),
+            _dropRow(l.headingTitle, null, s.headingMode, [
+              ('strip', l.headingStrip),
+              ('keep', l.headingKeep),
+              ('prefix', l.headingPrefix),
+              ('bracket', l.headingBracket),
+            ], (v) => s.headingMode = v),
+            _sep(),
+            _dropRow(l.hrTitle, null, s.hrMode, [
+              ('keep', l.keepLabel),
+              ('remove', l.removeLabel),
+            ], (v) => s.hrMode = v),
+            _sep(),
+            _dropRow(l.bulletTitle, null, s.bulletChar, [
+              ('-', l.bulletHyphen),
+              ('·', l.bulletMiddot),
+              ('•', l.bulletDot),
+              ('◦', l.bulletWhite),
+              ('keep', l.bulletKeep),
+            ], (v) => s.bulletChar = v),
+            _sep(),
+            _dropRow(l.bulletIndentTitle, null, s.bulletIndent, [
+              (2, l.indent2),
+              (4, l.indent4),
+              (0, l.indentNone),
+            ], (v) => s.bulletIndent = v),
+            _sep(),
+            _switchRow(l.headingPadTitle, l.headingPadSub, s.headingPad,
+                (v) => s.headingPad = v),
+            _sep(),
+            _switchRow(l.fillerHeadingTitle, l.fillerHeadingSub, s.smartFillerHeading,
+                (v) => s.smartFillerHeading = v),
+            _sep(),
+            _switchRow(l.dashListTitle, l.dashListSub, s.smartDashList,
+                (v) => s.smartDashList = v),
+            _sep(),
+            _switchRow(l.citationsTitle, l.citationsSub, s.removeCitations,
+                (v) => s.removeCitations = v),
+          ]),
+        ],
+      ),
+    );
+  }
+}
+
 /// ---------------- 정리 규칙 설정 ----------------
 /// 앱 전체 설정.
 ///
@@ -5313,8 +5492,8 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  final store = Store.instance;
+class _SettingsScreenState extends State<SettingsScreen>
+    with SettingsRows {
 
   /// 바로가기가 겨냥하는 자리들.
   ///
@@ -5465,80 +5644,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Widget _dropRow<T>(String label, String? sub, T value, List<(T, String)> options, ValueChanged<T> onChanged) {
-    return ListTile(
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-      subtitle: sub == null
-          ? null
-          : Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Text(sub,
-                  style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
-            ),
-      trailing: DropdownButton<T>(
-        value: value,
-        items: options.map((o) => DropdownMenuItem(value: o.$1, child: Text(o.$2))).toList(),
-        onChanged: (v) {
-          if (v != null) {
-            onChanged(v);
-            store.persistSettings();
-            setState(() {});
-          }
-        },
-      ),
-    );
-  }
-
-  /// 애플 설정 앱식 작은 회색 머리글.
-  Widget _secHeader(String t) => Padding(
-        padding: const EdgeInsets.fromLTRB(32, 22, 16, 6),
-        child: Text(t,
-            style: TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w600, color: context.c.sub)),
-      );
-
-  /// 둥근 카드 한 장.
-  ///
-  /// Material로 감싸는 이유가 있다. 색 있는 Container 안에 ListTile을 넣으면
-  /// 프레임워크가 "ink splashes may be invisible" assertion을 던진다 —
-  /// 2026-08-14에 홈 목록에서 실제로 겪었다. Material을 직접 두면 그 경고가
-  /// 사라지고 눌렀을 때 반응도 제대로 보인다. 여기도 안에 ListTile이 들어간다.
-  Widget _card(List<Widget> children) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Material(
-            color: context.c.panel,
-            child: Column(children: children),
-          ),
-        ),
-      );
-
-  Widget _sep() => Divider(height: 1, indent: 16, color: context.c.line);
-
-  Widget _switchRow(String title, String? sub, bool value, ValueChanged<bool> apply) =>
-      SwitchListTile.adaptive(
-        // 2026-08-14 소유자 요청: 설정 글자가 너무 작다. 항목은 기본 크기(17),
-        // 안내문구도 같은 17에 아주 진한 회색(다크에서는 흰색에 가까운 회색).
-        // 애플 설정 앱은 안내문구를 13pt 회색으로 쓰지만, 여기서는 소유자가
-        // 명시적으로 크게 해 달라고 했다 — 관습보다 사용자 지시가 우선이다.
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-        subtitle: sub == null
-            ? null
-            : Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(sub,
-                    style: TextStyle(
-                        fontSize: 17, height: 1.35, color: context.c.guideInk)),
-              ),
-        value: value,
-        onChanged: (v) {
-          apply(v);
-          store.persistSettings();
-          setState(() {});
-        },
-      );
 
   /// 글자 크기 — 쓰던 앱과 눈으로 맞출 수 있게 견본을 같이 보여 준다.
   /// 숫자를 코드에 박아 두면 맞출 때마다 설치 왕복이 생긴다(2026-08-14).
@@ -5904,51 +6009,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           KeyedSubtree(
               key: _anchors['tidy'], child: _secHeader(l.settingsSecTidy)),
           _card([
-            // 기본값이 '제거'라서 맨 위에 둔다.
-            _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
-              ('remove', l.removeLabel),
-              ('quoteSingle', l.emphQuoteSingle),
-              ('quoteDouble', l.emphQuoteDouble),
-              ('keep', l.keepLabel),
-            ], (v) => s.emphStyle = v),
-            _sep(),
-            _dropRow(l.headingTitle, null, s.headingMode, [
-              ('strip', l.headingStrip),
-              ('keep', l.headingKeep),
-              ('prefix', l.headingPrefix),
-              ('bracket', l.headingBracket),
-            ], (v) => s.headingMode = v),
-            _sep(),
-            _dropRow(l.hrTitle, null, s.hrMode, [
-              ('keep', l.keepLabel),
-              ('remove', l.removeLabel),
-            ], (v) => s.hrMode = v),
-            _sep(),
-            _dropRow(l.bulletTitle, null, s.bulletChar, [
-              ('-', l.bulletHyphen),
-              ('·', l.bulletMiddot),
-              ('•', l.bulletDot),
-              ('◦', l.bulletWhite),
-              ('keep', l.bulletKeep),
-            ], (v) => s.bulletChar = v),
-            _sep(),
-            _dropRow(l.bulletIndentTitle, null, s.bulletIndent, [
-              (2, l.indent2),
-              (4, l.indent4),
-              (0, l.indentNone),
-            ], (v) => s.bulletIndent = v),
-            _sep(),
-            _switchRow(l.headingPadTitle, l.headingPadSub, s.headingPad,
-                (v) => s.headingPad = v),
-            _sep(),
-            _switchRow(l.fillerHeadingTitle, l.fillerHeadingSub, s.smartFillerHeading,
-                (v) => s.smartFillerHeading = v),
-            _sep(),
-            _switchRow(l.dashListTitle, l.dashListSub, s.smartDashList,
-                (v) => s.smartDashList = v),
-            _sep(),
-            _switchRow(l.citationsTitle, l.citationsSub, s.removeCitations,
-                (v) => s.removeCitations = v),
+            // 2026-08-17 소유자 지적 — "세부 정리 규칙은 한 뎁스 더 들어가서
+            // 설정할 수 있게. 너무 다 꺼내 놓는 게 마음에 안 든다."
+            //
+            // 아홉 줄이 첫 화면에 통째로 펼쳐져 있었다. 그중 여덟은 한 번
+            // 정하고 다시 안 여는 것들이다. 애플 설정 앱이 하는 방식이
+            // 이것이다 — 첫 화면에는 이름만, 세부는 들어가서.
+            ListTile(
+              leading: Icon(Icons.tune, color: context.c.sub),
+              title: Text(l.tidyRulesTitle,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: Text(l.tidyRulesSub,
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              trailing: const Icon(Icons.chevron_right, size: 20),
+              onTap: () async {
+                await Navigator.push<void>(context,
+                    MaterialPageRoute(builder: (_) => const TidyRulesScreen()));
+                if (mounted) setState(() {});
+              },
+            ),
           ]),
           _secHeader(l.settingsSecWhen),
           _card([

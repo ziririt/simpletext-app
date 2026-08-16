@@ -608,6 +608,12 @@ class L10nDe extends L10n {
   String get appliedTitle => 'Alles sauber aufgeräumt';
 
   @override
+  String get tidyRulesTitle => 'Aufräum-Regeln';
+
+  @override
+  String get tidyRulesSub => 'Legt fest, wie sich der Text beim Aufräumen ändert.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von $src am $date';
 

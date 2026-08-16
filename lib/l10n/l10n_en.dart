@@ -607,6 +607,12 @@ class L10nEn extends L10n {
   String get appliedTitle => 'All tidied up';
 
   @override
+  String get tidyRulesTitle => 'Tidy-up rules';
+
+  @override
+  String get tidyRulesSub => 'Decides how your text changes when you tap Tidy.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from $src on $date';
 

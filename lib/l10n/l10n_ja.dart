@@ -606,6 +606,12 @@ class L10nJa extends L10n {
   String get appliedTitle => 'すっきり整いました';
 
   @override
+  String get tidyRulesTitle => '整える規則';
+
+  @override
+  String get tidyRulesSub => '「整える」を押したとき文章がどう変わるかを決めます。';
+
+  @override
   String pastedFrom(String src, String date) =>
       '$date に $src から';
 

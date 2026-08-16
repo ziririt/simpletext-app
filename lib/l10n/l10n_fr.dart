@@ -608,6 +608,12 @@ class L10nFr extends L10n {
   String get appliedTitle => 'Tout est bien rangé';
 
   @override
+  String get tidyRulesTitle => 'Règles de nettoyage';
+
+  @override
+  String get tidyRulesSub => 'Définit comment le texte change quand vous nettoyez.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de $src le $date';
 

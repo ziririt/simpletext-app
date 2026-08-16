@@ -327,6 +327,8 @@ abstract class L10n {
   String get menuClose;
   String get menuPrefs;
   String get appliedTitle;
+  String get tidyRulesTitle;
+  String get tidyRulesSub;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -618,6 +620,8 @@ abstract class L10n {
         'menuClose': menuClose,
         'menuPrefs': menuPrefs,
         'appliedTitle': appliedTitle,
+        'tidyRulesTitle': tidyRulesTitle,
+        'tidyRulesSub': tidyRulesSub,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

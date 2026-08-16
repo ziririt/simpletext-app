@@ -606,6 +606,12 @@ class L10nZhHans extends L10n {
   String get appliedTitle => '已整理得干干净净';
 
   @override
+  String get tidyRulesTitle => '整理规则';
+
+  @override
+  String get tidyRulesSub => '决定点按「整理」后文字会如何变化。';
+
+  @override
   String pastedFrom(String src, String date) =>
       '$date 来自 $src';
 

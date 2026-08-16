@@ -606,6 +606,12 @@ class L10nKo extends L10n {
   String get appliedTitle => '깔끔하게 정리했습니다';
 
   @override
+  String get tidyRulesTitle => '세부 정리 규칙';
+
+  @override
+  String get tidyRulesSub => '‘정리’를 누르면 글이 어떻게 바뀔지 정합니다.';
+
+  @override
   String pastedFrom(String src, String date) =>
       '$src에서 $date에 가져옴';
 

@@ -607,6 +607,12 @@ class L10nPt extends L10n {
   String get appliedTitle => 'Tudo bem organizado';
 
   @override
+  String get tidyRulesTitle => 'Regras de organização';
+
+  @override
+  String get tidyRulesSub => 'Define como o texto muda ao tocar em Organizar.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de $src em $date';
 

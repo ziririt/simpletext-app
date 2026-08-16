@@ -607,6 +607,12 @@ class L10nEs extends L10n {
   String get appliedTitle => 'Todo bien ordenado';
 
   @override
+  String get tidyRulesTitle => 'Reglas de limpieza';
+
+  @override
+  String get tidyRulesSub => 'Define cómo cambia el texto al pulsar Limpiar.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de $src el $date';
 

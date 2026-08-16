@@ -7,22 +7,40 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let started = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    // 2026-08-16 — 아이클라우드 다리를 여기서 연결한다.
+    // 2026-08-17 — 여기서 아이클라우드 다리를 연결하고 있었다. **연결된
+    // 적이 없었다.**
     //
-    // 새 스위프트 파일을 만들지 않은 이유: 새 파일은 Xcode 프로젝트 파일
-    // (project.pbxproj)에 등록해야 컴파일되는데, 그 파일은 손으로 건드리다
-    // 망가지면 빌드 전체가 죽는 자리다. 2026-08-15에 아이콘 생성 도구가
-    // 실제로 이 파일을 망가뜨린 적이 있다. 이미 컴파일되는 파일 안에 넣으면
-    // 그 위험이 통째로 사라진다.
-    if let controller = window?.rootViewController as? FlutterViewController {
-      ICloudBridge.register(messenger: controller.binaryMessenger)
-    }
-    return started
+    //     if let controller = window?.rootViewController as? FlutterViewController {
+    //       ICloudBridge.register(messenger: controller.binaryMessenger)
+    //     }
+    //
+    // 앱이 켜지는 이 시점에는 화면의 뿌리가 아직 FlutterViewController가
+    // 아니다. 요즘 플러터는 엔진을 이보다 늦게, 필요할 때 만든다. 그래서
+    // if let이 **조용히** 실패하고 등록이 통째로 건너뛰어졌다.
+    //
+    // 조용히가 핵심이다. 오류도 경고도 없이 그냥 안 한다. 그래서 세 판
+    // 동안 안 보였고, 그동안 나는 붙지도 않은 전화선 너머의 사정을
+    // 추측했다(계정표, 문패, 빌드 번호, 진단 순서…).
+    //
+    // **반드시 해야 하는 일을 'if let'으로 감싸면 안 된다.** 그건 "되면
+    // 하고 아니면 만다"는 뜻이고, 안 됐을 때 아무도 모른다.
+    //
+    // 아래 didInitializeImplicitFlutterEngine으로 옮겼다. 거기는 엔진이
+    // 확실히 만들어진 뒤에만 불린다.
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  /// 플러터가 엔진을 다 만든 뒤에 우리를 불러 주는 자리.
+  ///
+  /// 여기서만 통신선이 확실히 존재한다. 위 자리와 달리 '있으면'이 아니라
+  /// '있다'이므로 감쌀 것이 없다.
+  ///
+  /// 통신선을 어디서 꺼내는지는 짐작하지 않고 원본 헤더를 열어 확인했다 —
+  /// FlutterEngine.h의 FlutterImplicitEngineBridge에 applicationRegistrar가
+  /// 있고, FlutterPlugin.h의 FlutterApplicationRegistrar에 messenger가 있다.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    ICloudBridge.register(messenger: engineBridge.applicationRegistrar.messenger())
   }
 }
 
