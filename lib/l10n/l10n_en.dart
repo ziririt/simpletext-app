@@ -324,7 +324,7 @@ class L10nEn extends L10n {
 
   @override
   String get syncHelpSteps =>
-      '1. Open the Settings app\n2. Tap your name at the top\n3. Tap iCloud\n4. Under Saved to iCloud, tap See All\n5. Turn on Skyblue Note\n6. Come back here and tap Check again';
+      '1. Settings › your name at the top › iCloud\n2. Check that iCloud Drive is on — if it is off, no app syncs\n3. Lock and unlock your phone, come back here and tap Check again\n\nCheck in the Files app, not Settings. If you see a Skyblue Note folder in Files › iCloud Drive, it is ready.';
 
   @override
   String get syncOpenSettings => 'Open Settings';
@@ -590,6 +590,9 @@ class L10nEn extends L10n {
 
   @override
   String get syncOpenFailed => 'Could not open Settings. Please open it from the Home Screen.';
+
+  @override
+  String get syncOpenManual => 'Please open Settings yourself: Home Screen › Settings › your name at the top › iCloud.';
 
   @override
   String get menuFile => 'File';

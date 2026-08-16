@@ -325,7 +325,7 @@ class L10nDe extends L10n {
 
   @override
   String get syncHelpSteps =>
-      '1. Öffnen Sie die App Einstellungen\n2. Tippen Sie oben auf Ihren Namen\n3. Tippen Sie auf iCloud\n4. Tippen Sie unter In iCloud gesichert auf Alle anzeigen\n5. Aktivieren Sie Skyblue Note in der Liste\n6. Kehren Sie hierher zurück und tippen Sie auf Erneut prüfen';
+      '1. Einstellungen › dein Name oben › iCloud\n2. Prüfe, ob iCloud Drive aktiviert ist — ist es aus, synchronisiert keine App\n3. Sperre und entsperre das iPhone, komm zurück und tippe auf Erneut prüfen\n\nPrüfe in der Dateien-App, nicht in den Einstellungen. Siehst du dort unter iCloud Drive einen Ordner Skyblue Note, ist alles bereit.';
 
   @override
   String get syncOpenSettings => 'Einstellungen öffnen';
@@ -591,6 +591,9 @@ class L10nDe extends L10n {
 
   @override
   String get syncOpenFailed => 'Einstellungen konnten nicht geöffnet werden. Bitte vom Home-Bildschirm aus öffnen.';
+
+  @override
+  String get syncOpenManual => 'Bitte öffne die Einstellungen selbst: Home-Bildschirm › Einstellungen › dein Name oben › iCloud.';
 
   @override
   String get menuFile => 'Ablage';

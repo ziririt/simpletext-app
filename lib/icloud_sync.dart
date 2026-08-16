@@ -93,8 +93,23 @@ class ICloudSync {
   ///   둘 다 O, 경로 X     → 준비 중입니다. 잠시 뒤 다시 확인하십시오
   bool _container = false;
 
+  /// 마지막으로 물어봤을 때 시스템이 준 오류 문구. 없으면 빈 문자열.
+  ///
+  /// 2026-08-17 — 화면에 '해석'만 띄우다가 그 해석이 틀린 것이 드러났다.
+  /// 해석이 틀리면 그 위에 쌓은 판단이 전부 틀린다. 그래서 사실을 그대로
+  /// 들고 온다.
+  String _err = '';
+
   bool get signedIn => _signedIn;
   bool get containerReady => _container;
+  bool get pathReady => _root != null;
+  String get lastError => _err;
+
+  /// 화면 아래에 작게 붙이는 한 줄. 사람이 읽는 문장이 아니라 **사실**이다.
+  /// 이 줄 하나면 다음에 어디를 고칠지가 정해진다.
+  String get facts =>
+      '계정 ${_signedIn ? "O" : "X"} · 자리 ${_container ? "O" : "X"} · '
+      '경로 ${_root != null ? "O" : "X"}${_err.isEmpty ? "" : " · $_err"}';
   bool _busy = false;
   Timer? _debounce;
   Timer? _tick;
@@ -185,10 +200,12 @@ class ICloudSync {
       _root = r?['path'] as String?;
       _signedIn = (r?['signedIn'] as bool?) ?? false;
       _container = (r?['container'] as bool?) ?? false;
-    } catch (_) {
+      _err = (r?['error'] as String?) ?? '';
+    } catch (e) {
       _root = null;
       _signedIn = false;
       _container = false;
+      _err = 'channel: $e';
     }
     return _root;
   }

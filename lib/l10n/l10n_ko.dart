@@ -323,7 +323,7 @@ class L10nKo extends L10n {
 
   @override
   String get syncHelpSteps =>
-      '1. 설정 앱을 엽니다\n2. 맨 위의 내 이름을 누릅니다\n3. iCloud를 누릅니다\n4. 저장된 앱 목록에서 모두 보기를 누릅니다\n5. 목록에서 Skyblue Note를 켭니다\n6. 이 앱으로 돌아와 아래 다시 확인을 누릅니다';
+      '1. 설정 앱 > 맨 위의 내 이름 > iCloud 로 갑니다\n2. iCloud Drive가 켜져 있는지 봅니다 — 이게 꺼져 있으면 아무 앱도 동기화되지 않습니다\n3. 아이폰을 잠갔다 풀고, 이 앱으로 돌아와 아래 다시 확인을 누릅니다\n\n확인은 설정 앱이 아니라 파일 앱에서 하십시오. 파일 > iCloud Drive 에 Skyblue Note 폴더가 보이면 준비가 된 것입니다.';
 
   @override
   String get syncOpenSettings => '설정 앱 열기';
@@ -589,6 +589,9 @@ class L10nKo extends L10n {
 
   @override
   String get syncOpenFailed => '설정 앱을 열지 못했습니다. 홈 화면에서 직접 열어 주십시오.';
+
+  @override
+  String get syncOpenManual => '설정 앱을 직접 열어 주십시오. 홈 화면 > 설정 > 맨 위 내 이름 > iCloud 입니다.';
 
   @override
   String get menuFile => '파일';

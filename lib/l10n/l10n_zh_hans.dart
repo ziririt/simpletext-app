@@ -323,7 +323,7 @@ class L10nZhHans extends L10n {
 
   @override
   String get syncHelpSteps =>
-      '1. 打开设置 App\n2. 点按顶部您的姓名\n3. 点按 iCloud\n4. 在已存储到 iCloud 中点按全部显示\n5. 在列表中开启 Skyblue Note\n6. 返回本 App 并点按重新检查';
+      '1. 打开「设置」› 顶部的你的姓名 › iCloud\n2. 确认 iCloud 云盘已开启 — 若关闭，任何 App 都不会同步\n3. 锁屏后解锁，回到本 App 点按「重新检查」\n\n请在「文件」App 中确认，而非「设置」。若在「文件」› iCloud 云盘中看到 Skyblue Note 文件夹，即已就绪。';
 
   @override
   String get syncOpenSettings => '打开设置';
@@ -589,6 +589,9 @@ class L10nZhHans extends L10n {
 
   @override
   String get syncOpenFailed => '无法打开设置。请从主屏幕直接打开。';
+
+  @override
+  String get syncOpenManual => '请直接打开「设置」：主屏幕 › 设置 › 顶部的你的姓名 › iCloud。';
 
   @override
   String get menuFile => '文件';

@@ -324,7 +324,7 @@ class L10nPt extends L10n {
 
   @override
   String get syncHelpSteps =>
-      '1. Abra o app Ajustes\n2. Toque no seu nome no topo\n3. Toque em iCloud\n4. Em Salvo no iCloud, toque em Ver Tudo\n5. Ative o Skyblue Note na lista\n6. Volte aqui e toque em Verificar novamente';
+      '1. Ajustes › seu nome no topo › iCloud\n2. Verifique se o iCloud Drive está ligado — se estiver desligado, nenhum app sincroniza\n3. Bloqueie e desbloqueie o iPhone, volte aqui e toque em Verificar novamente\n\nVerifique no app Arquivos, não nos Ajustes. Se vir uma pasta Skyblue Note em Arquivos › iCloud Drive, está pronto.';
 
   @override
   String get syncOpenSettings => 'Abrir Ajustes';
@@ -590,6 +590,9 @@ class L10nPt extends L10n {
 
   @override
   String get syncOpenFailed => 'Não foi possível abrir os Ajustes. Abra pela Tela de Início.';
+
+  @override
+  String get syncOpenManual => 'Abra os Ajustes você mesmo: Tela de Início › Ajustes › seu nome no topo › iCloud.';
 
   @override
   String get menuFile => 'Arquivo';

@@ -322,6 +322,7 @@ abstract class L10n {
   String get syncRecheckOk;
   String get syncRecheckStill;
   String get syncOpenFailed;
+  String get syncOpenManual;
   String get menuFile;
   String get menuClose;
   String get menuPrefs;
@@ -612,6 +613,7 @@ abstract class L10n {
         'syncRecheckOk': syncRecheckOk,
         'syncRecheckStill': syncRecheckStill,
         'syncOpenFailed': syncOpenFailed,
+        'syncOpenManual': syncOpenManual,
         'menuFile': menuFile,
         'menuClose': menuClose,
         'menuPrefs': menuPrefs,

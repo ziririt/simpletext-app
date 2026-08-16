@@ -323,7 +323,7 @@ class L10nJa extends L10n {
 
   @override
   String get syncHelpSteps =>
-      '1. 設定アプリを開きます\n2. 一番上のご自分の名前をタップします\n3. iCloudをタップします\n4. iCloudに保存済みですべてを表示をタップします\n5. 一覧でSkyblue Noteをオンにします\n6. このアプリに戻って再確認をタップします';
+      '1. 設定 › 一番上の自分の名前 › iCloud を開きます\n2. iCloud Drive がオンか確認します — オフだとどのアプリも同期しません\n3. iPhone をロックして解除し、このアプリに戻って「再確認」を押します\n\n確認は設定ではなくファイルアプリで。ファイル › iCloud Drive に Skyblue Note フォルダが見えれば準備完了です。';
 
   @override
   String get syncOpenSettings => '設定を開く';
@@ -589,6 +589,9 @@ class L10nJa extends L10n {
 
   @override
   String get syncOpenFailed => '設定アプリを開けませんでした。ホーム画面から直接開いてください。';
+
+  @override
+  String get syncOpenManual => '設定アプリを直接開いてください。ホーム画面 › 設定 › 一番上の自分の名前 › iCloud です。';
 
   @override
   String get menuFile => 'ファイル';

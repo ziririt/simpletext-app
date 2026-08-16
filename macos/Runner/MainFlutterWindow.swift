@@ -164,12 +164,13 @@ enum ICloudBridge {
           let fm = FileManager.default
           let signedIn = fm.ubiquityIdentityToken != nil
           let container = fm.url(forUbiquityContainerIdentifier: containerId) != nil
-          let path = documentsPath()
+          let (path, err) = documentsInfo()
           DispatchQueue.main.async {
             result([
               "path": path as Any,
               "signedIn": signedIn,
               "container": container,
+              "error": err as Any,
             ])
           }
         }
@@ -212,7 +213,12 @@ enum ICloudBridge {
   }
 
   /// 쓸 수 없는 상태면 nil — 오류가 아니라 '동기화 꺼짐'이다.
-  private static func documentsPath() -> String? {
+  /// 2026-08-17 — 돌려주는 것을 (경로, 오류) 짝으로 바꿨다.
+  ///
+  /// 지금까지는 안 되면 그냥 nil이었다. 그래서 화면에서 할 수 있는 말이
+  /// "안 됩니다"뿐이었고, 우리는 왜 안 되는지 짐작으로만 좁혀 왔다.
+  /// 시스템이 준 오류 문구를 그대로 들고 오면 짐작할 일이 없다.
+  private static func documentsInfo() -> (String?, String?) {
     let fm = FileManager.default
     // 2026-08-17 — 여기 문지기가 하나 있었다.
     //
@@ -230,9 +236,15 @@ enum ICloudBridge {
     // **되는지 안 되는지는 실제로 폴더를 달라고 해 보고 판단한다.**
     // 경로가 나오면 되는 것이고 안 나오면 안 되는 것이다. 미리 물어보고
     // 지레 포기하지 않는다.
-    guard let root = fm.url(forUbiquityContainerIdentifier: containerId) else { return nil }
+    guard let root = fm.url(forUbiquityContainerIdentifier: containerId) else {
+      return (nil, "container-url-nil")
+    }
     let docs = root.appendingPathComponent("Documents", isDirectory: true)
-    try? fm.createDirectory(at: docs, withIntermediateDirectories: true)
-    return docs.path
+    do {
+      try fm.createDirectory(at: docs, withIntermediateDirectories: true)
+    } catch {
+      return (nil, "mkdir: \(error.localizedDescription)")
+    }
+    return (docs.path, nil)
   }
 }

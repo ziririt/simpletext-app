@@ -3787,14 +3787,17 @@ class _EditorScreenState extends State<EditorScreen> {
                 onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
-            // 붙여넣고 바로 누르는 버튼 — 'AI 답변 정리'를 한 번에 돌린다
-            // (2026-08-14 소유자 요청). 아래 도구 막대의 '정리'와 같은 동작이지만
-            // 손이 위에 있을 때 바로 누를 수 있어야 한다.
-            if (!_editing)
-              TextButton(
-                onPressed: () => _runTidyWithPreset(buildPresets().first),
-                child: Text(l.tidyAction, style: const TextStyle(fontWeight: FontWeight.w800)),
-              ),
+            // 2026-08-17 소유자 지시 — 위쪽 '정리' 버튼을 뺐다.
+            //
+            // 이건 아래 막대의 '정리'가 한 번에 안 되던 시절의 잔재다. 그때는
+            // 아래 것을 누르면 어떤 방식으로 정리할지 고르는 창이 떴고, 손이
+            // 위에 있을 때 바로 누를 지름길이 따로 필요했다.
+            //
+            // 그 뒤 아래 것이 한 번 누르면 바로 도는 쪽으로 바뀌면서
+            // (문을 하나로 합쳤다) 지름길과 목적지가 같아졌다. 같은 일을
+            // 하는 버튼이 한 화면에 둘 있으면 사용자는 둘이 다른 일인가
+            // 의심한다 — 이 앱은 '정리'와 '자동 정리'가 따로 있어서 같은
+            // 신고를 이미 한 번 받았다.
             IconButton(
               icon: Icon(_showMeta ? Icons.sell : Icons.sell_outlined),
               tooltip: l.metaTooltip,
@@ -4955,10 +4958,15 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
     final ok = await ICloudSync.instance.openSettings();
     if (!mounted) return;
     if (ok) return;
-    // 열지 못했다. 잠자코 있으면 사용자는 버튼이 고장 났다고 여긴다.
+    // 2026-08-17 — 못 열 수도 있다. 애플이 앱에서 열도록 허용한 주소는
+    // '이 앱의 설정 페이지' 하나뿐이고, 그 페이지는 앱이 설정 앱에 항목을
+    // 가지고 있을 때만 열린다. 우리가 어쩔 수 있는 것이 아니다.
+    //
+    // 그래서 '못 열었다'고 크게 알리지 않는다 — 사용자는 자기가 뭘 잘못한
+    // 줄 안다. 대신 직접 가는 길을 적어 준다.
     setState(() {
-      _saidBad = true;
-      _said = L10n.of(context).syncOpenFailed;
+      _saidBad = false;
+      _said = L10n.of(context).syncOpenManual;
     });
   }
 
@@ -5103,6 +5111,17 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   ]),
                 ),
               ],
+              // 사실 한 줄. 사람이 읽는 문장이 아니라 기기가 답한 값
+              // 그대로다(2026-08-17). 뭐가 잘못됐는지 화면 하나로 알 수
+              // 있어야 한다 — 이게 없어서 짐작으로 세 판을 썼다.
+              const SizedBox(height: 14),
+              Text(ICloudSync.instance.facts,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      fontFamily: 'Menlo',
+                      color: c.sub)),
               const SizedBox(height: 12),
               Text(l.syncHelpNote,
                   textAlign: TextAlign.center,
