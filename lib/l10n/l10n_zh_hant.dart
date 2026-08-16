@@ -408,6 +408,16 @@ class L10nZhHant extends L10n {
   String get premiumYearly => '年付 · US\$14.99/年';
   @override
   String get premiumLifetimeNote => '上市紀念價 · 原價 US\$39.99';
+
+  @override
+  String trialBadge(int days) => '無限體驗 · 剩餘$days天';
+
+  @override
+  String get trialEndedTitle => '無限體驗已結束';
+
+  @override
+  String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
+      '體驗期間您整理了$tidy次，使用精靈$wiz次。從現在起免費版每天可整理$tidyLimit次、使用精靈$wizLimit次。升級進階版即可解除限制。';
   @override
   String get themeTitle => '外觀模式';
   @override

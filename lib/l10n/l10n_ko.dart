@@ -409,6 +409,16 @@ class L10nKo extends L10n {
   String get premiumYearly => '연간 구독 · 연 US\$14.99';
   @override
   String get premiumLifetimeNote => '출시 기념가 · 정가 US\$39.99';
+
+  @override
+  String trialBadge(int days) => '무제한 체험 · $days일 남음';
+
+  @override
+  String get trialEndedTitle => '무제한 체험이 끝났습니다';
+
+  @override
+  String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
+      '체험 동안 정리 $tidy번, 마법사 $wiz번 쓰셨습니다. 이제부터 무료로는 하루 정리 $tidyLimit번, 마법사 $wizLimit번입니다. 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String get themeTitle => '화면 모드';
   @override

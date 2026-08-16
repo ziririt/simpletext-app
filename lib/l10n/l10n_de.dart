@@ -412,6 +412,16 @@ class L10nDe extends L10n {
   String get premiumYearly => 'Jährlich · US\$14.99/Jahr';
   @override
   String get premiumLifetimeNote => 'Einführungspreis · regulär US\$39.99';
+
+  @override
+  String trialBadge(int days) => 'Unbegrenzt testen · noch $days Tage';
+
+  @override
+  String get trialEndedTitle => 'Ihre unbegrenzte Testphase ist beendet';
+
+  @override
+  String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
+      'Während der Testphase haben Sie $tidy Aufräumvorgänge und $wiz Assistenten-Durchläufe genutzt. Ab jetzt bietet die kostenlose Version $tidyLimit Aufräumvorgänge und $wizLimit Assistenten-Durchläufe pro Tag. Premium hebt das Limit auf.';
   @override
   String get themeTitle => 'Erscheinungsbild';
   @override

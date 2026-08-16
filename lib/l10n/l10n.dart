@@ -292,6 +292,9 @@ abstract class L10n {
   String get limitSeePremium;
   String get premiumYearly;
   String get premiumLifetimeNote;
+  String trialBadge(int days);
+  String get trialEndedTitle;
+  String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit);
   String get themeTitle;
   String get themeSystem;
   String get themeLight;
@@ -483,6 +486,7 @@ abstract class L10n {
         'limitSeePremium': limitSeePremium,
         'premiumYearly': premiumYearly,
         'premiumLifetimeNote': premiumLifetimeNote,
+        'trialEndedTitle': trialEndedTitle,
         'themeTitle': themeTitle,
         'themeSystem': themeSystem,
         'themeLight': themeLight,

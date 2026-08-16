@@ -513,6 +513,20 @@ class AppSettings {
   String wizDate = '';
   int wizCount = 0;
 
+  // 2026-08-16 소유자 제안 — 설치 직후 2주는 제한 없이 쓰게 해서 손에
+  // 익히자. 규칙은 core/usage_gate.dart에 있고 여기는 저장만 한다.
+  //
+  // trialDays는 '앱을 연 날'의 수다(달력 날짜가 아니다). trialLastDate가
+  // 오늘과 다를 때만 하루 오른다 — 하루에 몇 번을 켜도 한 번만 센다.
+  //
+  // trialTidyTotal/trialWizTotal은 체험이 끝날 때 "그동안 이만큼 쓰셨다"고
+  // 숫자로 보여 주기 위한 누적값이다. 하루치를 세는 tidyCount와 다르다.
+  int trialDays = 0;
+  String trialLastDate = '';
+  int trialTidyTotal = 0;
+  int trialWizTotal = 0;
+  bool trialNoticeShown = false;
+
   /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
   String themeMode = 'system';
 
@@ -551,6 +565,11 @@ class AppSettings {
         'tidyCount': tidyCount,
         'wizDate': wizDate,
         'wizCount': wizCount,
+        'trialDays': trialDays,
+        'trialLastDate': trialLastDate,
+        'trialTidyTotal': trialTidyTotal,
+        'trialWizTotal': trialWizTotal,
+        'trialNoticeShown': trialNoticeShown,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -594,6 +613,13 @@ class AppSettings {
     s.tidyCount = (j['tidyCount'] ?? s.tidyCount) as int;
     s.wizDate = (j['wizDate'] ?? s.wizDate) as String;
     s.wizCount = (j['wizCount'] ?? s.wizCount) as int;
+    // 예전 판에서 올라온 저장본에는 이 칸들이 없다 — 없으면 0/''이고,
+    // 그러면 다음 실행 때 체험 1일째로 시작한다. 기존 사용자도 2주를 받는다.
+    s.trialDays = (j['trialDays'] ?? s.trialDays) as int;
+    s.trialLastDate = (j['trialLastDate'] ?? s.trialLastDate) as String;
+    s.trialTidyTotal = (j['trialTidyTotal'] ?? s.trialTidyTotal) as int;
+    s.trialWizTotal = (j['trialWizTotal'] ?? s.trialWizTotal) as int;
+    s.trialNoticeShown = (j['trialNoticeShown'] ?? s.trialNoticeShown) as bool;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -642,6 +668,18 @@ class Store extends ChangeNotifier {
       final raw = prefs.getString(_settingsKey);
       if (raw != null) settings = AppSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {}
+    // 체험 날짜 세기. 여기서 하는 이유는 이 지점이 '앱이 실제로 열렸다'를
+    // 가장 확실히 아는 자리이기 때문이다. 하루에 몇 번 열든 bumpTrialDays가
+    // 한 번만 올린다.
+    final tnow = DateTime.now();
+    final td = bumpTrialDays(
+        now: tnow, lastDate: settings.trialLastDate, trialDays: settings.trialDays);
+    if (td != settings.trialDays) {
+      settings.trialDays = td;
+      settings.trialLastDate = usageDateKey(tnow);
+      await persistSettings();
+    }
+
     loaded = true;
     notifyListeners();
   }
@@ -1503,22 +1541,44 @@ class _EditorScreenState extends State<EditorScreen> {
   Future<bool> _blockedByLimit({required bool wizard}) async {
     final s = store.settings;
     final now = DateTime.now();
-    final ok = canUse(
+    // canUse가 아니라 canUseNow다 — canUse는 한도만 보므로 체험 중인
+    // 사람을 그대로 막아 버린다. 2026-08-16에 체험을 넣으면서 갈아탔다.
+    final ok = canUseNow(
       now: now,
       savedDate: wizard ? s.wizDate : s.tidyDate,
       savedCount: wizard ? s.wizCount : s.tidyCount,
       limit: wizard ? kFreeWizardPerDay : kFreeTidyPerDay,
       premium: s.premium,
+      trialDays: s.trialDays,
     );
     if (ok) return false;
     if (!mounted) return true;
+
+    // 체험이 끝나고 '처음으로' 막히는 순간인가.
+    //
+    // 실행하자마자 뜨는 팝업은 잔소리지만, 방금 쓰려다 막힌 사람에게는
+    // 설명이다. 그래서 알림을 이 자리로 옮겼다. 그동안 몇 번 썼는지를
+    // 숫자로 보여 준다 — 사람은 가진 적 없는 것보다 가졌다가 잃는 것에
+    // 훨씬 민감하고, 그 숫자가 그 감각을 만든다.
+    final ended =
+        trialJustEnded(trialDays: s.trialDays, noticeShown: s.trialNoticeShown);
+    if (ended) {
+      s.trialNoticeShown = true;
+      await store.persistSettings();
+      if (!mounted) return true;
+    }
+
     final go = await showAdaptiveDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog.adaptive(
-        title: Text(L10n.of(ctx).limitTitle),
-        content: Text(wizard
-            ? L10n.of(ctx).limitWizardBody(kFreeWizardPerDay)
-            : L10n.of(ctx).limitTidyBody(kFreeTidyPerDay)),
+        title: Text(
+            ended ? L10n.of(ctx).trialEndedTitle : L10n.of(ctx).limitTitle),
+        content: Text(ended
+            ? L10n.of(ctx).trialEndedBody(s.trialTidyTotal, s.trialWizTotal,
+                kFreeTidyPerDay, kFreeWizardPerDay)
+            : (wizard
+                ? L10n.of(ctx).limitWizardBody(kFreeWizardPerDay)
+                : L10n.of(ctx).limitTidyBody(kFreeTidyPerDay))),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -1545,6 +1605,15 @@ class _EditorScreenState extends State<EditorScreen> {
     } else {
       s.tidyCount = nextCount(now: now, savedDate: s.tidyDate, savedCount: s.tidyCount);
       s.tidyDate = usageDateKey(now);
+    }
+    // 체험 중에만 누적한다. 끝난 뒤에도 세면 "체험 동안 이만큼 쓰셨다"는
+    // 문구의 숫자가 계속 커져서 거짓말이 된다.
+    if (trialOn(s.trialDays)) {
+      if (wizard) {
+        s.trialWizTotal++;
+      } else {
+        s.trialTidyTotal++;
+      }
     }
     await store.persistSettings();
   }
@@ -2702,6 +2771,17 @@ class PremiumScreen extends StatelessWidget {
           Text(l.premiumPitch,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          // 체험 중이면 남은 날을 여기서도 보여 준다. 끝나는 날을 미리
+          // 알고 있으면 종료가 배신이 아니라 예고가 된다.
+          if (trialOn(Store.instance.settings.trialDays)) ...[
+            const SizedBox(height: 10),
+            Text(l.trialBadge(trialLeft(Store.instance.settings.trialDays)),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: context.c.accent)),
+          ],
           const SizedBox(height: 10),
           Text(l.premiumBody,
               textAlign: TextAlign.center,
@@ -3026,11 +3106,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     fontWeight: FontWeight.w800,
                                     color: context.c.accent)),
                             const SizedBox(height: 3),
-                            Text(l.premiumPitchSub,
+                            // 체험 중에는 남은 날을 대신 띄운다. 첫날부터
+                            // 보이게 두는 게 핵심이다 — 조용히 끝났다가
+                            // 어느 날 갑자기 막히면 사람은 지갑이 아니라
+                            // 삭제 버튼을 누른다.
+                            Text(
+                                trialOn(store.settings.trialDays)
+                                    ? l.trialBadge(
+                                        trialLeft(store.settings.trialDays))
+                                    : l.premiumPitchSub,
                                 style: TextStyle(
                                     fontSize: 14,
                                     height: 1.35,
-                                    color: context.c.guideInk)),
+                                    fontWeight: trialOn(store.settings.trialDays)
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                    color: trialOn(store.settings.trialDays)
+                                        ? context.c.accent
+                                        : context.c.guideInk)),
                           ]),
                     ),
                     Icon(Icons.chevron_right, color: context.c.sub),

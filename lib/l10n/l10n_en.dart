@@ -411,6 +411,16 @@ class L10nEn extends L10n {
   String get premiumYearly => 'Yearly · US\$14.99/yr';
   @override
   String get premiumLifetimeNote => 'Launch price · regularly US\$39.99';
+
+  @override
+  String trialBadge(int days) => 'Unlimited trial · $days days left';
+
+  @override
+  String get trialEndedTitle => 'Your unlimited trial has ended';
+
+  @override
+  String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
+      'During the trial you ran $tidy cleanups and $wiz wizard sessions. From now on the free plan gives you $tidyLimit cleanups and $wizLimit wizard runs a day. Premium removes the limit.';
   @override
   String get themeTitle => 'Appearance';
   @override

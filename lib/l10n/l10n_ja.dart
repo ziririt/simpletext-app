@@ -409,6 +409,16 @@ class L10nJa extends L10n {
   String get premiumYearly => '年間 · 年US\$14.99';
   @override
   String get premiumLifetimeNote => '発売記念価格 · 通常US\$39.99';
+
+  @override
+  String trialBadge(int days) => '無制限体験 · 残り$days日';
+
+  @override
+  String get trialEndedTitle => '無制限体験が終了しました';
+
+  @override
+  String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
+      '体験中に整理を$tidy回、ウィザードを$wiz回お使いになりました。これからは無料プランで1日に整理$tidyLimit回、ウィザード$wizLimit回です。プレミアムなら制限がありません。';
   @override
   String get themeTitle => '画面モード';
   @override
