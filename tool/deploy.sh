@@ -90,3 +90,35 @@ log "끝. 버전: $(grep -m1 appVersion lib/version.dart)"
 #        포함해 다시 발급된다.
 #        확인: ~/Library/Developer/Xcode/UserData/Provisioning Profiles/ 의
 #        .mobileprovision을 security cms -D 로 풀어 ProvisionedDevices 확인.
+
+# ---------------------------------------------------------------------------
+# 2026-08-16 — 자격(entitlement)을 추가한 뒤 서명이 깨질 때
+#
+# 증상:
+#   Provisioning profile "iOS Team Provisioning Profile: *" doesn't include
+#   the iCloud capability.
+#
+# 원인은 와일드카드 프로파일이다. 지금까지 개발 설치는 App ID 없이 와일드카드
+# (*)로 돌고 있었는데, 와일드카드에는 iCloud 같은 자격을 붙일 수 없다. 정식
+# App ID용 프로파일을 새로 받아야 한다.
+#
+# 그냥 -allowProvisioningUpdates만 주면 "No Accounts"로 실패한다. Xcode에
+# 계정이 들어 있어도 그렇다(2026-08-15에 겪음). App Store Connect API 키로
+# 인증을 붙이면 계정 없이 통과한다 — 이게 답이다:
+#
+#   cd ios
+#   xcodebuild -workspace Runner.xcworkspace -scheme Runner \
+#     -configuration Release -destination 'generic/platform=iOS' \
+#     -allowProvisioningUpdates \
+#     -authenticationKeyPath   ~/.appstoreconnect/private_keys/AuthKey_*.p8 \
+#     -authenticationKeyID     <KEY_ID> \
+#     -authenticationKeyIssuerID <ISSUER> \
+#     build
+#
+# 한 번 성공하면 프로파일이 로컬에 저장되고, 그 뒤로는 flutter build ios가
+# 그냥 된다. 자격을 또 바꾸면 이 절차를 다시 밟아야 한다.
+#
+# 값은 ~/.appstoreconnect/asc.py 안에 있다. import로 읽으려다 실패한 적이
+# 있는데(그 파이썬에 PyJWT가 없으면 asc.py가 최상단에서 죽는다), 그러면 빈
+# 문자열이 조용히 넘어가 원인 모를 실패가 된다. 정규식으로 상수만 뽑는 게 낫다.
+# ---------------------------------------------------------------------------
