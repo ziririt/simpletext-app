@@ -82,7 +82,7 @@ class L10nKo extends L10n {
   String get wizardNothingToDo => '바꿀 것이 없습니다';
 
   @override
-  String wizardAppliedToast(int count) => '지시 \$count개를 적용했습니다';
+  String wizardAppliedToast(int count) => '지시 $count개를 적용했습니다';
 
   @override
   String get skipPreviewCheck => '앞으로 미리보기 생략';
@@ -448,7 +448,7 @@ class L10nKo extends L10n {
       '가져온 파일이 없습니다';
 
   @override
-  String importDone(int n) => '메모 \$n개를 가져왔습니다';
+  String importDone(int n) => '메모 $n개를 가져왔습니다';
 
   @override
   String get sourceGuessSuffix => '(추정)';
@@ -477,7 +477,7 @@ class L10nKo extends L10n {
       '붙여넣은 원본';
 
   @override
-  String historyUnknownTime(int n) => '이전 판 \$n';
+  String historyUnknownTime(int n) => '이전 판 $n';
 
   @override
   String get selUnitSentence => '문장';
@@ -600,15 +600,18 @@ class L10nKo extends L10n {
   String get menuPrefs => '설정…';
 
   @override
-  String pastedFrom(String src, String date) =>
-      '\$src에서 \$date에 가져옴';
+  String get appliedTitle => '정리했습니다';
 
   @override
-  String pastedOn(String date) => '\$date에 붙여넣음';
+  String pastedFrom(String src, String date) =>
+      '$src에서 $date에 가져옴';
+
+  @override
+  String pastedOn(String date) => '$date에 붙여넣음';
 
   @override
   String staleWarn(int days) =>
-      '받은 지 \$days일 된 답입니다. 그 사이 모델이 바뀌었을 수 있습니다.';
+      '받은 지 $days일 된 답입니다. 그 사이 모델이 바뀌었을 수 있습니다.';
   @override
   String get settingsSecView => '보기';
   @override
@@ -723,10 +726,10 @@ class L10nKo extends L10n {
   @override
   String get limitTitle => '오늘 무료 사용을 다 쓰셨습니다';
   @override
-  String limitTidyBody(int n) => '무료로는 하루에 \$n번까지 정리할 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+  String limitTidyBody(int n) => '무료로는 하루에 $n번까지 정리할 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String limitWizardBody(int n) =>
-      '무료로는 하루에 \$n번까지 AI 편집을 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+      '무료로는 하루에 $n번까지 AI 편집을 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String get limitSeePremium => '프리미엄 보기';
   @override
@@ -742,7 +745,7 @@ class L10nKo extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      '체험 동안 정리 \$tidy번, AI 편집 \$wiz번 쓰셨습니다. 이제부터 무료로는 하루 정리 \$tidyLimit번, AI 편집 \$wizLimit번입니다. 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+      '체험 동안 정리 $tidy번, AI 편집 $wiz번 쓰셨습니다. 이제부터 무료로는 하루 정리 $tidyLimit번, AI 편집 $wizLimit번입니다. 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String get themeTitle => '화면 모드';
   @override

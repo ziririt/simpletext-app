@@ -82,7 +82,7 @@ class L10nEs extends L10n {
   String get wizardNothingToDo => 'No hay nada que cambiar';
 
   @override
-  String wizardAppliedToast(int count) => 'Se aplicaron \$count instrucción(es)';
+  String wizardAppliedToast(int count) => 'Se aplicaron $count instrucción(es)';
 
   @override
   String get skipPreviewCheck => 'Omitir la vista previa en adelante';
@@ -449,7 +449,7 @@ class L10nEs extends L10n {
       'No se importó nada';
 
   @override
-  String importDone(int n) => 'Se importaron \$n notas';
+  String importDone(int n) => 'Se importaron $n notas';
 
   @override
   String get sourceGuessSuffix => '(estimado)';
@@ -478,7 +478,7 @@ class L10nEs extends L10n {
       'Tal como se pegó';
 
   @override
-  String historyUnknownTime(int n) => 'Versión anterior \$n';
+  String historyUnknownTime(int n) => 'Versión anterior $n';
 
   @override
   String get selUnitSentence => 'Frase';
@@ -601,15 +601,18 @@ class L10nEs extends L10n {
   String get menuPrefs => 'Ajustes…';
 
   @override
-  String pastedFrom(String src, String date) =>
-      'de \$src el \$date';
+  String get appliedTitle => 'Listo';
 
   @override
-  String pastedOn(String date) => 'pegado el \$date';
+  String pastedFrom(String src, String date) =>
+      'de $src el $date';
+
+  @override
+  String pastedOn(String date) => 'pegado el $date';
 
   @override
   String staleWarn(int days) =>
-      'Esta respuesta tiene \$days días. El modelo puede haber cambiado.';
+      'Esta respuesta tiene $days días. El modelo puede haber cambiado.';
   @override
   String get settingsSecView => 'Pantalla';
   @override
@@ -725,10 +728,10 @@ class L10nEs extends L10n {
   @override
   String get limitTitle => 'Has agotado los usos gratuitos de hoy';
   @override
-  String limitTidyBody(int n) => 'El plan gratuito incluye \$n limpiezas al día. Se renueva mañana; Premium quita el límite.';
+  String limitTidyBody(int n) => 'El plan gratuito incluye $n limpiezas al día. Se renueva mañana; Premium quita el límite.';
   @override
   String limitWizardBody(int n) =>
-      'El plan gratuito incluye \$n ediciones IA al día. Se reinicia mañana; Premium quita el límite.';
+      'El plan gratuito incluye $n ediciones IA al día. Se reinicia mañana; Premium quita el límite.';
   @override
   String get limitSeePremium => 'Ver Premium';
   @override
@@ -744,7 +747,7 @@ class L10nEs extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      'Durante la prueba hiciste \$tidy limpiezas y \$wiz ediciones IA. A partir de ahora el plan gratuito incluye \$tidyLimit limpiezas y \$wizLimit ediciones IA al día. Premium quita el límite.';
+      'Durante la prueba hiciste $tidy limpiezas y $wiz ediciones IA. A partir de ahora el plan gratuito incluye $tidyLimit limpiezas y $wizLimit ediciones IA al día. Premium quita el límite.';
   @override
   String get themeTitle => 'Apariencia';
   @override

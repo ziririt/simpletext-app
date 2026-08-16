@@ -82,7 +82,7 @@ class L10nZhHant extends L10n {
   String get wizardNothingToDo => '沒有需要變更的內容';
 
   @override
-  String wizardAppliedToast(int count) => '已套用 \$count 條指令';
+  String wizardAppliedToast(int count) => '已套用 $count 條指令';
 
   @override
   String get skipPreviewCheck => '以後略過預覽';
@@ -448,7 +448,7 @@ class L10nZhHant extends L10n {
       '沒有匯入任何檔案';
 
   @override
-  String importDone(int n) => '已匯入 \$n 則備忘';
+  String importDone(int n) => '已匯入 $n 則備忘';
 
   @override
   String get sourceGuessSuffix => '（推測）';
@@ -477,7 +477,7 @@ class L10nZhHant extends L10n {
       '貼上時的原文';
 
   @override
-  String historyUnknownTime(int n) => '先前版本 \$n';
+  String historyUnknownTime(int n) => '先前版本 $n';
 
   @override
   String get selUnitSentence => '句';
@@ -600,15 +600,18 @@ class L10nZhHant extends L10n {
   String get menuPrefs => '設定…';
 
   @override
-  String pastedFrom(String src, String date) =>
-      '\$date 來自 \$src';
+  String get appliedTitle => '已整理';
 
   @override
-  String pastedOn(String date) => '\$date 貼上';
+  String pastedFrom(String src, String date) =>
+      '$date 來自 $src';
+
+  @override
+  String pastedOn(String date) => '$date 貼上';
 
   @override
   String staleWarn(int days) =>
-      '這個回答已過去 \$days 天，其間模型可能已更新。';
+      '這個回答已過去 $days 天，其間模型可能已更新。';
   @override
   String get settingsSecView => '顯示';
   @override
@@ -723,10 +726,10 @@ class L10nZhHant extends L10n {
   @override
   String get limitTitle => '今天的免費次數已用完';
   @override
-  String limitTidyBody(int n) => '免費版每天可整理 \$n 次，明天恢復。進階版不限次數。';
+  String limitTidyBody(int n) => '免費版每天可整理 $n 次，明天恢復。進階版不限次數。';
   @override
   String limitWizardBody(int n) =>
-      '免費版每天可使用 \$n 次 AI 編輯，明天恢復 — 進階版沒有限制。';
+      '免費版每天可使用 $n 次 AI 編輯，明天恢復 — 進階版沒有限制。';
   @override
   String get limitSeePremium => '查看進階版';
   @override
@@ -742,7 +745,7 @@ class L10nZhHant extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      '體驗期間您整理了 \$tidy 次，使用 AI 編輯 \$wiz 次。從現在起免費版每天可整理 \$tidyLimit 次、AI 編輯 \$wizLimit 次。升級進階版即可解除限制。';
+      '體驗期間您整理了 $tidy 次，使用 AI 編輯 $wiz 次。從現在起免費版每天可整理 $tidyLimit 次、AI 編輯 $wizLimit 次。升級進階版即可解除限制。';
   @override
   String get themeTitle => '外觀模式';
   @override

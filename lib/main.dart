@@ -6,6 +6,7 @@
 /// 이번 범위에서 제외 — 로드맵의 후속 항목이다. 프리셋 이름은 Preset.id를 UI 층에서 매핑한다.
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
@@ -1263,6 +1264,204 @@ void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+}
+
+/// 한 일을 잠깐 보여 주고 사라지는 판.
+///
+/// 2026-08-17 소유자 요청 — "'적용 완료'라는 피드백을 마법의 가루를 뿌리며
+/// 신비하게 잠깐 보여 주고 사라져 줘. 밑에 저렇게 나오지 말고."
+///
+/// 아래에서 올라오는 막대(SnackBar)는 시스템이 주는 그릇이라 어디에 쓰든
+/// 똑같이 생겼다. 무엇을 알리든 '알림'으로 보인다. 정리는 이 앱에서 사람이
+/// 가장 자주 누르는 버튼이고, 그 순간에만 일어나는 일이라면 그 순간만의
+/// 모습이어야 한다.
+///
+/// 되돌리기 버튼은 여기에 안 붙인다. 사라지는 알림에 버튼을 달면 누르려는
+/// 순간 사라지는 일이 생긴다 — 그건 없느니만 못하다. 되돌리기는 아래 도구
+/// 막대에 늘 있고, 무엇이 바뀌었는지는 편집 화면 밑줄에 계속 남는다.
+Future<void> showMagic(BuildContext context, String title, String detail) async {
+  final overlay = Overlay.maybeOf(context);
+  if (overlay == null) return;
+  final entry = OverlayEntry(
+    builder: (_) => _MagicPuff(title: title, detail: detail, c: context.c),
+  );
+  overlay.insert(entry);
+  await Future<void>.delayed(_MagicPuff.life);
+  entry.remove();
+}
+
+class _MagicPuff extends StatefulWidget {
+  final String title;
+  final String detail;
+  final AppC c;
+  const _MagicPuff({required this.title, required this.detail, required this.c});
+
+  static const Duration life = Duration(milliseconds: 1700);
+
+  @override
+  State<_MagicPuff> createState() => _MagicPuffState();
+}
+
+class _MagicPuffState extends State<_MagicPuff>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _a =
+      AnimationController(vsync: this, duration: _MagicPuff.life)..forward();
+
+  @override
+  void dispose() {
+    _a.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.c;
+    // 움직임을 줄이도록 설정한 사람에게는 빛알을 안 뿌린다. 그 설정은
+    // 취향이 아니라 어지럼증 대응인 경우가 많다.
+    final calm = MediaQuery.of(context).disableAnimations;
+    return Positioned.fill(
+      // 떠 있는 동안에도 글을 만질 수 있어야 한다.
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _a,
+          builder: (_, __) {
+            final t = _a.value;
+
+            // 판: 앞의 20%에 나타나고, 뒤의 30%에 살짝 떠오르며 사라진다.
+            final inT = (t / 0.20).clamp(0.0, 1.0);
+            final outT = ((t - 0.70) / 0.30).clamp(0.0, 1.0);
+            final opacity = (calm ? inT : Curves.easeOut.transform(inT)) *
+                (1 - Curves.easeIn.transform(outT));
+            final scale = calm
+                ? 1.0
+                : 0.86 + 0.14 * Curves.easeOutBack.transform(inT);
+            final lift = -10.0 * Curves.easeIn.transform(outT);
+
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                if (!calm)
+                  Positioned.fill(
+                    child: CustomPaint(painter: _DustPainter(t: t, c: c)),
+                  ),
+                Transform.translate(
+                  offset: Offset(0, lift),
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Opacity(
+                      opacity: opacity.clamp(0.0, 1.0),
+                      child: _card(c),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _card(AppC c) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+        decoration: BoxDecoration(
+          color: c.panel,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: c.accent.withValues(alpha: 0.35)),
+          boxShadow: [
+            // 그림자를 강조색으로 준다. 검정 그림자는 무겁고, 이건
+            // 빛이 나는 것처럼 보여야 한다.
+            BoxShadow(
+              color: c.accent.withValues(alpha: 0.28),
+              blurRadius: 34,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.auto_awesome, size: 30, color: c.accent),
+            const SizedBox(height: 10),
+            Text(widget.title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: c.accent)),
+            if (widget.detail.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text(widget.detail,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13.5, height: 1.35, color: c.sub)),
+            ],
+          ],
+        ),
+      );
+}
+
+/// 판에서 퍼져 나가는 빛알.
+///
+/// 무작위를 쓰지 않는다. 같은 자리에 같은 모양이 나와야 손에 익고,
+/// 무작위는 매번 조금씩 다른 것을 '흔들린다'고 느끼게 한다.
+///
+/// 각도를 황금각(137.5도)씩 돌린다. 해바라기 씨앗이 그렇게 앉는데,
+/// 어떤 개수를 뿌려도 뭉치지 않고 고르게 퍼지는 유일한 각이다.
+class _DustPainter extends CustomPainter {
+  final double t;
+  final AppC c;
+  const _DustPainter({required this.t, required this.c});
+
+  static const int count = 18;
+  static const double golden = 2.399963; // 라디안 137.5도
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 빛알은 앞의 72%만 산다. 판이 사라지기 전에 먼저 스러져야
+    // '가루가 뿌려지고 글이 정리됐다'는 차례로 읽힌다.
+    final u = (t / 0.72).clamp(0.0, 1.0);
+    if (u >= 1.0) return;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final reach = size.shortestSide * 0.42;
+    final ease = Curves.easeOutCubic.transform(u);
+    // 처음엔 확 밝았다가 사그라든다.
+    final fade = (1 - u) * (1 - u);
+
+    final p = Paint()..style = PaintingStyle.fill;
+
+    for (var i = 0; i < count; i++) {
+      final ang = i * golden;
+      // 안쪽과 바깥쪽을 섞어 뿌린다. 다 같은 거리면 고리처럼 보인다.
+      final far = 0.55 + 0.45 * ((i % 5) / 4);
+      final d = reach * far * ease;
+      final at = center + Offset(math.cos(ang), math.sin(ang)) * d;
+      final r = (2.2 + 1.8 * ((i % 3) / 2)) * (1 - 0.45 * u);
+
+      p.color = (i.isEven ? c.accent : c.tagInk).withValues(alpha: fade);
+      _star(canvas, at, r, p);
+    }
+  }
+
+  /// 네 갈래 별. 동그라미보다 '반짝'으로 읽힌다.
+  void _star(Canvas canvas, Offset at, double r, Paint p) {
+    final path = Path();
+    // 뾰족한 끝과 잘록한 허리. 허리를 0.3으로 두면 십자보다 별처럼 보인다.
+    const waist = 0.30;
+    path.moveTo(at.dx, at.dy - r);
+    path.quadraticBezierTo(at.dx + r * waist, at.dy - r * waist, at.dx + r, at.dy);
+    path.quadraticBezierTo(at.dx + r * waist, at.dy + r * waist, at.dx, at.dy + r);
+    path.quadraticBezierTo(at.dx - r * waist, at.dy + r * waist, at.dx - r, at.dy);
+    path.quadraticBezierTo(at.dx - r * waist, at.dy - r * waist, at.dx, at.dy - r);
+    path.close();
+    canvas.drawPath(path, p);
+  }
+
+  @override
+  bool shouldRepaint(_DustPainter old) => old.t != t || old.c != c;
 }
 
 /// ---------------- 홈 화면 ----------------
@@ -2806,21 +3005,12 @@ class _EditorScreenState extends State<EditorScreen> {
       await _save();
       if (mounted) {
         setState(() {});
-        // 그냥 알리지 않고 '되돌리기'를 같이 낸다. 먼저 하고, 무엇을
-        // 했는지 보여 주고, 한 번에 물릴 수 있게 — 묻고 나서 하는 것보다
-        // 언제나 빠르고 안전은 같다.
-        final lm = L10n.of(context);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(
-            content: Text(lm.appliedDone(r.summary)),
-            // 2초는 읽고 누르기엔 짧다. 되돌릴지 말지 판단할 틈을 준다.
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: lm.undoAction,
-              onPressed: () => unawaited(_undoLastTidy()),
-            ),
-          ));
+        // 아래에서 올라오는 막대 대신 글 한가운데에 잠깐 떠올랐다 사라진다
+        // (2026-08-17 소유자 요청). 되돌리기 버튼은 안 붙인다 — 사라지는
+        // 알림에 버튼을 달면 누르려는 순간 사라진다. 되돌리기는 아래 도구
+        // 막대에 늘 있고, 무엇이 바뀌었는지는 밑줄에 계속 남는다.
+        unawaited(
+            showMagic(context, L10n.of(context).appliedTitle, r.summary));
       }
     }
   }
@@ -4022,19 +4212,11 @@ class _EditorScreenState extends State<EditorScreen> {
                       _barBtn(
                         CupertinoIcons.arrow_uturn_left,
                         l.undoAction,
-                        note.history.isEmpty
-                            ? null
-                            : () async {
-                                note.body = note.history.removeLast();
-                                if (note.historyAt.isNotEmpty) {
-                                  note.historyAt.removeLast();
-                                }
-                                note.lastReport = '';
-                                bodyCtl.text = note.body;
-                                await _save();
-                                setState(() {});
-                                if (mounted) _toast(context, L10n.of(context).revertedToast);
-                              },
+                        // 2026-08-17 — 여기 같은 코드가 통째로 또 있었다.
+                        // 정리 알림에서 되돌리기 버튼을 떼자 analyze가
+                        // _undoLastTidy가 안 쓰인다고 잡았고, 그때 두 벌인
+                        // 것이 드러났다. 두 벌은 반드시 어긋난다.
+                        note.history.isEmpty ? null : _undoLastTidy,
                       ),
                     ],
                   )),

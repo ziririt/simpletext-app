@@ -82,7 +82,7 @@ class L10nJa extends L10n {
   String get wizardNothingToDo => '変更するものがありません';
 
   @override
-  String wizardAppliedToast(int count) => '指示 \$count 件を適用しました';
+  String wizardAppliedToast(int count) => '指示 $count 件を適用しました';
 
   @override
   String get skipPreviewCheck => '今後プレビューを省略';
@@ -448,7 +448,7 @@ class L10nJa extends L10n {
       '読み込んだファイルがありません';
 
   @override
-  String importDone(int n) => 'メモを\$n件読み込みました';
+  String importDone(int n) => 'メモを$n件読み込みました';
 
   @override
   String get sourceGuessSuffix => '（推定）';
@@ -477,7 +477,7 @@ class L10nJa extends L10n {
       '貼り付けた原文';
 
   @override
-  String historyUnknownTime(int n) => '以前の版 \$n';
+  String historyUnknownTime(int n) => '以前の版 $n';
 
   @override
   String get selUnitSentence => '文';
@@ -600,15 +600,18 @@ class L10nJa extends L10n {
   String get menuPrefs => '設定…';
 
   @override
-  String pastedFrom(String src, String date) =>
-      '\$date に \$src から';
+  String get appliedTitle => '整えました';
 
   @override
-  String pastedOn(String date) => '\$date に貼り付け';
+  String pastedFrom(String src, String date) =>
+      '$date に $src から';
+
+  @override
+  String pastedOn(String date) => '$date に貼り付け';
 
   @override
   String staleWarn(int days) =>
-      '受け取ってから\$days日たった回答です。その間にモデルが変わっている可能性があります。';
+      '受け取ってから$days日たった回答です。その間にモデルが変わっている可能性があります。';
   @override
   String get settingsSecView => '表示';
   @override
@@ -723,10 +726,10 @@ class L10nJa extends L10n {
   @override
   String get limitTitle => '本日の無料利用を使い切りました';
   @override
-  String limitTidyBody(int n) => '無料では1日\$n回まで整理できます。明日また使えます。プレミアムなら制限はありません。';
+  String limitTidyBody(int n) => '無料では1日$n回まで整理できます。明日また使えます。プレミアムなら制限はありません。';
   @override
   String limitWizardBody(int n) =>
-      '無料プランでは1日に\$n回までAI編集を使えます。明日また開きます — プレミアムなら制限がありません。';
+      '無料プランでは1日に$n回までAI編集を使えます。明日また開きます — プレミアムなら制限がありません。';
   @override
   String get limitSeePremium => 'プレミアムを見る';
   @override
@@ -742,7 +745,7 @@ class L10nJa extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      '体験中に整理を\$tidy回、AI編集を\$wiz回お使いになりました。これからは無料プランで1日に整理\$tidyLimit回、AI編集\$wizLimit回です。プレミアムなら制限がありません。';
+      '体験中に整理を$tidy回、AI編集を$wiz回お使いになりました。これからは無料プランで1日に整理$tidyLimit回、AI編集$wizLimit回です。プレミアムなら制限がありません。';
   @override
   String get themeTitle => '画面モード';
   @override

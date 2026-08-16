@@ -325,6 +325,7 @@ abstract class L10n {
   String get menuFile;
   String get menuClose;
   String get menuPrefs;
+  String get appliedTitle;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -614,6 +615,7 @@ abstract class L10n {
         'menuFile': menuFile,
         'menuClose': menuClose,
         'menuPrefs': menuPrefs,
+        'appliedTitle': appliedTitle,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
