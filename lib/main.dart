@@ -5904,10 +5904,26 @@ class _SettingsScreenState extends State<SettingsScreen>
                 builder: (_, st, __) {
                   final ok = st == SyncState.ok;
                   final busy = st == SyncState.running;
-                  final text = ok
-                      ? l.syncStateOn
+                  // 2026-08-17 소유자 지시 — "'켜짐'과 설명구는 처음부터
+                  // 두 줄로. '켜짐'은 더 주인공스럽게."
+                  //
+                  // 전에는 한 줄에 상태와 설명을 대시로 이어 붙였다. 좁은
+                  // 화면에서 잘렸고, 무엇이 중요한지도 안 보였다. **한 줄에
+                  // 두 가지를 넣으면 둘 다 작아 보인다.**
+                  //
+                  // 설정의 다른 줄들이 전부 '제목 + 그 아래 설명' 모양인데
+                  // 여기만 달랐던 것이기도 하다.
+                  final title = ok
+                      ? l.syncOnTitle
                       : busy
                           ? l.syncStateSyncing
+                          : st == SyncState.signedOut
+                              ? l.syncSignedOutTitle
+                              : l.syncOffTitle;
+                  final sub = busy
+                      ? null
+                      : ok
+                          ? l.syncStateOn
                           : st == SyncState.signedOut
                               ? l.syncStateSignedOut
                               : l.syncStateOff;
@@ -5924,11 +5940,26 @@ class _SettingsScreenState extends State<SettingsScreen>
                           color: ok ? context.c.accent : context.c.sub),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(text,
-                            style: TextStyle(
-                                fontSize: 15.5,
-                                height: 1.35,
-                                color: context.c.guideInk)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title,
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: ok
+                                        ? context.c.accent
+                                        : context.c.guideInk)),
+                            if (sub != null) ...[
+                              const SizedBox(height: 2),
+                              Text(sub,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      height: 1.35,
+                                      color: context.c.sub)),
+                            ],
+                          ],
+                        ),
                       ),
                       if (!ok && !busy)
                         Icon(Icons.chevron_right, color: context.c.sub),

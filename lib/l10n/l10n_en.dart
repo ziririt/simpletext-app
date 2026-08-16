@@ -305,10 +305,10 @@ class L10nEn extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncStateOn => 'On — the same notes on iPhone, iPad and Mac';
+  String get syncStateOn => 'The same notes on iPhone, iPad and Mac';
 
   @override
-  String get syncStateOff => 'Off — turn on iCloud Drive in your device settings';
+  String get syncStateOff => 'Turn on iCloud Drive in your device settings';
 
   @override
   String get syncStateSyncing => 'Syncing…';
@@ -317,7 +317,7 @@ class L10nEn extends L10n {
   String get aiKeyNotSynced => 'Your notes sync to all your devices through iCloud. Your API key does not — enter it separately on each device.';
 
   @override
-  String get syncStateSignedOut => 'Not signed in to iCloud — tap to see how';
+  String get syncStateSignedOut => 'Tap to see how';
 
   @override
   String get syncHelpTitle => 'How to turn on iCloud';
@@ -611,6 +611,15 @@ class L10nEn extends L10n {
 
   @override
   String get tidyRulesSub => 'Decides how your text changes when you tap Tidy.';
+
+  @override
+  String get syncOnTitle => 'On';
+
+  @override
+  String get syncOffTitle => 'Off';
+
+  @override
+  String get syncSignedOutTitle => 'Sign in needed';
 
   @override
   String pastedFrom(String src, String date) =>

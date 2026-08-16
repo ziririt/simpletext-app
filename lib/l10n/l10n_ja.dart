@@ -304,10 +304,10 @@ class L10nJa extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncStateOn => 'オン — iPhone・iPad・Mac で同じメモが見られます';
+  String get syncStateOn => 'iPhone・iPad・Mac で同じメモを見られます';
 
   @override
-  String get syncStateOff => 'オフ — 端末の設定で iCloud Drive をオンにしてください';
+  String get syncStateOff => '端末の設定で iCloud Drive をオンにしてください';
 
   @override
   String get syncStateSyncing => '同期中…';
@@ -316,7 +316,7 @@ class L10nJa extends L10n {
   String get aiKeyNotSynced => 'メモは iCloud で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
 
   @override
-  String get syncStateSignedOut => 'iCloudにサインインしていません — タップして方法を確認';
+  String get syncStateSignedOut => 'タップして方法を見る';
 
   @override
   String get syncHelpTitle => 'iCloudをオンにする方法';
@@ -610,6 +610,15 @@ class L10nJa extends L10n {
 
   @override
   String get tidyRulesSub => '「整える」を押したとき文章がどう変わるかを決めます。';
+
+  @override
+  String get syncOnTitle => 'オン';
+
+  @override
+  String get syncOffTitle => 'オフ';
+
+  @override
+  String get syncSignedOutTitle => 'サインインが必要';
 
   @override
   String pastedFrom(String src, String date) =>

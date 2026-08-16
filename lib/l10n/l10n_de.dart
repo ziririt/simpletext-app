@@ -306,10 +306,10 @@ class L10nDe extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncStateOn => 'Ein — dieselben Notizen auf iPhone, iPad und Mac';
+  String get syncStateOn => 'Dieselben Notizen auf iPhone, iPad und Mac';
 
   @override
-  String get syncStateOff => 'Aus — aktivieren Sie iCloud Drive in den Geräteeinstellungen';
+  String get syncStateOff => 'Aktiviere iCloud Drive in den Geräteeinstellungen';
 
   @override
   String get syncStateSyncing => 'Wird abgeglichen …';
@@ -318,7 +318,7 @@ class L10nDe extends L10n {
   String get aiKeyNotSynced => 'Ihre Notizen werden über iCloud auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
 
   @override
-  String get syncStateSignedOut => 'Nicht bei iCloud angemeldet — tippen für Anleitung';
+  String get syncStateSignedOut => 'Tippen, um zu sehen wie';
 
   @override
   String get syncHelpTitle => 'So aktivieren Sie iCloud';
@@ -612,6 +612,15 @@ class L10nDe extends L10n {
 
   @override
   String get tidyRulesSub => 'Legt fest, wie sich der Text beim Aufräumen ändert.';
+
+  @override
+  String get syncOnTitle => 'Ein';
+
+  @override
+  String get syncOffTitle => 'Aus';
+
+  @override
+  String get syncSignedOutTitle => 'Anmeldung nötig';
 
   @override
   String pastedFrom(String src, String date) =>

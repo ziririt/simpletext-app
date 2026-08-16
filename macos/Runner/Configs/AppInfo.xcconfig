@@ -12,3 +12,17 @@ PRODUCT_BUNDLE_IDENTIFIER = com.ziririt.simpletext
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.ziririt. All rights reserved.
+
+// 2026-08-17 — 맥 앱에 아이클라우드를 붙이기 위한 서명 설정.
+//
+// 지금까지 맥 빌드는 임시 서명(프로젝트 설정의 CODE_SIGN_IDENTITY = "-")
+// 이었다. 임시 서명에는 자격(entitlement)을 붙일 수 없어서 아이클라우드가
+// 원리적으로 불가능했다 — codesign으로 확인했다.
+//
+// 프로젝트 파일(project.pbxproj)은 건드리지 않는다. 망가지면 빌드 전체가
+// 죽는 자리다(2026-08-15에 겪었다). 여기 넣는 이유: Xcode의 설정 우선순위
+// 에서 '타깃의 xcconfig'가 '프로젝트 설정'보다 위라서, 프로젝트의 "-"를
+// 이 파일이 덮는다.
+DEVELOPMENT_TEAM = ZK846VZN92
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development

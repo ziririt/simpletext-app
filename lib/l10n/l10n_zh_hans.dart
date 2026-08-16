@@ -304,10 +304,10 @@ class L10nZhHans extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncStateOn => '已开启 — iPhone、iPad 和 Mac 上是同一份备忘';
+  String get syncStateOn => '在 iPhone、iPad 和 Mac 上看到相同的备忘录';
 
   @override
-  String get syncStateOff => '已关闭 — 请在设备设置中开启 iCloud 云盘';
+  String get syncStateOff => '请在设备设置中开启 iCloud 云盘';
 
   @override
   String get syncStateSyncing => '同步中…';
@@ -316,7 +316,7 @@ class L10nZhHans extends L10n {
   String get aiKeyNotSynced => '备忘会通过 iCloud 同步到您的所有设备，但 API 密钥不会同步 — 请在每台设备上单独输入。';
 
   @override
-  String get syncStateSignedOut => '尚未登录 iCloud — 点按查看方法';
+  String get syncStateSignedOut => '点按查看方法';
 
   @override
   String get syncHelpTitle => '如何开启 iCloud';
@@ -610,6 +610,15 @@ class L10nZhHans extends L10n {
 
   @override
   String get tidyRulesSub => '决定点按「整理」后文字会如何变化。';
+
+  @override
+  String get syncOnTitle => '已开启';
+
+  @override
+  String get syncOffTitle => '已关闭';
+
+  @override
+  String get syncSignedOutTitle => '需要登录';
 
   @override
   String pastedFrom(String src, String date) =>

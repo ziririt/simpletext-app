@@ -305,10 +305,10 @@ class L10nPt extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncStateOn => 'Ativado: as mesmas notas no iPhone, iPad e Mac';
+  String get syncStateOn => 'As mesmas notas no iPhone, iPad e Mac';
 
   @override
-  String get syncStateOff => 'Desativado: ative o iCloud Drive nos ajustes do dispositivo';
+  String get syncStateOff => 'Ative o iCloud Drive nos ajustes do dispositivo';
 
   @override
   String get syncStateSyncing => 'Sincronizando…';
@@ -317,7 +317,7 @@ class L10nPt extends L10n {
   String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus dispositivos pelo iCloud. Sua chave de API não: informe-a em cada dispositivo.';
 
   @override
-  String get syncStateSignedOut => 'Você não entrou no iCloud: toque para ver como';
+  String get syncStateSignedOut => 'Toque para ver como';
 
   @override
   String get syncHelpTitle => 'Como ativar o iCloud';
@@ -611,6 +611,15 @@ class L10nPt extends L10n {
 
   @override
   String get tidyRulesSub => 'Define como o texto muda ao tocar em Organizar.';
+
+  @override
+  String get syncOnTitle => 'Ativado';
+
+  @override
+  String get syncOffTitle => 'Desativado';
+
+  @override
+  String get syncSignedOutTitle => 'Falta iniciar sessão';
 
   @override
   String pastedFrom(String src, String date) =>

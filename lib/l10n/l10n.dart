@@ -329,6 +329,9 @@ abstract class L10n {
   String get appliedTitle;
   String get tidyRulesTitle;
   String get tidyRulesSub;
+  String get syncOnTitle;
+  String get syncOffTitle;
+  String get syncSignedOutTitle;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -622,6 +625,9 @@ abstract class L10n {
         'appliedTitle': appliedTitle,
         'tidyRulesTitle': tidyRulesTitle,
         'tidyRulesSub': tidyRulesSub,
+        'syncOnTitle': syncOnTitle,
+        'syncOffTitle': syncOffTitle,
+        'syncSignedOutTitle': syncSignedOutTitle,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
