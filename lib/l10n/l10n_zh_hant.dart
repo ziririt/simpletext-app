@@ -365,6 +365,20 @@ class L10nZhHant extends L10n {
   @override
   String get aiKeyHint => 'API 金鑰（Gemini · Claude · ChatGPT · Grok）';
   @override
+  String get adClose => '關閉廣告';
+  @override
+  String get sponsorTitle => '一則廣告，成就下一次更新';
+  @override
+  String get sponsorBody => 'Skyblue Note 完全在您的裝置上運行，沒有伺服器。但開發與維護仍需實際成本。每天觀看一則全螢幕廣告，當天頂部的小橫幅廣告即會消失。';
+  @override
+  String get sponsorWatch => '看廣告支持我們';
+  @override
+  String get sponsorSkip => '略過';
+  @override
+  String get sponsorLoading => '正在載入廣告…';
+  @override
+  String get sponsorFailed => '廣告載入失敗，請稍後再試。';
+  @override
   String get aiKeyVerify => '驗證金鑰';
   @override
   String get aiKeyChecking => '驗證中…';

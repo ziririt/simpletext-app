@@ -270,6 +270,13 @@ abstract class L10n {
   String get aiSectionTitle;
   String get aiSectionDesc;
   String get aiKeyHint;
+  String get adClose;
+  String get sponsorTitle;
+  String get sponsorBody;
+  String get sponsorWatch;
+  String get sponsorSkip;
+  String get sponsorLoading;
+  String get sponsorFailed;
   String get aiKeyVerify;
   String get aiKeyChecking;
   String get aiKeyUnknownFormat;
@@ -437,6 +444,13 @@ abstract class L10n {
         'aiSectionTitle': aiSectionTitle,
         'aiSectionDesc': aiSectionDesc,
         'aiKeyHint': aiKeyHint,
+        'adClose': adClose,
+        'sponsorTitle': sponsorTitle,
+        'sponsorBody': sponsorBody,
+        'sponsorWatch': sponsorWatch,
+        'sponsorSkip': sponsorSkip,
+        'sponsorLoading': sponsorLoading,
+        'sponsorFailed': sponsorFailed,
         'aiKeyVerify': aiKeyVerify,
         'aiKeyChecking': aiKeyChecking,
         'aiKeyUnknownFormat': aiKeyUnknownFormat,

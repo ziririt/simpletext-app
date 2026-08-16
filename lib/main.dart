@@ -1995,6 +1995,16 @@ class _EditorScreenState extends State<EditorScreen> {
       },
       child: Scaffold(
         backgroundColor: context.c.panel,
+        // 2026-08-16 소유자 지시 — 배너는 상단바(뒤로가기 줄)보다도 위,
+        // 화면 진짜 꼭대기다. 원래 화면 전체(상단바 포함)를 안쪽
+        // Scaffold로 감싸 배너 아래로 넣는다.
+        body: SafeArea(
+          bottom: false,
+          child: Column(children: [
+            const TopBannerBar(),
+            Expanded(
+              child: Scaffold(
+        backgroundColor: context.c.panel,
         appBar: AppBar(
           backgroundColor: context.c.panel,
           title: const SizedBox.shrink(),
@@ -2052,7 +2062,6 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
         body: Column(
           children: [
-            const TopBannerBar(),
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
             if (_isDesktop) _accessoryBar(atTop: true),
             Padding(
@@ -2224,6 +2233,10 @@ class _EditorScreenState extends State<EditorScreen> {
                     ],
                   ),
           ),
+        ),
+      ),
+            ),
+          ]),
         ),
       ),
     );

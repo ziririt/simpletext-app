@@ -366,6 +366,20 @@ class L10nJa extends L10n {
   @override
   String get aiKeyHint => 'APIキー (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get adClose => '広告を閉じる';
+  @override
+  String get sponsorTitle => '広告1本が次のアップデートを作ります';
+  @override
+  String get sponsorBody => 'Skyblue Noteはサーバーを使わず、端末の中だけで動きます。それでも開発と維持には実費がかかります。全画面広告を1日1本ご覧いただくと、その日は上部の小さなバナー広告なしでお使いいただけます。';
+  @override
+  String get sponsorWatch => '広告を見て応援する';
+  @override
+  String get sponsorSkip => 'スキップ';
+  @override
+  String get sponsorLoading => '広告を読み込み中…';
+  @override
+  String get sponsorFailed => '広告を読み込めませんでした。しばらくしてからもう一度お試しください。';
+  @override
   String get aiKeyVerify => 'キーを確認';
   @override
   String get aiKeyChecking => '確認中…';

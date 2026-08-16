@@ -366,6 +366,20 @@ class L10nKo extends L10n {
   @override
   String get aiKeyHint => 'API 키 (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get adClose => '광고 닫기';
+  @override
+  String get sponsorTitle => '광고 한 편이 다음 업데이트를 만듭니다';
+  @override
+  String get sponsorBody => '스카이블루 노트는 서버 없이 기기 안에서만 동작합니다. 그래도 개발과 유지에는 실비가 듭니다. 전면 광고를 하루 한 편만 보시면, 오늘 하루는 위쪽 작은 배너 광고 없이 쓰실 수 있습니다.';
+  @override
+  String get sponsorWatch => '광고 보고 후원하기';
+  @override
+  String get sponsorSkip => '건너뛰기';
+  @override
+  String get sponsorLoading => '광고 불러오는 중…';
+  @override
+  String get sponsorFailed => '광고를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+  @override
   String get aiKeyVerify => '키 확인';
   @override
   String get aiKeyChecking => '확인 중…';

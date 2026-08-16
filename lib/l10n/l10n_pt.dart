@@ -368,6 +368,20 @@ class L10nPt extends L10n {
   @override
   String get aiKeyHint => 'Chave de API (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get adClose => 'Fechar anúncios';
+  @override
+  String get sponsorTitle => 'Um anúncio financia a próxima atualização';
+  @override
+  String get sponsorBody => 'O Skyblue Note funciona só no seu aparelho, sem servidores. Ainda assim, desenvolvimento e manutenção custam dinheiro de verdade. Assista a um anúncio de tela cheia por dia e o pequeno banner no topo some pelo resto do dia.';
+  @override
+  String get sponsorWatch => 'Assistir a um anúncio para apoiar';
+  @override
+  String get sponsorSkip => 'Pular';
+  @override
+  String get sponsorLoading => 'Carregando anúncio…';
+  @override
+  String get sponsorFailed => 'Não foi possível carregar o anúncio. Tente novamente em instantes.';
+  @override
   String get aiKeyVerify => 'Verificar chave';
   @override
   String get aiKeyChecking => 'Verificando…';

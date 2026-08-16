@@ -368,6 +368,20 @@ class L10nEs extends L10n {
   @override
   String get aiKeyHint => 'Clave API (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get adClose => 'Cerrar anuncios';
+  @override
+  String get sponsorTitle => 'Un anuncio financia la próxima actualización';
+  @override
+  String get sponsorBody => 'Skyblue Note funciona solo en tu dispositivo, sin servidores. Aun así, el desarrollo y el mantenimiento cuestan dinero real. Mira un anuncio de pantalla completa al día y el pequeño banner superior desaparecerá durante el resto del día.';
+  @override
+  String get sponsorWatch => 'Ver un anuncio para apoyar';
+  @override
+  String get sponsorSkip => 'Omitir';
+  @override
+  String get sponsorLoading => 'Cargando anuncio…';
+  @override
+  String get sponsorFailed => 'No se pudo cargar el anuncio. Inténtalo de nuevo en un momento.';
+  @override
   String get aiKeyVerify => 'Comprobar clave';
   @override
   String get aiKeyChecking => 'Comprobando…';

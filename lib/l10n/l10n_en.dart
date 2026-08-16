@@ -368,6 +368,20 @@ class L10nEn extends L10n {
   @override
   String get aiKeyHint => 'API key (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get adClose => 'Close ads';
+  @override
+  String get sponsorTitle => 'One ad funds the next update';
+  @override
+  String get sponsorBody => 'Skyblue Note runs entirely on your device, with no servers. Development and upkeep still cost real money. Watch one full-screen ad a day, and the small banner at the top disappears for the rest of the day.';
+  @override
+  String get sponsorWatch => 'Watch an ad to support';
+  @override
+  String get sponsorSkip => 'Skip';
+  @override
+  String get sponsorLoading => 'Loading ad…';
+  @override
+  String get sponsorFailed => "Couldn't load the ad. Please try again in a moment.";
+  @override
   String get aiKeyVerify => 'Verify key';
   @override
   String get aiKeyChecking => 'Checking…';
