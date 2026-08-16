@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
@@ -30,6 +32,10 @@ import 'version.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // 날짜·시각을 사용자 언어로 찍기 위한 자료(intl). 이걸 안 깔면 영어(en_US)
+  // 형식만 나온다 — 9개 언어로 파는 앱에서 이건 버그다. 자료는 앱에 함께
+  // 들어 있어 네트워크를 타지 않는다.
+  initializeDateFormatting();
   // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
   AdsService.instance.boot();
   runApp(const SimpleTextApp());
@@ -1234,6 +1240,51 @@ class _EditorScreenState extends State<EditorScreen> {
   /// 그런데 데스크톱에는 올라올 키보드가 없다. 그 결과 맥에서는 글을
   /// 쓰기 시작하는 순간 기능 탭바가 통째로 사라져 버렸다 — 정리 버튼을
   /// 누르려면 본문 밖을 한 번 눌러 포커스를 풀어야 했다.
+  /// 본문 위에 놓는 날짜·시각 한 줄.
+  ///
+  /// 2026-08-16 소유자 신고 — "편집 화면 위가 너무 딱 붙었다. 조금 여유있게
+  /// 띄어줘. 메모앱처럼. 그리고 상단에 현재 시각을 메모앱처럼 자동 기재."
+  ///
+  /// 애플 메모를 보면 본문 위 가운데에 날짜·시각이 옅게 한 줄 있고, 그
+  /// 위아래 여백이 화면을 열어 준다. 여백만 넣으면 빈칸이고, 글자만 넣으면
+  /// 또 답답하다 — 둘이 한 벌이라서 같이 넣는다.
+  ///
+  /// 찍는 값은 이 메모의 마지막 수정 시각이다. 쓰는 동안에는 저장될 때마다
+  /// 따라 올라가니 사실상 '지금'이 되고, 나중에 열면 언제 손댔는지가 남는다.
+  /// 새 메모를 열자마자 '지금'이 박히는 것도 애플 메모와 같다.
+  ///
+  /// 12시간제/24시간제는 언어가 아니라 기기 설정을 따른다(맥 캡처가 17:53로
+  /// 나온 이유). MediaQuery가 그 설정을 그대로 넘겨 준다.
+  Widget _dateLine(int ms) {
+    final t = DateTime.fromMillisecondsSinceEpoch(ms);
+    final tag = Localizations.localeOf(context).toLanguageTag();
+    final h24 = MediaQuery.maybeOf(context)?.alwaysUse24HourFormat ?? true;
+    String text;
+    try {
+      final d = DateFormat.yMMMMd(tag).format(t);
+      final hm = (h24 ? DateFormat.Hm(tag) : DateFormat.jm(tag)).format(t);
+      text = '$d  $hm';
+    } catch (_) {
+      // 자료가 없는 로케일이면 형식만 기본으로 떨어뜨린다. 화면을 비우지 않는다.
+      text = '${DateFormat.yMMMMd().format(t)}  ${DateFormat.Hm().format(t)}';
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: context.c.sub,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
     // 2026-08-16 리퀴드 글래스 — 도구 막대는 이제 유리다.
@@ -2311,12 +2362,14 @@ class _EditorScreenState extends State<EditorScreen> {
           children: [
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
             if (_isDesktop) _accessoryBar(atTop: true),
+            _dateLine(note.updatedAt),
             // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
             // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
             // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
             if (_showMeta)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              // 위 여백 0 — 날짜 줄이 이미 띄워 놨다. 여기서 또 띄우면 벌어진다.
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: TextField(
                 controller: titleCtl,
                 focusNode: _titleFocus,
