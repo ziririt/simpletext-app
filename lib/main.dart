@@ -1467,6 +1467,77 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onChange() => setState(() {});
 
+  /// 목록 화면의 '...' 메뉴.
+  ///
+  /// 2026-08-16 소유자 지적 — "목록에서 메뉴를 신설하기로 한 거 아니니?
+  /// 불러오기 등등 여러 가지 신 기능들을 넣을 수 있어야지."
+  ///
+  /// 불러오기·내보내기·휴지통이 전부 설정 화면 깊숙이 있었다. 설정은
+  /// 한 번 정해 놓고 안 여는 곳이고 불러오기는 자주 하는 일인데, 둘을
+  /// 같은 서랍에 넣으면 자주 하는 일이 안 보인다. 설정 화면에서 빼지는
+  /// 않았다 — 거기서 찾던 사람이 못 찾게 되면 그건 다른 종류의 잘못이다.
+  ///
+  /// 편집 화면의 '...'과 같은 모양으로 만든다. 위쪽은 이 화면에서 하는 일,
+  /// 맨 아래는 앱 설정, 그 사이에 구분선. 두 화면의 메뉴가 다르게 생기면
+  /// 사용자는 매번 새로 배운다.
+  Widget _listMenu(L10n l) => PopupMenuButton<String>(
+        icon: const Icon(Icons.more_horiz),
+        tooltip: l.moreTooltip,
+        // 메뉴가 '...' 버튼을 덮으면 같은 자리를 다시 눌러 닫을 수 없다
+        // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
+        position: PopupMenuPosition.under,
+        offset: const Offset(0, 6),
+        onSelected: (v) async {
+          switch (v) {
+            case 'import':
+              final n = await ImportService.importFiles();
+              if (!mounted) return;
+              setState(() {});
+              _toast(context, n > 0 ? l.importDone(n) : l.importNone);
+            case 'exportMd':
+              final ok = await ExportService.shareAllMarkdown();
+              if (!mounted) return;
+              if (!ok) _toast(context, l.exportEmpty);
+            case 'backup':
+              final ok = await ExportService.shareBackup();
+              if (!mounted) return;
+              if (!ok) _toast(context, l.exportFailed);
+            case 'trash':
+              await Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const TrashScreen()));
+              if (mounted) setState(() {});
+            case 'settings':
+              await Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              if (mounted) setState(() {});
+          }
+        },
+        itemBuilder: (ctx) {
+          PopupMenuItem<String> row(String v, IconData ic, String label,
+                  {Color? ink, FontWeight? w}) =>
+              PopupMenuItem<String>(
+                value: v,
+                child: Row(children: [
+                  Icon(ic, size: 19, color: ink ?? ctx.c.sub),
+                  const SizedBox(width: 10),
+                  Text(label, style: TextStyle(color: ink, fontWeight: w)),
+                ]),
+              );
+          return [
+            // --- 이 화면에서 하는 일 (앞으로 여기에 더 붙는다) ---
+            row('import', Icons.file_open_outlined, l.importFiles),
+            row('exportMd', Icons.folder_zip_outlined, l.exportAllMd),
+            row('backup', Icons.settings_backup_restore, l.exportBackup),
+            const PopupMenuDivider(),
+            row('trash', Icons.delete_outline, l.trashTitle),
+            const PopupMenuDivider(),
+            // --- 앱 전체 설정 ---
+            row('settings', Icons.settings_outlined, l.menuAppSettings,
+                ink: ctx.c.accent, w: FontWeight.w600),
+          ];
+        },
+      );
+
   Future<void> _pasteAndTidy() async {
     final data = await Clipboard.getData('text/plain');
     final text = data?.text ?? '';
@@ -1610,14 +1681,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   if (mounted) setState(() {});
                                 },
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.settings_outlined),
-                                tooltip: l.settingsTooltip,
-                                onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => const SettingsScreen())),
-                              ),
+                              _listMenu(l),
                             ]),
                           ),
                         ),
