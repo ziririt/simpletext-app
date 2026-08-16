@@ -5,6 +5,7 @@
 /// 엔진(tidy_engine)·마법사(wizard)가 만드는 리포트 문구는 JS 엔진과의 대칭 규칙 때문에
 /// 이번 범위에서 제외 — 로드맵의 후속 항목이다. 프리셋 이름은 Preset.id를 UI 층에서 매핑한다.
 import 'dart:convert';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 // material.dart는 defaultTargetPlatform을 내보내지 않는다(TargetPlatform은 내보낸다).
@@ -96,6 +97,11 @@ class AppC extends ThemeExtension<AppC> {
   // 선택색을 불투명하게 만들면 글자가 묻힌다. 반드시 알파를 남길 것.
   final Color selBg; // 글자 선택 블럭
   final Color selHandle; // 선택 손잡이·커서
+  // 2026-08-16 리퀴드 글래스 채택(소유자: "적극, 세련되게"). 유리는
+  // 반투명 틴트 + 뒤 배경 블러다. 밝은 유리 위 검정 잉크, 어두운 유리 위
+  // 흰 잉크 — 틴트가 흐릿해도 잉크 대비는 바탕색 기준으로 유지된다.
+  final Color glass; // 유리 틴트
+  final Color glassLine; // 유리 가장자리 실선
   final Color tagBg; // 태그 블럭 배경
   final Color tagInk; // 태그 글자
   final Color tagLine; // 태그 테두리
@@ -119,6 +125,8 @@ class AppC extends ThemeExtension<AppC> {
     required this.guideInk,
     required this.selBg,
     required this.selHandle,
+    required this.glass,
+    required this.glassLine,
     required this.tagBg,
     required this.tagInk,
     required this.tagLine,
@@ -147,6 +155,8 @@ class AppC extends ThemeExtension<AppC> {
     //   태그 글자 #1A5FCB on #E1F4FF 5.2:1
     selBg: Color(0x663FB2F0),
     selHandle: Color(0xFF1A5FCB),
+    glass: Color(0xCCFFFFFF),
+    glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: Color(0xFF1A5FCB),
     tagLine: Color(0xFFB8E2FA),
@@ -175,6 +185,8 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
+    glass: Color(0xC61C1C1E),
+    glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
     tagLine: Color(0xFF1D5578),
@@ -200,6 +212,8 @@ class AppC extends ThemeExtension<AppC> {
     Color? guideInk,
     Color? selBg,
     Color? selHandle,
+    Color? glass,
+    Color? glassLine,
     Color? tagBg,
     Color? tagInk,
     Color? tagLine,
@@ -223,6 +237,8 @@ class AppC extends ThemeExtension<AppC> {
         guideInk: guideInk ?? this.guideInk,
         selBg: selBg ?? this.selBg,
         selHandle: selHandle ?? this.selHandle,
+        glass: glass ?? this.glass,
+        glassLine: glassLine ?? this.glassLine,
         tagBg: tagBg ?? this.tagBg,
         tagInk: tagInk ?? this.tagInk,
         tagLine: tagLine ?? this.tagLine,
@@ -250,6 +266,8 @@ class AppC extends ThemeExtension<AppC> {
       guideInk: Color.lerp(guideInk, other.guideInk, t)!,
       selBg: Color.lerp(selBg, other.selBg, t)!,
       selHandle: Color.lerp(selHandle, other.selHandle, t)!,
+      glass: Color.lerp(glass, other.glass, t)!,
+      glassLine: Color.lerp(glassLine, other.glassLine, t)!,
       tagBg: Color.lerp(tagBg, other.tagBg, t)!,
       tagInk: Color.lerp(tagInk, other.tagInk, t)!,
       tagLine: Color.lerp(tagLine, other.tagLine, t)!,
@@ -642,6 +660,61 @@ void _toast(BuildContext context, String msg) {
 /// 한쪽만 바꾸면 글자와 줄이 어긋난다.
 const double kListRowInset = 28;
 
+/// 홈의 떠 있는 유리 머리(검색 줄) 높이. 목록 첫 칸을 이만큼 비워서
+/// 목록이 유리 밑으로 흘러 들어가게 한다.
+const double kHomeHeaderH = 60;
+
+/// 리퀴드 글래스 재질 — 2026-08-16 소유자 채택("적극, 세련되게").
+///
+/// 플러터는 화면을 직접 그리므로 iOS 27이 유리를 공짜로 입혀 주지 않는다.
+/// 대신 이 위젯 하나로 네 판(아이폰·안드로이드·맥·윈도우) 모두에 같은
+/// 유리를 입힌다. 애플 디자인 원칙에서 가져온 규칙:
+///   - 반투명 틴트 + 뒤 배경 블러(18). 콘텐츠가 밑으로 비쳐 흐른다
+///   - 경계는 1px 실선 대신 아주 옅은 헤어라인
+///   - 밝은 유리 위에 밝은 유리를 겹치지 말 것 (가독성이 무너진다)
+class Glass extends StatelessWidget {
+  final Widget child;
+  final bool hairlineTop;
+  final bool hairlineBottom;
+  final BorderRadius? radius;
+  const Glass({
+    super.key,
+    required this.child,
+    this.hairlineTop = false,
+    this.hairlineBottom = false,
+    this.radius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return ClipRRect(
+      borderRadius: radius ?? BorderRadius.zero,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          decoration: BoxDecoration(
+            color: c.glass,
+            borderRadius: radius,
+            // 둥근 유리에는 비균일 테두리를 못 쓴다(프레임워크 제약).
+            border: radius != null
+                ? null
+                : Border(
+                    top: hairlineTop
+                        ? BorderSide(color: c.glassLine)
+                        : BorderSide.none,
+                    bottom: hairlineBottom
+                        ? BorderSide(color: c.glassLine)
+                        : BorderSide.none,
+                  ),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -707,36 +780,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(children: [
                 const TopBannerBar(),
                 Expanded(
-                  child: CustomScrollView(
+                  child: Stack(children: [
+                    Positioned.fill(
+                      child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 6, 6),
-                    child: Row(children: [
-                      Expanded(
-                          child: TextField(
-                      decoration: InputDecoration(
-                        hintText: l.searchHint,
-                        prefixIcon: const Icon(Icons.search, size: 20),
-                        filled: true,
-                        fillColor: context.c.field,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none),
-                      ),
-                      onChanged: (v) => setState(() => query = v),
-                    )),
-                      IconButton(
-                        icon: const Icon(Icons.settings_outlined),
-                        tooltip: l.settingsTooltip,
-                        onPressed: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const SettingsScreen())),
-                      ),
-                    ]),
-                  ),
-                ),
+                // 유리 머리 높이만큼 비워서 목록이 그 밑으로 흘러 들어간다.
+                const SliverToBoxAdapter(child: SizedBox(height: kHomeHeaderH)),
                 if (pinned.isEmpty && rest.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -748,7 +797,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (rest.isNotEmpty) _groupCard(rest),
                 const SliverToBoxAdapter(child: SizedBox(height: 110)),
               ],
-                  ),
+                      ),
+                    ),
+                    // 떠 있는 유리 머리 — 목록이 이 밑으로 비쳐 흐른다.
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Glass(
+                        hairlineBottom: true,
+                        child: SizedBox(
+                          height: kHomeHeaderH,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+                            child: Row(children: [
+                              Expanded(
+                                  child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: l.searchHint,
+                                  prefixIcon: const Icon(Icons.search, size: 20),
+                                  filled: true,
+                                  fillColor: context.c.field,
+                                  isDense: true,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none),
+                                ),
+                                onChanged: (v) => setState(() => query = v),
+                              )),
+                              IconButton(
+                                icon: const Icon(Icons.settings_outlined),
+                                tooltip: l.settingsTooltip,
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const SettingsScreen())),
+                              ),
+                            ]),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]),
                 ),
               ]),
             ),
@@ -1086,15 +1178,12 @@ class _EditorScreenState extends State<EditorScreen> {
   /// 누르려면 본문 밖을 한 번 눌러 포커스를 풀어야 했다.
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
-    return Container(
+    // 2026-08-16 리퀴드 글래스 — 도구 막대는 이제 유리다.
+    return Glass(
+      hairlineTop: !atTop,
+      hairlineBottom: atTop,
+      child: SizedBox(
       height: 44,
-      decoration: BoxDecoration(
-        color: context.c.toolbar,
-        // 위에 붙을 때는 경계선도 아래쪽에 그어야 한다.
-        border: atTop
-            ? Border(bottom: BorderSide(color: context.c.toolbarLine))
-            : Border(top: BorderSide(color: context.c.toolbarLine)),
-      ),
       child: Row(
         children: [
           Expanded(
@@ -1131,6 +1220,7 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
           ],
         ],
+      ),
       ),
     );
   }
@@ -2208,7 +2298,9 @@ class _EditorScreenState extends State<EditorScreen> {
           child: SafeArea(
             child: (_bodyFocus.hasFocus && !_isDesktop)
                 ? _accessoryBar()
-                : Row(
+                : Glass(
+                    hairlineTop: true,
+                    child: Row(
                     children: [
                       _barBtn(CupertinoIcons.wand_stars, l.tidyAction, _showPresetSheet,
                           primary: true),
@@ -2231,7 +2323,7 @@ class _EditorScreenState extends State<EditorScreen> {
                               },
                       ),
                     ],
-                  ),
+                  )),
           ),
         ),
       ),
