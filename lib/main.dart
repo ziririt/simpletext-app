@@ -72,11 +72,37 @@ void main() {
 // "컬러 주조색은 모두 skyblue 기조로", "밝고 맑고 경쾌하게, 다크는
 // 눈부시지 않게").
 // 브랜드 팔레트: 글로우 #9BEDFF · 하늘 #3FB2F0 · 바탕/텍스트 #1A5FCB
-// · 딥 #08205A. 브랜드 가이드 규칙: 한 가지 색만 써야 하는 자리에서는
-// #1A5FCB를 쓴다 — 그래서 글자·아이콘용 강조색이 #1A5FCB다.
-// 명암비는 전부 계산으로 검증했다(값을 바꾸면 반드시 재계산):
-//   #1A5FCB on 흰 배경 5.9:1 · on #F2F2F7 5.3:1 · on 정보카드 5.3:1
-const _accent = Color(0xFF1A5FCB);
+// · 딥 #08205A.
+//
+// 2026-08-16 저녁, 소유자 재신고 — "버튼 등 주조색을 스카이블루로 해 줘.
+// 칙칙한 색 말고 맑고 깨끗한 색으로."
+//
+// 두 가지가 겹쳐 있었다.
+//
+// 하나. 라이트의 강조색 #1A5FCB는 색상각이 217도다. 하늘색이라기보다
+// 남색 쪽이다. 205도 근처로 옮기면 눈에 띄게 맑아진다. 다만 그냥 밝히면
+// 글자가 안 읽히므로, 흰 배경과 카드 배경 **양쪽에서** 4.5:1을 넘는
+// 가장 맑은 자리를 계산으로 찾았다 — #0070BE(색상각 205도)다.
+//   #0070BE on 흰 배경 5.2:1 · on 앱 배경 4.7:1
+//
+// 둘. **이게 진짜 원인이었다.** 채운 버튼과 떠 있는 버튼은 우리가 정한
+// 색을 안 쓰고 있었다. 머티리얼3가 씨앗 색 하나로 자동으로 만들어 낸
+// 색표(ColorScheme.fromSeed)를 쓰는데, 그 변환은 채도를 크게 깎는다.
+// 씨앗이 아무리 맑은 하늘색이어도 버튼에 나오는 것은 가라앉은 남색이다.
+// 그래서 주요 자리는 자동에 맡기지 않고 직접 못 박는다(_theme 참고).
+//
+// 명암비는 전부 계산으로 검증했다(값을 바꾸면 반드시 재계산). 이제
+// test/theme_contrast_test.dart가 이걸 자동으로 지킨다 — 색을 손대면
+// 테스트가 먼저 알려 준다.
+const _accent = Color(0xFF0070BE);
+
+/// 하늘색 위에 얹는 글자·아이콘 색(다크). 브랜드 '딥'이다.
+///
+/// 다크에서 채운 버튼은 **밝은 하늘 바탕에 진한 글자**여야 맑아 보인다.
+/// 어두운 바탕에 밝은 글자로 만들면 아무리 색을 골라도 가라앉는다 —
+/// 소유자가 신고한 그림이 정확히 그것이었다.
+/// 명암비 #08205A on #4FC3F7 = 7.7:1
+const _onAccentDark = Color(0xFF08205A);
 // 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
 const _sky = Color(0xFF3FB2F0);
 
@@ -172,52 +198,71 @@ class AppC extends ThemeExtension<AppC> {
     required this.tagLine,
   });
 
+  // 2026-08-16 소유자 요청 — "이런 스카이블루를 가능한 한 좀 더 쓰고 싶다.
+  // 자연스럽게 컬러감을 많이 발휘할 수 있을까?"
+  //
+  // 색을 더 쓰는 방법에는 두 가지가 있다. 진한 색을 여기저기 칠하거나,
+  // **회색을 전부 아주 옅은 하늘색으로 바꾸거나.** 뒤엣것을 골랐다.
+  // 앞엣것은 서너 군데만 넘어가도 금세 시끄러워지고, 시끄러운 화면은
+  // 글 쓰는 앱에서 가장 나쁜 것이다.
+  //
+  // 그래서 바탕·구분선·검색칸·도구막대의 중성 회색을 하늘 기운이 도는
+  // 값으로 바꿨다. 하나하나는 회색인지 하늘색인지 헷갈릴 만큼 옅지만,
+  // 화면을 통째로 보면 전체가 하늘빛을 띤다. 애플 메모의 노란 기운,
+  // 베어의 따뜻한 회색이 같은 수법이다.
   static const light = AppC(
-    bg: Color(0xFFF2F2F7),
+    bg: Color(0xFFEFF6FB), // 옛 #F2F2F7 — 같은 밝기에 하늘 기운만 얹었다
     panel: Colors.white,
-    line: Color(0xFFEDEDEF),
-    sub: Color(0xFF8E8E93),
+    line: Color(0xFFE2EDF5),
+    sub: Color(0xFF7C8A96), // 회색도 하늘 쪽으로 살짝 (바탕 대비 3.2:1)
     accent: _accent,
-    field: Color(0xFFE3E3E8),
-    toolbar: Color(0xFFF2F2F0),
-    toolbarLine: Color(0xFFE0E0DC),
-    infoBg: Color(0xFFE8F5FE), // 하늘빛 정보 카드 (#1A5FCB 글자 5.3:1)
+    field: Color(0xFFDEEAF3),
+    toolbar: Color(0xFFEEF5FA),
+    toolbarLine: Color(0xFFDCE7F0),
+    infoBg: Color(0xFFE3F3FE), // 하늘빛 정보 카드 (#0070BE 글자 4.6:1 — 테스트가 지킨다)
     warnBg: Color(0xFFFDF3E7),
-    warnInk: Color(0xFF9A6A1F),
-    codeBg: Color(0xFFF6F6F4),
-    codeLine: Color(0xFFE4E4E0),
+    // 옛 #9A6A1F는 이 카드 위에서 4.1:1이었다 — 4.5에 못 미쳤다.
+    // 이번에 테스트를 붙이면서 드러났다. #8A5A12는 5.2:1.
+    warnInk: Color(0xFF8A5A12),
+    codeBg: Color(0xFFF1F7FB),
+    codeLine: Color(0xFFDDE9F2),
     pin: Color(0xFFF2B705),
-    danger: Color(0xFFE53935),
-    guideInk: Color(0xFF3A3A3C),
+    // 옛 #E53935는 흰 배경에서 4.2:1이었다(테스트가 잡았다). #D32F2F는 5.0:1.
+    danger: Color(0xFFD32F2F),
+    guideInk: Color(0xFF34404A), // 진한 회색도 하늘 쪽으로 (on 흰 배경 11.4:1)
     // 2026-08-16 브랜드 하늘색으로 통일. 계산값:
     //   선택 블럭 #3FB2F0 40%+흰 배경 = #B2E0F9 → 검정 글자 14.9:1
-    //   손잡이 #1A5FCB on 흰 배경 5.9:1 (조작점 기준 3:1)
-    //   태그 글자 #1A5FCB on #E1F4FF 5.2:1
+    //   손잡이 #0070BE on 흰 배경 5.2:1 (조작점 기준 3:1)
+    //   태그 글자 #0070BE on #E1F4FF 4.7:1
     selBg: Color(0x663FB2F0),
-    selHandle: Color(0xFF1A5FCB),
+    selHandle: _accent,
     glass: Color(0xCCFFFFFF),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
-    tagInk: Color(0xFF1A5FCB),
+    tagInk: _accent,
     tagLine: Color(0xFFB8E2FA),
   );
 
+  // 다크도 같은 수법이다. 바탕은 검정 그대로 두고(OLED에서 진짜 꺼진다),
+  // 그 위에 얹히는 회색 판들만 아주 옅은 남빛으로 옮겼다.
   static const dark = AppC(
     bg: Color(0xFF000000),
-    panel: Color(0xFF1C1C1E),
-    line: Color(0xFF38383A),
-    sub: Color(0xFF98989E),
+    panel: Color(0xFF15191D), // 옛 #1C1C1E — 같은 어둡기에 하늘 기운
+    line: Color(0xFF2E3740),
+    sub: Color(0xFF919CA6),
     // 다크 강조는 하늘색을 밝힌 톤 — 어두운 바탕에 쨍한 원색은 눈을
-    // 찌른다(소유자: 밤에 눈부시지 않게). on #1C1C1E 8.8:1, on 검정 10.9:1
-    accent: Color(0xFF6FC4F4),
-    field: Color(0xFF1C1C1E),
-    toolbar: Color(0xFF1C1C1E),
-    toolbarLine: Color(0xFF38383A),
+    // 찌른다(소유자: 밤에 눈부시지 않게). 다만 옛 #6FC4F4는 채도가
+    // 모자라 흐릿했다. #4FC3F7은 같은 밝기에 채도만 올린 값이라 밤에
+    // 눈부시지 않으면서 훨씬 맑다.  on #15191D 8.8:1, on 검정 10.5:1
+    accent: Color(0xFF4FC3F7),
+    field: Color(0xFF15191D),
+    toolbar: Color(0xFF15191D),
+    toolbarLine: Color(0xFF2E3740),
     infoBg: Color(0xFF0B2740), // 딥 네이비(#08205A 계열) 정보 카드
     warnBg: Color(0xFF2A2318),
     warnInk: Color(0xFFE0B96A),
-    codeBg: Color(0xFF141416),
-    codeLine: Color(0xFF2C2C2E),
+    codeBg: Color(0xFF101418),
+    codeLine: Color(0xFF242C34),
     pin: Color(0xFFF2B705),
     danger: Color(0xFFFF453A),
     guideInk: Color(0xFFE5E5EA),
@@ -225,7 +270,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0xC61C1C1E),
+    glass: Color(0xC615191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -528,16 +573,71 @@ class SimpleTextApp extends StatelessWidget {
   ];
 
   static ThemeData _theme(Brightness b, AppC c) {
+    final isDark = b == Brightness.dark;
+    // 하늘색 위에 얹는 글자 색.
+    //
+    // 라이트에서는 진한 하늘 바탕에 흰 글자(5.2:1), 다크에서는 밝은 하늘
+    // 바탕에 진한 남색 글자(7.7:1)다. 다크에서 뒤집는 것이 핵심이다 —
+    // 어두운 바탕에 밝은 글자로 버튼을 만들면 아무리 색을 골라도 가라앉는다.
+    final onAccent = isDark ? _onAccentDark : Colors.white;
+
+    // **여기가 소유자 신고의 진짜 원인이었다.**
+    //
+    // fromSeed는 씨앗 색 하나에서 색표를 자동으로 만드는데, 그 변환이
+    // 채도를 크게 깎는다. 씨앗이 맑은 하늘색(#3FB2F0)이어도 버튼에 나오는
+    // primary/primaryContainer는 가라앉은 남색이 된다. 우리가 AppC에 맑은
+    // 색을 정해 놨어도 버튼은 그걸 안 보고 있었다.
+    //
+    // 그래서 눈에 보이는 자리는 자동에 맡기지 않고 우리 값으로 덮는다.
+    // fromSeed를 아예 안 쓰지는 않는다 — 여기서 안 덮은 자리(비활성 색,
+    // 그림자 톤 등)를 채워 주는 값은 여전히 쓸모가 있다.
+    final scheme = ColorScheme.fromSeed(seedColor: _sky, brightness: b).copyWith(
+      primary: c.accent,
+      onPrimary: onAccent,
+      primaryContainer: c.tagBg,
+      onPrimaryContainer: c.tagInk,
+      secondary: c.accent,
+      onSecondary: onAccent,
+      secondaryContainer: c.tagBg,
+      onSecondaryContainer: c.tagInk,
+      // 떠 있는 판에 머티리얼이 섞어 넣는 물빛. 이걸 하늘색으로 두면
+      // 카드가 미묘하게 하늘 기운을 띤다 — 색을 더 쓰되 시끄럽지 않게.
+      surfaceTint: c.accent,
+      error: c.danger,
+    );
+
     final base = ThemeData(
       useMaterial3: true,
       brightness: b,
-      colorScheme: ColorScheme.fromSeed(seedColor: _sky, brightness: b),
+      colorScheme: scheme,
       scaffoldBackgroundColor: c.bg,
       appBarTheme: AppBarTheme(
         backgroundColor: c.bg,
+        foregroundColor: c.accent,
         elevation: 0,
         scrolledUnderElevation: 0.5,
       ),
+      // 떠 있는 둥근 버튼. 기본값은 primaryContainer(연한 판)라서
+      // 다크에서 '칙칙한 남색 판에 옅은 글자'가 됐다 — 신고된 그림이다.
+      // 채운 하늘색으로 못 박는다.
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: c.accent,
+        foregroundColor: onAccent,
+        elevation: 3,
+      ),
+      // 돌아가는 표시, 스위치, 슬라이더가 전부 primary를 따라간다.
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: c.accent),
+      // 체크 표시도 하늘색으로. 기본값은 자동 색표라 또 가라앉는다.
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith(
+            (st) => st.contains(WidgetState.selected) ? c.accent : null),
+        checkColor: WidgetStateProperty.all(onAccent),
+      ),
+      // 글자만 있는 버튼과 테두리 버튼도 같은 하늘색으로.
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: c.accent),
+      ),
+      dividerTheme: DividerThemeData(color: c.line, space: 1, thickness: 1),
       // 선택 블럭·손잡이·커서 색. 이걸 안 주면 머티리얼 기본값이 나오고,
       // 손잡이가 배경에 묻혀 "드래그할 점이 안 보인다"는 신고가 된다.
       textSelectionTheme: TextSelectionThemeData(
