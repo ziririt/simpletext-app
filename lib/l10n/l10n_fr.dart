@@ -287,7 +287,13 @@ class L10nFr extends L10n {
   String get presetBlogDesc => 'Retire les marques, garde les URL des liens, répare les tableaux';
 
   @override
-  String get settingsTitle => 'Règles de nettoyage';
+  String get settingsTitle => 'Réglages';
+
+  @override
+  String get menuAppSettings => "Réglages de l'app";
+
+  @override
+  String get menuAiKey => 'Clé API IA';
   @override
   String get settingsSecView => 'Affichage';
   @override

@@ -285,7 +285,13 @@ class L10nZhHans extends L10n {
   String get presetBlogDesc => '去除标记，链接保留网址，修复表格';
 
   @override
-  String get settingsTitle => '整理规则设置';
+  String get settingsTitle => '设置';
+
+  @override
+  String get menuAppSettings => '应用设置';
+
+  @override
+  String get menuAiKey => 'AI API 密钥';
   @override
   String get settingsSecView => '显示';
   @override

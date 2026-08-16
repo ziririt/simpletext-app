@@ -286,7 +286,13 @@ class L10nEn extends L10n {
   String get presetBlogDesc => 'Strips markers, keeps link URLs, repairs tables';
 
   @override
-  String get settingsTitle => 'Tidy rules';
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get menuAppSettings => 'App settings';
+
+  @override
+  String get menuAiKey => 'AI API key';
   @override
   String get settingsSecView => 'Display';
   @override

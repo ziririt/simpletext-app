@@ -285,7 +285,13 @@ class L10nKo extends L10n {
   String get presetBlogDesc => '마커 제거, 링크는 주소 유지, 표 복구';
 
   @override
-  String get settingsTitle => '정리 규칙 설정';
+  String get settingsTitle => '설정';
+
+  @override
+  String get menuAppSettings => '앱 설정';
+
+  @override
+  String get menuAiKey => 'AI API 키';
   @override
   String get settingsSecView => '보기';
   @override

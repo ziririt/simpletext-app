@@ -287,7 +287,13 @@ class L10nDe extends L10n {
   String get presetBlogDesc => 'Entfernt Zeichen, behält Link-URLs, repariert Tabellen';
 
   @override
-  String get settingsTitle => 'Bereinigungsregeln';
+  String get settingsTitle => 'Einstellungen';
+
+  @override
+  String get menuAppSettings => 'App-Einstellungen';
+
+  @override
+  String get menuAiKey => 'KI-API-Schlüssel';
   @override
   String get settingsSecView => 'Anzeige';
   @override

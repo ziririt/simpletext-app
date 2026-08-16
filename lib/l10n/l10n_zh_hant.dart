@@ -285,7 +285,13 @@ class L10nZhHant extends L10n {
   String get presetBlogDesc => '移除標記，連結保留網址，修復表格';
 
   @override
-  String get settingsTitle => '整理規則設定';
+  String get settingsTitle => '設定';
+
+  @override
+  String get menuAppSettings => '應用程式設定';
+
+  @override
+  String get menuAiKey => 'AI API 金鑰';
   @override
   String get settingsSecView => '顯示';
   @override

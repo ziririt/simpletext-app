@@ -285,7 +285,13 @@ class L10nJa extends L10n {
   String get presetBlogDesc => '記号を除去、リンクはURLを保持、表を復元';
 
   @override
-  String get settingsTitle => '整理ルール設定';
+  String get settingsTitle => '設定';
+
+  @override
+  String get menuAppSettings => 'アプリ設定';
+
+  @override
+  String get menuAiKey => 'AI APIキー';
   @override
   String get settingsSecView => '表示';
   @override

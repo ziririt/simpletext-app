@@ -286,7 +286,13 @@ class L10nEs extends L10n {
   String get presetBlogDesc => 'Quita marcas, conserva las URL de los enlaces, repara tablas';
 
   @override
-  String get settingsTitle => 'Reglas de limpieza';
+  String get settingsTitle => 'Ajustes';
+
+  @override
+  String get menuAppSettings => 'Ajustes de la app';
+
+  @override
+  String get menuAiKey => 'Clave API de IA';
   @override
   String get settingsSecView => 'Pantalla';
   @override

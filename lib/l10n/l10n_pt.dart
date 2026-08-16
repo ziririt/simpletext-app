@@ -286,7 +286,13 @@ class L10nPt extends L10n {
   String get presetBlogDesc => 'Remove marcas, mantém as URLs dos links, repara tabelas';
 
   @override
-  String get settingsTitle => 'Regras de organização';
+  String get settingsTitle => 'Ajustes';
+
+  @override
+  String get menuAppSettings => 'Ajustes do app';
+
+  @override
+  String get menuAiKey => 'Chave de API de IA';
   @override
   String get settingsSecView => 'Visualização';
   @override

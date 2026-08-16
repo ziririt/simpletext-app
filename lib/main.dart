@@ -2368,6 +2368,21 @@ class _EditorScreenState extends State<EditorScreen> {
               icon: const Icon(Icons.more_horiz),
               tooltip: l.moreTooltip,
               onSelected: (v) async {
+                // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
+                // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
+                // 앱 설정은 편집과 직접 상관이 없어 구분선으로 갈라 놨다.
+                if (v.startsWith('set:')) {
+                  final a = v.substring(4);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          SettingsScreen(anchor: a.isEmpty ? null : a),
+                    ),
+                  );
+                  if (mounted) setState(() {});
+                  return;
+                }
                 if (v != 'delete') return;
                 final ok = await showAdaptiveDialog<bool>(
                   context: context,
@@ -2386,16 +2401,49 @@ class _EditorScreenState extends State<EditorScreen> {
                   Navigator.pop(context);
                 }
               },
-              itemBuilder: (ctx) => [
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(children: [
-                    Icon(Icons.delete_outline, size: 20, color: ctx.c.danger),
-                    const SizedBox(width: 10),
-                    Text(L10n.of(ctx).delete, style: TextStyle(color: ctx.c.danger)),
-                  ]),
-                ),
-              ],
+              itemBuilder: (ctx) {
+                final lm = L10n.of(ctx);
+                PopupMenuItem<String> jump(String a, String label) =>
+                    PopupMenuItem<String>(
+                      value: 'set:$a',
+                      height: 38,
+                      child: Padding(
+                        // 들여쓰기로 '앱 설정 아래 항목'임을 보인다.
+                        padding: const EdgeInsets.only(left: 30),
+                        child: Text(label,
+                            style: TextStyle(fontSize: 14, color: ctx.c.sub)),
+                      ),
+                    );
+                return [
+                  // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Row(children: [
+                      Icon(Icons.delete_outline, size: 20, color: ctx.c.danger),
+                      const SizedBox(width: 10),
+                      Text(lm.delete, style: TextStyle(color: ctx.c.danger)),
+                    ]),
+                  ),
+                  const PopupMenuDivider(),
+                  // --- 앱 전체 설정 ---
+                  PopupMenuItem<String>(
+                    value: 'set:',
+                    child: Row(children: [
+                      Icon(Icons.settings_outlined, size: 20, color: ctx.c.accent),
+                      const SizedBox(width: 10),
+                      Text(lm.menuAppSettings,
+                          style: TextStyle(
+                              color: ctx.c.accent, fontWeight: FontWeight.w600)),
+                    ]),
+                  ),
+                  jump('theme', lm.themeTitle),
+                  jump('fontsize', lm.bodyFontSizeTitle),
+                  jump('mono', lm.monoEditorTitle),
+                  jump('tidy', lm.settingsSecTidy),
+                  jump('rules', lm.rulesSectionTitle),
+                  jump('ai', lm.menuAiKey),
+                ];
+              },
             ),
             // 새 노트 — 이 메모와 무관한 지시라서 일부러 '떠 있는' 동그란
             // 버튼으로 다르게 생겼다(소유자: 직관적으로 구분, 둥둥 뜨는 느낌).
@@ -2830,8 +2878,20 @@ class PremiumScreen extends StatelessWidget {
 }
 
 /// ---------------- 정리 규칙 설정 ----------------
+/// 앱 전체 설정.
+///
+/// 2026-08-16 소유자 요청 — 제목이 '정리 규칙 설정'이었는데 이 화면은
+/// 정리 규칙만 있는 곳이 아니다(화면 모드·글자 크기·AI 키까지 들어 있다).
+/// 이름과 내용이 어긋나 있었다. '설정'으로 바꿨다.
+///
+/// [anchor]를 주면 열자마자 그 자리로 스크롤한다. 편집 화면 '...' 메뉴에서
+/// 바로 뛰어오기 위한 것이다 — 설정이 길어져서, 문을 열어 주는 것만으로는
+/// 원하는 항목을 찾기까지 여전히 훑어야 했다.
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.anchor});
+
+  /// 'theme' | 'fontsize' | 'mono' | 'tidy' | 'rules' | 'ai'
+  final String? anchor;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -2839,6 +2899,40 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final store = Store.instance;
+
+  /// 바로가기가 겨냥하는 자리들.
+  ///
+  /// 목록을 ListView가 아니라 SingleChildScrollView + Column으로 그리는
+  /// 이유가 여기 있다. ListView는 화면 밖 항목을 아직 배치하지 않아서
+  /// GlobalKey에 context가 없고, 그러면 ensureVisible이 조용히 아무것도
+  /// 하지 않는다. 설정은 길어야 화면 몇 장이라 전부 배치해도 무겁지 않다.
+  final Map<String, GlobalKey> _anchors = {
+    'theme': GlobalKey(),
+    'fontsize': GlobalKey(),
+    'mono': GlobalKey(),
+    'tidy': GlobalKey(),
+    'rules': GlobalKey(),
+    'ai': GlobalKey(),
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.anchor;
+    if (a == null) return;
+    // 첫 프레임이 그려진 뒤라야 각 자리의 위치를 안다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _anchors[a]?.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        // 0.0 = 겨냥한 자리를 화면 맨 위에 붙인다(소유자 요청).
+        alignment: 0.0,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
   bool _aiChecking = false;
   bool _aiAdvOpen = false;
   String _aiMsg = '';
@@ -3078,9 +3172,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final s = store.settings;
     return Scaffold(
       appBar: AppBar(title: Text(l.settingsTitle)),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 8),
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           // 2026-08-16 소유자 요청 — 설정 맨 위에 프리미엄(결제) 유도 배너.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
@@ -3146,7 +3242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           //   "정리를 누르면 어떻게 되나"     → 정리할 때
           // 화면 생김새는 애플 설정 앱의 관습을 그대로 따른다(작은 회색
           // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
-          _secHeader(l.settingsSecView),
+          KeyedSubtree(
+              key: _anchors['theme'], child: _secHeader(l.settingsSecView)),
           _card([
             // 2026-08-16 소유자 요청 — 다크 모드 선택(기기 따름/라이트/다크).
             _dropRow(l.themeTitle, null, s.themeMode, [
@@ -3155,12 +3252,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ('dark', l.themeDark),
             ], (v) => s.themeMode = v),
             _sep(),
-            _fontSizeBlock(l, s),
+            KeyedSubtree(
+                key: _anchors['fontsize'], child: _fontSizeBlock(l, s)),
             _sep(),
-            _switchRow(l.monoEditorTitle, l.monoEditorSub, s.monoEditor,
-                (v) => s.monoEditor = v),
+            KeyedSubtree(
+              key: _anchors['mono'],
+              child: _switchRow(l.monoEditorTitle, l.monoEditorSub, s.monoEditor,
+                  (v) => s.monoEditor = v),
+            ),
           ]),
-          _secHeader(l.settingsSecTidy),
+          KeyedSubtree(
+              key: _anchors['tidy'], child: _secHeader(l.settingsSecTidy)),
           _card([
             // 기본값이 '제거'라서 맨 위에 둔다.
             _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
@@ -3214,7 +3316,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _switchRow(l.previewTitle2, l.previewSub2, s.previewBeforeApply,
                 (v) => s.previewBeforeApply = v),
           ]),
-          _secHeader(l.aiSectionTitle),
+          // 2026-08-16 소유자 요청 — 자동 바꾸기 규칙을 AI 위로 올린다.
+          // 정리 규칙 바로 뒤에 붙는 게 맞다. 둘 다 '정리를 누르면 글이
+          // 어떻게 바뀌나'에 답하는 항목이고, AI는 그 다음 이야기다.
+          KeyedSubtree(
+              key: _anchors['rules'], child: _secHeader(l.rulesSectionTitle)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
+            child: Text(l.rulesSectionDesc,
+                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+          ),
+          _card([
+            for (int i = 0; i < s.customRules.length; i++) ...[
+              if (i > 0) _sep(),
+              _ruleRow(i),
+            ],
+            if (s.customRules.isNotEmpty) _sep(),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  s.customRules.add(const CustomRule(find: ''));
+                  store.persistSettings();
+                  setState(() {});
+                },
+                icon: const Icon(Icons.add),
+                label: Text(l.addRule),
+              ),
+            ),
+          ]),
+          KeyedSubtree(
+              key: _anchors['ai'], child: _secHeader(l.aiSectionTitle)),
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
             child: Text(l.aiSectionDesc,
@@ -3300,31 +3432,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ]),
-          _secHeader(l.rulesSectionTitle),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
-            child: Text(l.rulesSectionDesc,
-                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
-          ),
-          _card([
-            for (int i = 0; i < s.customRules.length; i++) ...[
-              if (i > 0) _sep(),
-              _ruleRow(i),
-            ],
-            if (s.customRules.isNotEmpty) _sep(),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  s.customRules.add(const CustomRule(find: ''));
-                  store.persistSettings();
-                  setState(() {});
-                },
-                icon: const Icon(Icons.add),
-                label: Text(l.addRule),
-              ),
-            ),
-          ]),
           _secHeader(l.settingsSecInfo),
           _card([
             Padding(
@@ -3344,8 +3451,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(fontSize: 15, color: context.c.guideInk)),
             ),
           ]),
-          const SizedBox(height: 24),
-        ],
+          // 바로가기(앵커)가 겨냥한 자리를 화면 '맨 위'에 붙이려면 그 아래에
+          // 화면 한 장만큼의 여유가 있어야 한다. 없으면 목록 끝에 가까운
+          // 항목은 아무리 스크롤해도 중간까지만 올라온다 — 맥처럼 창이 큰
+          // 기기에서 특히 그렇다. 맨 아래 항목을 골랐을 때만 티가 나는
+          // 빈칸이라 이 정도는 값을 치를 만하다.
+          SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
+          ],
+        ),
       ),
     );
   }

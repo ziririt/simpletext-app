@@ -231,6 +231,8 @@ abstract class L10n {
 
   // ---------------- 설정 화면 ----------------
   String get settingsTitle;
+  String get menuAppSettings;
+  String get menuAiKey;
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -427,6 +429,8 @@ abstract class L10n {
         'presetBlogName': presetBlogName,
         'presetBlogDesc': presetBlogDesc,
         'settingsTitle': settingsTitle,
+        'menuAppSettings': menuAppSettings,
+        'menuAiKey': menuAiKey,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,
