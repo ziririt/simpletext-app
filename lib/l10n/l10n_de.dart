@@ -163,6 +163,25 @@ class L10nDe extends L10n {
 
   @override
   String get sourceCleared => 'Quelle entfernt';
+
+  // 폴더 (2026-08-17)
+  @override
+  String get folderTitle => 'Ordner';
+
+  @override
+  String get folderNone => 'Kein Ordner';
+
+  @override
+  String get folderNew => 'Neuer Ordner';
+
+  @override
+  String get folderNameHint => 'Ordnername';
+
+  @override
+  String get folderCleared => 'Aus dem Ordner entfernt';
+
+  @override
+  String folderMoved(String name) => 'Nach $name verschoben';
   @override
   String appliedDone(String summary) => 'Angewendet — $summary';
 

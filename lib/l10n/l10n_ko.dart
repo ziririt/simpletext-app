@@ -163,6 +163,25 @@ class L10nKo extends L10n {
 
   @override
   String get sourceCleared => '출처를 지웠습니다';
+
+  // 폴더 (2026-08-17)
+  @override
+  String get folderTitle => '폴더';
+
+  @override
+  String get folderNone => '폴더 없음';
+
+  @override
+  String get folderNew => '새 폴더';
+
+  @override
+  String get folderNameHint => '폴더 이름';
+
+  @override
+  String get folderCleared => '폴더에서 뺐습니다';
+
+  @override
+  String folderMoved(String name) => '폴더로 옮겼습니다 · $name';
   @override
   String appliedDone(String summary) => '적용 완료 — $summary';
 

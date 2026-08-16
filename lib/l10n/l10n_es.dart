@@ -163,6 +163,25 @@ class L10nEs extends L10n {
 
   @override
   String get sourceCleared => 'Fuente borrada';
+
+  // 폴더 (2026-08-17)
+  @override
+  String get folderTitle => 'Carpeta';
+
+  @override
+  String get folderNone => 'Sin carpeta';
+
+  @override
+  String get folderNew => 'Nueva carpeta';
+
+  @override
+  String get folderNameHint => 'Nombre de la carpeta';
+
+  @override
+  String get folderCleared => 'Quitado de la carpeta';
+
+  @override
+  String folderMoved(String name) => 'Movido a $name';
   @override
   String appliedDone(String summary) => 'Aplicado — $summary';
 

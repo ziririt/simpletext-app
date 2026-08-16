@@ -25,6 +25,7 @@ import 'ads_service.dart';
 import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'core/auto_meta.dart';
+import 'core/folders.dart';
 import 'core/hangul.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
@@ -738,6 +739,12 @@ class Note {
   /// 태그를 우리가 관리하고 있는가. 규칙은 제목과 같다.
   bool tagsAuto;
 
+  /// 이 메모가 든 폴더. 빈 문자열이면 어디에도 안 들어 있다.
+  ///
+  /// 2026-08-17 — 태그와 따로 두는 이유: 태그는 "무엇에 관한 것인가"이고
+  /// 폴더는 "어디에 두었나"다. 태그는 여럿, 폴더는 하나.
+  String folder;
+
   Note({
     required this.id,
     this.title = '',
@@ -755,6 +762,7 @@ class Note {
     this.sourceAuto = false,
     this.titleAuto = true,
     this.tagsAuto = true,
+    this.folder = '',
   })  : tags = tags ?? [],
         history = history ?? [],
         historyAt = historyAt ?? [];
@@ -787,6 +795,7 @@ class Note {
         'sourceAuto': sourceAuto,
         'titleAuto': titleAuto,
         'tagsAuto': tagsAuto,
+        'folder': folder,
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -810,6 +819,7 @@ class Note {
                     autoTitle((j['body'] ?? '') as String))) as bool,
         tagsAuto: (j['tagsAuto'] ??
             (((j['tags'] ?? const []) as List).isEmpty)) as bool,
+        folder: normalizeFolder((j['folder'] ?? '') as String),
         tags: ((j['tags'] ?? []) as List).map((e) => e.toString()).toList(),
         createdAt: (j['createdAt'] ?? 0) as int,
         updatedAt: (j['updatedAt'] ?? 0) as int,
@@ -920,6 +930,15 @@ class AppSettings {
   String sortMode = 'updated'; // updated | created | title
   String filterSource = ''; // 빈 문자열 = 전체
   String filterTag = '';
+  String filterFolder = '';
+
+  /// 사용자가 만들어 둔 폴더 이름. 메모가 하나도 없는 폴더도 여기 남는다.
+  ///
+  /// 2026-08-17 — 이것만 보면 안 되고, 이것 없이도 안 된다. 메모가 쓰는
+  /// 이름만 보면 방금 만든 빈 폴더가 눈앞에서 사라지고, 이 목록만 보면
+  /// 다른 기기에서 만든 폴더가 안 보인다(설정은 늦게 고친 쪽이 통째로
+  /// 이긴다). 화면에서는 둘을 합쳐 쓴다 — core/folders.dart의 folderNames.
+  List<String> folders = [];
 
   /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
   String themeMode = 'system';
@@ -991,6 +1010,8 @@ class AppSettings {
         'sortMode': sortMode,
         'filterSource': filterSource,
         'filterTag': filterTag,
+        'filterFolder': filterFolder,
+        'folders': folders,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -1061,6 +1082,11 @@ class AppSettings {
     s.sortMode = (j['sortMode'] ?? s.sortMode) as String;
     s.filterSource = (j['filterSource'] ?? s.filterSource) as String;
     s.filterTag = (j['filterTag'] ?? s.filterTag) as String;
+    s.filterFolder = (j['filterFolder'] ?? s.filterFolder) as String;
+    s.folders = ((j['folders'] ?? const []) as List)
+        .map((e) => normalizeFolder(e.toString()))
+        .where((e) => e.isNotEmpty)
+        .toList();
     // 모르는 이름이 들어와도 paperById가 '기본'으로 떨어뜨린다.
     s.paperMode = (j['paperMode'] ?? s.paperMode) as String;
     s.lockOn = (j['lockOn'] ?? s.lockOn) as bool;
@@ -1957,6 +1983,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final filtered = store.notes.where((n) {
       if (s.filterSource.isNotEmpty && n.source != s.filterSource) return false;
       if (s.filterTag.isNotEmpty && !n.tags.contains(s.filterTag)) return false;
+      if (s.filterFolder.isNotEmpty && n.folder != s.filterFolder) return false;
       if (q.isEmpty) return true;
       // 2026-08-16 — contains에서 hangulContains로 바꿨다. "ㅌㅅㄹ"을 치면
       // "테슬라"가 나와야 한다. 한국 사용자에게 초성 검색은 있으면 좋은
@@ -2001,6 +2028,11 @@ class _HomeScreenState extends State<HomeScreen> {
               slivers: [
                 // 유리 머리 높이만큼 비워서 목록이 그 밑으로 흘러 들어간다.
                 const SliverToBoxAdapter(child: SizedBox(height: kHomeHeaderH)),
+                // 폴더 줄. 폴더가 하나도 없으면 아예 안 보인다 —
+                // 쓰지도 않는 줄이 자리를 먹으면 그게 더 나쁘다.
+                if (folderNames(store.notes.map((n) => n.folder), s.folders)
+                    .isNotEmpty)
+                  _folderBar(l, s),
                 if (pinned.isEmpty && rest.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -2139,6 +2171,58 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
 
+  /// 목록 위의 폴더 줄.
+  ///
+  /// 2026-08-17 — 이걸 필터 시트 안에 넣지 않은 이유: 폴더는 '가끔 거르는
+  /// 조건'이 아니라 **평소에 오가는 자리**다. 두 번 눌러야 닿는 곳에 두면
+  /// 폴더를 만들어 놓고도 안 쓰게 된다.
+  Widget _folderBar(L10n l, AppSettings s) {
+    final names = folderNames(store.notes.map((n) => n.folder), s.folders);
+    Widget chip(String label, bool on, VoidCallback tap) => Padding(
+          padding: const EdgeInsets.only(right: 6),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: tap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: on ? context.c.accent : context.c.field,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: on
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF08205A)
+                              : Colors.white)
+                          : context.c.sub)),
+            ),
+          ),
+        );
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 40,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+          children: [
+            chip(l.filterAll, s.filterFolder.isEmpty, () {
+              setState(() => s.filterFolder = '');
+              store.persistSettings();
+            }),
+            for (final f in names)
+              chip(f, s.filterFolder == f, () {
+                setState(() => s.filterFolder = s.filterFolder == f ? '' : f);
+                store.persistSettings();
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 정렬·필터 단추.
   ///
   /// 뭔가 걸려 있으면 아이콘에 색이 들어가 "지금 목록이 전부가 아니다"를
@@ -2147,7 +2231,8 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icon(Icons.tune,
             color: (s.sortMode != 'updated' ||
                     s.filterSource.isNotEmpty ||
-                    s.filterTag.isNotEmpty)
+                    s.filterTag.isNotEmpty ||
+                    s.filterFolder.isNotEmpty)
                 ? context.c.accent
                 : context.c.sub),
         tooltip: l.sortFilterTooltip,
@@ -3047,6 +3132,129 @@ class _EditorScreenState extends State<EditorScreen> {
     return null;
   }
 
+  /// 이 메모를 어느 폴더에 둘지 고른다.
+  ///
+  /// 2026-08-17 — 새 폴더를 여기서 바로 만들 수 있게 했다. 폴더를 먼저
+  /// 만들고 다시 들어와 고르게 하면 두 걸음이 되고, 두 걸음이면 대부분은
+  /// 그냥 안 넣는다.
+  Future<void> _pickFolder() async {
+    final l = L10n.of(context);
+    final s = store.settings;
+    final names = folderNames(store.notes.map((n) => n.folder), s.folders);
+
+    Future<void> put(String f) async {
+      note.folder = f;
+      if (f.isNotEmpty && !s.folders.contains(f)) {
+        s.folders.add(f);
+        await store.persistSettings();
+      }
+      await _save();
+      if (!mounted) return;
+      setState(() {});
+      _toast(context, f.isEmpty ? l.folderCleared : l.folderMoved(f));
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheet) => SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: sheet.c.panel,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l.folderTitle,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 10),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.folder_off_outlined, color: sheet.c.sub),
+                title: Text(l.folderNone),
+                trailing: note.folder.isEmpty
+                    ? Icon(Icons.check, color: sheet.c.accent)
+                    : null,
+                onTap: () {
+                  Navigator.pop(sheet);
+                  put('');
+                },
+              ),
+              for (final f in names)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.folder_outlined, color: sheet.c.sub),
+                  title: Text(f),
+                  trailing: note.folder == f
+                      ? Icon(Icons.check, color: sheet.c.accent)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(sheet);
+                    put(f);
+                  },
+                ),
+              const Divider(height: 20),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.create_new_folder_outlined,
+                    color: sheet.c.accent),
+                title: Text(l.folderNew,
+                    style: TextStyle(
+                        color: sheet.c.accent, fontWeight: FontWeight.w600)),
+                onTap: () async {
+                  Navigator.pop(sheet);
+                  final name = await _askFolderName(names);
+                  if (name != null) await put(name);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 새 폴더 이름을 묻는다. 취소하거나 못 쓰는 이름이면 null.
+  Future<String?> _askFolderName(List<String> existing) async {
+    final l = L10n.of(context);
+    final ctl = TextEditingController();
+    final name = await showAdaptiveDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog.adaptive(
+        title: Text(l.folderNew),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          maxLength: kFolderNameMax,
+          decoration: InputDecoration(hintText: l.folderNameHint),
+          onSubmitted: (v) => Navigator.pop(ctx, v),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(L10n.of(ctx).cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, ctl.text),
+              child: Text(L10n.of(ctx).done)),
+        ],
+      ),
+    );
+    if (name == null) return null;
+    final n = normalizeFolder(name);
+    if (n.isEmpty) return null;
+    // 이미 있으면 새로 만들지 않고 그것을 쓴다. "왜 안 만들어지지"보다
+    // "아, 이미 있었구나"가 낫다.
+    for (final e in existing) {
+      if (e.toLowerCase() == n.toLowerCase()) return e;
+    }
+    return n;
+  }
+
   Future<void> _revertToOriginal() async {
     final target = _revertTarget;
     if (target == null || target == bodyCtl.text) return;
@@ -3934,6 +4142,10 @@ class _EditorScreenState extends State<EditorScreen> {
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'folder') {
+                  await _pickFolder();
+                  return;
+                }
                 if (v == 'revert') {
                   await _revertToOriginal();
                   return;
@@ -4008,6 +4220,19 @@ class _EditorScreenState extends State<EditorScreen> {
                   // 원본복귀는 버전기록 바로 위에 둔다. 되돌린 뒤 마음이
                   // 바뀌면 바로 아래 항목에서 되찾을 수 있다는 것이 눈에
                   // 보여야 한다(소유자가 짚은 배치).
+                  PopupMenuItem<String>(
+                    value: 'folder',
+                    child: Row(children: [
+                      Icon(
+                          note.folder.isEmpty
+                              ? Icons.folder_outlined
+                              : Icons.folder,
+                          size: 19,
+                          color: note.folder.isEmpty ? ctx.c.sub : ctx.c.accent),
+                      const SizedBox(width: 10),
+                      Text(note.folder.isEmpty ? lm.folderTitle : note.folder),
+                    ]),
+                  ),
                   PopupMenuItem<String>(
                     value: 'revert',
                     enabled: _canRevert,
@@ -4962,6 +5187,7 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
                     s.sortMode = 'updated';
                     s.filterSource = '';
                     s.filterTag = '';
+                    s.filterFolder = '';
                     _save();
                   },
                   child: Text(l.filterReset),

@@ -163,6 +163,25 @@ class L10nZhHans extends L10n {
 
   @override
   String get sourceCleared => '已清除来源';
+
+  // 폴더 (2026-08-17)
+  @override
+  String get folderTitle => '文件夹';
+
+  @override
+  String get folderNone => '不放入文件夹';
+
+  @override
+  String get folderNew => '新建文件夹';
+
+  @override
+  String get folderNameHint => '文件夹名称';
+
+  @override
+  String get folderCleared => '已移出文件夹';
+
+  @override
+  String folderMoved(String name) => '已移到 $name';
   @override
   String appliedDone(String summary) => '已应用 — $summary';
 

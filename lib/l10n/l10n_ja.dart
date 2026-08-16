@@ -163,6 +163,25 @@ class L10nJa extends L10n {
 
   @override
   String get sourceCleared => '出典を消しました';
+
+  // 폴더 (2026-08-17)
+  @override
+  String get folderTitle => 'フォルダ';
+
+  @override
+  String get folderNone => 'フォルダなし';
+
+  @override
+  String get folderNew => '新規フォルダ';
+
+  @override
+  String get folderNameHint => 'フォルダ名';
+
+  @override
+  String get folderCleared => 'フォルダから外しました';
+
+  @override
+  String folderMoved(String name) => '$name に移しました';
   @override
   String appliedDone(String summary) => '適用しました — $summary';
 

@@ -163,6 +163,25 @@ class L10nPt extends L10n {
 
   @override
   String get sourceCleared => 'Fonte apagada';
+
+  // 폴더 (2026-08-17)
+  @override
+  String get folderTitle => 'Pasta';
+
+  @override
+  String get folderNone => 'Sem pasta';
+
+  @override
+  String get folderNew => 'Nova pasta';
+
+  @override
+  String get folderNameHint => 'Nome da pasta';
+
+  @override
+  String get folderCleared => 'Removido da pasta';
+
+  @override
+  String folderMoved(String name) => 'Movido para $name';
   @override
   String appliedDone(String summary) => 'Aplicado — $summary';
 

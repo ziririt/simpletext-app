@@ -143,6 +143,14 @@ abstract class L10n {
   String sourceDetected(String name);
   String get sourceCleared;
 
+  // 폴더 (2026-08-17)
+  String get folderTitle;
+  String get folderNone;
+  String get folderNew;
+  String get folderNameHint;
+  String get folderCleared;
+  String folderMoved(String name);
+
   // ---------------- 표 시트 ----------------
   String get noTablesFound;
   String tableInfo(int n, int cols, int rows);
@@ -505,6 +513,11 @@ abstract class L10n {
         'listNumberAction': listNumberAction,
         'sourceFieldLabel': sourceFieldLabel,
         'sourceCleared': sourceCleared,
+        'folderTitle': folderTitle,
+        'folderNone': folderNone,
+        'folderNew': folderNew,
+        'folderNameHint': folderNameHint,
+        'folderCleared': folderCleared,
         'noTablesFound': noTablesFound,
         'forSpreadsheet': forSpreadsheet,
         'copiedSpreadsheet': copiedSpreadsheet,

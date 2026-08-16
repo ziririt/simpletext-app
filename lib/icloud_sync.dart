@@ -451,6 +451,10 @@ class ICloudSync {
       'bulletIndent': s.bulletIndent,
       'removeCitations': s.removeCitations,
       'favPrompts': s.favPrompts,
+      // 2026-08-17 — 만들어 두었지만 아직 메모가 없는 폴더. 메모가 든
+      // 폴더는 메모와 함께 건너가지만, 빈 폴더는 여기 없으면 다른 기기에
+      // 안 나타난다.
+      'folders': s.folders,
       'customRules': s.customRules
           .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
           .toList(),
@@ -476,6 +480,10 @@ class ICloudSync {
     s.headingPadBelow = pick('headingPadBelow', s.headingPadBelow);
     s.bulletIndent = pick('bulletIndent', s.bulletIndent);
     s.removeCitations = pick('removeCitations', s.removeCitations);
+    final fd = j['folders'];
+    if (fd is List) {
+      s.folders = fd.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
     final fp = j['favPrompts'];
     if (fp is List) s.favPrompts = fp.map((e) => e.toString()).toList();
     final cr = j['customRules'];
