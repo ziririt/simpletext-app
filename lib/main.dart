@@ -5962,6 +5962,11 @@ class _SettingsScreenState extends State<SettingsScreen>
           'sepia' => l.paperSepia,
           'manuscript' => l.paperManuscript,
           'grid' => l.paperGrid,
+          'plain' => l.paperPlain,
+          'kraft' => l.paperKraft,
+          'walnut' => l.paperWalnut,
+          'night' => l.paperNight,
+          'sky' => l.paperSky,
           _ => l.paperNone,
         };
     return Padding(
@@ -6011,7 +6016,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                         child: isNone
                             ? Icon(Icons.block,
                                 size: 20, color: context.c.sub)
-                            : CustomPaint(
+                            : Stack(children: [
+                                Positioned.fill(child: CustomPaint(
                                 painter: _PaperPainter(
                                   ruling: p.ruling,
                                   color: Color(p.ruleOf(dark)),
@@ -6027,7 +6033,20 @@ class _SettingsScreenState extends State<SettingsScreen>
                                           fontSize: 17,
                                           color: Color(p.inkOf(dark)))),
                                 ),
-                              ),
+                              )),
+                                // 배경과 글자의 관계가 눈에 보이게.
+                                // 한글과 영문을 같이 넣는 이유는,
+                                // 한쪽만 보고 고르면 다른 쪽이
+                                // 어긋나기 때문이다.
+                                Center(
+                                  child: Text('가 T',
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          height: 1,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(p.inkOf(dark)))),
+                                ),
+                              ]),
                       ),
                       const SizedBox(height: 5),
                       Text(nameOf(p.id),
@@ -6260,7 +6279,17 @@ class _SettingsScreenState extends State<SettingsScreen>
               key: _anchors['theme'], child: _secHeader(l.settingsSecView)),
           _card([
             // 2026-08-16 소유자 요청 — 다크 모드 선택(기기 따름/라이트/다크).
-            _dropRow(l.themeTitle, null, s.themeMode, [
+            // 2026-08-17 소유자 요청 — "'다크 모드 시간에는 다크 모드로'
+            // 등의 옵션도 같이 설정받아야 할 듯."
+            //
+            // 이건 이미 되고 있었다. '기기 설정 따름'이 그 일을 한다 —
+            // 아이폰·안드로이드 모두 해 질 녘에 어두운 모드로 바꾸는 일정을
+            // 갖고 있고 우리는 그걸 그대로 따른다. 문제는 그 사실이
+            // '기기 설정 따름'이라는 말에서 안 읽혔다는 것이다.
+            //
+            // 기능을 새로 만드는 것보다, 이미 있는 기능이 있다고 말해 주는
+            // 쪽이 먼저다.
+            _dropRow(l.themeTitle, l.themeSystemNote, s.themeMode, [
               ('system', l.themeSystem),
               ('light', l.themeLight),
               ('dark', l.themeDark),

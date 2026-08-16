@@ -193,6 +193,26 @@ class L10nFr extends L10n {
   @override
   String get aiAdvancedNote => 'En général, inutile d’y toucher. La clé suffit.';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => 'Papier';
+
+  @override
+  String get paperKraft => 'Kraft';
+
+  @override
+  String get paperWalnut => 'Noyer';
+
+  @override
+  String get paperNight => 'Nuit';
+
+  @override
+  String get paperSky => 'Ciel';
+
+  @override
+  String get themeSystemNote =>
+      'En suivant l’appareil, l’app passe en sombre quand l’appareil le fait.';
+
   @override
   String folderMoved(String name) => 'Déplacé vers $name';
   @override

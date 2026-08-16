@@ -193,6 +193,26 @@ class L10nJa extends L10n {
   @override
   String get aiAdvancedNote => '普段は触らなくて大丈夫です。キーだけで選びます。';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => '紙';
+
+  @override
+  String get paperKraft => 'クラフト';
+
+  @override
+  String get paperWalnut => 'ウォルナット';
+
+  @override
+  String get paperNight => 'ナイト';
+
+  @override
+  String get paperSky => 'スカイ';
+
+  @override
+  String get themeSystemNote =>
+      '端末に合わせると、端末がダークになる時間にアプリも一緒に変わります。';
+
   @override
   String folderMoved(String name) => '$name に移しました';
   @override

@@ -193,6 +193,26 @@ class L10nZhHans extends L10n {
   @override
   String get aiAdvancedNote => '通常不用管这里。填了密钥就会自动选。';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => '纸';
+
+  @override
+  String get paperKraft => '牛皮纸';
+
+  @override
+  String get paperWalnut => '胡桃';
+
+  @override
+  String get paperNight => '夜';
+
+  @override
+  String get paperSky => '天空';
+
+  @override
+  String get themeSystemNote =>
+      '跟随设备时，设备切到深色的时间，应用也会一起切换。';
+
   @override
   String folderMoved(String name) => '已移到 $name';
   @override

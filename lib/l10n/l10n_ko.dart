@@ -193,6 +193,26 @@ class L10nKo extends L10n {
   @override
   String get aiAdvancedNote => '보통은 안 건드려도 됩니다. 키만 넣으면 알아서 고릅니다.';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => '종이';
+
+  @override
+  String get paperKraft => '크라프트';
+
+  @override
+  String get paperWalnut => '월넛';
+
+  @override
+  String get paperNight => '나이트';
+
+  @override
+  String get paperSky => '하늘';
+
+  @override
+  String get themeSystemNote =>
+      '기기 설정을 따르면, 기기가 어두운 모드로 바뀌는 시간에 앱도 같이 바뀝니다.';
+
   @override
   String folderMoved(String name) => '폴더로 옮겼습니다 · $name';
   @override

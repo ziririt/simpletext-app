@@ -193,6 +193,26 @@ class L10nDe extends L10n {
   @override
   String get aiAdvancedNote => 'Normalerweise nicht nötig. Der Schlüssel allein genügt.';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => 'Papier';
+
+  @override
+  String get paperKraft => 'Kraft';
+
+  @override
+  String get paperWalnut => 'Walnuss';
+
+  @override
+  String get paperNight => 'Nacht';
+
+  @override
+  String get paperSky => 'Himmel';
+
+  @override
+  String get themeSystemNote =>
+      'Mit „Gerät folgen“ wird die App dunkel, sobald Ihr Gerät es wird.';
+
   @override
   String folderMoved(String name) => 'Nach $name verschoben';
   @override

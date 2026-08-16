@@ -193,6 +193,26 @@ class L10nPt extends L10n {
   @override
   String get aiAdvancedNote => 'Normalmente não precisa mexer aqui. A chave já basta.';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => 'Papel';
+
+  @override
+  String get paperKraft => 'Kraft';
+
+  @override
+  String get paperWalnut => 'Nogueira';
+
+  @override
+  String get paperNight => 'Noite';
+
+  @override
+  String get paperSky => 'Céu';
+
+  @override
+  String get themeSystemNote =>
+      'Seguindo o aparelho, o app escurece quando o aparelho escurece.';
+
   @override
   String folderMoved(String name) => 'Movido para $name';
   @override

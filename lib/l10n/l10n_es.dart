@@ -193,6 +193,26 @@ class L10nEs extends L10n {
   @override
   String get aiAdvancedNote => 'Normalmente no hace falta tocar esto. Basta con la clave.';
 
+  // 종이 다섯 벌 추가 (2026-08-17)
+  @override
+  String get paperPlain => 'Papel';
+
+  @override
+  String get paperKraft => 'Kraft';
+
+  @override
+  String get paperWalnut => 'Nogal';
+
+  @override
+  String get paperNight => 'Noche';
+
+  @override
+  String get paperSky => 'Cielo';
+
+  @override
+  String get themeSystemNote =>
+      'Si sigue al dispositivo, la app se oscurece cuando lo hace el dispositivo.';
+
   @override
   String folderMoved(String name) => 'Movido a $name';
   @override

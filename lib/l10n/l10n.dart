@@ -155,6 +155,16 @@ abstract class L10n {
   String get aiPingOk;
   String aiPingFailed(String err);
   String get aiAdvancedNote;
+
+  // 종이 다섯 벌 추가 (2026-08-17)
+  String get paperPlain;
+  String get paperKraft;
+  String get paperWalnut;
+  String get paperNight;
+  String get paperSky;
+
+  /// '기기 설정 따름'이 곧 "어두워질 시간에 어두워진다"라는 것을 알려 준다.
+  String get themeSystemNote;
   String folderMoved(String name);
 
   // ---------------- 표 시트 ----------------
@@ -527,6 +537,12 @@ abstract class L10n {
         'aiPinging': aiPinging,
         'aiPingOk': aiPingOk,
         'aiAdvancedNote': aiAdvancedNote,
+        'paperPlain': paperPlain,
+        'paperKraft': paperKraft,
+        'paperWalnut': paperWalnut,
+        'paperNight': paperNight,
+        'paperSky': paperSky,
+        'themeSystemNote': themeSystemNote,
         'noTablesFound': noTablesFound,
         'forSpreadsheet': forSpreadsheet,
         'copiedSpreadsheet': copiedSpreadsheet,
