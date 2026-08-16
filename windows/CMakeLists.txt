@@ -32,6 +32,26 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
+# 2026-08-16 — 윈도우 빌드가 여기서 깨졌다.
+#
+#   error C2338: static assertion failed: 'error STL1011: The /await compiler
+#   option, <experimental/coroutine>, ... are deprecated by Microsoft and will
+#   be REMOVED SOON.'   [local_auth_windows_plugin.vcxproj]
+#
+# 앱 잠금을 넣으면서 들어온 local_auth의 윈도우 구현이 옛
+# <experimental/coroutine>을 쓰는데, 러너의 MSVC(VS 18 / 14.51)가 그 헤더를
+# 이제 경고가 아니라 **오류**로 막는다.
+#
+# 남의 플러그인 안이라 우리가 고칠 수 없다. 그래서 오류 문구가 직접
+# 알려 주는 정의를 켜서 그 검사만 끈다. add_compile_definitions는 이 아래로
+# 딸려 오는 모든 대상에 퍼지므로 플러그인을 끌어오는 줄(맨 아래
+# generated_plugins.cmake)보다 위에 둬야 한다.
+#
+# **지워도 되는 날**: local_auth_windows가 C++20 <coroutine>으로 옮기면
+# 이 줄은 필요 없다. 플러그인을 올릴 때 한 번 지워 보고 빌드가 통과하면
+# 그대로 두면 된다.
+add_compile_definitions(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by
