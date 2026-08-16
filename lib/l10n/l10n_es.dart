@@ -571,6 +571,27 @@ class L10nEs extends L10n {
   String get lockReasonOff => 'Verifica para desactivar el bloqueo';
 
   @override
+  String get syncDiagSignedOut => 'Este dispositivo no ha iniciado sesión en iCloud. Inicia sesión primero.';
+
+  @override
+  String get syncDiagNoContainer => 'Has iniciado sesión, pero esta app aún no tiene su espacio de iCloud. Actívalo con los pasos de abajo.';
+
+  @override
+  String get syncDiagPreparing => 'El espacio ya existe. Esperando a que termine de prepararse.';
+
+  @override
+  String get syncRecheckWhat => 'Vuelve a consultar el estado de iCloud al dispositivo, desde cero.';
+
+  @override
+  String get syncRecheckOk => 'iCloud está activado';
+
+  @override
+  String get syncRecheckStill => 'Aún no está activado. Actívalo en Ajustes y vuelve a tocar. Si acabas de activarlo, inténtalo de nuevo en uno o dos minutos.';
+
+  @override
+  String get syncOpenFailed => 'No se pudo abrir Ajustes. Ábrelo desde la pantalla de inicio.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src el \$date';
 

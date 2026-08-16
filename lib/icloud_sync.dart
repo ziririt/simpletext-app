@@ -83,6 +83,18 @@ class ICloudSync {
   String? _root;
   bool _rootAsked = false;
   bool _signedIn = false;
+
+  /// 이 앱 몫의 아이클라우드 자리를 실제로 받았는가.
+  ///
+  /// 2026-08-16 — '로그인했는가'와 이것을 갈라 두면, 안 될 때 화면에서
+  /// 무엇을 하라고 말할지가 정해진다.
+  ///   로그인 X            → 기기를 아이클라우드에 로그인하십시오
+  ///   로그인 O, 자리 X    → 설정에서 이 앱의 아이클라우드를 켜십시오
+  ///   둘 다 O, 경로 X     → 준비 중입니다. 잠시 뒤 다시 확인하십시오
+  bool _container = false;
+
+  bool get signedIn => _signedIn;
+  bool get containerReady => _container;
   bool _busy = false;
   Timer? _debounce;
   Timer? _tick;
@@ -124,6 +136,15 @@ class ICloudSync {
   }
 
   /// 사용자가 '다시 확인'을 눌렀을 때.
+  /// 눌렀을 때 실제로 무엇이 일어나는지: 기억해 둔 폴더 경로를 버리고
+  /// 기기에 처음부터 다시 물어본다. 설정 앱에서 아이클라우드를 켜고
+  /// 돌아온 직후에 쓰라고 만든 버튼이다.
+  ///
+  /// 2026-08-16 소유자 신고 — "무슨 기능인가? 눌러도 무반응." 두 가지가
+  /// 겹쳐 있었다. 하나는 이름만 보고는 무슨 일이 일어나는지 알 수 없다는
+  /// 것(화면에 한 줄 적었다). 다른 하나는 **성공하면 창이 닫히는데
+  /// 실패하면 아무 일도 안 일어났다**는 것이다. 실패야말로 말을 해 줘야
+  /// 하는 쪽인데 거꾸로였다.
   Future<void> recheck() async {
     forgetRoot();
     await syncNow();
@@ -131,10 +152,14 @@ class ICloudSync {
 
   /// 설정 앱을 연다. iCloud 항목으로 직접 뛰는 주소는 비공개 API라
   /// 심사에서 반려된다 — 여는 데까지만 하고 나머지는 글로 안내한다.
-  Future<void> openSettings() async {
+  /// 열렸으면 true. 화면은 false일 때 "직접 열어 주십시오"라고 말한다
+  /// (2026-08-16 소유자 신고: "눌러도 무반응이다").
+  Future<bool> openSettings() async {
     try {
-      await _ch.invokeMethod('openSettings');
-    } catch (_) {}
+      return await _ch.invokeMethod<bool>('openSettings') ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// 메모를 저장할 때마다 불린다. 저장은 글자 하나마다 일어나므로 곧바로
@@ -159,9 +184,11 @@ class ICloudSync {
       final r = await _ch.invokeMapMethod<String, dynamic>('root');
       _root = r?['path'] as String?;
       _signedIn = (r?['signedIn'] as bool?) ?? false;
+      _container = (r?['container'] as bool?) ?? false;
     } catch (_) {
       _root = null;
       _signedIn = false;
+      _container = false;
     }
     return _root;
   }

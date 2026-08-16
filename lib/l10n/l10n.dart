@@ -315,6 +315,13 @@ abstract class L10n {
   String get lockReasonOpen;
   String get lockReasonOn;
   String get lockReasonOff;
+  String get syncDiagSignedOut;
+  String get syncDiagNoContainer;
+  String get syncDiagPreparing;
+  String get syncRecheckWhat;
+  String get syncRecheckOk;
+  String get syncRecheckStill;
+  String get syncOpenFailed;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -594,6 +601,13 @@ abstract class L10n {
         'lockReasonOpen': lockReasonOpen,
         'lockReasonOn': lockReasonOn,
         'lockReasonOff': lockReasonOff,
+        'syncDiagSignedOut': syncDiagSignedOut,
+        'syncDiagNoContainer': syncDiagNoContainer,
+        'syncDiagPreparing': syncDiagPreparing,
+        'syncRecheckWhat': syncRecheckWhat,
+        'syncRecheckOk': syncRecheckOk,
+        'syncRecheckStill': syncRecheckStill,
+        'syncOpenFailed': syncOpenFailed,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

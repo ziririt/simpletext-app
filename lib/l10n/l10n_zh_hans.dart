@@ -570,6 +570,27 @@ class L10nZhHans extends L10n {
   String get lockReasonOff => '关闭锁定需要验证';
 
   @override
+  String get syncDiagSignedOut => '此设备未登录 iCloud。请先登录。';
+
+  @override
+  String get syncDiagNoContainer => '已登录，但此应用还没有 iCloud 空间。请按下方步骤开启。';
+
+  @override
+  String get syncDiagPreparing => '空间已就位，正在等待准备完成。';
+
+  @override
+  String get syncRecheckWhat => '重新向设备查询 iCloud 状态。';
+
+  @override
+  String get syncRecheckOk => 'iCloud 已开启';
+
+  @override
+  String get syncRecheckStill => '尚未开启。请在设置中开启后再次点按。若刚刚开启，请一两分钟后再试一次。';
+
+  @override
+  String get syncOpenFailed => '无法打开设置。请从主屏幕直接打开。';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 来自 \$src';
 

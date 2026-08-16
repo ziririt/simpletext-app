@@ -570,6 +570,27 @@ class L10nKo extends L10n {
   String get lockReasonOff => '잠금을 끄려면 확인이 필요합니다';
 
   @override
+  String get syncDiagSignedOut => '이 기기가 아이클라우드에 로그인되어 있지 않습니다. 먼저 로그인해 주십시오.';
+
+  @override
+  String get syncDiagNoContainer => '로그인은 되어 있는데, 이 앱에 아이클라우드 자리가 아직 없습니다. 아래 절차대로 켜 주십시오.';
+
+  @override
+  String get syncDiagPreparing => '자리는 받았습니다. 준비가 끝나기를 기다리는 중입니다.';
+
+  @override
+  String get syncRecheckWhat => '기기에 아이클라우드 상태를 처음부터 다시 물어봅니다.';
+
+  @override
+  String get syncRecheckOk => '아이클라우드가 켜졌습니다';
+
+  @override
+  String get syncRecheckStill => '아직 켜지지 않았습니다. 설정에서 켠 뒤 다시 눌러 주십시오. 방금 켰다면 1~2분 뒤에 한 번 더 눌러 보십시오.';
+
+  @override
+  String get syncOpenFailed => '설정 앱을 열지 못했습니다. 홈 화면에서 직접 열어 주십시오.';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 

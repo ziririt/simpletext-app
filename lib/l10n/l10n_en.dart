@@ -571,6 +571,27 @@ class L10nEn extends L10n {
   String get lockReasonOff => 'Verify to turn off the lock';
 
   @override
+  String get syncDiagSignedOut => 'This device is not signed in to iCloud. Please sign in first.';
+
+  @override
+  String get syncDiagNoContainer => 'You are signed in, but this app does not have its iCloud space yet. Turn it on with the steps below.';
+
+  @override
+  String get syncDiagPreparing => 'The space is there. Waiting for it to finish getting ready.';
+
+  @override
+  String get syncRecheckWhat => 'Asks the device about iCloud again, from scratch.';
+
+  @override
+  String get syncRecheckOk => 'iCloud is on';
+
+  @override
+  String get syncRecheckStill => 'Not on yet. Turn it on in Settings, then tap again. If you just turned it on, try once more in a minute or two.';
+
+  @override
+  String get syncOpenFailed => 'Could not open Settings. Please open it from the Home Screen.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from \$src on \$date';
 

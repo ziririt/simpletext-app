@@ -571,6 +571,27 @@ class L10nPt extends L10n {
   String get lockReasonOff => 'Verifique para desativar o bloqueio';
 
   @override
+  String get syncDiagSignedOut => 'Este dispositivo não está conectado ao iCloud. Entre primeiro.';
+
+  @override
+  String get syncDiagNoContainer => 'Você está conectado, mas o app ainda não tem seu espaço no iCloud. Ative com os passos abaixo.';
+
+  @override
+  String get syncDiagPreparing => 'O espaço já existe. Aguardando terminar de ficar pronto.';
+
+  @override
+  String get syncRecheckWhat => 'Pergunta de novo ao dispositivo sobre o iCloud, do zero.';
+
+  @override
+  String get syncRecheckOk => 'O iCloud está ativado';
+
+  @override
+  String get syncRecheckStill => 'Ainda não está ativado. Ative nos Ajustes e toque de novo. Se acabou de ativar, tente outra vez em um ou dois minutos.';
+
+  @override
+  String get syncOpenFailed => 'Não foi possível abrir os Ajustes. Abra pela Tela de Início.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

@@ -570,6 +570,27 @@ class L10nZhHant extends L10n {
   String get lockReasonOff => '關閉鎖定需要驗證';
 
   @override
+  String get syncDiagSignedOut => '此裝置未登入 iCloud。請先登入。';
+
+  @override
+  String get syncDiagNoContainer => '已登入，但此 App 還沒有 iCloud 空間。請依下方步驟開啟。';
+
+  @override
+  String get syncDiagPreparing => '空間已就緒，正在等待準備完成。';
+
+  @override
+  String get syncRecheckWhat => '重新向裝置查詢 iCloud 狀態。';
+
+  @override
+  String get syncRecheckOk => 'iCloud 已開啟';
+
+  @override
+  String get syncRecheckStill => '尚未開啟。請在設定中開啟後再次點按。若剛剛才開啟，請一兩分鐘後再試一次。';
+
+  @override
+  String get syncOpenFailed => '無法開啟設定。請從主畫面直接開啟。';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 來自 \$src';
 

@@ -572,6 +572,27 @@ class L10nFr extends L10n {
   String get lockReasonOff => 'Vérifiez pour désactiver le verrouillage';
 
   @override
+  String get syncDiagSignedOut => 'Cet appareil n\'est pas connecté à iCloud. Connectez-vous d\'abord.';
+
+  @override
+  String get syncDiagNoContainer => 'Vous êtes connecté, mais cette app n\'a pas encore son espace iCloud. Activez-le avec les étapes ci-dessous.';
+
+  @override
+  String get syncDiagPreparing => 'L\'espace est là. En attente de sa préparation.';
+
+  @override
+  String get syncRecheckWhat => 'Redemande à l\'appareil l\'état d\'iCloud, depuis le début.';
+
+  @override
+  String get syncRecheckOk => 'iCloud est activé';
+
+  @override
+  String get syncRecheckStill => 'Pas encore activé. Activez-le dans Réglages puis touchez à nouveau. Si vous venez de l\'activer, réessayez dans une ou deux minutes.';
+
+  @override
+  String get syncOpenFailed => 'Impossible d\'ouvrir Réglages. Ouvrez-le depuis l\'écran d\'accueil.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src le \$date';
 

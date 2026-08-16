@@ -8,6 +8,34 @@
 	     iOS가 앱을 그냥 죽인다(권한 설명 누락). -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>Skyblue Note uses Face ID to unlock your notes.</string>
+	<!-- 2026-08-16 소유자 신고 — "설정의 목록에서 Skyblue Note가 없다."
+	     맞는 말이었고, 원인이 여기 있었다.
+
+	     컨테이너를 '쓰는' 것과 사용자에게 '보이는' 것은 다른 문제다.
+	     자격(Runner.entitlements)만 있으면 앱은 컨테이너를 읽고 쓸 수
+	     있지만, 설정 앱의 저장된 앱 목록과 파일 앱에 이름이 뜨려면
+	     여기에 '이 컨테이너를 사람에게 보여 달라'고 따로 적어야 한다.
+	     그걸 안 적어 놔서, 우리가 화면에 안내한 절차를 그대로 따라가면
+	     없는 항목을 찾게 되어 있었다.
+
+	     IsDocumentScopePublic: 파일 앱에 폴더로 보인다
+	     ContainerName        : 그 폴더에 붙는 이름
+	     SupportedFolderLevels: Any — 우리는 notes/ tombs/ 로 나눠 쓴다
+
+	     주의: iOS는 이 값을 앱을 처음 깔 때 한 번 읽고 캐시한다. 값을
+	     바꾼 뒤에는 빌드 번호가 올라가야 다시 읽는다. -->
+	<key>NSUbiquitousContainers</key>
+	<dict>
+		<key>iCloud.com.ziririt.simpletext</key>
+		<dict>
+			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
+			<true/>
+			<key>NSUbiquitousContainerName</key>
+			<string>Skyblue Note</string>
+			<key>NSUbiquitousContainerSupportedFolderLevels</key>
+			<string>Any</string>
+		</dict>
+	</dict>
 	<key>CFBundleDisplayName</key>
 	<string>Skyblue Note</string>
 	<key>CFBundleExecutable</key>

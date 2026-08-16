@@ -38,10 +38,17 @@ enum ICloudBridge {
         DispatchQueue.global(qos: .userInitiated).async {
           // '꺼짐'의 원인이 로그인인지 앱 설정인지 구분해서 넘긴다
           // (2026-08-16 소유자 신고: 꺼짐만 뜨면 뭘 해야 할지 모른다).
-          let signedIn = FileManager.default.ubiquityIdentityToken != nil
+          // 아이폰 쪽과 같은 이유로 셋을 넘긴다(AppDelegate.swift 주석 참고).
+          let fm = FileManager.default
+          let signedIn = fm.ubiquityIdentityToken != nil
+          let container = fm.url(forUbiquityContainerIdentifier: containerId) != nil
           let path = documentsPath()
           DispatchQueue.main.async {
-            result(["path": path as Any, "signedIn": signedIn])
+            result([
+              "path": path as Any,
+              "signedIn": signedIn,
+              "container": container,
+            ])
           }
         }
       case "download":
@@ -56,12 +63,14 @@ enum ICloudBridge {
         }
       case "openSettings":
         // 맥에서는 애플 계정 환경설정 창을 바로 열 수 있다.
+        // 열렸는지를 그대로 돌려준다(아이폰 쪽과 같은 이유).
         if let url = URL(
           string: "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane")
         {
-          NSWorkspace.shared.open(url)
+          result(NSWorkspace.shared.open(url))
+        } else {
+          result(false)
         }
-        result(true)
       case "clipboardSource":
         let pb = NSPasteboard.general
         var found: String?

@@ -4487,14 +4487,65 @@ class SyncHelpSheet extends StatefulWidget {
 class _SyncHelpSheetState extends State<SyncHelpSheet> {
   bool _checking = false;
 
+  /// 마지막으로 확인한 결과를 사람 말로 적어 둔 것. 비어 있으면 아직
+  /// 아무것도 안 눌렀다는 뜻이다.
+  ///
+  /// 2026-08-16 소유자 신고 — "'다시 확인'은 무슨 기능인가? 눌러도
+  /// 무반응." 성공하면 창이 닫히는데 실패하면 아무 일도 안 일어났다.
+  /// **실패야말로 말을 해 줘야 하는 쪽인데 거꾸로였다.**
+  String? _said;
+  bool _saidBad = false;
+
   Future<void> _recheck() async {
-    setState(() => _checking = true);
-    await ICloudSync.instance.recheck();
+    setState(() {
+      _checking = true;
+      _said = null;
+    });
+    final sync = ICloudSync.instance;
+    // 확인이 눈 깜짝할 새에 끝나면 사람은 아무 일도 안 일어났다고 느낀다.
+    // 최소한 돌아가는 표시가 한 번 보일 만큼은 잡아 둔다. 일부러 느리게
+    // 만드는 것이 아니라, 일했다는 사실이 보이게 만드는 것이다.
+    await Future.wait<void>([
+      sync.recheck(),
+      Future<void>.delayed(const Duration(milliseconds: 650)),
+    ]);
     if (!mounted) return;
-    setState(() => _checking = false);
-    if (ICloudSync.instance.state.value == SyncState.ok) {
-      Navigator.pop(context);
+    final l = L10n.of(context);
+    final ok = sync.state.value == SyncState.ok;
+    setState(() {
+      _checking = false;
+      _saidBad = !ok;
+      _said = ok ? l.syncRecheckOk : l.syncRecheckStill;
+    });
+    if (!ok) return;
+    // 됐다는 말을 읽을 틈을 준 뒤에 닫는다. 곧바로 닫으면 무엇이 바뀌었는지
+    // 모른 채 창만 사라진다 — 그것도 '무반응'으로 느껴진다.
+    await Future<void>.delayed(const Duration(milliseconds: 1100));
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _open() async {
+    final ok = await ICloudSync.instance.openSettings();
+    if (!mounted) return;
+    if (ok) return;
+    // 열지 못했다. 잠자코 있으면 사용자는 버튼이 고장 났다고 여긴다.
+    setState(() {
+      _saidBad = true;
+      _said = L10n.of(context).syncOpenFailed;
+    });
+  }
+
+  /// 지금 무엇이 막고 있는지 한 줄로.
+  ///
+  /// 절차만 여섯 줄 늘어놓고 "안 되면 알아서 하세요"는 안내가 아니다.
+  /// 기기에 물어본 사실 그대로를 먼저 말해 준다.
+  (String, IconData) _diagnosis(L10n l) {
+    final sync = ICloudSync.instance;
+    if (!sync.signedIn) return (l.syncDiagSignedOut, Icons.person_off_outlined);
+    if (!sync.containerReady) {
+      return (l.syncDiagNoContainer, Icons.cloud_off_outlined);
     }
+    return (l.syncDiagPreparing, Icons.hourglass_bottom);
   }
 
   @override
@@ -4535,6 +4586,31 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
               const SizedBox(height: 14),
+              const SizedBox(height: 12),
+              // 무엇이 막고 있는지 먼저. 절차는 그다음이다.
+              Builder(builder: (_) {
+                final d = _diagnosis(l);
+                return Container(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                  decoration: BoxDecoration(
+                    color: c.infoBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(children: [
+                    Icon(d.$2, size: 20, color: c.accent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(d.$1,
+                          style: TextStyle(
+                              fontSize: 15,
+                              height: 1.4,
+                              fontWeight: FontWeight.w600,
+                              color: c.accent)),
+                    ),
+                  ]),
+                );
+              }),
+              const SizedBox(height: 14),
               Text(l.syncHelpSteps,
                   style: TextStyle(fontSize: 15.5, height: 1.75, color: c.guideInk)),
               const SizedBox(height: 16),
@@ -4544,7 +4620,7 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(13)),
                 ),
-                onPressed: () => ICloudSync.instance.openSettings(),
+                onPressed: _open,
                 child: Text(l.syncOpenSettings,
                     style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
@@ -4563,6 +4639,35 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(l.syncRecheck),
               ),
+              // 버튼 이름만 보고는 무슨 일이 일어나는지 알 수 없다.
+              // 눌렀을 때 실제로 하는 일을 그대로 적는다.
+              const SizedBox(height: 6),
+              Text(l.syncRecheckWhat,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, height: 1.4, color: c.sub)),
+              // 눌렀으면 반드시 무언가 대답한다.
+              if (_said != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                  decoration: BoxDecoration(
+                    color: _saidBad ? c.warnBg : c.infoBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(children: [
+                    Icon(_saidBad ? Icons.info_outline : Icons.check_circle,
+                        size: 19, color: _saidBad ? c.warnInk : c.accent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(_said!,
+                          style: TextStyle(
+                              fontSize: 14.5,
+                              height: 1.4,
+                              color: _saidBad ? c.warnInk : c.accent)),
+                    ),
+                  ]),
+                ),
+              ],
               const SizedBox(height: 12),
               Text(l.syncHelpNote,
                   textAlign: TextAlign.center,

@@ -55,10 +55,22 @@ enum ICloudBridge {
           //   ① 기기가 아이클라우드에 로그인되어 있지 않다
           //   ② 로그인은 됐는데 이 앱의 iCloud Drive 사용이 꺼져 있다
           // 그래서 경로만이 아니라 로그인 여부도 같이 넘긴다.
-          let signedIn = FileManager.default.ubiquityIdentityToken != nil
+          // 2026-08-16 — 넘기는 값을 셋으로 늘렸다.
+          //
+          // 지금까지는 '로그인했는가'와 '경로가 있는가' 둘만 넘겼는데,
+          // 경로가 없을 때 그 까닭이 셋이나 된다: 로그인 안 됨 / 이 앱의
+          // 아이클라우드가 꺼짐 / 자리는 받았는데 폴더를 못 만듦.
+          // 화면에서 "왜 안 되는지"를 정확히 말하려면 갈라서 알아야 한다.
+          let fm = FileManager.default
+          let signedIn = fm.ubiquityIdentityToken != nil
+          let container = fm.url(forUbiquityContainerIdentifier: containerId) != nil
           let path = documentsPath()
           DispatchQueue.main.async {
-            result(["path": path as Any, "signedIn": signedIn])
+            result([
+              "path": path as Any,
+              "signedIn": signedIn,
+              "container": container,
+            ])
           }
         }
       case "download":
@@ -76,10 +88,21 @@ enum ICloudBridge {
         // 설정' 페이지다. iCloud 항목으로 직접 뛰는 주소(prefs:root=CASTLE)는
         // 비공개 API라 심사에서 반려된다 — 그래서 여는 데까지만 해 주고
         // 나머지 길은 화면에서 글로 안내한다.
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-          UIApplication.shared.open(url)
+        // 2026-08-16 소유자 신고 — "눌러도 무반응이다."
+        //
+        // 열렸는지 안 열렸는지를 우리가 몰랐던 것이 문제였다. 그냥 부르고
+        // 무조건 true를 돌려주고 있었으니, 실패해도 화면은 아무 말도 못
+        // 한다. 완료 신호를 받아서 그대로 넘긴다 — 실패하면 화면이
+        // "직접 열어 주십시오"라고 말할 수 있다.
+        if let url = URL(string: UIApplication.openSettingsURLString),
+          UIApplication.shared.canOpenURL(url)
+        {
+          UIApplication.shared.open(url, options: [:]) { ok in
+            result(ok)
+          }
+        } else {
+          result(false)
         }
-        result(true)
       case "clipboardSource":
         // 붙여넣기 **직후에만** 불린다(다트 쪽 clipboard_source.dart 참고).
         // iOS 16부터 클립보드를 읽으면 확인 창이 뜨는데, 사용자가 방금

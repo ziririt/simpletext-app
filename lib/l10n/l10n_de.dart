@@ -572,6 +572,27 @@ class L10nDe extends L10n {
   String get lockReasonOff => 'Bestätigen, um die Sperre zu deaktivieren';
 
   @override
+  String get syncDiagSignedOut => 'Dieses Gerät ist nicht bei iCloud angemeldet. Bitte zuerst anmelden.';
+
+  @override
+  String get syncDiagNoContainer => 'Du bist angemeldet, aber diese App hat noch keinen iCloud-Bereich. Aktiviere ihn mit den Schritten unten.';
+
+  @override
+  String get syncDiagPreparing => 'Der Bereich ist da. Warte darauf, dass er bereit ist.';
+
+  @override
+  String get syncRecheckWhat => 'Fragt das Gerät erneut nach dem iCloud-Status, von vorn.';
+
+  @override
+  String get syncRecheckOk => 'iCloud ist aktiviert';
+
+  @override
+  String get syncRecheckStill => 'Noch nicht aktiviert. Schalte es in den Einstellungen ein und tippe erneut. Wenn du es gerade eingeschaltet hast, versuche es in ein bis zwei Minuten noch einmal.';
+
+  @override
+  String get syncOpenFailed => 'Einstellungen konnten nicht geöffnet werden. Bitte vom Home-Bildschirm aus öffnen.';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

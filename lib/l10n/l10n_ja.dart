@@ -570,6 +570,27 @@ class L10nJa extends L10n {
   String get lockReasonOff => 'ロックを解除するには確認が必要です';
 
   @override
+  String get syncDiagSignedOut => 'この端末は iCloud にサインインしていません。まずサインインしてください。';
+
+  @override
+  String get syncDiagNoContainer => 'サインインは済んでいますが、このアプリの iCloud 領域がまだありません。下の手順でオンにしてください。';
+
+  @override
+  String get syncDiagPreparing => '領域は確保できました。準備が終わるのを待っています。';
+
+  @override
+  String get syncRecheckWhat => 'iCloud の状態を端末に最初から問い合わせます。';
+
+  @override
+  String get syncRecheckOk => 'iCloud がオンになりました';
+
+  @override
+  String get syncRecheckStill => 'まだオンになっていません。設定でオンにしてからもう一度押してください。今オンにした場合は 1〜2 分後にもう一度お試しください。';
+
+  @override
+  String get syncOpenFailed => '設定アプリを開けませんでした。ホーム画面から直接開いてください。';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 
