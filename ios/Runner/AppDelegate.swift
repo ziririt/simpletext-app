@@ -41,6 +41,72 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     ICloudBridge.register(messenger: engineBridge.applicationRegistrar.messenger())
+    ShareBridge.register(messenger: engineBridge.applicationRegistrar.messenger())
+  }
+
+  /// 다른 앱이 우리에게 파일을 열어 달라고 할 때.
+  ///
+  /// 2026-08-17 — 파일 앱이나 다른 앱의 '다음으로 열기'에서 텍스트·마크다운·
+  /// CSV를 고르면 여기로 들어온다. 어떤 종류를 받는지는 Info.plist의
+  /// CFBundleDocumentTypes가 정한다.
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+    if ShareBridge.take(url: url) { return true }
+    return super.application(app, open: url, options: options)
+  }
+}
+
+/// 밖에서 들어온 글을 다트에게 넘기는 얇은 다리.
+///
+/// 글이 도착하는 시점은 다트가 준비되기 전일 수 있다. 그래서 여기 서랍에
+/// 넣어 두고, 다트가 준비되면 'take'로 가지러 온다. 켜져 있는 동안 들어온
+/// 것은 바로 밀어 준다. **두 길이 다르므로 둘 다 있어야 한다** — 하나만
+/// 있으면 "처음엔 되는데 두 번째부터 안 된다"가 된다.
+enum ShareBridge {
+  private static var pending: String?
+  private static var channel: FlutterMethodChannel?
+
+  static func register(messenger: FlutterBinaryMessenger) {
+    let ch = FlutterMethodChannel(name: "skyblue/share", binaryMessenger: messenger)
+    ch.setMethodCallHandler { call, result in
+      switch call.method {
+      case "take":
+        result(pending)
+        // 준 것은 서랍에서 지운다 — 안 그러면 앱을 다시 켤 때마다 같은
+        // 글이 또 들어온다.
+        pending = nil
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    channel = ch
+  }
+
+  /// 파일에서 글을 읽어 서랍에 넣거나 바로 민다. 우리가 못 읽으면 false.
+  @discardableResult
+  static func take(url: URL) -> Bool {
+    // 다른 앱의 영역에 있는 파일이라 잠깐 문을 열어 달라고 해야 한다.
+    // 열었으면 반드시 닫는다 — 안 닫으면 시스템 자원이 샌다.
+    let scoped = url.startAccessingSecurityScopedResource()
+    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+
+    guard let data = try? Data(contentsOf: url) else { return false }
+    // UTF-8이 아닌 파일도 있다. 흔한 것부터 차례로 시도한다.
+    var text = String(data: data, encoding: .utf8)
+    if text == nil { text = String(data: data, encoding: .utf16) }
+    if text == nil { text = String(data: data, encoding: .isoLatin1) }
+    guard let t = text, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    else { return false }
+
+    if let ch = channel {
+      ch.invokeMethod("received", arguments: t)
+    } else {
+      pending = t
+    }
+    return true
   }
 }
 

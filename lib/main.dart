@@ -41,6 +41,7 @@ import 'export_service.dart';
 import 'import_service.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
+import 'share_intake.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -1755,6 +1756,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // 목록을 "이 기기에는 메모가 없다"로 읽고, 그 상태로 남의 기기 것과
     // 합친 결과를 기기에 되쓴다 — 메모가 통째로 날아가는 길이다.
     store.load().then((_) => ICloudSync.instance.boot());
+    // 다른 앱에서 보낸 글 받기(2026-08-17). 목록 화면이 살아 있는 동안
+    // 계속 듣는다.
+    _wireShare();
     // 맥 상단의 '파일' 메뉴. 첫 프레임 뒤에 단다 — 그때라야 L10n이 있다.
     if (MacMenu.supported) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _installMacMenu());
@@ -1894,17 +1898,30 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) _toast(context, L10n.of(context).clipboardEmpty);
       return;
     }
+    // 1단은 클립보드에 딸려 온 주소다. 거기 chatgpt.com이 있으면 추측이
+    // 아니라 사실이라 '(추정)'을 안 붙인다.
+    final fromUrl = sourceFromUrl(await ClipboardSource.read());
+    await _intake(text, tidy: true, known: fromUrl);
+  }
+
+  /// 밖에서 들어온 글로 메모를 하나 만든다.
+  ///
+  /// 2026-08-17 — 붙여넣기와 공유가 같은 자리를 쓰게 묶었다. 전에는
+  /// 붙여넣기 쪽에만 출처 감지가 붙어 있었고, 그래서 다른 길로 들어온
+  /// 글은 검사조차 안 됐다. **같은 일을 하는 자리가 둘이면 반드시
+  /// 어긋난다.**
+  Future<void> _intake(String text, {
+    required bool tidy,
+    SourceGuess known = SourceGuess.unknown,
+  }) async {
+    if (text.trim().isEmpty) return;
     final note = Note.fresh(body: text);
     note.pastedAt = DateTime.now().millisecondsSinceEpoch;
 
-    // 출처 알아내기, 두 단.
-    //
-    // 1단은 클립보드에 딸려 온 주소다. 거기 chatgpt.com이 있으면 추측이
-    // 아니라 사실이라 '(추정)'을 안 붙인다. 2단은 글의 생김새로 찍는 것이라
-    // 반드시 '(추정)'이 붙는다. 둘 다 안 되면 아무 말도 하지 않는다 —
-    // 틀린 출처를 조용히 박아 두는 건 안 하느니만 못하다.
-    final fromUrl = sourceFromUrl(await ClipboardSource.read());
-    final guess = fromUrl.isKnown ? fromUrl : guessSource(text);
+    // 2단은 글의 생김새로 찍는 것이라 반드시 '(추정)'이 붙는다. 둘 다
+    // 안 되면 아무 말도 하지 않는다 — 틀린 출처를 조용히 박아 두는 건
+    // 안 하느니만 못하다.
+    final guess = known.isKnown ? known : guessSource(text);
     if (guess.isKnown) {
       note.source = guess.name;
       note.sourceAuto = !guess.certain;
@@ -1913,7 +1930,23 @@ class _HomeScreenState extends State<HomeScreen> {
     store.notes.insert(0, note);
     await store.persist();
     if (!mounted) return;
-    await openNote(context, note.id, autoTidy: true);
+    await openNote(context, note.id, autoTidy: tidy);
+  }
+
+  /// 다른 앱에서 보낸 글을 받는다.
+  ///
+  /// 2026-08-17 — 정리를 자동으로 걸지 않는다. 붙여넣기는 사용자가 '붙여넣고
+  /// 정리'라고 적힌 버튼을 눌러서 온 것이라 정리를 기대하지만, 공유는 다른
+  /// 앱에서 그냥 보낸 것이다. 남이 보낸 글을 묻지도 않고 고쳐 놓으면
+  /// 사용자는 무슨 일이 일어났는지 모른다. 글은 열어 두고, 정리 버튼은
+  /// 바로 아래에 있다.
+  void _wireShare() {
+    ShareIntake.listen((t) {
+      if (mounted) _intake(t, tidy: false);
+    });
+    ShareIntake.take().then((t) {
+      if (t != null && mounted) _intake(t, tidy: false);
+    });
   }
 
   @override

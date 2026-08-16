@@ -31,6 +31,26 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- 2026-08-17 공유 시트로 받기.
+                 다른 앱의 '공유'에 Skyblue Note가 뜬다. 이 앱의 쓰임새가
+                 정확히 그 자리다 — 챗봇에서 답을 받은 그 화면에서 바로
+                 보내지 못하면, 앱을 열고 새 문서를 만들고 붙여넣는 세
+                 걸음이 된다. 세 걸음이면 대부분은 그냥 다른 앱에 넣는다. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+
+            <!-- 어느 앱에서든 글자를 끌어 고르면 뜨는 메뉴에도 올라간다.
+                 공유 시트보다 손이 덜 가서 더 자주 쓰이는 길이고,
+                 같은 배관을 쓰므로 공짜에 가깝다. -->
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

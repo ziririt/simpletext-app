@@ -58,6 +58,34 @@
 		<string>de</string>
 		<string>fr</string>
 	</array>
+	<!-- 2026-08-17 다른 앱에서 텍스트 파일을 'Skyblue Note로 열기'.
+
+	     아이폰 공유 시트에 이름을 올리려면 별도 익스텐션 타깃이 필요하고,
+	     그건 Xcode 프로젝트 파일을 건드리는 일이라 여기서 하지 않았다.
+	     그 파일이 망가지면 빌드 전체가 죽는다(2026-08-15에 겪었다).
+	     문서 열기는 plist만으로 되고 위험이 없다. -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Text</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.plain-text</string>
+				<string>public.utf8-plain-text</string>
+				<string>net.daringfireball.markdown</string>
+				<string>public.comma-separated-values-text</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>CFBundleName</key>
 	<string>simpletext</string>
 	<key>CFBundlePackageType</key>
