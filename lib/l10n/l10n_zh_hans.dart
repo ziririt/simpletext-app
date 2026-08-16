@@ -591,6 +591,12 @@ class L10nZhHans extends L10n {
   String get syncOpenFailed => '无法打开设置。请从主屏幕直接打开。';
 
   @override
+  String get menuFile => '文件';
+
+  @override
+  String get menuClose => '关闭';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 来自 \$src';
 

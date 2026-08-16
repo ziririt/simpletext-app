@@ -592,6 +592,12 @@ class L10nPt extends L10n {
   String get syncOpenFailed => 'Não foi possível abrir os Ajustes. Abra pela Tela de Início.';
 
   @override
+  String get menuFile => 'Arquivo';
+
+  @override
+  String get menuClose => 'Fechar';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

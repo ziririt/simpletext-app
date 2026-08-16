@@ -38,6 +38,7 @@ import 'core/wizard.dart';
 import 'export_service.dart';
 import 'import_service.dart';
 import 'lock_service.dart';
+import 'mac_menu.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -1458,6 +1459,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // 목록을 "이 기기에는 메모가 없다"로 읽고, 그 상태로 남의 기기 것과
     // 합친 결과를 기기에 되쓴다 — 메모가 통째로 날아가는 길이다.
     store.load().then((_) => ICloudSync.instance.boot());
+    // 맥 상단의 '파일' 메뉴. 첫 프레임 뒤에 단다 — 그때라야 L10n이 있다.
+    if (MacMenu.supported) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _installMacMenu());
+    }
   }
 
   @override
@@ -1540,6 +1545,46 @@ class _HomeScreenState extends State<HomeScreen> {
           ];
         },
       );
+
+  /// 맥 상단 '파일' 메뉴를 달고, 눌렀을 때 할 일을 잇는다.
+  ///
+  /// 글자를 여기서 넘기는 이유는 mac_menu.dart 머리말에 적어 뒀다 —
+  /// 짧게는, 아홉 언어 문구를 스위프트에 또 한 벌 두면 어긋나기 때문이다.
+  Future<void> _installMacMenu() async {
+    if (!mounted) return;
+    final l = L10n.of(context);
+    await MacMenu.install({
+      'file': l.menuFile,
+      'new': l.newNoteTooltip,
+      'import': l.importFiles,
+      'exportMd': l.exportAllMd,
+      'backup': l.exportBackup,
+      'close': l.menuClose,
+    }, onPick: (id) async {
+      if (!mounted) return;
+      switch (id) {
+        case 'new':
+          final fresh = Note.fresh(body: '');
+          store.notes.insert(0, fresh);
+          await store.persist();
+          if (!mounted) return;
+          await openNote(context, fresh.id);
+        case 'import':
+          final n = await ImportService.importFiles();
+          if (!mounted) return;
+          setState(() {});
+          _toast(context, n > 0 ? l.importDone(n) : l.importNone);
+        case 'exportMd':
+          final ok = await ExportService.shareAllMarkdown();
+          if (!mounted) return;
+          if (!ok) _toast(context, l.exportEmpty);
+        case 'backup':
+          final ok = await ExportService.shareBackup();
+          if (!mounted) return;
+          if (!ok) _toast(context, l.exportFailed);
+      }
+    });
+  }
 
   Future<void> _pasteAndTidy() async {
     final data = await Clipboard.getData('text/plain');

@@ -322,6 +322,8 @@ abstract class L10n {
   String get syncRecheckOk;
   String get syncRecheckStill;
   String get syncOpenFailed;
+  String get menuFile;
+  String get menuClose;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -608,6 +610,8 @@ abstract class L10n {
         'syncRecheckOk': syncRecheckOk,
         'syncRecheckStill': syncRecheckStill,
         'syncOpenFailed': syncOpenFailed,
+        'menuFile': menuFile,
+        'menuClose': menuClose,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

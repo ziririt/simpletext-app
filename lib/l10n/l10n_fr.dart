@@ -593,6 +593,12 @@ class L10nFr extends L10n {
   String get syncOpenFailed => 'Impossible d\'ouvrir Réglages. Ouvrez-le depuis l\'écran d\'accueil.';
 
   @override
+  String get menuFile => 'Fichier';
+
+  @override
+  String get menuClose => 'Fermer';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src le \$date';
 

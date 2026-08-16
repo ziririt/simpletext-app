@@ -593,6 +593,12 @@ class L10nDe extends L10n {
   String get syncOpenFailed => 'Einstellungen konnten nicht geöffnet werden. Bitte vom Home-Bildschirm aus öffnen.';
 
   @override
+  String get menuFile => 'Ablage';
+
+  @override
+  String get menuClose => 'Schließen';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

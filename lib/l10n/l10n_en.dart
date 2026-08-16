@@ -592,6 +592,12 @@ class L10nEn extends L10n {
   String get syncOpenFailed => 'Could not open Settings. Please open it from the Home Screen.';
 
   @override
+  String get menuFile => 'File';
+
+  @override
+  String get menuClose => 'Close';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from \$src on \$date';
 

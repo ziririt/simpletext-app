@@ -591,6 +591,12 @@ class L10nJa extends L10n {
   String get syncOpenFailed => '設定アプリを開けませんでした。ホーム画面から直接開いてください。';
 
   @override
+  String get menuFile => 'ファイル';
+
+  @override
+  String get menuClose => '閉じる';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 

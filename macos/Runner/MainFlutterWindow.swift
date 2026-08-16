@@ -2,6 +2,9 @@ import Cocoa
 import FlutterMacOS
 
 class MainFlutterWindow: NSWindow {
+  /// 파일 메뉴의 임자. 아래 주석 참고 — 놓으면 메뉴가 죽는다.
+  private var menuBridge: AppMenuBridge?
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
@@ -20,7 +23,102 @@ class MainFlutterWindow: NSWindow {
     // 나뉘지 않는다 — 어긋나 봐야 티가 안 나는 곳만 두 벌이라는 뜻이다.
     ICloudBridge.register(messenger: flutterViewController.engine.binaryMessenger)
 
+    // 2026-08-17 소유자 신고 — "맥용 앱에서 메뉴 중 '파일'이 아예 없는데?"
+    // 우리가 지운 게 아니라 플러터의 맥 틀에 처음부터 없다(문서를 다루지
+    // 않는 앱을 전제로 뺐다). 우리는 문서를 다루는 앱이다.
+    //
+    // 다리를 변수에 붙들어 둔다. 메뉴 항목이 이 객체를 target으로 삼는데,
+    // NSMenuItem의 target은 약한 참조라 여기서 안 잡으면 곧 사라지고
+    // 메뉴가 회색으로 죽는다.
+    menuBridge = AppMenuBridge(
+      channel: FlutterMethodChannel(
+        name: "skyblue/menu",
+        binaryMessenger: flutterViewController.engine.binaryMessenger))
+
     super.awakeFromNib()
+  }
+}
+
+/// 맥 상단 메뉴에 '파일'을 끼워 넣는다.
+///
+/// 2026-08-17 — 플러터의 맥 틀(MainMenu.xib)에는 파일 메뉴가 없다. 앱 ·
+/// 편집 · 보기 · 윈도우 · 도움말뿐이다. 맥 사용자에게 파일 메뉴가 없다는
+/// 것은 "이 앱은 맥 앱이 아니다"라는 신호나 마찬가지다 — ⌘N도 ⌘O도 안
+/// 먹는다는 뜻이니까.
+///
+/// 플러터의 PlatformMenuBar는 쓰지 않았다. 그건 메뉴 막대를 **통째로**
+/// 갈아 끼우기 때문에, 지금 편집 메뉴에 들어 있는 맞춤법 · 대체 · 변환 ·
+/// 받아쓰기 · 애플 글쓰기 도구가 전부 사라진다. 파일 메뉴 하나를 얻으려고
+/// 열을 잃는 거래다. 그래서 있는 막대에 하나만 끼워 넣는다.
+///
+/// 글자는 다트가 넘긴다. 아홉 언어 문구를 여기 또 한 벌 두면 반드시
+/// 어긋난다 — 이 앱은 이미 아이클라우드 다리에서 두 벌을 겪고 있다.
+final class AppMenuBridge: NSObject {
+  private let channel: FlutterMethodChannel
+
+  init(channel: FlutterMethodChannel) {
+    self.channel = channel
+    super.init()
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard call.method == "install",
+        let titles = call.arguments as? [String: String]
+      else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      // 메뉴는 반드시 주 스레드에서 손댄다.
+      DispatchQueue.main.async {
+        self?.install(titles)
+        result(true)
+      }
+    }
+  }
+
+  @objc private func fire(_ sender: NSMenuItem) {
+    guard let id = sender.representedObject as? String else { return }
+    channel.invokeMethod("menu", arguments: id)
+  }
+
+  private static let slot = NSUserInterfaceItemIdentifier("skyblueFile")
+
+  private func install(_ t: [String: String]) {
+    guard let main = NSApp.mainMenu else { return }
+    // 다시 부르면 옛것을 걷어내고 새로 단다. 언어를 바꾸면 다시 부른다.
+    if let old = main.items.first(where: { $0.identifier == AppMenuBridge.slot }) {
+      main.removeItem(old)
+    }
+
+    let menu = NSMenu(title: t["file"] ?? "File")
+
+    func add(_ id: String, _ key: String, _ mask: NSEvent.ModifierFlags = .command) {
+      let it = NSMenuItem(
+        title: t[id] ?? id, action: #selector(fire(_:)), keyEquivalent: key)
+      it.target = self
+      it.representedObject = id
+      it.keyEquivalentModifierMask = mask
+      menu.addItem(it)
+    }
+
+    add("new", "n")
+    menu.addItem(.separator())
+    add("import", "o")
+    add("exportMd", "e", [.command, .shift])
+    add("backup", "")
+    menu.addItem(.separator())
+    // 닫기는 우리가 처리하지 않는다. 대상을 비워 두면 맥이 알아서 지금
+    // 맨 앞 창에게 보낸다 — 애플이 정해 둔 길이고, 우리가 창을 관리하는
+    // 것보다 언제나 낫다.
+    menu.addItem(
+      NSMenuItem(
+        title: t["close"] ?? "Close",
+        action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w"))
+
+    let holder = NSMenuItem()
+    holder.identifier = AppMenuBridge.slot
+    holder.submenu = menu
+    // 애플 메뉴 다음, 편집 앞. 맥의 관습이 그렇고, 관습을 깨면 사용자가
+    // 없는 자리를 뒤진다.
+    main.insertItem(holder, at: min(1, main.items.count))
   }
 }
 

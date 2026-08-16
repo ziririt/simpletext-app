@@ -591,6 +591,12 @@ class L10nKo extends L10n {
   String get syncOpenFailed => '설정 앱을 열지 못했습니다. 홈 화면에서 직접 열어 주십시오.';
 
   @override
+  String get menuFile => '파일';
+
+  @override
+  String get menuClose => '닫기';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 
