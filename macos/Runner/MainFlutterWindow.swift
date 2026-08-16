@@ -214,7 +214,22 @@ enum ICloudBridge {
   /// 쓸 수 없는 상태면 nil — 오류가 아니라 '동기화 꺼짐'이다.
   private static func documentsPath() -> String? {
     let fm = FileManager.default
-    guard fm.ubiquityIdentityToken != nil else { return nil }
+    // 2026-08-17 — 여기 문지기가 하나 있었다.
+    //
+    //     guard fm.ubiquityIdentityToken != nil else { return nil }
+    //
+    // 소유자 아이폰이 "로그인되어 있지 않습니다"를 띄웠는데 로그인은 되어
+    // 있었다. 같은 계정의 맥에 우리 컨테이너 폴더가 실제로 내려와 있었고,
+    // 앱 서명에도 iCloud 권한이 제대로 박혀 있었다. 계정도 권한도 되는데
+    // 우리 코드가 '안 된다'고 말하고 있었던 것이다.
+    //
+    // ubiquityIdentityToken은 로그인이 되어 있어도 nil이 나올 수 있다 —
+    // iCloud Drive가 꺼져 있거나, 계정 상태를 아직 못 받아 왔거나,
+    // 시스템이 아직 이 앱에 알려 줄 준비가 안 됐거나.
+    //
+    // **되는지 안 되는지는 실제로 폴더를 달라고 해 보고 판단한다.**
+    // 경로가 나오면 되는 것이고 안 나오면 안 되는 것이다. 미리 물어보고
+    // 지레 포기하지 않는다.
     guard let root = fm.url(forUbiquityContainerIdentifier: containerId) else { return nil }
     let docs = root.appendingPathComponent("Documents", isDirectory: true)
     try? fm.createDirectory(at: docs, withIntermediateDirectories: true)

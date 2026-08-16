@@ -94,9 +94,15 @@ enum ICloudBridge {
         // 무조건 true를 돌려주고 있었으니, 실패해도 화면은 아무 말도 못
         // 한다. 완료 신호를 받아서 그대로 넘긴다 — 실패하면 화면이
         // "직접 열어 주십시오"라고 말할 수 있다.
-        if let url = URL(string: UIApplication.openSettingsURLString),
-          UIApplication.shared.canOpenURL(url)
-        {
+        // 2026-08-17 — 여기에도 같은 잘못이 있었다. 0.3.38.1에서 넣은
+        // canOpenURL 검사가 'app-settings:'에 대해 false를 돌려주는 바람에
+        // 열어 보지도 못하고 실패로 끝났다(소유자 화면에 "설정 앱을 열지
+        // 못했습니다"가 떴다).
+        //
+        // canOpenURL은 앱이 질의 목록에 미리 적어 둔 주소가 아니면 무조건
+        // 아니라고 답한다. 물어보지 말고 그냥 연다 — 열리면 열리는 것이고,
+        // 안 열리면 완료 신호가 알려 준다.
+        if let url = URL(string: UIApplication.openSettingsURLString) {
           UIApplication.shared.open(url, options: [:]) { ok in
             result(ok)
           }
@@ -133,7 +139,22 @@ enum ICloudBridge {
   /// 몇 초 간격으로 몇 번 더 물어본다.
   private static func documentsPath() -> String? {
     let fm = FileManager.default
-    guard fm.ubiquityIdentityToken != nil else { return nil }
+    // 2026-08-17 — 여기 문지기가 하나 있었다.
+    //
+    //     guard fm.ubiquityIdentityToken != nil else { return nil }
+    //
+    // 소유자 아이폰이 "로그인되어 있지 않습니다"를 띄웠는데 로그인은 되어
+    // 있었다. 같은 계정의 맥에 우리 컨테이너 폴더가 실제로 내려와 있었고,
+    // 앱 서명에도 iCloud 권한이 제대로 박혀 있었다. 계정도 권한도 되는데
+    // 우리 코드가 '안 된다'고 말하고 있었던 것이다.
+    //
+    // ubiquityIdentityToken은 로그인이 되어 있어도 nil이 나올 수 있다 —
+    // iCloud Drive가 꺼져 있거나, 계정 상태를 아직 못 받아 왔거나,
+    // 시스템이 아직 이 앱에 알려 줄 준비가 안 됐거나.
+    //
+    // **되는지 안 되는지는 실제로 폴더를 달라고 해 보고 판단한다.**
+    // 경로가 나오면 되는 것이고 안 나오면 안 되는 것이다. 미리 물어보고
+    // 지레 포기하지 않는다.
     guard let root = fm.url(forUbiquityContainerIdentifier: containerId) else { return nil }
     let docs = root.appendingPathComponent("Documents", isDirectory: true)
     try? fm.createDirectory(at: docs, withIntermediateDirectories: true)

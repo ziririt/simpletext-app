@@ -4968,11 +4968,19 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
   /// 기기에 물어본 사실 그대로를 먼저 말해 준다.
   (String, IconData) _diagnosis(L10n l) {
     final sync = ICloudSync.instance;
-    if (!sync.signedIn) return (l.syncDiagSignedOut, Icons.person_off_outlined);
-    if (!sync.containerReady) {
-      return (l.syncDiagNoContainer, Icons.cloud_off_outlined);
+    // 2026-08-17 — 순서를 뒤집었다.
+    //
+    // 전에는 '로그인했는가'를 먼저 물었다. 그런데 그 값은 로그인이 되어
+    // 있어도 nil이 나올 수 있어서, 멀쩡한 기기에 "로그인되어 있지
+    // 않습니다"를 띄웠다(소유자 아이폰에서 실제로 그랬다).
+    //
+    // 먼저 물을 것은 **자리를 실제로 받았는가**다. 그건 사실이고,
+    // 로그인 여부는 못 받았을 때 까닭을 설명하는 데만 쓴다.
+    if (sync.containerReady) {
+      return (l.syncDiagPreparing, Icons.hourglass_bottom);
     }
-    return (l.syncDiagPreparing, Icons.hourglass_bottom);
+    if (!sync.signedIn) return (l.syncDiagSignedOut, Icons.person_off_outlined);
+    return (l.syncDiagNoContainer, Icons.cloud_off_outlined);
   }
 
   @override
