@@ -301,25 +301,25 @@ class L10nKo extends L10n {
   String get menuAiKey => 'AI API 키';
 
   @override
-  String get syncTitle => '아이클라우드';
+  String get syncTitle => 'iCloud 동기화';
 
   @override
   String get syncStateOn => '아이폰·아이패드·맥에서 같은 메모를 봅니다';
 
   @override
-  String get syncStateOff => '기기 설정에서 아이클라우드 드라이브를 켜 주세요';
+  String get syncStateOff => '기기 설정에서 iCloud Drive를 켜 주세요';
 
   @override
   String get syncStateSyncing => '맞추는 중…';
 
   @override
-  String get aiKeyNotSynced => '메모는 아이클라우드로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
+  String get aiKeyNotSynced => '메모는 iCloud로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
 
   @override
   String get syncStateSignedOut => '눌러서 방법 보기';
 
   @override
-  String get syncHelpTitle => '아이클라우드 켜는 법';
+  String get syncHelpTitle => 'iCloud 켜는 법';
 
   @override
   String get syncHelpSteps =>
@@ -570,19 +570,19 @@ class L10nKo extends L10n {
   String get lockReasonOff => '잠금을 끄려면 확인이 필요합니다';
 
   @override
-  String get syncDiagSignedOut => '이 기기가 아이클라우드에 로그인되어 있지 않습니다. 먼저 로그인해 주십시오.';
+  String get syncDiagSignedOut => '이 기기가 iCloud에 로그인되어 있지 않습니다. 먼저 로그인해 주십시오.';
 
   @override
-  String get syncDiagNoContainer => '로그인은 되어 있는데, 이 앱에 아이클라우드 자리가 아직 없습니다. 아래 절차대로 켜 주십시오.';
+  String get syncDiagNoContainer => '로그인은 되어 있는데, 이 앱에 iCloud 자리가 아직 없습니다. 아래 절차대로 켜 주십시오.';
 
   @override
   String get syncDiagPreparing => '자리는 받았습니다. 준비가 끝나기를 기다리는 중입니다.';
 
   @override
-  String get syncRecheckWhat => '기기에 아이클라우드 상태를 처음부터 다시 물어봅니다.';
+  String get syncRecheckWhat => '기기에 iCloud 상태를 처음부터 다시 물어봅니다.';
 
   @override
-  String get syncRecheckOk => '아이클라우드가 켜졌습니다';
+  String get syncRecheckOk => 'iCloud가 켜졌습니다';
 
   @override
   String get syncRecheckStill => '아직 켜지지 않았습니다. 설정에서 켠 뒤 다시 눌러 주십시오. 방금 켰다면 1~2분 뒤에 한 번 더 눌러 보십시오.';
