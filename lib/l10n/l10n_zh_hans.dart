@@ -8,7 +8,7 @@ class L10nZhHans extends L10n {
   String get localeTag => 'zh-Hans';
 
   @override
-  String get appTitle => '简文本';
+  String get appTitle => 'Skyblue Note';
 
   @override
   String get versionLabel => '版本';
@@ -46,12 +46,12 @@ class L10nZhHans extends L10n {
   String dateShort(int y, int m, int d) => '$y/$m/$d';
 
   @override
-  String get seedTitle => '欢迎使用简文本';
+  String get seedTitle => '欢迎使用 Skyblue Note';
   @override
   String get seedTag => '使用方法';
   @override
   String get seedBody => [
-        '简文本使用方法',
+        'Skyblue Note 使用方法',
         '',
         '1. 复制 ChatGPT 或 Claude 的回答，然后点"粘贴并整理"。',
         '2. 在预览中对比原文和结果，点"应用"即可。',
@@ -64,7 +64,7 @@ class L10nZhHans extends L10n {
         '|------|------|--------|',
         '| 苹果 | AAPL | +14.2% | 12% |',
         '| 微软 | MSFT | +21.5%',
-        '| 英伟达 | NVDA | +48.9% | 22% | 多余单元格 |',
+        '| 英伟达 | NVDA | +48.9% | 22% |',
         '|特斯拉|TSLA|-8.3%|8%|',
       ].join('\n');
 

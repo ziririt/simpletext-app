@@ -8,7 +8,7 @@ class L10nEn extends L10n {
   String get localeTag => 'en';
 
   @override
-  String get appTitle => 'SimpleText';
+  String get appTitle => 'Skyblue Note';
 
   @override
   String get versionLabel => 'Version';
@@ -46,12 +46,12 @@ class L10nEn extends L10n {
   String dateShort(int y, int m, int d) => '$m/$d/$y';
 
   @override
-  String get seedTitle => 'Welcome to SimpleText';
+  String get seedTitle => 'Welcome to Skyblue Note';
   @override
   String get seedTag => 'How to use';
   @override
   String get seedBody => [
-        'How to use SimpleText',
+        'How to use Skyblue Note',
         '',
         '1. Copy an answer from ChatGPT or Claude, then tap "Paste & Tidy".',
         '2. Compare the original and the result in the preview, tap "Apply" — done.',
@@ -64,7 +64,7 @@ class L10nEn extends L10n {
         '|------|------|--------|',
         '| Apple | AAPL | +14.2% | 12% |',
         '| Microsoft | MSFT | +21.5%',
-        '| Nvidia | NVDA | +48.9% | 22% | extra cell |',
+        '| Nvidia | NVDA | +48.9% | 22% |',
         '|Tesla|TSLA|-8.3%|8%|',
       ].join('\n');
 
