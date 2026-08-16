@@ -403,6 +403,17 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
   bool _asking = false;
   int _leftAt = 0;
 
+  /// **정말** 나갔다 왔는가.
+  ///
+  /// 2026-08-17 — 이게 없어서 맥에서 확인 창이 무한 반복됐다. 맥은 확인
+  /// 창이 뜨거나 다른 창을 클릭해도 inactive까지만 오고 paused는 안 온다.
+  /// inactive를 '나갔다'로 치면 확인 창이 뜨는 순간 스스로 다시 잠근다.
+  bool _away = false;
+
+  /// 확인에 성공한 시각. 이 직후에 오는 신호는 무시한다 — 확인 창이
+  /// 닫히면서 오는 resumed가 우리 손을 떠난 뒤에 도착할 수 있다.
+  int _unlockedAt = 0;
+
   @override
   void initState() {
     super.initState();
@@ -424,20 +435,32 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_asking) return;
     final on = store.settings.lockOn;
+    final now = DateTime.now().millisecondsSinceEpoch;
     switch (state) {
       case AppLifecycleState.inactive:
-      case AppLifecycleState.hidden:
+        // **나간 게 아니다.** 잠깐 흐려진 것이다. 확인 창이 뜨거나, 다른
+        // 창을 클릭하거나, 알림 센터를 열어도 여기로 온다. 이걸 '나갔다'로
+        // 치면 확인 창이 뜨는 순간 스스로 다시 잠그는 무한 반복이 된다
+        // (2026-08-17 맥에서 실제로 그랬다). 가림막만 켜고 만다.
         if (on && !_shield) setState(() => _shield = true);
+      case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
-        _leftAt = DateTime.now().millisecondsSinceEpoch;
+        _away = true;
+        _leftAt = now;
         if (on && !_shield) setState(() => _shield = true);
       case AppLifecycleState.resumed:
-        final lock = shouldLock(
-          enabled: on,
-          leftAtMs: _leftAt,
-          nowMs: DateTime.now().millisecondsSinceEpoch,
-          graceSec: store.settings.lockGraceSec,
-        );
+        // 나간 적이 없으면 돌아온 것도 아니다.
+        // 그리고 방금 확인을 통과했다면 그 창이 닫히며 오는 신호다.
+        final justUnlocked = now - _unlockedAt < 1500;
+        final lock = _away &&
+            !justUnlocked &&
+            shouldLock(
+              enabled: on,
+              leftAtMs: _leftAt,
+              nowMs: now,
+              graceSec: store.settings.lockGraceSec,
+            );
+        _away = false;
         setState(() {
           _shield = false;
           if (lock) _locked = true;
@@ -454,7 +477,14 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
     final ok = await LockService.instance.ask(L10n.of(context).lockReasonOpen);
     _asking = false;
     if (!mounted) return;
-    if (ok) setState(() => _locked = false);
+    if (!ok) return;
+    // 나간 시각을 지금으로 적는다. 0으로 두면 규칙이 다음 신호에서 또
+    // "앱을 새로 켠 것"으로 읽고 잠근다(2026-08-17 무한 반복의 한 축).
+    final now = DateTime.now().millisecondsSinceEpoch;
+    _leftAt = now;
+    _unlockedAt = now;
+    _away = false;
+    setState(() => _locked = false);
   }
 
   @override
@@ -467,7 +497,14 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
       widget.child,
       if (cover)
         Positioned.fill(
-          child: Container(
+          // 2026-08-17 소유자 스크린샷 — 글자에 빨간 글씨와 노란 밑줄이
+          // 그어져 있었다. 우리가 그은 게 아니다. 이 화면은 앱의 맨 바깥에
+          // 얹히는 층이라 위에 Material이 없고, 그러면 프레임워크가 "이
+          // 글자가 어디에 얹힌 건지 모르겠다"는 표시를 한다.
+          //
+          // 마법 가루 판에서 겪은 것과 똑같은 문제다. 그때 고치면서 여기도
+          // 같은 처지라는 걸 알아챘어야 했다.
+          child: Material(
             color: c.bg,
             child: SafeArea(
               child: Center(
