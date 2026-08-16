@@ -450,6 +450,20 @@ class L10nEn extends L10n {
 
   @override
   String importDone(int n) => 'Imported \$n notes';
+
+  @override
+  String get sourceGuessSuffix => '(guess)';
+
+  @override
+  String pastedFrom(String src, String date) =>
+      'from \$src on \$date';
+
+  @override
+  String pastedOn(String date) => 'pasted on \$date';
+
+  @override
+  String staleWarn(int days) =>
+      'This answer is \$days days old. The model may have changed since.';
   @override
   String get settingsSecView => 'Display';
   @override

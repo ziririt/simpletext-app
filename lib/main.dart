@@ -20,10 +20,12 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
+import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'core/hangul.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
+import 'core/source_detect.dart';
 import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
 import 'core/trash.dart';
@@ -407,6 +409,17 @@ class Note {
   List<String> history;
   String lastReport;
 
+  /// 이 글을 붙여넣은 시각. 0이면 붙여넣은 게 아니라 직접 쓴 글이다.
+  ///
+  /// 2026-08-16 소유자 제안 — 수정일과 따로 둔다. AI 답변에서 진짜 중요한
+  /// 시각은 '그 답을 받은 때'다. 그게 그 대화를 한 날이고, 그 모델 버전이
+  /// 살아 있던 때다. 수정일은 내가 마지막으로 손댄 날일 뿐이다.
+  int pastedAt;
+
+  /// 출처를 우리가 추측한 것인가. true면 화면에 '(추정)'을 붙인다.
+  /// 사용자가 직접 고르면 false가 된다.
+  bool sourceAuto;
+
   Note({
     required this.id,
     this.title = '',
@@ -419,6 +432,8 @@ class Note {
     required this.updatedAt,
     List<String>? history,
     this.lastReport = '',
+    this.pastedAt = 0,
+    this.sourceAuto = false,
   })  : tags = tags ?? [],
         history = history ?? [];
 
@@ -445,6 +460,8 @@ class Note {
         'updatedAt': updatedAt,
         'history': history,
         'lastReport': lastReport,
+        'pastedAt': pastedAt,
+        'sourceAuto': sourceAuto,
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -454,6 +471,8 @@ class Note {
         originalBody: (j['originalBody'] ?? '') as String,
         pinned: (j['pinned'] ?? false) as bool,
         source: (j['source'] ?? '') as String,
+        pastedAt: (j['pastedAt'] ?? 0) as int,
+        sourceAuto: (j['sourceAuto'] ?? false) as bool,
         tags: ((j['tags'] ?? []) as List).map((e) => e.toString()).toList(),
         createdAt: (j['createdAt'] ?? 0) as int,
         updatedAt: (j['updatedAt'] ?? 0) as int,
@@ -978,6 +997,21 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
     final note = Note.fresh(body: text);
+    note.pastedAt = DateTime.now().millisecondsSinceEpoch;
+
+    // 출처 알아내기, 두 단.
+    //
+    // 1단은 클립보드에 딸려 온 주소다. 거기 chatgpt.com이 있으면 추측이
+    // 아니라 사실이라 '(추정)'을 안 붙인다. 2단은 글의 생김새로 찍는 것이라
+    // 반드시 '(추정)'이 붙는다. 둘 다 안 되면 아무 말도 하지 않는다 —
+    // 틀린 출처를 조용히 박아 두는 건 안 하느니만 못하다.
+    final fromUrl = sourceFromUrl(await ClipboardSource.read());
+    final guess = fromUrl.isKnown ? fromUrl : guessSource(text);
+    if (guess.isKnown) {
+      note.source = guess.name;
+      note.sourceAuto = !guess.certain;
+    }
+
     store.notes.insert(0, note);
     await store.persist();
     if (!mounted) return;
@@ -1480,21 +1514,70 @@ class _EditorScreenState extends State<EditorScreen> {
       // 자료가 없는 로케일이면 형식만 기본으로 떨어뜨린다. 화면을 비우지 않는다.
       text = '${DateFormat.yMMMMd().format(t)}  ${DateFormat.Hm().format(t)}';
     }
-    return SizedBox(
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: context.c.sub,
+    // 2026-08-16 — 붙여넣은 글이면 '언제 어디서 왔는지'를 같이 적는다.
+    // 이게 이 앱이 다른 노트앱과 갈리는 자리다. 저쪽에서 메모는 그냥
+    // 글자지만, 우리에게 메모는 출처와 시각이 붙은 AI 답변이다.
+    final n = _note;
+    final l = L10n.of(context);
+    String? from;
+    if (n != null && n.pastedAt > 0) {
+      final pt = DateTime.fromMillisecondsSinceEpoch(n.pastedAt);
+      String pd;
+      try {
+        pd = DateFormat.MMMd(tag).format(pt);
+      } catch (_) {
+        pd = DateFormat.MMMd().format(pt);
+      }
+      final src = n.source.trim();
+      from = src.isEmpty
+          ? l.pastedOn(pd)
+          : l.pastedFrom(
+              src + (n.sourceAuto ? l.sourceGuessSuffix : ''), pd);
+    }
+
+    // 낡은 답에는 한 줄 붙인다. AI 답변은 썩는다 — 모델이 바뀌면 석 달 전
+    // 답이 틀린 답이 된다. 직접 쓴 글에는 절대 안 붙인다(잔소리가 된다).
+    final stale = n != null &&
+        isStale(
+            pastedAt: n.pastedAt,
+            nowMs: DateTime.now().millisecondsSinceEpoch);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            from == null ? text : '$text · $from',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: context.c.sub,
+            ),
           ),
-        ),
+          if (stale) ...[
+            const SizedBox(height: 6),
+            Text(
+              l.staleWarn(daysSincePaste(
+                  pastedAt: n.pastedAt,
+                  nowMs: DateTime.now().millisecondsSinceEpoch)),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 12, height: 1.35, color: context.c.warnInk),
+            ),
+          ],
+        ],
       ),
     );
+  }
+
+  /// 지금 보고 있는 메모. 날짜 줄에서 쓴다.
+  Note? get _note {
+    for (final n in store.notes) {
+      if (n.id == widget.noteId) return n;
+    }
+    return null;
   }
 
   Widget _accessoryBar({bool atTop = false}) {
@@ -2740,6 +2823,8 @@ class _EditorScreenState extends State<EditorScreen> {
                     ],
                     onChanged: (v) async {
                       note.source = v ?? '';
+                      // 손으로 고른 순간부터는 추측이 아니다.
+                      note.sourceAuto = false;
                       await _save();
                       setState(() {});
                     },

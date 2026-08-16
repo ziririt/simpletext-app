@@ -277,6 +277,10 @@ abstract class L10n {
   String get importAppend;
   String get importNone;
   String importDone(int n);
+  String get sourceGuessSuffix;
+  String pastedFrom(String src, String date);
+  String pastedOn(String date);
+  String staleWarn(int days);
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -516,6 +520,7 @@ abstract class L10n {
         'importFiles': importFiles,
         'importFilesSub': importFilesSub,
         'importAppend': importAppend,
+        'sourceGuessSuffix': sourceGuessSuffix,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

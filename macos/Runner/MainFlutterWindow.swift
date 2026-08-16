@@ -62,6 +62,18 @@ enum ICloudBridge {
           NSWorkspace.shared.open(url)
         }
         result(true)
+      case "clipboardSource":
+        let pb = NSPasteboard.general
+        var found: String?
+        if let u = pb.string(forType: .URL) {
+          found = u
+        }
+        if found == nil, let h = pb.string(forType: .html) {
+          // HTML 조각은 통째로 클 수 있다. 원본 주소는 앞쪽에 있으므로
+          // 앞부분만 넘긴다 — 다트로 수 메가바이트를 넘길 이유가 없다.
+          found = String(h.prefix(4000))
+        }
+        result(found)
       default:
         result(FlutterMethodNotImplemented)
       }

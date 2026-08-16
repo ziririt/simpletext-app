@@ -449,6 +449,20 @@ class L10nJa extends L10n {
 
   @override
   String importDone(int n) => 'メモを\$n件読み込みました';
+
+  @override
+  String get sourceGuessSuffix => '（推定）';
+
+  @override
+  String pastedFrom(String src, String date) =>
+      '\$date に \$src から';
+
+  @override
+  String pastedOn(String date) => '\$date に貼り付け';
+
+  @override
+  String staleWarn(int days) =>
+      '受け取ってから\$days日たった回答です。その間にモデルが変わっている可能性があります。';
   @override
   String get settingsSecView => '表示';
   @override

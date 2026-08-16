@@ -449,6 +449,20 @@ class L10nKo extends L10n {
 
   @override
   String importDone(int n) => '메모 \$n개를 가져왔습니다';
+
+  @override
+  String get sourceGuessSuffix => '(추정)';
+
+  @override
+  String pastedFrom(String src, String date) =>
+      '\$src에서 \$date에 가져옴';
+
+  @override
+  String pastedOn(String date) => '\$date에 붙여넣음';
+
+  @override
+  String staleWarn(int days) =>
+      '받은 지 \$days일 된 답입니다. 그 사이 모델이 바뀌었을 수 있습니다.';
   @override
   String get settingsSecView => '보기';
   @override

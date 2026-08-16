@@ -80,6 +80,20 @@ enum ICloudBridge {
           UIApplication.shared.open(url)
         }
         result(true)
+      case "clipboardSource":
+        // 붙여넣기 **직후에만** 불린다(다트 쪽 clipboard_source.dart 참고).
+        // iOS 16부터 클립보드를 읽으면 확인 창이 뜨는데, 사용자가 방금
+        // 붙여넣기를 눌러 글자를 읽어 온 흐름이라 그 창은 이미 지나간 뒤다.
+        // 아무 때나 부르면 뜬금없는 확인 창이 뜬다.
+        //
+        // 여기서 찾는 것은 '어디서 복사했는가' 하나뿐이다. 글자는 이미
+        // 플러터가 읽었다.
+        var found: String?
+        let pb = UIPasteboard.general
+        if pb.hasURLs, let u = pb.url {
+          found = u.absoluteString
+        }
+        result(found)
       default:
         result(FlutterMethodNotImplemented)
       }

@@ -449,6 +449,20 @@ class L10nZhHant extends L10n {
 
   @override
   String importDone(int n) => '已匯入 \$n 則備忘';
+
+  @override
+  String get sourceGuessSuffix => '（推測）';
+
+  @override
+  String pastedFrom(String src, String date) =>
+      '\$date 來自 \$src';
+
+  @override
+  String pastedOn(String date) => '\$date 貼上';
+
+  @override
+  String staleWarn(int days) =>
+      '這個回答已過去 \$days 天，其間模型可能已更新。';
   @override
   String get settingsSecView => '顯示';
   @override

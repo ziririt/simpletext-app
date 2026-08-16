@@ -450,6 +450,20 @@ class L10nEs extends L10n {
 
   @override
   String importDone(int n) => 'Se importaron \$n notas';
+
+  @override
+  String get sourceGuessSuffix => '(estimado)';
+
+  @override
+  String pastedFrom(String src, String date) =>
+      'de \$src el \$date';
+
+  @override
+  String pastedOn(String date) => 'pegado el \$date';
+
+  @override
+  String staleWarn(int days) =>
+      'Esta respuesta tiene \$days días. El modelo puede haber cambiado.';
   @override
   String get settingsSecView => 'Pantalla';
   @override
