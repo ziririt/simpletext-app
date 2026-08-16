@@ -598,6 +598,9 @@ class L10nEs extends L10n {
   String get menuClose => 'Cerrar';
 
   @override
+  String get menuPrefs => 'Ajustes…';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src el \$date';
 

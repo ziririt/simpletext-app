@@ -1560,6 +1560,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'exportMd': l.exportAllMd,
       'backup': l.exportBackup,
       'close': l.menuClose,
+      'settings': l.menuPrefs,
     }, onPick: (id) async {
       if (!mounted) return;
       switch (id) {
@@ -1582,6 +1583,10 @@ class _HomeScreenState extends State<HomeScreen> {
           final ok = await ExportService.shareBackup();
           if (!mounted) return;
           if (!ok) _toast(context, l.exportFailed);
+        case 'settings':
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()));
+          if (mounted) setState(() {});
       }
     });
   }

@@ -597,6 +597,9 @@ class L10nKo extends L10n {
   String get menuClose => '닫기';
 
   @override
+  String get menuPrefs => '설정…';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 

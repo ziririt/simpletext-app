@@ -597,6 +597,9 @@ class L10nZhHant extends L10n {
   String get menuClose => '關閉';
 
   @override
+  String get menuPrefs => '設定…';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 來自 \$src';
 

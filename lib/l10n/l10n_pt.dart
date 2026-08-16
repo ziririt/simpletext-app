@@ -598,6 +598,9 @@ class L10nPt extends L10n {
   String get menuClose => 'Fechar';
 
   @override
+  String get menuPrefs => 'Ajustes…';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

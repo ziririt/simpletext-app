@@ -113,6 +113,30 @@ final class AppMenuBridge: NSObject {
         title: t["close"] ?? "Close",
         action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w"))
 
+    // 앱 메뉴의 '설정…'을 잇는다.
+    //
+    // 2026-08-17 소유자 신고 — "설정이 비활성화되어 있다. 왜?"
+    // 플러터의 맥 틀에 그 줄이 이렇게 들어 있다:
+    //     <menuItem title="Preferences…" keyEquivalent="," id="..."/>
+    // **동작이 아예 없다.** 제목과 단축키만 있고 누르면 무엇을 할지가
+    // 비어 있다. 맥은 응답할 사람이 없는 항목을 자동으로 회색 처리하므로,
+    // 회색인 것이 버그가 아니라 비워 둔 것이 잘못이었다.
+    //
+    // 애플이 이 줄을 넣어 둔 것은 '여기에 설정을 이으라'는 자리 표시다.
+    // 맥 사용자는 설정을 찾을 때 ⌘,를 먼저 누른다.
+    //
+    // 제목이 아니라 단축키(,)로 찾는다. 제목은 맥 판이 올라가며 바뀌었고
+    // (Preferences… → Settings…) 언어에 따라서도 다르지만, ⌘,는 맥이
+    // 생긴 이래 한 번도 안 바뀌었다.
+    if let appMenu = main.items.first?.submenu,
+      let prefs = appMenu.items.first(where: { $0.keyEquivalent == "," })
+    {
+      prefs.title = t["settings"] ?? prefs.title
+      prefs.target = self
+      prefs.action = #selector(fire(_:))
+      prefs.representedObject = "settings"
+    }
+
     let holder = NSMenuItem()
     holder.identifier = AppMenuBridge.slot
     holder.submenu = menu
