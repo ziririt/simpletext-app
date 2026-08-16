@@ -272,6 +272,11 @@ abstract class L10n {
   String get exportFailed;
   String get exportEmpty;
   String get choosePreset;
+  String get importFiles;
+  String get importFilesSub;
+  String get importAppend;
+  String get importNone;
+  String importDone(int n);
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -508,6 +513,10 @@ abstract class L10n {
         'exportFailed': exportFailed,
         'exportEmpty': exportEmpty,
         'choosePreset': choosePreset,
+        'importFiles': importFiles,
+        'importFilesSub': importFilesSub,
+        'importAppend': importAppend,
+        'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,

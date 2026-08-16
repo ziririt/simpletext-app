@@ -394,7 +394,7 @@ class L10nZhHant extends L10n {
 
   @override
   String get exportSectionTitle =>
-      '輸出';
+      '匯入與輸出';
 
   @override
   String get exportSubtitle =>
@@ -430,6 +430,25 @@ class L10nZhHant extends L10n {
 
   @override
   String get choosePreset => '選擇整理方式';
+
+  @override
+  String get importFiles =>
+      '從檔案匯入';
+
+  @override
+  String get importFilesSub =>
+      'Markdown 和文字檔會變成備忘。備份檔也在這裡還原';
+
+  @override
+  String get importAppend =>
+      '附加檔案內容';
+
+  @override
+  String get importNone =>
+      '沒有匯入任何檔案';
+
+  @override
+  String importDone(int n) => '已匯入 \$n 則備忘';
   @override
   String get settingsSecView => '顯示';
   @override

@@ -30,6 +30,7 @@ import 'core/trash.dart';
 import 'core/usage_gate.dart';
 import 'core/wizard.dart';
 import 'export_service.dart';
+import 'import_service.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -2562,6 +2563,14 @@ class _EditorScreenState extends State<EditorScreen> {
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'append') {
+                  final text = await ImportService.pickAppendText();
+                  if (text == null || !mounted) return;
+                  bodyCtl.text = bodyCtl.text.trimRight() + text;
+                  await _save();
+                  if (mounted) setState(() {});
+                  return;
+                }
                 if (v == 'preset') {
                   // 길게 누르기는 맥·PC에서 자연스럽지 않다. 여기 하나 더
                   // 두어 어느 기기에서든 찾을 수 있게 한다.
@@ -2608,6 +2617,14 @@ class _EditorScreenState extends State<EditorScreen> {
                     );
                 return [
                   // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
+                  PopupMenuItem<String>(
+                    value: 'append',
+                    child: Row(children: [
+                      Icon(Icons.attach_file, size: 19, color: ctx.c.sub),
+                      const SizedBox(width: 10),
+                      Text(lm.importAppend),
+                    ]),
+                  ),
                   PopupMenuItem<String>(
                     value: 'preset',
                     child: Row(children: [
@@ -4105,6 +4122,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
           ),
           _card([
+            ListTile(
+              leading: Icon(Icons.file_open_outlined, color: context.c.sub),
+              title: Text(l.importFiles,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: Text(l.importFilesSub,
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              onTap: () async {
+                final n = await ImportService.importFiles();
+                if (!mounted) return;
+                setState(() {});
+                _toast(context, n > 0 ? l.importDone(n) : l.importNone);
+              },
+            ),
+            _sep(),
             ListTile(
               leading: Icon(Icons.folder_zip_outlined, color: context.c.sub),
               title: Text(l.exportAllMd,

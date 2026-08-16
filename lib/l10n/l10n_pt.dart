@@ -395,7 +395,7 @@ class L10nPt extends L10n {
 
   @override
   String get exportSectionTitle =>
-      'Exportar';
+      'Importar e exportar';
 
   @override
   String get exportSubtitle =>
@@ -431,6 +431,25 @@ class L10nPt extends L10n {
 
   @override
   String get choosePreset => 'Escolher como organizar';
+
+  @override
+  String get importFiles =>
+      'Importar de arquivos';
+
+  @override
+  String get importFilesSub =>
+      'Arquivos Markdown e de texto viram notas. Backups também são restaurados aqui';
+
+  @override
+  String get importAppend =>
+      'Anexar um arquivo';
+
+  @override
+  String get importNone =>
+      'Nada foi importado';
+
+  @override
+  String importDone(int n) => '\$n notas importadas';
   @override
   String get settingsSecView => 'Visualização';
   @override

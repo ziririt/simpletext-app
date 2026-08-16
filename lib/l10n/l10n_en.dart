@@ -395,7 +395,7 @@ class L10nEn extends L10n {
 
   @override
   String get exportSectionTitle =>
-      'Export';
+      'Import & export';
 
   @override
   String get exportSubtitle =>
@@ -431,6 +431,25 @@ class L10nEn extends L10n {
 
   @override
   String get choosePreset => 'Choose how to tidy';
+
+  @override
+  String get importFiles =>
+      'Import from files';
+
+  @override
+  String get importFilesSub =>
+      'Markdown and text files become notes. Backup files restore here too';
+
+  @override
+  String get importAppend =>
+      'Append a file';
+
+  @override
+  String get importNone =>
+      'Nothing was imported';
+
+  @override
+  String importDone(int n) => 'Imported \$n notes';
   @override
   String get settingsSecView => 'Display';
   @override

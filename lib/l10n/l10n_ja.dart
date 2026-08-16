@@ -394,7 +394,7 @@ class L10nJa extends L10n {
 
   @override
   String get exportSectionTitle =>
-      '書き出し';
+      '読み込みと書き出し';
 
   @override
   String get exportSubtitle =>
@@ -430,6 +430,25 @@ class L10nJa extends L10n {
 
   @override
   String get choosePreset => '整理の方法を選ぶ';
+
+  @override
+  String get importFiles =>
+      'ファイルから読み込む';
+
+  @override
+  String get importFilesSub =>
+      'Markdownやテキストをメモに。バックアップの復元もここです';
+
+  @override
+  String get importAppend =>
+      'ファイルを追記';
+
+  @override
+  String get importNone =>
+      '読み込んだファイルがありません';
+
+  @override
+  String importDone(int n) => 'メモを\$n件読み込みました';
   @override
   String get settingsSecView => '表示';
   @override

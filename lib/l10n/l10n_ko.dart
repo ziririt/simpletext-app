@@ -394,7 +394,7 @@ class L10nKo extends L10n {
 
   @override
   String get exportSectionTitle =>
-      '내보내기';
+      '가져오기·내보내기';
 
   @override
   String get exportSubtitle =>
@@ -430,6 +430,25 @@ class L10nKo extends L10n {
 
   @override
   String get choosePreset => '정리 방식 고르기';
+
+  @override
+  String get importFiles =>
+      '파일에서 가져오기';
+
+  @override
+  String get importFilesSub =>
+      '마크다운·텍스트 파일을 메모로. 백업 파일도 여기서 되돌립니다';
+
+  @override
+  String get importAppend =>
+      '파일 이어 붙이기';
+
+  @override
+  String get importNone =>
+      '가져온 파일이 없습니다';
+
+  @override
+  String importDone(int n) => '메모 \$n개를 가져왔습니다';
   @override
   String get settingsSecView => '보기';
   @override
