@@ -1349,6 +1349,9 @@ class SplitShellState extends State<SplitShell> {
   String? _openId;
   bool _autoTidy = false;
 
+  /// 지금 오른쪽 칸에 열려 있는 메모. 목록이 그것을 표시하려고 본다.
+  String? get openId => _openId;
+
   bool get isWide => MediaQuery.sizeOf(context).width >= SplitShell.kWideAt;
 
   void open(String id, {bool autoTidy = false}) {
@@ -1770,7 +1773,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _noteTile(Note n) {
     final l = L10n.of(context);
+    final c = context.c;
     final firstLine = n.body.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
+
+    // 두 칸 화면에서 지금 오른쪽에 열려 있는 메모인가.
+    //
+    // 2026-08-16 — 여태 표시가 없었다. 오른쪽에 글이 떠 있는데 왼쪽
+    // 목록에서는 어느 것인지 알 수 없었다. 애플 메모·메일·파인더가
+    // 전부 고른 줄을 칠해 주는 데는 까닭이 있다 — 목록과 본문이 같은
+    // 화면에 있으면 '지금 이것'을 잇는 실이 있어야 한다.
+    final shell = SplitShell.of(context);
+    final selected = shell != null && shell.isWide && shell.openId == n.id;
+
+    // 2026-08-16 소유자 요청 — "마우스 오버하거나 선택할 때 색을
+    // 스카이블루로."
+    //
+    // 지금까지 회색이었던 것은 색을 고른 결과가 아니라 **안 골랐기
+    // 때문**이다. 안 주면 머티리얼이 중성 회색을 쓴다. 이 앱은 같은
+    // 자리를 세 번 겪었다 — 선택 블럭도, 버튼도, 여기도 전부 그랬다.
+    //
+    // 진하기는 넷을 다르게 준다. 얹었을 때 가장 옅고, 누르는 동안 조금
+    // 진해지고, 손을 뗄 때 퍼지는 물결이 가장 진하다. 같은 값을 주면
+    // 얹은 것과 누른 것이 구별되지 않아 '반응이 없다'로 느껴진다.
+    final hover = c.accent.withValues(alpha: 0.08);
+    final press = c.accent.withValues(alpha: 0.13);
+    final splash = c.accent.withValues(alpha: 0.18);
     return Dismissible(
       key: ValueKey('dis-${n.id}'),
       background: Container(
@@ -1825,10 +1852,17 @@ class _HomeScreenState extends State<HomeScreen> {
       // 글꼴은 지정하지 않는다 — 기기 시스템 글꼴을 그대로 쓴다(테마의 한글 폴백만 적용).
       // 숫자를 바꿀 일이 생기면 시뮬레이터 스크린샷을 다시 재고 바꿀 것.
       child: Material(
-        color: context.c.panel,
+        // 고른 줄은 아예 칠한다. 반투명을 그대로 얹지 않고 미리 섞어
+        // 두는 이유: 이 위에 물결이 또 얹히면 두 겹이 겹쳐 탁해진다.
+        color: selected
+            ? Color.alphaBlend(c.accent.withValues(alpha: 0.16), c.panel)
+            : c.panel,
         child: InkWell(
-          onTap: () =>
-              openNote(context, n.id),
+          onTap: () => openNote(context, n.id),
+          hoverColor: hover,
+          focusColor: hover,
+          highlightColor: press,
+          splashColor: splash,
           child: Padding(
             // 데스크톱은 애플 메모장처럼 행을 촘촘하게(글자만 줄면 행이 뚱뚱해 보인다).
           padding: EdgeInsets.fromLTRB(
