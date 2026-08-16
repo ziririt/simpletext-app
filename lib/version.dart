@@ -15,7 +15,7 @@
 library;
 
 /// 사람이 보는 버전. 기능이 바뀌면 가운데 자리, 고침만 있으면 끝자리를 올린다.
-const String appVersion = '0.3.34';
+const String appVersion = '0.3.35';
 
 /// 빌드 번호. 같은 버전으로 여러 번 올릴 때 구분한다.
 /// TestFlight 업로드 시에는 CI가 실행 번호로 덮어쓴다(같은 번호를 두 번 못 받기 때문).

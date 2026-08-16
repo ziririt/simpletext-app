@@ -3046,6 +3046,32 @@ class _EditorScreenState extends State<EditorScreen> {
       },
       child: Scaffold(
         backgroundColor: paperBg,
+        // 키보드는 안쪽 Scaffold 하나만 맡는다.
+        //
+        // 2026-08-16 소유자 신고 — "키보드 올라오면 툴바가 붕 떠서 위로
+        // 올라가고 본문이 안 보인다." 원인이 바로 여기였다.
+        //
+        // 플러터 원본(_ScaffoldLayout.performLayout)의 셈은 이렇다.
+        //   아래막대의 위치 = max(0, 높이 - 아래막대높이)
+        //   본문 높이       = 높이 - max(키보드, 아래막대높이)
+        //
+        // 이 화면은 Scaffold가 둘이라 키보드를 둘이 나눠 맡고 있었다.
+        //   1) 바깥이 키보드만큼 줄인다 → 안쪽에 388 남는다
+        //   2) 바깥은 자기 body로 넘길 때 viewInsets를 지운다
+        //      (removeBottomInset) → 안쪽은 키보드가 없다고 본다
+        //   3) 그런데 아래 막대의 MediaQuery.of(context)는 이 build 메서드의
+        //      context, 즉 두 Scaffold보다 **위**다. 지워지기 전 345가 온다
+        //   → 아래 막대가 44+345=389를 요구, 남은 높이는 388.
+        //     389 > 388 이라 막대 위치가 max(0, -1) = 0, 즉 화면 맨 위.
+        //     본문 높이는 0이 된다. 정확히 신고된 그림이다.
+        //
+        // 한 픽셀 차이였다. 광고 배너가 자리를 먹고 한글 키보드(추천줄 포함)가
+        // 올라온 조합에서 경계를 넘었다. 이런 건 '가끔'이 아니라 '경계를
+        // 넘는 순간부터 항상'이다.
+        //
+        // 그래서 임자를 하나로 못 박는다. 배너는 화면 꼭대기에 있으니
+        // 키보드를 피할 이유가 애초에 없다.
+        resizeToAvoidBottomInset: false,
         // 2026-08-16 소유자 지시 — 배너는 상단바(뒤로가기 줄)보다도 위,
         // 화면 진짜 꼭대기다. 원래 화면 전체(상단바 포함)를 안쪽
         // Scaffold로 감싸 배너 아래로 넣는다.
@@ -3059,6 +3085,9 @@ class _EditorScreenState extends State<EditorScreen> {
         // 남아서 '색을 잘못 칠한 화면'으로 보인다. 실제 수첩도 종이가
         // 먼저 있고 그 위에 줄이 있다.
         backgroundColor: paperBg,
+        // 키보드의 임자는 여기 하나다(위 주석 참고). 기본값이지만 일부러
+        // 적어 둔다 — 이 값이 바깥과 겹치면 방금 그 사고가 다시 난다.
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           backgroundColor: paperBg,
           automaticallyImplyLeading: !widget.embedded,
@@ -3494,7 +3523,18 @@ class _EditorScreenState extends State<EditorScreen> {
           ],
         ),
         bottomNavigationBar: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          // 키보드 높이만큼 막대를 들어 올린다. Scaffold는 아래 막대를 화면
+          // 진짜 바닥에 두기 때문에(bottom - 아래막대높이) 그냥 두면
+          // 키보드에 가린다.
+          //
+          // 상한을 두는 이유: 이 값이 Scaffold 높이에 닿으면 막대가 화면 맨
+          // 위로 튀어 오르고 본문이 사라진다(2026-08-16 실제 사고). 위에서
+          // 구조를 고쳐 여유가 344까지 벌어졌지만, 화면이나 키보드가 어떻게
+          // 바뀌든 다시는 그 선을 넘지 않게 여기서도 막는다. 화면의 60%를
+          // 넘겨 올리는 키보드는 없다.
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom.clamp(
+                  0.0, MediaQuery.sizeOf(context).height * 0.6)),
           child: SafeArea(
             child: (_bodyFocus.hasFocus && !_isDesktop)
                 ? (_hasSel ? _selectionBar() : _accessoryBar())
