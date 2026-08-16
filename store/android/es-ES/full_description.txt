@@ -1,0 +1,29 @@
+La respuesta de la IA sirve. Su formato, no.
+
+Pégala aquí. Los asteriscos, las almohadillas y los preámbulos desaparecen, y queda un texto limpio que puedes usar en cualquier sitio.
+
+QUÉ ELIMINA
+- Marcas de Markdown (**negrita**, ## títulos, --- separadores)
+- Emojis y entradillas del tipo «Claro, aquí tienes un resumen»
+- Referencias como [1] y la lista de enlaces del final
+- Espacios especiales y caracteres de ancho cero, invisibles en pantalla
+
+QUÉ HACE CON LAS TABLAS
+Repara filas descuadradas y celdas que faltan. Las tablas estrechas quedan alineadas en columnas limpias. Las tablas anchas, llenas de frases, se despliegan fila por fila y siguen leyéndose bien en el móvil. También puedes copiar cualquier tabla directamente a Google Sheets o Excel.
+
+TODO OCURRE EN TU DISPOSITIVO
+La limpieza se hace por completo en el dispositivo. Funciona sin conexión y tu texto nunca se envía a un servidor.
+
+SIEMPRE PUEDES VOLVER
+La limpieza se aplica en cuanto pulsas. Si no te convence, basta con deshacer una vez.
+
+TUS REGLAS
+Decide si el énfasis pasa a comillas o se quita, qué viñeta y qué sangría usar, cuánto espacio dejar alrededor de los subtítulos. El siguiente pegado seguirá lo mismo.
+
+LA EDICIÓN CON IA ES OPCIONAL
+Puedes pedir algo libre, como reescribir en tono formal. Solo funciona con una clave de API que facilites tú, la clave se queda en el dispositivo y el resultado se revisa por si han cambiado cifras o fechas antes de mostrarlo.
+
+TAMBIÉN ES TU CUADERNO
+Lo que limpias se queda como nota. Fíjala, ponle etiquetas, guárdala en una carpeta, búscala. Puedes bloquear la app con la huella o la cara y elegir el papel sobre el que escribes: crema, pauta de escritura o cuadrícula. Envía texto desde cualquier app con Compartir.
+
+Ajustado a las respuestas de ChatGPT, Claude, Gemini, Grok y Perplexity.

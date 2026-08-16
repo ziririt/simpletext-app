@@ -1,0 +1,1 @@
+Paste an AI answer: markdown and filler come out, broken tables get repaired

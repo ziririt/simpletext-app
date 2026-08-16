@@ -21,6 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STORE = ROOT / 'store' / 'ios'
+PLAY = ROOT / 'store' / 'android'
 
 # App Store Connect 필드별 최대 길이 (문자 수)
 LIMITS = {
@@ -41,6 +42,71 @@ REQUIRED_LOCALES = [
 ]
 
 BASE = 'ko'  # 원문 기준 언어
+
+# ---------------------------------------------------------------------------
+# 플레이 스토어 (2026-08-17)
+# ---------------------------------------------------------------------------
+#
+# 애플 쪽만 지키고 안드로이드 쪽을 안 보면 그쪽이 똑같이 썩는다. 그리고
+# 검사가 있다는 사실이 오히려 해로워진다 — "검사를 돌렸으니 괜찮겠지"가
+# 되기 때문이다.
+#
+# 구글은 로케일 코드가 다르다. 애플의 ja는 구글에서 ja-JP이고, zh-Hans는
+# zh-CN, es-MX는 es-419다. 여기서 틀리면 업로드가 조용히 다른 언어에
+# 들어간다.
+PLAY_LIMITS = {
+    'title.txt': 30,
+    'short_description.txt': 80,
+    'full_description.txt': 4000,
+}
+
+PLAY_LOCALES = [
+    'ko-KR', 'en-US', 'ja-JP', 'zh-CN', 'zh-TW',
+    'de-DE', 'fr-FR', 'es-ES', 'es-419', 'pt-BR', 'pt-PT',
+]
+
+# 안드로이드에 없는 것을 설명에 적으면 구글이 '오해를 부르는 설명'으로 본다.
+# 그리고 그 전에, 사용자가 없는 기능을 찾다가 별점을 깎는다.
+PLAY_FORBIDDEN = ['iCloud', 'Face ID', 'iPhone', 'iPad', 'App Store']
+
+
+def check_play(errors, warnings):
+    if not PLAY.is_dir():
+        warnings.append('store/android 디렉터리 없음 — 플레이 등록정보 미작성')
+        return
+    base_vals = {}
+    for f in PLAY_LIMITS:
+        bp = PLAY / 'ko-KR' / f
+        if bp.is_file():
+            base_vals[f] = read(bp)
+    for loc in PLAY_LOCALES:
+        d = PLAY / loc
+        if not d.is_dir():
+            errors.append(f'android/{loc}: 로케일 디렉터리 없음')
+            continue
+        for fname, limit in PLAY_LIMITS.items():
+            q = d / fname
+            if not q.is_file():
+                errors.append(f'android/{loc}/{fname}: 파일 없음')
+                continue
+            v = read(q)
+            if not v:
+                errors.append(f'android/{loc}/{fname}: 값이 비어 있음')
+                continue
+            if len(v) > limit:
+                errors.append(
+                    f'android/{loc}/{fname}: {len(v)}자 — 한도 {limit}자 초과')
+            for bad in PLAY_FORBIDDEN:
+                if bad in v:
+                    errors.append(
+                        f'android/{loc}/{fname}: 안드로이드에 없는 것을 적었다 — {bad}')
+            if loc != 'ko-KR' and fname != 'title.txt':
+                if base_vals.get(fname) and v == base_vals[fname]:
+                    errors.append(f'android/{loc}/{fname}: 한국어 원문과 동일 — 미번역')
+            if loc != 'ko-KR':
+                if any('HANGUL' in unicodedata.name(ch, '') for ch in v):
+                    errors.append(
+                        f'android/{loc}/{fname}: 한글이 섞여 있음 — 번역 누락 조각')
 
 
 def read(p: Path) -> str:
@@ -97,6 +163,8 @@ def main() -> int:
         if d.is_dir() and d.name not in REQUIRED_LOCALES:
             warnings.append(f'{d.name}: REQUIRED_LOCALES에 없는 디렉터리 (오타?)')
 
+    check_play(errors, warnings)
+
     for w in warnings:
         print(f'경고 — {w}')
     if errors:
@@ -107,8 +175,9 @@ def main() -> int:
         return 1
 
     n_loc = len(REQUIRED_LOCALES)
-    print(f'스토어 등록정보 검사 통과 — 로케일 {n_loc}개, 필드 {len(LIMITS)}개, '
-          f'총 {n_loc * len(LIMITS)}개 파일')
+    n_play = len(PLAY_LOCALES) * len(PLAY_LIMITS) if PLAY.is_dir() else 0
+    print(f'스토어 등록정보 검사 통과 — 애플 로케일 {n_loc}개 × 필드 {len(LIMITS)}개 '
+          f'= {n_loc * len(LIMITS)}개, 플레이 {n_play}개')
     return 0
 
 

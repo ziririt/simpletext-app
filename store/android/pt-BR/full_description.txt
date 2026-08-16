@@ -1,0 +1,29 @@
+A resposta da IA é útil. A formatação não.
+
+Cole aqui. Asteriscos, cerquilhas e aquelas introduções cerimoniosas somem, e sobra um texto limpo que você usa em qualquer lugar.
+
+O QUE É REMOVIDO
+- Marcas de Markdown (**negrito**, ## títulos, --- separadores)
+- Emojis e aberturas do tipo "Claro, aqui está um resumo"
+- Referências como [1] e a lista de links no fim
+- Espaços especiais e caracteres de largura zero, invisíveis na tela
+
+O QUE ACONTECE COM AS TABELAS
+Linhas desalinhadas e células faltando são consertadas. Tabelas estreitas ficam alinhadas em colunas limpas. Tabelas largas, cheias de frases, são abertas linha por linha e continuam legíveis no celular. Você também pode copiar qualquer tabela direto para o Google Planilhas ou o Excel.
+
+TUDO FICA NO SEU APARELHO
+A limpeza acontece inteiramente no aparelho. Funciona sem conexão, e seu texto nunca é enviado a um servidor.
+
+DÁ PARA VOLTAR
+A limpeza é aplicada assim que você toca. Se não gostar, basta desfazer uma vez.
+
+SUAS REGRAS
+Escolha se o destaque vira aspas ou desaparece, qual marcador e qual recuo usar, quanto espaço deixar em volta dos subtítulos. A próxima colagem segue as mesmas regras.
+
+A EDIÇÃO POR IA É OPCIONAL
+Você também pode pedir algo livre, como reescrever em tom formal. Isso só funciona com uma chave de API fornecida por você, a chave fica no aparelho, e o resultado é conferido em busca de números e datas alterados antes de aparecer.
+
+TAMBÉM É O SEU CADERNO
+O que você limpou fica como nota. Dá para fixar, marcar com etiquetas, guardar numa pasta e buscar. O app pode ser trancado com digital ou rosto, e você escolhe o papel em que escreve: creme, pautado de caligrafia ou quadriculado. Mande texto de qualquer app pelo Compartilhar.
+
+Ajustado para respostas do ChatGPT, Claude, Gemini, Grok e Perplexity.
