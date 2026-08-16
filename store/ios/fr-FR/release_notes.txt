@@ -1,4 +1,3 @@
-- Les tableaux larges sont désormais dépliés ligne par ligne et restent lisibles sur un téléphone.
-- Le mode sombre est pris en charge.
-- Nouveau réglage : police à chasse fixe dans l’éditeur, pour aligner exactement les colonnes.
-- Correction : les tableaux peuvent de nouveau être copiés vers un tableur après nettoyage.
+Première version.
+
+Collez une réponse d’IA : les marques Markdown et les formules de politesse disparaissent, les tableaux décalés sont réparés. Ce qui est nettoyé reste sous forme de note, et iCloud garde votre iPhone et votre iPad au même point.

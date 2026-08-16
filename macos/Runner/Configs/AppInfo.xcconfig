@@ -5,7 +5,14 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = simpletext
+//
+// 2026-08-17 — 'simpletext'에서 바꿨다. 이 값이 번들 파일 이름을 정한다
+// (simpletext.app -> Skyblue Note.app). 맥OS의 파인더와 독은 plist의
+// CFBundleDisplayName이 아니라 **디스크의 파일 이름**을 보여 준다.
+// 이름표만 바꿔 단 가짜 앱을 막기 위한 안전장치다. 그래서 plist에
+// 'Skyblue Note'가 이미 들어 있었는데도 독에는 simpletext로 떴다.
+// 아이폰은 홈 화면이 CFBundleDisplayName을 그대로 쓰기 때문에 멀쩡했다.
+PRODUCT_NAME = Skyblue Note
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = com.ziririt.simpletext

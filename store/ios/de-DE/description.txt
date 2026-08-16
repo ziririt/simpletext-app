@@ -15,12 +15,15 @@ ALLES BLEIBT AUF DEM GERÄT
 Das Aufräumen läuft vollständig auf Ihrem Gerät. Es funktioniert ohne Verbindung, und Ihr Text wird nie an einen Server geschickt.
 
 SIE KÖNNEN ZURÜCK
-Vor jeder Änderung sehen Sie Original und Ergebnis nebeneinander. Auch danach genügt ein Widerruf.
+Das Aufräumen greift mit einem Tippen. Gefällt es nicht, genügt ein Widerruf.
 
 IHRE REGELN
 Legen Sie fest, ob Hervorhebungen zu Anführungszeichen werden oder verschwinden, welches Aufzählungszeichen und welcher Einzug gilt, wie viel Abstand um Zwischenüberschriften steht. Beim nächsten Einfügen gilt dasselbe.
 
 KI-BEARBEITUNG IST OPTIONAL
 Sie können auch frei formulieren, etwa "in förmlichem Ton umschreiben". Das läuft nur mit einem API-Schlüssel, den Sie selbst hinterlegen. Der Schlüssel bleibt auf dem Gerät, und das Ergebnis wird auf veränderte Zahlen und Daten geprüft, bevor Sie es sehen.
+
+ES IST AUCH IHR NOTIZBUCH
+Was Sie aufgeräumt haben, bleibt als Notiz. Anheften, mit Schlagwörtern ordnen, durchsuchen. Mit iCloud sehen iPhone und iPad dieselben Notizen. Die App lässt sich mit Face ID sperren, und Sie wählen das Papier, auf dem Sie schreiben: cremefarben, Manuskriptraster oder kariert.
 
 Abgestimmt auf Antworten von ChatGPT, Claude, Gemini, Grok und Perplexity.

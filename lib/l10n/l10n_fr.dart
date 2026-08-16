@@ -54,7 +54,7 @@ class L10nFr extends L10n {
         'Comment utiliser Skyblue Note',
         '',
         '1. Copiez une réponse de ChatGPT ou Claude, puis touchez « Coller et nettoyer ».',
-        '2. Comparez l\'original et le résultat dans l\'aperçu, touchez « Appliquer » — terminé.',
+        '2. Les astérisques, les dièses et les formules de politesse disparaissent d\'un coup.',
         '3. Pour les notes avec tableaux, le bouton « Tableau » les copie pour les tableurs (TSV).',
         '4. Chaque nettoyage peut être annulé d\'un seul geste.',
         '',
@@ -63,8 +63,8 @@ class L10nFr extends L10n {
         '| Action | Ticker | Rendement | Poids',
         '|------|------|--------|',
         '| Apple | AAPL | +14.2% | 12% |',
-        '| Microsoft | MSFT | +21.5%',
-        '| Nvidia | NVDA | +48.9% | 22% |',
+        '| Microsoft | MSFT | +21.5% | 18% |',
+        '| NVIDIA | NVDA | +48.9% | 22% |',
         '|Tesla|TSLA|-8.3%|8%|',
       ].join('\n');
 

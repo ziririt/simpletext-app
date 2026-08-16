@@ -15,12 +15,15 @@ TODO PASA EN TU DISPOSITIVO
 La limpieza se hace por completo en el dispositivo. Funciona sin conexión y tu texto nunca se envía a un servidor.
 
 SIEMPRE PUEDES REGRESAR
-Antes de cambiar algo verás el original y el resultado lado a lado. Después de aplicarlo, basta con deshacer una vez.
+La limpieza se aplica en cuanto presionas. Si no te convence, basta con deshacer una vez.
 
 TUS REGLAS
 Decide si el énfasis pasa a comillas o se quita, qué viñeta y qué sangría usar, cuánto espacio dejar alrededor de los subtítulos. El siguiente pegado seguirá lo mismo.
 
 LA EDICIÓN CON IA ES OPCIONAL
 Puedes pedir algo libre, como reescribir en tono formal. Solo funciona con una clave de API que tú proporciones, la clave se queda en el dispositivo y el resultado se revisa por si cambiaron cifras o fechas antes de mostrarlo.
+
+TAMBIÉN ES TU CUADERNO
+Lo que limpias se queda como nota. Fíjala, ponle etiquetas, búscala. Con iCloud, tu iPhone y tu iPad ven las mismas notas. Puedes bloquear la app con Face ID y elegir el papel sobre el que escribes: crema, pauta de escritura o cuadrícula.
 
 Ajustado a las respuestas de ChatGPT, Claude, Gemini, Grok y Perplexity.

@@ -1,4 +1,3 @@
-- As tabelas largas passam a ser abertas linha a linha e continuam legíveis no telemóvel.
-- O modo escuro é suportado.
-- Nova definição: tipo de letra monoespaçado no editor, para alinhar as colunas com precisão.
-- Corrigido: as tabelas podem ser copiadas para uma folha de cálculo depois da limpeza.
+Primeira versão.
+
+Cole uma resposta de IA: as marcas de Markdown e as introduções desaparecem, e as tabelas desalinhadas são reparadas. O que foi limpo fica como nota, e com o iCloud o seu iPhone e o seu iPad veem o mesmo.

@@ -54,7 +54,7 @@ class L10nEn extends L10n {
         'How to use Skyblue Note',
         '',
         '1. Copy an answer from ChatGPT or Claude, then tap "Paste & Tidy".',
-        '2. Compare the original and the result in the preview, tap "Apply" — done.',
+        '2. The asterisks, the hash marks and the throat-clearing intros come out in one go.',
         '3. For notes with tables, the "Table" button copies them for spreadsheets (TSV).',
         '4. Every tidy-up can be reverted with a single Undo.',
         '',
@@ -63,8 +63,8 @@ class L10nEn extends L10n {
         '| Stock | Ticker | Return | Weight',
         '|------|------|--------|',
         '| Apple | AAPL | +14.2% | 12% |',
-        '| Microsoft | MSFT | +21.5%',
-        '| Nvidia | NVDA | +48.9% | 22% |',
+        '| Microsoft | MSFT | +21.5% | 18% |',
+        '| NVIDIA | NVDA | +48.9% | 22% |',
         '|Tesla|TSLA|-8.3%|8%|',
       ].join('\n');
 

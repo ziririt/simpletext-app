@@ -1,4 +1,3 @@
-- Las tablas anchas ahora se despliegan fila por fila y se leen bien en el celular.
-- Se admite el modo oscuro.
-- Nuevo ajuste: fuente monoespaciada en el editor, para alinear las columnas con precisión.
-- Corregido: las tablas se pueden copiar a una hoja de cálculo después de limpiarlas.
+Primera versión.
+
+Pega una respuesta de IA: las marcas de Markdown y los preámbulos desaparecen, y las tablas descuadradas se reparan. Lo limpiado se queda como nota, y con iCloud tu iPhone y tu iPad ven lo mismo.

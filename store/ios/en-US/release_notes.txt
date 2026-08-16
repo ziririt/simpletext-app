@@ -1,4 +1,3 @@
-- Wide tables are now broken out row by row, so they stay readable on a phone.
-- Dark mode is supported.
-- New setting: monospaced editor font, which lines table columns up exactly.
-- Fixed: tables can be copied to a spreadsheet after cleanup.
+First release.
+
+Paste an answer from an AI: the markdown markers and the filler come out, and broken tables get repaired. What you clean up stays as a note, and iCloud keeps your iPhone and iPad in step.
