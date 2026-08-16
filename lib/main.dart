@@ -4,6 +4,7 @@
 /// 2026-08-12 i18n: UI 문자열은 전부 lib/l10n/으로 분리했다 (한/영/일/중간·번체/스/포/독/프).
 /// 엔진(tidy_engine)·마법사(wizard)가 만드는 리포트 문구는 JS 엔진과의 대칭 규칙 때문에
 /// 이번 범위에서 제외 — 로드맵의 후속 항목이다. 프리셋 이름은 Preset.id를 UI 층에서 매핑한다.
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' show ImageFilter;
 
@@ -22,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ads_service.dart';
 import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
+import 'core/auto_meta.dart';
 import 'core/hangul.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
@@ -420,6 +422,17 @@ class Note {
   /// 사용자가 직접 고르면 false가 된다.
   bool sourceAuto;
 
+  /// 제목을 우리가 관리하고 있는가.
+  ///
+  /// 2026-08-16 소유자 제안 — 저장될 때마다 본문 기준으로 제목을 다시 짓되,
+  /// **사용자가 한 번이라도 제목을 쓰면 그 뒤로는 손을 뗀다.** 이게 이
+  /// 기능의 전부라고 해도 된다. 사용자가 정한 제목을 우리가 덮으면 그건
+  /// 도움이 아니라 고장이다.
+  bool titleAuto;
+
+  /// 태그를 우리가 관리하고 있는가. 규칙은 제목과 같다.
+  bool tagsAuto;
+
   Note({
     required this.id,
     this.title = '',
@@ -434,6 +447,8 @@ class Note {
     this.lastReport = '',
     this.pastedAt = 0,
     this.sourceAuto = false,
+    this.titleAuto = true,
+    this.tagsAuto = true,
   })  : tags = tags ?? [],
         history = history ?? [];
 
@@ -462,6 +477,8 @@ class Note {
         'lastReport': lastReport,
         'pastedAt': pastedAt,
         'sourceAuto': sourceAuto,
+        'titleAuto': titleAuto,
+        'tagsAuto': tagsAuto,
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -473,6 +490,15 @@ class Note {
         source: (j['source'] ?? '') as String,
         pastedAt: (j['pastedAt'] ?? 0) as int,
         sourceAuto: (j['sourceAuto'] ?? false) as bool,
+        // 예전 저장본에는 이 칸이 없다. 없으면 그냥 true로 두면 안 된다 —
+        // 사용자가 손으로 지은 제목이 다음 저장에서 통째로 덮인다. 그래서
+        // 지금 제목이 본문에서 뽑은 것과 같을 때만 '우리 것'으로 본다.
+        titleAuto: (j['titleAuto'] ??
+            (((j['title'] ?? '') as String).trim().isEmpty ||
+                ((j['title'] ?? '') as String) ==
+                    autoTitle((j['body'] ?? '') as String))) as bool,
+        tagsAuto: (j['tagsAuto'] ??
+            (((j['tags'] ?? const []) as List).isEmpty)) as bool,
         tags: ((j['tags'] ?? []) as List).map((e) => e.toString()).toList(),
         createdAt: (j['createdAt'] ?? 0) as int,
         updatedAt: (j['updatedAt'] ?? 0) as int,
@@ -1654,6 +1680,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   void dispose() {
+    _tagTimer?.cancel();
     titleCtl.dispose();
     bodyCtl.dispose();
     tagsCtl.dispose();
@@ -1767,6 +1794,8 @@ class _EditorScreenState extends State<EditorScreen> {
       got = const [];
     }
     if (got.isEmpty) got = suggestTags(note.title, head);
+    // 사용자가 버튼을 눌러 뽑은 태그는 배경 갱신이 덮으면 안 된다.
+    note.tagsAuto = false;
     if (!mounted) return;
     setState(() => _tagAiBusy = false);
     if (got.isEmpty) {
@@ -1777,18 +1806,52 @@ class _EditorScreenState extends State<EditorScreen> {
     if (mounted && !byAi) _toast(context, l.tagAiLocalNote);
   }
 
+  /// 태그를 다시 뽑기 위한 타이머. 글자마다 뽑으면 낭비다.
+  Timer? _tagTimer;
+
   Future<void> _save() async {
-    note.title = titleCtl.text;
     note.body = bodyCtl.text;
+
+    // 제목은 손대기 전까지 본문을 따라간다(소유자 제안 2026-08-16).
+    // 규칙은 core/auto_meta.dart에 있고 테스트로 고정되어 있다.
+    if (canRetitle(auto: note.titleAuto)) {
+      final t = autoTitle(note.body);
+      note.title = t;
+      if (titleCtl.text != t) titleCtl.text = t;
+    } else {
+      note.title = titleCtl.text;
+    }
+
     note.updatedAt = DateTime.now().millisecondsSinceEpoch;
     await store.persist();
+    _scheduleAutoTags();
   }
 
-  /// 본문에서 뽑은 제목 — 비어 있지 않은 맨 윗줄, 최대 40자.
-  static String _titleFrom(String body) {
-    final first = body.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
-    return first.length > 40 ? first.substring(0, 40) : first;
+  /// 타이핑이 멈춘 뒤에 한 번만 태그를 다시 뽑는다.
+  ///
+  /// 제목은 첫 줄만 보면 되니 글자마다 다시 지어도 싸지만, 태그는 글 전체를
+  /// 훑는다. 글자마다 하면 긴 메모에서 손이 무거워진다.
+  void _scheduleAutoTags() {
+    if (!note.tagsAuto) return;
+    _tagTimer?.cancel();
+    _tagTimer = Timer(const Duration(milliseconds: 1500), () async {
+      if (!mounted || !note.tagsAuto) return;
+      final head = note.body.length > 1200 ? note.body.substring(0, 1200) : note.body;
+      // 기기 안에서만 뽑는다. 배경에서 AI를 부르면 사용자 요금이 샌다.
+      final got = suggestTags(note.title, head, max: 3);
+      if (got.isEmpty) return;
+      if (got.length == note.tags.length &&
+          got.every((t) => note.tags.contains(t))) {
+        return; // 바뀐 게 없으면 저장도 화면 갱신도 하지 않는다
+      }
+      note.tags = got;
+      await store.persist();
+      if (mounted) setState(() {});
+    });
   }
+
+  /// 본문에서 뽑은 제목 — core/auto_meta.dart의 규칙을 쓴다.
+  static String _titleFrom(String body) => autoTitle(body);
 
   /// 무료 한도에 걸렸는가. 걸렸으면 프리미엄 안내를 띄우고 true를 준다.
   ///
@@ -1902,7 +1965,9 @@ class _EditorScreenState extends State<EditorScreen> {
       // 정리하면서 맨 윗줄이 바뀔 수 있으므로(출력 시각 줄 제거 등) 다시 뽑는다.
       // 단 사용자가 손으로 쓴 제목은 건드리지 않는다 — 정리 전 첫 줄과 같을 때만
       // "자동으로 붙은 제목"으로 보고 갱신한다.
-      final wasAuto = note.title.isEmpty || note.title == _titleFrom(note.body);
+      // 예전에는 "정리 전 첫 줄과 같으면 자동으로 붙은 제목"이라고 짐작했다.
+      // 이제는 짐작하지 않고 note.titleAuto가 기억한다(2026-08-16).
+      final wasAuto = note.titleAuto;
       note.body = r.text;
       note.lastReport = r.summary;
       if (wasAuto) {
@@ -2801,7 +2866,12 @@ class _EditorScreenState extends State<EditorScreen> {
                 decoration: InputDecoration(
                     hintText: l.titleHint, border: InputBorder.none, isDense: true),
                 style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
-                onChanged: (_) => _save(),
+                onChanged: (v) {
+                  // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
+                  // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
+                  if (stopAutoTitle(v)) note.titleAuto = false;
+                  _save();
+                },
               ),
             ),
             if (_showMeta)
@@ -2882,7 +2952,10 @@ class _EditorScreenState extends State<EditorScreen> {
                               hintText: note.tags.isEmpty ? l.tagsHint : l.tagsBoxHint,
                             ),
                             onChanged: _onTagTyped,
-                            onSubmitted: (v) => _commitTags(v, clear: true),
+                            onSubmitted: (v) {
+                              note.tagsAuto = false;
+                              _commitTags(v, clear: true);
+                            },
                           ),
                         ),
                       ],
