@@ -31,6 +31,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'core/ad_gate.dart';
+import 'main.dart' show AppColorsX;
 import 'l10n/l10n.dart';
 import 'main.dart' show Store, PremiumScreen;
 
@@ -206,7 +207,25 @@ class _TopBannerBarState extends State<TopBannerBar> {
     _create(MediaQuery.of(context).size.width);
     if (_ad == null || !_loaded) return const SizedBox.shrink();
     final l = L10n.of(context);
-    return SizedBox(
+    // 2026-08-16 소유자 신고 — 아이패드에서 배너가 검은 띠에 얹혀 흉했다.
+    // 원인은 광고가 아니라 우리 배치였다. 아이패드 가로는 1366pt인데 광고는
+    // 표준 리더보드 728pt라 양옆 638pt가 남는다. 그 자리를 아무것도 안 칠해
+    // 두니 검게 나왔다.
+    //
+    // 광고를 화면 폭에 억지로 늘리지 않는다 — 늘리면 광고주 소재가 없어
+    // 노쇼가 늘고, 늘어난 소재는 더 흉하다. 대신 남는 자리를 앱 색(panel)으로
+    // 칠하고 광고를 가운데 놓는다. 폰에서는 광고가 폭을 꽉 채우므로 이
+    // 여백이 0이 되어 보이지 않는다 — 한 코드로 둘 다 맞는다.
+    final c = context.c;
+    return Container(
+      width: double.infinity,
+      color: c.panel,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: c.panel,
+        border: Border(bottom: BorderSide(color: c.glassLine)),
+      ),
+      child: SizedBox(
       width: _ad!.size.width.toDouble(),
       height: _ad!.size.height.toDouble(),
       child: Stack(
@@ -234,6 +253,7 @@ class _TopBannerBarState extends State<TopBannerBar> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
