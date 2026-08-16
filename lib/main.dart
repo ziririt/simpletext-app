@@ -2494,21 +2494,19 @@ class _EditorScreenState extends State<EditorScreen> {
     // 글자지만, 우리에게 메모는 출처와 시각이 붙은 AI 답변이다.
     final n = _note;
     final l = L10n.of(context);
-    String? from;
-    if (n != null && n.pastedAt > 0) {
-      final pt = DateTime.fromMillisecondsSinceEpoch(n.pastedAt);
-      String pd;
-      try {
-        pd = DateFormat.MMMd(tag).format(pt);
-      } catch (_) {
-        pd = DateFormat.MMMd().format(pt);
-      }
-      final src = n.source.trim();
-      from = src.isEmpty
-          ? l.pastedOn(pd)
-          : l.pastedFrom(
-              src + (n.sourceAuto ? l.sourceGuessSuffix : ''), pd);
-    }
+    // 2026-08-17 소유자 지시 — 여기 "…에서 …일에 가져옴"을 붙이고 있었다.
+    // 뺐다.
+    //
+    // 날짜 줄은 **글 바로 위에 늘 떠 있는 자리**다. 거기 있는 것은 글을
+    // 읽을 때마다 눈에 들어온다. 그러니 거기 놓을 것은 '늘 알고 싶은 것'
+    // 이어야 한다.
+    //
+    // '언제 쓴 글인가'는 늘 알고 싶다. '어디서 가져왔고 그게 추정인가'는
+    // 궁금할 때만 궁금하다. 게다가 '(추정)'은 우리가 확신 없다는 고백인데,
+    // 그 고백을 글 위에 늘 붙여 놓으면 읽는 내내 거슬린다.
+    //
+    // 출처를 버리는 것은 아니다. 태그 단추를 누르면 나오는 자리에 그대로
+    // 있고 고르고 고칠 수도 있다.
 
     // 낡은 답에는 한 줄 붙인다. AI 답변은 썩는다 — 모델이 바뀌면 석 달 전
     // 답이 틀린 답이 된다. 직접 쓴 글에는 절대 안 붙인다(잔소리가 된다).
@@ -2523,7 +2521,7 @@ class _EditorScreenState extends State<EditorScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            from == null ? text : '$text · $from',
+            text,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
