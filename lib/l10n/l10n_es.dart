@@ -293,6 +293,21 @@ class L10nEs extends L10n {
 
   @override
   String get menuAiKey => 'Clave API de IA';
+
+  @override
+  String get syncTitle => 'iCloud';
+
+  @override
+  String get syncStateOn => 'Activado: las mismas notas en iPhone, iPad y Mac';
+
+  @override
+  String get syncStateOff => 'Desactivado: activa iCloud Drive en los ajustes del dispositivo';
+
+  @override
+  String get syncStateSyncing => 'Sincronizando…';
+
+  @override
+  String get aiKeyNotSynced => 'Tus notas se sincronizan en todos tus dispositivos mediante iCloud. Tu clave API no: introdúcela en cada dispositivo.';
   @override
   String get settingsSecView => 'Pantalla';
   @override

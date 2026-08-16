@@ -292,6 +292,21 @@ class L10nZhHant extends L10n {
 
   @override
   String get menuAiKey => 'AI API 金鑰';
+
+  @override
+  String get syncTitle => 'iCloud';
+
+  @override
+  String get syncStateOn => '已開啟 — iPhone、iPad 和 Mac 上是同一份備忘';
+
+  @override
+  String get syncStateOff => '已關閉 — 請在裝置設定中開啟 iCloud 雲碟';
+
+  @override
+  String get syncStateSyncing => '同步中…';
+
+  @override
+  String get aiKeyNotSynced => '備忘會透過 iCloud 同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
   @override
   String get settingsSecView => '顯示';
   @override

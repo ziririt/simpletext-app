@@ -292,6 +292,21 @@ class L10nKo extends L10n {
 
   @override
   String get menuAiKey => 'AI API 키';
+
+  @override
+  String get syncTitle => '아이클라우드';
+
+  @override
+  String get syncStateOn => '켜짐 — 아이폰·아이패드·맥에서 같은 메모를 봅니다';
+
+  @override
+  String get syncStateOff => '꺼짐 — 기기 설정에서 아이클라우드 드라이브를 켜 주세요';
+
+  @override
+  String get syncStateSyncing => '맞추는 중…';
+
+  @override
+  String get aiKeyNotSynced => '메모는 아이클라우드로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
   @override
   String get settingsSecView => '보기';
   @override

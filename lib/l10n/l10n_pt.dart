@@ -293,6 +293,21 @@ class L10nPt extends L10n {
 
   @override
   String get menuAiKey => 'Chave de API de IA';
+
+  @override
+  String get syncTitle => 'iCloud';
+
+  @override
+  String get syncStateOn => 'Ativado: as mesmas notas no iPhone, iPad e Mac';
+
+  @override
+  String get syncStateOff => 'Desativado: ative o iCloud Drive nos ajustes do dispositivo';
+
+  @override
+  String get syncStateSyncing => 'Sincronizando…';
+
+  @override
+  String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus dispositivos pelo iCloud. Sua chave de API não: informe-a em cada dispositivo.';
   @override
   String get settingsSecView => 'Visualização';
   @override

@@ -293,6 +293,21 @@ class L10nEn extends L10n {
 
   @override
   String get menuAiKey => 'AI API key';
+
+  @override
+  String get syncTitle => 'iCloud';
+
+  @override
+  String get syncStateOn => 'On — the same notes on iPhone, iPad and Mac';
+
+  @override
+  String get syncStateOff => 'Off — turn on iCloud Drive in your device settings';
+
+  @override
+  String get syncStateSyncing => 'Syncing…';
+
+  @override
+  String get aiKeyNotSynced => 'Your notes sync to all your devices through iCloud. Your API key does not — enter it separately on each device.';
   @override
   String get settingsSecView => 'Display';
   @override

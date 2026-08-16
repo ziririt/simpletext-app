@@ -27,6 +27,7 @@ import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
 import 'core/usage_gate.dart';
 import 'core/wizard.dart';
+import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
 
@@ -527,6 +528,17 @@ class AppSettings {
   int trialWizTotal = 0;
   bool trialNoticeShown = false;
 
+  // 2026-08-16 소유자 지적 — "정리 규칙과 자동 바꾸기 규칙은 모든 기기에서
+  // 동기화되어야 한다. 매번 기기마다 설정하는 것은 아이클라우드 쓰는 앱으로서
+  // 부적절하다." 맞는 말이라 규칙도 동기화 대상에 넣었다(AI 키는 제외).
+  //
+  // rulesStamp는 규칙을 마지막으로 바꾼 시각, rulesSig는 그때 내용의 지문이다.
+  // 시각을 규칙 바꾸는 자리마다 찍게 하지 않은 이유: 그 자리가 설정 화면
+  // 곳곳에 흩어져 있어서 하나는 반드시 빠뜨린다. 지문을 견주면 어디서 바뀌든
+  // 알아챈다.
+  int rulesStamp = 0;
+  String rulesSig = '';
+
   /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
   String themeMode = 'system';
 
@@ -570,6 +582,8 @@ class AppSettings {
         'trialTidyTotal': trialTidyTotal,
         'trialWizTotal': trialWizTotal,
         'trialNoticeShown': trialNoticeShown,
+        'rulesStamp': rulesStamp,
+        'rulesSig': rulesSig,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -620,6 +634,8 @@ class AppSettings {
     s.trialTidyTotal = (j['trialTidyTotal'] ?? s.trialTidyTotal) as int;
     s.trialWizTotal = (j['trialWizTotal'] ?? s.trialWizTotal) as int;
     s.trialNoticeShown = (j['trialNoticeShown'] ?? s.trialNoticeShown) as bool;
+    s.rulesStamp = (j['rulesStamp'] ?? s.rulesStamp) as int;
+    s.rulesSig = (j['rulesSig'] ?? s.rulesSig) as String;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -684,17 +700,36 @@ class Store extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> persist() async {
+  /// 기기에만 쓴다. 아이클라우드에는 올리지 않는다.
+  ///
+  /// 동기화 코드가 '합친 결과'를 되쓸 때 이걸 쓴다. 그때 persist()를 부르면
+  /// 다시 올리기가 예약되고, 그 올리기가 또 합치기를 부르는 고리가 생긴다.
+  Future<void> persistLocalOnly() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
         _notesKey, jsonEncode({'v': 2, 'notes': notes.map((n) => n.toJson()).toList(), 'tombstones': tombstones}));
     notifyListeners();
   }
 
-  Future<void> persistSettings() async {
+  Future<void> persistSettingsLocalOnly() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_settingsKey, jsonEncode(settings.toJson()));
     notifyListeners();
+  }
+
+  /// 화면만 다시 그리게 한다(동기화가 남의 기기 것을 받아 왔을 때).
+  void bump() => notifyListeners();
+
+  Future<void> persist() async {
+    await persistLocalOnly();
+    // 저장은 글자를 칠 때마다 일어난다. scheduleUp이 3초 모았다가 한 번만
+    // 올린다 — 여기서 곧바로 올리면 파일을 초당 몇 번씩 쓴다.
+    ICloudSync.instance.scheduleUp();
+  }
+
+  Future<void> persistSettings() async {
+    await persistSettingsLocalOnly();
+    ICloudSync.instance.scheduleUp();
   }
 
   void deleteNote(String id) {
@@ -826,15 +861,25 @@ class _HomeScreenState extends State<HomeScreen> {
   final store = Store.instance;
   String query = '';
 
+  /// 앱이 다시 앞으로 나올 때 아이클라우드를 한 번 훑기 위한 것.
+  /// 다른 기기에서 고친 메모는 대개 이 순간에 들어온다.
+  late final AppLifecycleListener _life;
+
   @override
   void initState() {
     super.initState();
     store.addListener(_onChange);
-    store.load();
+    _life = AppLifecycleListener(onResume: ICloudSync.instance.onResume);
+    // 아이클라우드는 메모를 다 읽은 **뒤에** 켠다. 먼저 켜면 아직 비어 있는
+    // 목록을 "이 기기에는 메모가 없다"로 읽고, 그 상태로 남의 기기 것과
+    // 합친 결과를 기기에 되쓴다 — 메모가 통째로 날아가는 길이다.
+    store.load().then((_) => ICloudSync.instance.boot());
   }
 
   @override
   void dispose() {
+    _life.dispose();
+    ICloudSync.instance.dispose();
     store.removeListener(_onChange);
     super.dispose();
   }
@@ -2367,6 +2412,12 @@ class _EditorScreenState extends State<EditorScreen> {
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_horiz),
               tooltip: l.moreTooltip,
+              // 2026-08-16 소유자 신고 — 메뉴가 '...' 버튼 위를 덮어서, 같은
+              // 자리를 다시 눌러 닫는 토글이 안 됐다. 기본값이 버튼을 중심에
+              // 두고 펼치는 방식(over)이라 그렇다. under로 바꾸면 버튼 아래로
+              // 내려가 버튼이 계속 보이고, 그 자리를 다시 누르면 닫힌다.
+              position: PopupMenuPosition.under,
+              offset: const Offset(0, 6),
               onSelected: (v) async {
                 // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
                 // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
@@ -3242,6 +3293,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           //   "정리를 누르면 어떻게 되나"     → 정리할 때
           // 화면 생김새는 애플 설정 앱의 관습을 그대로 따른다(작은 회색
           // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
+          // 2026-08-16 — 아이클라우드 상태 한 줄. 켜졌는지 꺼졌는지를
+          // 사용자가 알 수 있어야 한다. 애플 기기가 아니면 아예 안 보인다.
+          if (ICloudSync.supported) ...[
+            _secHeader(l.syncTitle),
+            _card([
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+                child: ValueListenableBuilder<SyncState>(
+                  valueListenable: ICloudSync.instance.state,
+                  builder: (_, st, __) => Row(children: [
+                    Icon(
+                        st == SyncState.ok
+                            ? Icons.cloud_done_outlined
+                            : st == SyncState.running
+                                ? Icons.cloud_sync_outlined
+                                : Icons.cloud_off_outlined,
+                        size: 22,
+                        color: st == SyncState.ok
+                            ? context.c.accent
+                            : context.c.sub),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                          st == SyncState.ok
+                              ? l.syncStateOn
+                              : st == SyncState.running
+                                  ? l.syncStateSyncing
+                                  : l.syncStateOff,
+                          style: TextStyle(
+                              fontSize: 15.5,
+                              height: 1.35,
+                              color: context.c.guideInk)),
+                    ),
+                  ]),
+                ),
+              ),
+            ]),
+          ],
           KeyedSubtree(
               key: _anchors['theme'], child: _secHeader(l.settingsSecView)),
           _card([
@@ -3352,6 +3441,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(l.aiSectionDesc,
                 style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
           ),
+          // 2026-08-16 소유자 요청 — 메모는 동기화되는데 키는 안 된다는 것을
+          // 여기서 분명히 말해 준다. 말 안 하면 사용자는 다른 기기에서 키가
+          // 비어 있는 것을 '버그'로 읽는다. 실제로는 우리가 일부러 안 보낸다.
+          if (ICloudSync.supported)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(32, 0, 16, 8),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(Icons.lock_outline, size: 17, color: context.c.sub),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(l.aiKeyNotSynced,
+                      style: TextStyle(
+                          fontSize: 15, height: 1.4, color: context.c.sub)),
+                ),
+              ]),
+            ),
           _card([
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),

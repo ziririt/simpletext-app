@@ -292,6 +292,21 @@ class L10nJa extends L10n {
 
   @override
   String get menuAiKey => 'AI APIキー';
+
+  @override
+  String get syncTitle => 'iCloud';
+
+  @override
+  String get syncStateOn => 'オン — iPhone・iPad・Mac で同じメモが見られます';
+
+  @override
+  String get syncStateOff => 'オフ — 端末の設定で iCloud Drive をオンにしてください';
+
+  @override
+  String get syncStateSyncing => '同期中…';
+
+  @override
+  String get aiKeyNotSynced => 'メモは iCloud で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
   @override
   String get settingsSecView => '表示';
   @override

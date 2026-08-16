@@ -10,6 +10,58 @@ class MainFlutterWindow: NSWindow {
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
+    // 2026-08-16 — 아이클라우드 다리. 아이폰 쪽 AppDelegate.swift와 같은
+    // 코드를 두 벌 둔다. 맥과 아이폰은 서로 다른 타깃이라 파일을 공유하려면
+    // Xcode 프로젝트 파일을 손봐야 하는데, 그 파일은 망가지면 빌드 전체가
+    // 죽는 자리다(2026-08-15에 아이콘 도구가 실제로 망가뜨렸다).
+    //
+    // 두 벌이라 어긋날 위험이 있지만, 여기 있는 건 '경로를 알려 준다'가
+    // 전부다. 규칙은 전부 다트(core/sync_merge.dart)에 있어서 두 벌로
+    // 나뉘지 않는다 — 어긋나 봐야 티가 안 나는 곳만 두 벌이라는 뜻이다.
+    ICloudBridge.register(messenger: flutterViewController.engine.binaryMessenger)
+
     super.awakeFromNib()
+  }
+}
+
+/// 다트에게 아이클라우드 폴더의 '경로'만 알려 주는 얇은 다리.
+/// (아이폰 쪽 ios/Runner/AppDelegate.swift에 같은 내용이 있다.)
+enum ICloudBridge {
+  static let containerId = "iCloud.com.ziririt.simpletext"
+
+  static func register(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "skyblue/icloud", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "root":
+        // 주 스레드에서 부르면 앱이 켜질 때 멈출 수 있다(애플 문서).
+        DispatchQueue.global(qos: .userInitiated).async {
+          let path = documentsPath()
+          DispatchQueue.main.async { result(path) }
+        }
+      case "download":
+        let args = call.arguments as? [String: Any]
+        let paths = args?["paths"] as? [String] ?? []
+        DispatchQueue.global(qos: .utility).async {
+          for p in paths {
+            try? FileManager.default.startDownloadingUbiquitousItem(
+              at: URL(fileURLWithPath: p))
+          }
+          DispatchQueue.main.async { result(true) }
+        }
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  /// 쓸 수 없는 상태면 nil — 오류가 아니라 '동기화 꺼짐'이다.
+  private static func documentsPath() -> String? {
+    let fm = FileManager.default
+    guard fm.ubiquityIdentityToken != nil else { return nil }
+    guard let root = fm.url(forUbiquityContainerIdentifier: containerId) else { return nil }
+    let docs = root.appendingPathComponent("Documents", isDirectory: true)
+    try? fm.createDirectory(at: docs, withIntermediateDirectories: true)
+    return docs.path
   }
 }

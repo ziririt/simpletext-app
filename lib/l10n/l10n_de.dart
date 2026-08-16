@@ -294,6 +294,21 @@ class L10nDe extends L10n {
 
   @override
   String get menuAiKey => 'KI-API-Schlüssel';
+
+  @override
+  String get syncTitle => 'iCloud';
+
+  @override
+  String get syncStateOn => 'Ein — dieselben Notizen auf iPhone, iPad und Mac';
+
+  @override
+  String get syncStateOff => 'Aus — aktivieren Sie iCloud Drive in den Geräteeinstellungen';
+
+  @override
+  String get syncStateSyncing => 'Wird abgeglichen …';
+
+  @override
+  String get aiKeyNotSynced => 'Ihre Notizen werden über iCloud auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
   @override
   String get settingsSecView => 'Anzeige';
   @override

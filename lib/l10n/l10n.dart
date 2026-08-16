@@ -233,6 +233,11 @@ abstract class L10n {
   String get settingsTitle;
   String get menuAppSettings;
   String get menuAiKey;
+  String get syncTitle;
+  String get syncStateOn;
+  String get syncStateOff;
+  String get syncStateSyncing;
+  String get aiKeyNotSynced;
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -431,6 +436,11 @@ abstract class L10n {
         'settingsTitle': settingsTitle,
         'menuAppSettings': menuAppSettings,
         'menuAiKey': menuAiKey,
+        'syncTitle': syncTitle,
+        'syncStateOn': syncStateOn,
+        'syncStateOff': syncStateOff,
+        'syncStateSyncing': syncStateSyncing,
+        'aiKeyNotSynced': aiKeyNotSynced,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,
