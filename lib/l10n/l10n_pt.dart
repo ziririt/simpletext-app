@@ -358,6 +358,33 @@ class L10nPt extends L10n {
 
   @override
   String get filterReset => 'Redefinir';
+
+  @override
+  String get trashTitle => 'Lixeira';
+
+  @override
+  String get trashSubtitle => 'Notas excluídas ficam guardadas por 30 dias';
+
+  @override
+  String get trashEmpty => 'A lixeira está vazia';
+
+  @override
+  String get trashRestore => 'Recuperar';
+
+  @override
+  String get trashDeleteNow => 'Excluir agora';
+
+  @override
+  String get trashEmptyAll => 'Esvaziar';
+
+  @override
+  String get trashEmptyConfirm => 'Esvaziar a lixeira não pode ser desfeito. Continuar?';
+
+  @override
+  String get trashRestored => 'Recuperada';
+
+  @override
+  String trashDaysLeftLabel(int days) => 'Será excluída definitivamente em $days dias';
   @override
   String get settingsSecView => 'Visualização';
   @override

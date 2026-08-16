@@ -357,6 +357,33 @@ class L10nJa extends L10n {
 
   @override
   String get filterReset => 'リセット';
+
+  @override
+  String get trashTitle => 'ゴミ箱';
+
+  @override
+  String get trashSubtitle => '削除したメモは30日間保管されます';
+
+  @override
+  String get trashEmpty => 'ゴミ箱は空です';
+
+  @override
+  String get trashRestore => '復元';
+
+  @override
+  String get trashDeleteNow => '完全に削除';
+
+  @override
+  String get trashEmptyAll => '空にする';
+
+  @override
+  String get trashEmptyConfirm => 'ゴミ箱を空にすると元に戻せません。続けますか？';
+
+  @override
+  String get trashRestored => '復元しました';
+
+  @override
+  String trashDaysLeftLabel(int days) => '$days日後に完全に削除されます';
   @override
   String get settingsSecView => '表示';
   @override

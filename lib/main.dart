@@ -26,6 +26,7 @@ import 'core/mono_controller.dart';
 import 'core/mru.dart';
 import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
+import 'core/trash.dart';
 import 'core/usage_gate.dart';
 import 'core/wizard.dart';
 import 'icloud_sync.dart';
@@ -676,6 +677,16 @@ class Store extends ChangeNotifier {
 
   List<Note> notes = [];
   List<Map<String, dynamic>> tombstones = [];
+
+  /// 지운 메모를 30일 동안 담아 두는 곳. `{'note': {...}, 'deletedAt': int}`.
+  ///
+  /// 툼스톤과 다르다. 툼스톤은 "이 id는 지워졌다"는 기록일 뿐 내용이 없어서
+  /// 되돌릴 수 없다. 기기끼리 맞추기 위한 내부 장치다. 휴지통은 사용자를
+  /// 위한 것이고 내용을 통째로 들고 있는다.
+  ///
+  /// 동기화하지 않는다. 지운 사실은 툼스톤이 이미 옮겨 주고, 휴지통까지
+  /// 옮기면 "폰에서 지운 걸 맥 휴지통에서 되살리는" 헷갈리는 상황이 생긴다.
+  List<Map<String, dynamic>> trash = [];
   AppSettings settings = AppSettings();
   bool loaded = false;
 
@@ -691,6 +702,15 @@ class Store extends ChangeNotifier {
         tombstones = ((p['tombstones'] ?? []) as List)
             .map((e) => (e as Map).cast<String, dynamic>())
             .toList();
+        // 기한이 지난 것은 여기서 조용히 버린다. 따로 청소 절차를 두면
+        // 그 절차가 안 돌았을 때 휴지통이 영원히 자란다.
+        trash = pruneTrash<Map<String, dynamic>>(
+          ((p['trash'] ?? []) as List)
+              .map((e) => (e as Map).cast<String, dynamic>())
+              .toList(),
+          deletedAtOf: (e) => (e['deletedAt'] ?? 0) as int,
+          nowMs: DateTime.now().millisecondsSinceEpoch,
+        );
       } else {
         notes = [_seedNote()];
       }
@@ -724,7 +744,13 @@ class Store extends ChangeNotifier {
   Future<void> persistLocalOnly() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-        _notesKey, jsonEncode({'v': 2, 'notes': notes.map((n) => n.toJson()).toList(), 'tombstones': tombstones}));
+        _notesKey,
+        jsonEncode({
+          'v': 3,
+          'notes': notes.map((n) => n.toJson()).toList(),
+          'tombstones': tombstones,
+          'trash': trash,
+        }));
     notifyListeners();
   }
 
@@ -749,9 +775,48 @@ class Store extends ChangeNotifier {
     ICloudSync.instance.scheduleUp();
   }
 
+  /// 지우기 — 곧바로 없애지 않고 휴지통으로 보낸다(2026-08-16).
+  ///
+  /// 조사에서 확인한 것: 메모가 사라지는 사건은 앱을 버리게 만든다. 다른
+  /// 노트앱 포럼에는 "휴지통에도 없고 이력도 없이 사라졌다"는 글이 반복해서
+  /// 올라오고, 그 스레드마다 사람들이 떠난다. 휴지통은 편의가 아니라 신뢰다.
   void deleteNote(String id) {
-    tombstones.add({'id': id, 'deletedAt': DateTime.now().millisecondsSinceEpoch});
-    notes.removeWhere((n) => n.id == id);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final i = notes.indexWhere((n) => n.id == id);
+    if (i >= 0) {
+      trash.insert(0, {'note': notes[i].toJson(), 'deletedAt': now});
+      notes.removeAt(i);
+    }
+    tombstones.add({'id': id, 'deletedAt': now});
+    persist();
+  }
+
+  /// 휴지통에서 되살린다.
+  ///
+  /// updatedAt을 '지금'으로 올리고 이 기기의 툼스톤을 지우는 게 핵심이다.
+  /// 안 그러면 다음 동기화에서 "지운 시각이 고친 시각보다 늦다"로 읽혀서
+  /// **되살린 메모가 곧바로 다시 사라진다.** 다른 기기의 툼스톤은 그대로
+  /// 남아 있으므로 시각으로 이겨야 한다(규칙은 core/sync_merge.dart).
+  void restoreNote(String id) {
+    final i = trash.indexWhere((e) => (e['note'] as Map)['id'] == id);
+    if (i < 0) return;
+    final j = Map<String, dynamic>.from(trash[i]['note'] as Map);
+    j['updatedAt'] = DateTime.now().millisecondsSinceEpoch;
+    notes.insert(0, Note.fromJson(j));
+    trash.removeAt(i);
+    tombstones.removeWhere((t) => t['id'] == id);
+    persist();
+  }
+
+  /// 휴지통에서 완전히 지운다. 툼스톤은 남긴다 — 그게 없으면 다른 기기가
+  /// 아직 들고 있는 그 메모가 '새 메모'로 보여 되살아난다.
+  void purgeFromTrash(String id) {
+    trash.removeWhere((e) => (e['note'] as Map)['id'] == id);
+    persist();
+  }
+
+  void emptyTrash() {
+    trash.clear();
     persist();
   }
 
@@ -2908,6 +2973,116 @@ class _PreviewScreenState extends State<PreviewScreen> {
 /// 실제 결제(StoreKit/Play 결제)는 스토어 제출 작업에서 붙는다. 지금은
 /// 안내와 버튼 자리를 만들고, 누르면 준비 중임을 알린다. 후원 시트와
 /// 설정 상단 배너가 여기로 이끈다.
+/// 휴지통 — 지운 메모를 30일 동안 되돌릴 수 있는 곳.
+class TrashScreen extends StatefulWidget {
+  const TrashScreen({super.key});
+
+  @override
+  State<TrashScreen> createState() => _TrashScreenState();
+}
+
+class _TrashScreenState extends State<TrashScreen> {
+  final store = Store.instance;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final items = store.trash;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l.trashTitle),
+        actions: [
+          if (items.isNotEmpty)
+            TextButton(
+              onPressed: () async {
+                final ok = await showAdaptiveDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog.adaptive(
+                    title: Text(L10n.of(ctx).trashEmptyAll),
+                    content: Text(L10n.of(ctx).trashEmptyConfirm),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(L10n.of(ctx).cancel)),
+                      FilledButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text(L10n.of(ctx).delete)),
+                    ],
+                  ),
+                );
+                if (ok == true) {
+                  store.emptyTrash();
+                  if (mounted) setState(() {});
+                }
+              },
+              child: Text(l.trashEmptyAll, style: TextStyle(color: c.danger)),
+            ),
+        ],
+      ),
+      body: items.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.delete_outline, size: 46, color: c.sub),
+                    const SizedBox(height: 12),
+                    Text(l.trashEmpty,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: c.guideInk)),
+                  ],
+                ),
+              ),
+            )
+          : ListView.separated(
+              itemCount: items.length,
+              separatorBuilder: (_, __) => Divider(height: 1, color: c.line),
+              itemBuilder: (_, i) {
+                final e = items[i];
+                final j = (e['note'] as Map).cast<String, dynamic>();
+                final at = (e['deletedAt'] ?? 0) as int;
+                final title = ((j['title'] ?? '') as String).trim();
+                final body = ((j['body'] ?? '') as String).trim();
+                final shown = title.isNotEmpty
+                    ? title
+                    : (body.isEmpty ? l.untitled : body.split('\n').first);
+                final left = trashDaysLeft(deletedAt: at, nowMs: now);
+                return ListTile(
+                  title: Text(shown,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(l.trashDaysLeftLabel(left),
+                      style: TextStyle(fontSize: 13.5, color: c.sub)),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    TextButton(
+                      onPressed: () {
+                        store.restoreNote(j['id'] as String);
+                        setState(() {});
+                        _toast(context, l.trashRestored);
+                      },
+                      child: Text(l.trashRestore),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete_forever_outlined, color: c.danger),
+                      tooltip: l.trashDeleteNow,
+                      onPressed: () {
+                        store.purgeFromTrash(j['id'] as String);
+                        setState(() {});
+                      },
+                    ),
+                  ]),
+                );
+              },
+            ),
+    );
+  }
+}
+
 /// 정렬과 필터를 고르는 시트.
 ///
 /// 메뉴가 아니라 시트인 이유: 태그가 여러 개면 메뉴로는 감당이 안 되고,
@@ -3874,6 +4049,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ],
               ),
+            ),
+          ]),
+          // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로
+          // 느끼게 하는 여섯 원인 중 하나로 나왔다. 애플 메모 30일, 구글 킵
+          // 7일이 관습이라 30일을 따랐다(독자 설계 금지).
+          _secHeader(l.trashTitle),
+          _card([
+            ListTile(
+              leading: Icon(Icons.delete_outline, color: context.c.sub),
+              title: Text(l.trashTitle,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: Text(l.trashSubtitle,
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                if (store.trash.isNotEmpty)
+                  Text('${store.trash.length}',
+                      style: TextStyle(fontSize: 16, color: context.c.sub)),
+                const SizedBox(width: 4),
+                Icon(Icons.chevron_right, color: context.c.sub),
+              ]),
+              onTap: () async {
+                await Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const TrashScreen()));
+                if (mounted) setState(() {});
+              },
             ),
           ]),
           _secHeader(l.settingsSecInfo),

@@ -254,6 +254,15 @@ abstract class L10n {
   String get filterTagLabel;
   String get filterAll;
   String get filterReset;
+  String get trashTitle;
+  String get trashSubtitle;
+  String get trashEmpty;
+  String get trashRestore;
+  String get trashDeleteNow;
+  String get trashEmptyAll;
+  String get trashEmptyConfirm;
+  String get trashRestored;
+  String trashDaysLeftLabel(int days);
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -473,6 +482,14 @@ abstract class L10n {
         'filterTagLabel': filterTagLabel,
         'filterAll': filterAll,
         'filterReset': filterReset,
+        'trashTitle': trashTitle,
+        'trashSubtitle': trashSubtitle,
+        'trashEmpty': trashEmpty,
+        'trashRestore': trashRestore,
+        'trashDeleteNow': trashDeleteNow,
+        'trashEmptyAll': trashEmptyAll,
+        'trashEmptyConfirm': trashEmptyConfirm,
+        'trashRestored': trashRestored,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,

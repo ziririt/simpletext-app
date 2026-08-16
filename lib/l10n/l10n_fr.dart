@@ -359,6 +359,33 @@ class L10nFr extends L10n {
 
   @override
   String get filterReset => 'Réinitialiser';
+
+  @override
+  String get trashTitle => 'Corbeille';
+
+  @override
+  String get trashSubtitle => 'Les notes supprimées sont conservées 30 jours';
+
+  @override
+  String get trashEmpty => 'La corbeille est vide';
+
+  @override
+  String get trashRestore => 'Restaurer';
+
+  @override
+  String get trashDeleteNow => 'Supprimer maintenant';
+
+  @override
+  String get trashEmptyAll => 'Vider';
+
+  @override
+  String get trashEmptyConfirm => 'Vider la corbeille est irréversible. Continuer ?';
+
+  @override
+  String get trashRestored => 'Restaurée';
+
+  @override
+  String trashDaysLeftLabel(int days) => 'Suppression définitive dans $days jours';
   @override
   String get settingsSecView => 'Affichage';
   @override

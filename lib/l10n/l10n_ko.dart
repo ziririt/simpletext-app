@@ -357,6 +357,33 @@ class L10nKo extends L10n {
 
   @override
   String get filterReset => '초기화';
+
+  @override
+  String get trashTitle => '휴지통';
+
+  @override
+  String get trashSubtitle => '지운 메모는 30일 동안 보관됩니다';
+
+  @override
+  String get trashEmpty => '휴지통이 비어 있습니다';
+
+  @override
+  String get trashRestore => '복구';
+
+  @override
+  String get trashDeleteNow => '완전히 삭제';
+
+  @override
+  String get trashEmptyAll => '비우기';
+
+  @override
+  String get trashEmptyConfirm => '휴지통을 비우면 되돌릴 수 없습니다. 비울까요?';
+
+  @override
+  String get trashRestored => '복구했습니다';
+
+  @override
+  String trashDaysLeftLabel(int days) => '$days일 뒤 완전히 지워집니다';
   @override
   String get settingsSecView => '보기';
   @override

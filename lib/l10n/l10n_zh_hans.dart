@@ -357,6 +357,33 @@ class L10nZhHans extends L10n {
 
   @override
   String get filterReset => '重置';
+
+  @override
+  String get trashTitle => '废纸篓';
+
+  @override
+  String get trashSubtitle => '删除的备忘会保留 30 天';
+
+  @override
+  String get trashEmpty => '废纸篓是空的';
+
+  @override
+  String get trashRestore => '恢复';
+
+  @override
+  String get trashDeleteNow => '立即删除';
+
+  @override
+  String get trashEmptyAll => '清空';
+
+  @override
+  String get trashEmptyConfirm => '清空后无法恢复，确定继续吗？';
+
+  @override
+  String get trashRestored => '已恢复';
+
+  @override
+  String trashDaysLeftLabel(int days) => '$days 天后彻底删除';
   @override
   String get settingsSecView => '显示';
   @override

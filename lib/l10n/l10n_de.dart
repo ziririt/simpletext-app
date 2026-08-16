@@ -359,6 +359,33 @@ class L10nDe extends L10n {
 
   @override
   String get filterReset => 'Zurücksetzen';
+
+  @override
+  String get trashTitle => 'Papierkorb';
+
+  @override
+  String get trashSubtitle => 'Gelöschte Notizen werden 30 Tage aufbewahrt';
+
+  @override
+  String get trashEmpty => 'Der Papierkorb ist leer';
+
+  @override
+  String get trashRestore => 'Wiederherstellen';
+
+  @override
+  String get trashDeleteNow => 'Jetzt löschen';
+
+  @override
+  String get trashEmptyAll => 'Leeren';
+
+  @override
+  String get trashEmptyConfirm => 'Das Leeren des Papierkorbs kann nicht rückgängig gemacht werden. Fortfahren?';
+
+  @override
+  String get trashRestored => 'Wiederhergestellt';
+
+  @override
+  String trashDaysLeftLabel(int days) => 'Wird in $days Tagen endgültig gelöscht';
   @override
   String get settingsSecView => 'Anzeige';
   @override

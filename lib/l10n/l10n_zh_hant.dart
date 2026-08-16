@@ -357,6 +357,33 @@ class L10nZhHant extends L10n {
 
   @override
   String get filterReset => '重設';
+
+  @override
+  String get trashTitle => '垃圾桶';
+
+  @override
+  String get trashSubtitle => '刪除的備忘會保留 30 天';
+
+  @override
+  String get trashEmpty => '垃圾桶是空的';
+
+  @override
+  String get trashRestore => '回復';
+
+  @override
+  String get trashDeleteNow => '立即刪除';
+
+  @override
+  String get trashEmptyAll => '清空';
+
+  @override
+  String get trashEmptyConfirm => '清空後無法復原，確定要繼續嗎？';
+
+  @override
+  String get trashRestored => '已回復';
+
+  @override
+  String trashDaysLeftLabel(int days) => '$days 天後徹底刪除';
   @override
   String get settingsSecView => '顯示';
   @override

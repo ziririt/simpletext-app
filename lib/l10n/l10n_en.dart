@@ -358,6 +358,33 @@ class L10nEn extends L10n {
 
   @override
   String get filterReset => 'Reset';
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashSubtitle => 'Deleted notes are kept for 30 days';
+
+  @override
+  String get trashEmpty => 'Trash is empty';
+
+  @override
+  String get trashRestore => 'Restore';
+
+  @override
+  String get trashDeleteNow => 'Delete now';
+
+  @override
+  String get trashEmptyAll => 'Empty';
+
+  @override
+  String get trashEmptyConfirm => 'Emptying the trash cannot be undone. Continue?';
+
+  @override
+  String get trashRestored => 'Restored';
+
+  @override
+  String trashDaysLeftLabel(int days) => 'Deleted permanently in $days days';
   @override
   String get settingsSecView => 'Display';
   @override

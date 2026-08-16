@@ -358,6 +358,33 @@ class L10nEs extends L10n {
 
   @override
   String get filterReset => 'Restablecer';
+
+  @override
+  String get trashTitle => 'Papelera';
+
+  @override
+  String get trashSubtitle => 'Las notas eliminadas se guardan 30 días';
+
+  @override
+  String get trashEmpty => 'La papelera está vacía';
+
+  @override
+  String get trashRestore => 'Recuperar';
+
+  @override
+  String get trashDeleteNow => 'Eliminar ahora';
+
+  @override
+  String get trashEmptyAll => 'Vaciar';
+
+  @override
+  String get trashEmptyConfirm => 'Vaciar la papelera no se puede deshacer. ¿Continuar?';
+
+  @override
+  String get trashRestored => 'Recuperada';
+
+  @override
+  String trashDaysLeftLabel(int days) => 'Se eliminará definitivamente en $days días';
   @override
   String get settingsSecView => 'Pantalla';
   @override
