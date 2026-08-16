@@ -1799,6 +1799,141 @@ class _EditorScreenState extends State<EditorScreen> {
     return null;
   }
 
+  /// 지금 블록이 씌워져 있는가. 이 값이 바뀔 때만 다시 그린다.
+  bool _hasSel = false;
+
+  void _watchSelection() {
+    final s = bodyCtl.selection;
+    final has = s.isValid && !s.isCollapsed;
+    if (has != _hasSel && mounted) setState(() => _hasSel = has);
+  }
+
+  /// 블록의 시작·끝을 한 글자씩 민다.
+  ///
+  /// 2026-08-16 소유자 지적 — "선택 블럭 씌울 때 정교함이 제일 중요.
+  /// 아래위로 내릴 때 자동 스크롤이 너무 빠르다."
+  ///
+  /// 그 자동 스크롤 속도는 플러터가 안에서 정하고 밖으로 열어 두지 않았다
+  /// (EditableText가 100ms짜리 ensureVisible로 캐럿을 따라간다). 그래서
+  /// 속도를 늦추는 대신 **끌지 않아도 되게** 만든다. 손가락으로 마지막 한
+  /// 글자를 맞추는 것보다 버튼 한 번이 언제나 정확하다. 애플이 커서 이동
+  /// 제스처를 따로 만든 것도 같은 이유다.
+  void _adjustSel({int start = 0, int end = 0}) {
+    final t = bodyCtl.text;
+    final s = bodyCtl.selection;
+    if (!s.isValid) return;
+    var a = (s.start + start).clamp(0, t.length);
+    var b = (s.end + end).clamp(0, t.length);
+    if (a > b) {
+      final tmp = a;
+      a = b;
+      b = tmp;
+    }
+    bodyCtl.selection = TextSelection(baseOffset: a, extentOffset: b);
+    HapticFeedback.selectionClick();
+  }
+
+  /// 줄·문단·문장·전체를 통째로 잡는다.
+  ///
+  /// 흔히 원하는 블록은 '여기부터 저기까지'가 아니라 '이 문단'이다. 그럴
+  /// 때는 끄는 것 자체가 낭비다.
+  void _selectUnit(String unit) {
+    final t = bodyCtl.text;
+    final s = bodyCtl.selection;
+    if (!s.isValid || t.isEmpty) return;
+    var a = s.start;
+    var b = s.end;
+    switch (unit) {
+      case 'all':
+        a = 0;
+        b = t.length;
+      case 'line':
+        final i = t.lastIndexOf('\n', a > 0 ? a - 1 : 0);
+        a = i < 0 ? 0 : i + 1;
+        final j = t.indexOf('\n', b);
+        b = j < 0 ? t.length : j;
+      case 'para':
+        final i = t.lastIndexOf('\n\n', a > 0 ? a - 1 : 0);
+        a = i < 0 ? 0 : i + 2;
+        final j = t.indexOf('\n\n', b);
+        b = j < 0 ? t.length : j;
+      case 'sentence':
+        // 문장 끝으로 치는 글자. 한국어 글에는 영어 문장부호와 전각이 섞여
+        // 들어오므로 둘 다 본다.
+        bool isEnd(int k) => '.!?。！？\n'.contains(t[k]);
+        var i = a > 0 ? a - 1 : 0;
+        while (i > 0 && !isEnd(i)) {
+          i--;
+        }
+        a = i == 0 ? 0 : i + 1;
+        while (a < t.length && t[a] == ' ') {
+          a++;
+        }
+        var j = b;
+        while (j < t.length && !isEnd(j)) {
+          j++;
+        }
+        b = j < t.length ? j + 1 : t.length;
+    }
+    if (a > b) return;
+    bodyCtl.selection = TextSelection(baseOffset: a, extentOffset: b);
+    HapticFeedback.selectionClick();
+  }
+
+  /// 블록이 씌워져 있을 때 뜨는 막대.
+  ///
+  /// 기호 막대를 잠시 밀어내고 이 막대가 나온다. 블록을 다루는 동안 괄호
+  /// 넣기 버튼은 쓸 일이 없고, 자리를 나눠 쓰면 둘 다 좁아진다.
+  Widget _selectionBar({bool atTop = false}) {
+    final l = L10n.of(context);
+    return Glass(
+      hairlineTop: !atTop,
+      hairlineBottom: atTop,
+      child: SizedBox(
+        height: 44,
+        child: Row(children: [
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              children: [
+                _kbBtn(glyph: l.selUnitSentence, onTap: () => _selectUnit('sentence')),
+                _kbBtn(glyph: l.selUnitLine, onTap: () => _selectUnit('line')),
+                _kbBtn(glyph: l.selUnitPara, onTap: () => _selectUnit('para')),
+                _kbBtn(glyph: l.selUnitAll, onTap: () => _selectUnit('all')),
+                _kbBtn(
+                    icon: Icons.first_page,
+                    tip: l.selStartLeft,
+                    onTap: () => _adjustSel(start: -1)),
+                _kbBtn(
+                    icon: Icons.chevron_right,
+                    tip: l.selStartRight,
+                    onTap: () => _adjustSel(start: 1)),
+                _kbBtn(
+                    icon: Icons.chevron_left,
+                    tip: l.selEndLeft,
+                    onTap: () => _adjustSel(end: -1)),
+                _kbBtn(
+                    icon: Icons.last_page,
+                    tip: l.selEndRight,
+                    onTap: () => _adjustSel(end: 1)),
+              ],
+            ),
+          ),
+          Container(width: 1, height: 26, color: context.c.toolbarLine),
+          _kbBtn(
+            icon: Icons.close,
+            tip: l.selClear,
+            onTap: () {
+              bodyCtl.selection =
+                  TextSelection.collapsed(offset: bodyCtl.selection.end);
+            },
+          ),
+        ]),
+      ),
+    );
+  }
+
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
     // 2026-08-16 리퀴드 글래스 — 도구 막대는 이제 유리다.
@@ -1866,6 +2001,7 @@ class _EditorScreenState extends State<EditorScreen> {
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
     }
+    bodyCtl.addListener(_watchSelection);
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
     }
@@ -1874,6 +2010,7 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void dispose() {
     _tagTimer?.cancel();
+    bodyCtl.removeListener(_watchSelection);
     unawaited(store.flush());
     titleCtl.dispose();
     bodyCtl.dispose();
@@ -3095,7 +3232,8 @@ class _EditorScreenState extends State<EditorScreen> {
         body: Column(
           children: [
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
-            if (_isDesktop) _accessoryBar(atTop: true),
+            if (_isDesktop)
+              _hasSel ? _selectionBar(atTop: true) : _accessoryBar(atTop: true),
             _dateLine(note.updatedAt),
             // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
             // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
@@ -3236,6 +3374,11 @@ class _EditorScreenState extends State<EditorScreen> {
                   //
                   // 튕기는 스크롤은 선택 중에 문서가 더 크게 흔들려 보이게 한다.
                   scrollPhysics: const ClampingScrollPhysics(),
+                  // 블록을 끌 때 화면 끝에 닿으면 플러터가 캐럿을 보이게
+                  // 스크롤한다. 그 한 번에 움직이는 양이 이 여백만큼이라,
+                  // 기본값(20)보다 줄이면 덜 뛴다. 0으로 두지는 않는다 —
+                  // 캐럿이 화면 가장자리에 딱 붙으면 손가락에 가려진다.
+                  scrollPadding: const EdgeInsets.all(12),
                   decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
                   // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
                   // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
@@ -3267,7 +3410,7 @@ class _EditorScreenState extends State<EditorScreen> {
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: SafeArea(
             child: (_bodyFocus.hasFocus && !_isDesktop)
-                ? _accessoryBar()
+                ? (_hasSel ? _selectionBar() : _accessoryBar())
                 : Glass(
                     hairlineTop: true,
                     child: Row(

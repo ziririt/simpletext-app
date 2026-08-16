@@ -480,6 +480,33 @@ class L10nKo extends L10n {
   String historyUnknownTime(int n) => '이전 판 \$n';
 
   @override
+  String get selUnitSentence => '문장';
+
+  @override
+  String get selUnitLine => '줄';
+
+  @override
+  String get selUnitPara => '문단';
+
+  @override
+  String get selUnitAll => '전체';
+
+  @override
+  String get selStartLeft => '앞을 왼쪽으로';
+
+  @override
+  String get selStartRight => '앞을 오른쪽으로';
+
+  @override
+  String get selEndLeft => '뒤를 왼쪽으로';
+
+  @override
+  String get selEndRight => '뒤를 오른쪽으로';
+
+  @override
+  String get selClear => '선택 해제';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 

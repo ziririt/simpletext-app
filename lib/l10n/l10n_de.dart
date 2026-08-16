@@ -482,6 +482,33 @@ class L10nDe extends L10n {
   String historyUnknownTime(int n) => 'Frühere Version \$n';
 
   @override
+  String get selUnitSentence => 'Satz';
+
+  @override
+  String get selUnitLine => 'Zeile';
+
+  @override
+  String get selUnitPara => 'Absatz';
+
+  @override
+  String get selUnitAll => 'Alles';
+
+  @override
+  String get selStartLeft => 'Anfang links';
+
+  @override
+  String get selStartRight => 'Anfang rechts';
+
+  @override
+  String get selEndLeft => 'Ende links';
+
+  @override
+  String get selEndRight => 'Ende rechts';
+
+  @override
+  String get selClear => 'Auswahl aufheben';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

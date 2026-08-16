@@ -481,6 +481,33 @@ class L10nEs extends L10n {
   String historyUnknownTime(int n) => 'Versión anterior \$n';
 
   @override
+  String get selUnitSentence => 'Frase';
+
+  @override
+  String get selUnitLine => 'Línea';
+
+  @override
+  String get selUnitPara => 'Párrafo';
+
+  @override
+  String get selUnitAll => 'Todo';
+
+  @override
+  String get selStartLeft => 'Inicio izq.';
+
+  @override
+  String get selStartRight => 'Inicio der.';
+
+  @override
+  String get selEndLeft => 'Fin izq.';
+
+  @override
+  String get selEndRight => 'Fin der.';
+
+  @override
+  String get selClear => 'Quitar selección';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src el \$date';
 

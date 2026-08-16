@@ -285,6 +285,15 @@ abstract class L10n {
   String get historyRestore;
   String get historyOriginal;
   String historyUnknownTime(int n);
+  String get selUnitSentence;
+  String get selUnitLine;
+  String get selUnitPara;
+  String get selUnitAll;
+  String get selStartLeft;
+  String get selStartRight;
+  String get selEndLeft;
+  String get selEndRight;
+  String get selClear;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -534,6 +543,15 @@ abstract class L10n {
         'historyEmpty': historyEmpty,
         'historyRestore': historyRestore,
         'historyOriginal': historyOriginal,
+        'selUnitSentence': selUnitSentence,
+        'selUnitLine': selUnitLine,
+        'selUnitPara': selUnitPara,
+        'selUnitAll': selUnitAll,
+        'selStartLeft': selStartLeft,
+        'selStartRight': selStartRight,
+        'selEndLeft': selEndLeft,
+        'selEndRight': selEndRight,
+        'selClear': selClear,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

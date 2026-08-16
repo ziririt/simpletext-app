@@ -481,6 +481,33 @@ class L10nPt extends L10n {
   String historyUnknownTime(int n) => 'Versão anterior \$n';
 
   @override
+  String get selUnitSentence => 'Frase';
+
+  @override
+  String get selUnitLine => 'Linha';
+
+  @override
+  String get selUnitPara => 'Parágrafo';
+
+  @override
+  String get selUnitAll => 'Tudo';
+
+  @override
+  String get selStartLeft => 'Início esq.';
+
+  @override
+  String get selStartRight => 'Início dir.';
+
+  @override
+  String get selEndLeft => 'Fim esq.';
+
+  @override
+  String get selEndRight => 'Fim dir.';
+
+  @override
+  String get selClear => 'Limpar seleção';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

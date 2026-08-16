@@ -481,6 +481,33 @@ class L10nEn extends L10n {
   String historyUnknownTime(int n) => 'Earlier version \$n';
 
   @override
+  String get selUnitSentence => 'Sentence';
+
+  @override
+  String get selUnitLine => 'Line';
+
+  @override
+  String get selUnitPara => 'Paragraph';
+
+  @override
+  String get selUnitAll => 'All';
+
+  @override
+  String get selStartLeft => 'Start left';
+
+  @override
+  String get selStartRight => 'Start right';
+
+  @override
+  String get selEndLeft => 'End left';
+
+  @override
+  String get selEndRight => 'End right';
+
+  @override
+  String get selClear => 'Clear selection';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from \$src on \$date';
 

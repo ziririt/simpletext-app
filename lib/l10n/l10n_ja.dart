@@ -480,6 +480,33 @@ class L10nJa extends L10n {
   String historyUnknownTime(int n) => '以前の版 \$n';
 
   @override
+  String get selUnitSentence => '文';
+
+  @override
+  String get selUnitLine => '行';
+
+  @override
+  String get selUnitPara => '段落';
+
+  @override
+  String get selUnitAll => '全体';
+
+  @override
+  String get selStartLeft => '始点を左へ';
+
+  @override
+  String get selStartRight => '始点を右へ';
+
+  @override
+  String get selEndLeft => '終点を左へ';
+
+  @override
+  String get selEndRight => '終点を右へ';
+
+  @override
+  String get selClear => '選択解除';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 

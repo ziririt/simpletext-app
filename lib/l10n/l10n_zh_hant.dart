@@ -480,6 +480,33 @@ class L10nZhHant extends L10n {
   String historyUnknownTime(int n) => '先前版本 \$n';
 
   @override
+  String get selUnitSentence => '句';
+
+  @override
+  String get selUnitLine => '行';
+
+  @override
+  String get selUnitPara => '段';
+
+  @override
+  String get selUnitAll => '全部';
+
+  @override
+  String get selStartLeft => '起點左移';
+
+  @override
+  String get selStartRight => '起點右移';
+
+  @override
+  String get selEndLeft => '終點左移';
+
+  @override
+  String get selEndRight => '終點右移';
+
+  @override
+  String get selClear => '取消選取';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 來自 \$src';
 
