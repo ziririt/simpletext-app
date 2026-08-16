@@ -19,7 +19,7 @@ const String appVersion = '0.3.36';
 
 /// 빌드 번호. 같은 버전으로 여러 번 올릴 때 구분한다.
 /// TestFlight 업로드 시에는 CI가 실행 번호로 덮어쓴다(같은 번호를 두 번 못 받기 때문).
-const int appBuild = 1;
+const int appBuild = 2;
 
 /// 화면에 그대로 찍히는 문자열. 소유자 지정 형식(2026-08-12): ver.0.1.1.1 꼴
 /// 앞 세 자리는 pubspec의 version, 마지막 자리는 빌드 번호다.
