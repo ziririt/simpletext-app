@@ -307,6 +307,26 @@ class L10nZhHans extends L10n {
 
   @override
   String get aiKeyNotSynced => '备忘会通过 iCloud 同步到您的所有设备，但 API 密钥不会同步 — 请在每台设备上单独输入。';
+
+  @override
+  String get syncStateSignedOut => '尚未登录 iCloud — 点按查看方法';
+
+  @override
+  String get syncHelpTitle => '如何开启 iCloud';
+
+  @override
+  String get syncHelpSteps =>
+      '1. 打开设置 App\n2. 点按顶部您的姓名\n3. 点按 iCloud\n4. 在已存储到 iCloud 中点按全部显示\n5. 在列表中开启 Skyblue Note\n6. 返回本 App 并点按重新检查';
+
+  @override
+  String get syncOpenSettings => '打开设置';
+
+  @override
+  String get syncRecheck => '重新检查';
+
+  @override
+  String get syncHelpNote =>
+      '刚安装完成时可能需要一两分钟准备。稍后点按重新检查即可。';
   @override
   String get settingsSecView => '显示';
   @override

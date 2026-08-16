@@ -308,6 +308,26 @@ class L10nPt extends L10n {
 
   @override
   String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus dispositivos pelo iCloud. Sua chave de API não: informe-a em cada dispositivo.';
+
+  @override
+  String get syncStateSignedOut => 'Você não entrou no iCloud: toque para ver como';
+
+  @override
+  String get syncHelpTitle => 'Como ativar o iCloud';
+
+  @override
+  String get syncHelpSteps =>
+      '1. Abra o app Ajustes\n2. Toque no seu nome no topo\n3. Toque em iCloud\n4. Em Salvo no iCloud, toque em Ver Tudo\n5. Ative o Skyblue Note na lista\n6. Volte aqui e toque em Verificar novamente';
+
+  @override
+  String get syncOpenSettings => 'Abrir Ajustes';
+
+  @override
+  String get syncRecheck => 'Verificar novamente';
+
+  @override
+  String get syncHelpNote =>
+      'Se você acabou de instalar o app, pode levar um ou dois minutos até ficar pronto. Toque em Verificar novamente.';
   @override
   String get settingsSecView => 'Visualização';
   @override

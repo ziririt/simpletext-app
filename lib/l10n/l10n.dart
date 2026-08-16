@@ -238,6 +238,12 @@ abstract class L10n {
   String get syncStateOff;
   String get syncStateSyncing;
   String get aiKeyNotSynced;
+  String get syncStateSignedOut;
+  String get syncHelpTitle;
+  String get syncHelpSteps;
+  String get syncOpenSettings;
+  String get syncRecheck;
+  String get syncHelpNote;
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -441,6 +447,12 @@ abstract class L10n {
         'syncStateOff': syncStateOff,
         'syncStateSyncing': syncStateSyncing,
         'aiKeyNotSynced': aiKeyNotSynced,
+        'syncStateSignedOut': syncStateSignedOut,
+        'syncHelpTitle': syncHelpTitle,
+        'syncHelpSteps': syncHelpSteps,
+        'syncOpenSettings': syncOpenSettings,
+        'syncRecheck': syncRecheck,
+        'syncHelpNote': syncHelpNote,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,

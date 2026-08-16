@@ -2848,6 +2848,110 @@ class _PreviewScreenState extends State<PreviewScreen> {
 /// 실제 결제(StoreKit/Play 결제)는 스토어 제출 작업에서 붙는다. 지금은
 /// 안내와 버튼 자리를 만들고, 누르면 준비 중임을 알린다. 후원 시트와
 /// 설정 상단 배너가 여기로 이끈다.
+/// 아이클라우드가 꺼져 있을 때 여는 안내.
+///
+/// 왜 '설정으로 바로 가기'가 아니라 글인가: 애플이 앱에서 열 수 있게 허용한
+/// 설정 화면은 '이 앱의 설정' 페이지 하나뿐이다. iCloud 항목으로 직접 뛰는
+/// 주소(prefs:root=CASTLE)는 비공개 API라 쓰면 심사에서 반려된다. 그래서
+/// 열어 줄 수 있는 데까지 열고, 그 다음 길은 순서대로 적어 준다.
+class SyncHelpSheet extends StatefulWidget {
+  const SyncHelpSheet({super.key});
+
+  @override
+  State<SyncHelpSheet> createState() => _SyncHelpSheetState();
+}
+
+class _SyncHelpSheetState extends State<SyncHelpSheet> {
+  bool _checking = false;
+
+  Future<void> _recheck() async {
+    setState(() => _checking = true);
+    await ICloudSync.instance.recheck();
+    if (!mounted) return;
+    setState(() => _checking = false);
+    if (ICloudSync.instance.state.value == SyncState.ok) {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(22, 10, 22, 22),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 18),
+                  decoration: BoxDecoration(
+                      color: c.line, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Center(
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundColor: c.infoBg,
+                  child: Icon(Icons.cloud_off_outlined, size: 30, color: c.accent),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(l.syncHelpTitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 14),
+              Text(l.syncHelpSteps,
+                  style: TextStyle(fontSize: 15.5, height: 1.75, color: c.guideInk)),
+              const SizedBox(height: 16),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(13)),
+                ),
+                onPressed: () => ICloudSync.instance.openSettings(),
+                child: Text(l.syncOpenSettings,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 9),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(13)),
+                ),
+                onPressed: _checking ? null : _recheck,
+                child: _checking
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text(l.syncRecheck),
+              ),
+              const SizedBox(height: 12),
+              Text(l.syncHelpNote,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13.5, height: 1.45, color: c.sub)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
 
@@ -3295,39 +3399,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
           // 2026-08-16 — 아이클라우드 상태 한 줄. 켜졌는지 꺼졌는지를
           // 사용자가 알 수 있어야 한다. 애플 기기가 아니면 아예 안 보인다.
+          // 2026-08-16 소유자 신고 — "이건 어떻게 설정하라는 건지 모르겠다."
+          // 맞는 말이다. '꺼짐'이라고만 쓰고 끝내면 사용자가 할 수 있는 게
+          // 없다. 그래서 세 가지를 바꿨다.
+          //   ① 원인을 갈랐다(로그인 안 됨 / 앱에서 꺼짐)
+          //   ② 줄 전체를 누를 수 있게 하고, 누르면 순서를 글로 보여 준다
+          //   ③ 그 안에 [설정 열기]와 [다시 확인]을 넣었다
+          // 아이클라우드 항목으로 바로 뛰는 주소는 비공개 API라 심사에서
+          // 반려된다 — 그래서 '설정 앱까지'만 열어 주고 나머지는 글로 잡는다.
           if (ICloudSync.supported) ...[
             _secHeader(l.syncTitle),
             _card([
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-                child: ValueListenableBuilder<SyncState>(
-                  valueListenable: ICloudSync.instance.state,
-                  builder: (_, st, __) => Row(children: [
-                    Icon(
-                        st == SyncState.ok
-                            ? Icons.cloud_done_outlined
-                            : st == SyncState.running
-                                ? Icons.cloud_sync_outlined
-                                : Icons.cloud_off_outlined,
-                        size: 22,
-                        color: st == SyncState.ok
-                            ? context.c.accent
-                            : context.c.sub),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                          st == SyncState.ok
-                              ? l.syncStateOn
-                              : st == SyncState.running
-                                  ? l.syncStateSyncing
-                                  : l.syncStateOff,
-                          style: TextStyle(
-                              fontSize: 15.5,
-                              height: 1.35,
-                              color: context.c.guideInk)),
+              ValueListenableBuilder<SyncState>(
+                valueListenable: ICloudSync.instance.state,
+                builder: (_, st, __) {
+                  final ok = st == SyncState.ok;
+                  final busy = st == SyncState.running;
+                  final text = ok
+                      ? l.syncStateOn
+                      : busy
+                          ? l.syncStateSyncing
+                          : st == SyncState.signedOut
+                              ? l.syncStateSignedOut
+                              : l.syncStateOff;
+                  final row = Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+                    child: Row(children: [
+                      Icon(
+                          ok
+                              ? Icons.cloud_done_outlined
+                              : busy
+                                  ? Icons.cloud_sync_outlined
+                                  : Icons.cloud_off_outlined,
+                          size: 22,
+                          color: ok ? context.c.accent : context.c.sub),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(text,
+                            style: TextStyle(
+                                fontSize: 15.5,
+                                height: 1.35,
+                                color: context.c.guideInk)),
+                      ),
+                      if (!ok && !busy)
+                        Icon(Icons.chevron_right, color: context.c.sub),
+                    ]),
+                  );
+                  if (ok || busy) return row;
+                  return InkWell(
+                    onTap: () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const SyncHelpSheet(),
                     ),
-                  ]),
-                ),
+                    child: row,
+                  );
+                },
               ),
             ]),
           ],

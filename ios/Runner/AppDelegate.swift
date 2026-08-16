@@ -28,9 +28,10 @@ import UIKit
 
 /// 다트에게 아이클라우드 폴더의 '경로'만 알려 주는 얇은 다리.
 ///
-/// 동기화 로직은 여기 없다. 여기서 하는 일은 두 가지뿐이다.
-///   1) 이 기기의 아이클라우드 폴더가 어디인지 알려 준다(없으면 nil).
-///   2) 아직 안 내려받은 파일을 내려받으라고 시스템에 요청한다.
+/// 동기화 로직은 여기 없다. 여기서 하는 일은 셋뿐이다.
+///   1) 이 기기의 아이클라우드 폴더가 어디인지 알려 준다(없으면 nil)
+///   2) 아직 안 내려받은 파일을 내려받으라고 시스템에 요청한다
+///   3) 설정 앱을 열어 준다
 ///
 /// 규칙(무엇을 남기고 무엇을 지울지)은 전부 다트의 core/sync_merge.dart에
 /// 있다. 스위프트에 규칙을 두면 아이폰과 맥에 같은 코드를 두 벌 쓰게 되고,
@@ -48,8 +49,17 @@ enum ICloudBridge {
         // 스레드에서 부르지 말라고 명시한다 — 로그인 상태를 확인하느라
         // 네트워크를 탈 수 있어서다. 여기서 막으면 앱이 켜질 때 멈춘다.
         DispatchQueue.global(qos: .userInitiated).async {
+          // 2026-08-16 소유자 신고 — "꺼짐"만 뜨고 뭘 하라는 건지 모르겠다.
+          // 맞는 지적이다. '꺼짐'에는 서로 다른 두 가지 원인이 있는데 그걸
+          // 구분해서 알려 주지 않으면 사용자가 할 수 있는 일이 없다.
+          //   ① 기기가 아이클라우드에 로그인되어 있지 않다
+          //   ② 로그인은 됐는데 이 앱의 iCloud Drive 사용이 꺼져 있다
+          // 그래서 경로만이 아니라 로그인 여부도 같이 넘긴다.
+          let signedIn = FileManager.default.ubiquityIdentityToken != nil
           let path = documentsPath()
-          DispatchQueue.main.async { result(path) }
+          DispatchQueue.main.async {
+            result(["path": path as Any, "signedIn": signedIn])
+          }
         }
       case "download":
         let args = call.arguments as? [String: Any]
@@ -61,6 +71,15 @@ enum ICloudBridge {
           }
           DispatchQueue.main.async { result(true) }
         }
+      case "openSettings":
+        // 애플이 앱에서 열 수 있게 허용한 유일한 설정 화면은 '이 앱의
+        // 설정' 페이지다. iCloud 항목으로 직접 뛰는 주소(prefs:root=CASTLE)는
+        // 비공개 API라 심사에서 반려된다 — 그래서 여는 데까지만 해 주고
+        // 나머지 길은 화면에서 글로 안내한다.
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+          UIApplication.shared.open(url)
+        }
+        result(true)
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -72,6 +91,9 @@ enum ICloudBridge {
   /// nil이 되는 경우가 실제로 많다 — 아이클라우드에 로그인하지 않았거나,
   /// 설정에서 이 앱의 iCloud Drive를 껐거나, 자격(entitlement)이 아직
   /// 안 붙은 빌드거나. 그래서 nil은 오류가 아니라 '동기화 꺼짐'이다.
+  ///
+  /// 앱이 막 켜진 직후에는 준비가 안 되어 nil이 나올 수 있다. 다트 쪽에서
+  /// 몇 초 간격으로 몇 번 더 물어본다.
   private static func documentsPath() -> String? {
     let fm = FileManager.default
     guard fm.ubiquityIdentityToken != nil else { return nil }

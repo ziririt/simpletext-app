@@ -307,6 +307,26 @@ class L10nJa extends L10n {
 
   @override
   String get aiKeyNotSynced => 'メモは iCloud で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
+
+  @override
+  String get syncStateSignedOut => 'iCloudにサインインしていません — タップして方法を確認';
+
+  @override
+  String get syncHelpTitle => 'iCloudをオンにする方法';
+
+  @override
+  String get syncHelpSteps =>
+      '1. 設定アプリを開きます\n2. 一番上のご自分の名前をタップします\n3. iCloudをタップします\n4. iCloudに保存済みですべてを表示をタップします\n5. 一覧でSkyblue Noteをオンにします\n6. このアプリに戻って再確認をタップします';
+
+  @override
+  String get syncOpenSettings => '設定を開く';
+
+  @override
+  String get syncRecheck => '再確認';
+
+  @override
+  String get syncHelpNote =>
+      'インストール直後は準備に1〜2分かかることがあります。その場合は再確認を押してください。';
   @override
   String get settingsSecView => '表示';
   @override

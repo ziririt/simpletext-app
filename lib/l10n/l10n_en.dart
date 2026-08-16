@@ -308,6 +308,26 @@ class L10nEn extends L10n {
 
   @override
   String get aiKeyNotSynced => 'Your notes sync to all your devices through iCloud. Your API key does not — enter it separately on each device.';
+
+  @override
+  String get syncStateSignedOut => 'Not signed in to iCloud — tap to see how';
+
+  @override
+  String get syncHelpTitle => 'How to turn on iCloud';
+
+  @override
+  String get syncHelpSteps =>
+      '1. Open the Settings app\n2. Tap your name at the top\n3. Tap iCloud\n4. Under Saved to iCloud, tap See All\n5. Turn on Skyblue Note\n6. Come back here and tap Check again';
+
+  @override
+  String get syncOpenSettings => 'Open Settings';
+
+  @override
+  String get syncRecheck => 'Check again';
+
+  @override
+  String get syncHelpNote =>
+      'If you just installed the app, it can take a minute or two to get ready. Just tap Check again.';
   @override
   String get settingsSecView => 'Display';
   @override

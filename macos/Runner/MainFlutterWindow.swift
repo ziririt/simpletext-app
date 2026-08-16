@@ -36,8 +36,13 @@ enum ICloudBridge {
       case "root":
         // 주 스레드에서 부르면 앱이 켜질 때 멈출 수 있다(애플 문서).
         DispatchQueue.global(qos: .userInitiated).async {
+          // '꺼짐'의 원인이 로그인인지 앱 설정인지 구분해서 넘긴다
+          // (2026-08-16 소유자 신고: 꺼짐만 뜨면 뭘 해야 할지 모른다).
+          let signedIn = FileManager.default.ubiquityIdentityToken != nil
           let path = documentsPath()
-          DispatchQueue.main.async { result(path) }
+          DispatchQueue.main.async {
+            result(["path": path as Any, "signedIn": signedIn])
+          }
         }
       case "download":
         let args = call.arguments as? [String: Any]
@@ -49,6 +54,14 @@ enum ICloudBridge {
           }
           DispatchQueue.main.async { result(true) }
         }
+      case "openSettings":
+        // 맥에서는 애플 계정 환경설정 창을 바로 열 수 있다.
+        if let url = URL(
+          string: "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane")
+        {
+          NSWorkspace.shared.open(url)
+        }
+        result(true)
       default:
         result(FlutterMethodNotImplemented)
       }

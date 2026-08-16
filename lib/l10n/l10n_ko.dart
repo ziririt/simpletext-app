@@ -307,6 +307,26 @@ class L10nKo extends L10n {
 
   @override
   String get aiKeyNotSynced => '메모는 아이클라우드로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
+
+  @override
+  String get syncStateSignedOut => '아이클라우드에 로그인되어 있지 않습니다 — 눌러서 방법 보기';
+
+  @override
+  String get syncHelpTitle => '아이클라우드 켜는 법';
+
+  @override
+  String get syncHelpSteps =>
+      '1. 설정 앱을 엽니다\n2. 맨 위의 내 이름을 누릅니다\n3. iCloud를 누릅니다\n4. 저장된 앱 목록에서 모두 보기를 누릅니다\n5. 목록에서 Skyblue Note를 켭니다\n6. 이 앱으로 돌아와 아래 다시 확인을 누릅니다';
+
+  @override
+  String get syncOpenSettings => '설정 앱 열기';
+
+  @override
+  String get syncRecheck => '다시 확인';
+
+  @override
+  String get syncHelpNote =>
+      '방금 앱을 깔았다면 준비에 1~2분이 걸리기도 합니다. 그때는 다시 확인만 눌러 보십시오.';
   @override
   String get settingsSecView => '보기';
   @override

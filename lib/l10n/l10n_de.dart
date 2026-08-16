@@ -309,6 +309,26 @@ class L10nDe extends L10n {
 
   @override
   String get aiKeyNotSynced => 'Ihre Notizen werden über iCloud auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
+
+  @override
+  String get syncStateSignedOut => 'Nicht bei iCloud angemeldet — tippen für Anleitung';
+
+  @override
+  String get syncHelpTitle => 'So aktivieren Sie iCloud';
+
+  @override
+  String get syncHelpSteps =>
+      '1. Öffnen Sie die App Einstellungen\n2. Tippen Sie oben auf Ihren Namen\n3. Tippen Sie auf iCloud\n4. Tippen Sie unter In iCloud gesichert auf Alle anzeigen\n5. Aktivieren Sie Skyblue Note in der Liste\n6. Kehren Sie hierher zurück und tippen Sie auf Erneut prüfen';
+
+  @override
+  String get syncOpenSettings => 'Einstellungen öffnen';
+
+  @override
+  String get syncRecheck => 'Erneut prüfen';
+
+  @override
+  String get syncHelpNote =>
+      'Direkt nach der Installation kann die Vorbereitung ein bis zwei Minuten dauern. Tippen Sie dann einfach auf Erneut prüfen.';
   @override
   String get settingsSecView => 'Anzeige';
   @override

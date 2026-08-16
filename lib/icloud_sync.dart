@@ -11,7 +11,8 @@
 ///   <컨테이너>/Documents/
 ///     notes/<id>.json     메모 하나당 파일 하나
 ///     tombs/<id>.json     삭제 기록 하나당 파일 하나
-///     rules.json          정리 규칙 · 자동 바꾸기 규칙 · 체험 기록
+///     rules.json          정리 규칙 · 자동 바꾸기 규칙
+///     trial.json          체험 기록
 ///
 /// 메모를 파일 하나에 몰아넣지 않은 이유: 두 기기가 서로 다른 메모를 고쳤을
 /// 때 늦게 올린 쪽이 상대의 수정을 통째로 덮는다. 파일을 쪼개면 같은 메모를
@@ -42,11 +43,18 @@ import 'core/tidy_engine.dart' show CustomRule;
 import 'main.dart' show Store, Note;
 
 /// 동기화 상태 — 화면에 한 줄로 보여 주기 위한 것.
+///
+/// 2026-08-16 소유자 신고: "이건 어떻게 설정하라는 건지 모르겠다." '꺼짐'
+/// 하나로 뭉뚱그리면 사용자가 할 수 있는 일이 없다. 원인을 갈라서, 원인마다
+/// 다음에 할 일이 다르게 보이도록 상태를 나눴다.
 enum SyncState {
   /// 이 기기에서는 아예 안 쓴다(안드로이드·윈도우).
   unsupported,
 
-  /// 쓸 수 있는 기기인데 지금은 꺼져 있다(아이클라우드 미로그인 등).
+  /// 기기가 아이클라우드에 로그인되어 있지 않다.
+  signedOut,
+
+  /// 로그인은 됐는데 이 앱의 아이클라우드 사용이 꺼져 있다(또는 아직 준비 중).
   off,
 
   /// 맞추는 중.
@@ -74,6 +82,7 @@ class ICloudSync {
 
   String? _root;
   bool _rootAsked = false;
+  bool _signedIn = false;
   bool _busy = false;
   Timer? _debounce;
   Timer? _tick;
@@ -85,6 +94,18 @@ class ICloudSync {
       return;
     }
     await syncNow();
+
+    // 앱이 막 켜진 직후에는 아이클라우드가 아직 준비 중이라 폴더 경로가
+    // 비어 나올 수 있다. 그 한 번을 보고 '꺼짐'이라고 단정하면 멀쩡한
+    // 기기에서도 꺼짐이 뜬다 — 2026-08-16 소유자 아이폰에서 실제로
+    // 그렇게 보였을 가능성이 크다. 몇 초 간격으로 세 번 더 물어본다.
+    for (final s in const [2, 4, 8]) {
+      if (state.value == SyncState.ok) break;
+      await Future<void>.delayed(Duration(seconds: s));
+      forgetRoot();
+      await syncNow();
+    }
+
     // 남의 기기가 올린 것을 알아채는 방법. 파일이 도착했다는 알림을 받는
     // 정식 방법(NSMetadataQuery)은 스위프트 쪽 코드가 훨씬 커진다. 30초에
     // 한 번 폴더를 훑는 것으로 충분하다 — 메모 앱에서 30초 지연은 사람이
@@ -94,8 +115,26 @@ class ICloudSync {
   }
 
   /// 앱이 다시 앞으로 나올 때. 다른 기기에서 고친 게 있으면 여기서 들어온다.
+  /// 사용자가 설정 앱에서 아이클라우드를 켜고 돌아오는 경로이기도 하므로,
+  /// 꺼져 있던 경우에는 경로를 잊고 다시 물어본다.
   void onResume() {
-    if (supported) unawaited(syncNow());
+    if (!supported) return;
+    if (state.value != SyncState.ok) forgetRoot();
+    unawaited(syncNow());
+  }
+
+  /// 사용자가 '다시 확인'을 눌렀을 때.
+  Future<void> recheck() async {
+    forgetRoot();
+    await syncNow();
+  }
+
+  /// 설정 앱을 연다. iCloud 항목으로 직접 뛰는 주소는 비공개 API라
+  /// 심사에서 반려된다 — 여는 데까지만 하고 나머지는 글로 안내한다.
+  Future<void> openSettings() async {
+    try {
+      await _ch.invokeMethod('openSettings');
+    } catch (_) {}
   }
 
   /// 메모를 저장할 때마다 불린다. 저장은 글자 하나마다 일어나므로 곧바로
@@ -117,15 +156,18 @@ class ICloudSync {
     if (_rootAsked) return _root;
     _rootAsked = true;
     try {
-      _root = await _ch.invokeMethod<String>('root');
+      final r = await _ch.invokeMapMethod<String, dynamic>('root');
+      _root = r?['path'] as String?;
+      _signedIn = (r?['signedIn'] as bool?) ?? false;
     } catch (_) {
       _root = null;
+      _signedIn = false;
     }
     return _root;
   }
 
   /// 다음에 다시 물어보게 만든다. 사용자가 도중에 아이클라우드에 로그인할
-  /// 수 있어서, 한 번 nil이었다고 영영 포기하면 안 된다.
+  /// 수 있어서, 한 번 비었다고 영영 포기하면 안 된다.
   void forgetRoot() {
     _rootAsked = false;
     _root = null;
@@ -139,9 +181,7 @@ class ICloudSync {
     try {
       final root = await _rootPath();
       if (root == null) {
-        state.value = SyncState.off;
-        // 다음 차례에 다시 물어본다(로그인은 언제든 바뀔 수 있다).
-        forgetRoot();
+        state.value = _signedIn ? SyncState.off : SyncState.signedOut;
         return;
       }
       state.value = SyncState.running;
