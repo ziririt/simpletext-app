@@ -180,6 +180,19 @@ class L10nKo extends L10n {
   @override
   String get folderCleared => '폴더에서 뺐습니다';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => '실제로 쓸 수 있는지 확인하는 중…';
+
+  @override
+  String get aiPingOk => '편집까지 됩니다. 이제 쓰셔도 됩니다.';
+
+  @override
+  String aiPingFailed(String err) => '목록은 받았지만 편집 호출이 거절당했습니다 — $err';
+
+  @override
+  String get aiAdvancedNote => '보통은 안 건드려도 됩니다. 키만 넣으면 알아서 고릅니다.';
+
   @override
   String folderMoved(String name) => '폴더로 옮겼습니다 · $name';
   @override

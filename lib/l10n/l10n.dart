@@ -149,6 +149,12 @@ abstract class L10n {
   String get folderNew;
   String get folderNameHint;
   String get folderCleared;
+
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  String get aiPinging;
+  String get aiPingOk;
+  String aiPingFailed(String err);
+  String get aiAdvancedNote;
   String folderMoved(String name);
 
   // ---------------- 표 시트 ----------------
@@ -518,6 +524,9 @@ abstract class L10n {
         'folderNew': folderNew,
         'folderNameHint': folderNameHint,
         'folderCleared': folderCleared,
+        'aiPinging': aiPinging,
+        'aiPingOk': aiPingOk,
+        'aiAdvancedNote': aiAdvancedNote,
         'noTablesFound': noTablesFound,
         'forSpreadsheet': forSpreadsheet,
         'copiedSpreadsheet': copiedSpreadsheet,

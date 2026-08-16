@@ -180,6 +180,19 @@ class L10nFr extends L10n {
   @override
   String get folderCleared => 'Retiré du dossier';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => 'Vérification de son fonctionnement réel…';
+
+  @override
+  String get aiPingOk => 'L’édition fonctionne. Vous pouvez y aller.';
+
+  @override
+  String aiPingFailed(String err) => 'La liste est arrivée, mais l’appel d’édition a été refusé — $err';
+
+  @override
+  String get aiAdvancedNote => 'En général, inutile d’y toucher. La clé suffit.';
+
   @override
   String folderMoved(String name) => 'Déplacé vers $name';
   @override

@@ -180,6 +180,19 @@ class L10nZhHant extends L10n {
   @override
   String get folderCleared => '已移出資料夾';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => '正在確認是否真的可用…';
+
+  @override
+  String get aiPingOk => '編輯也能用，可以開始了。';
+
+  @override
+  String aiPingFailed(String err) => '能取到清單，但編輯呼叫被拒絕 — $err';
+
+  @override
+  String get aiAdvancedNote => '通常不用管這裡。填了金鑰就會自動選。';
+
   @override
   String folderMoved(String name) => '已移到 $name';
   @override

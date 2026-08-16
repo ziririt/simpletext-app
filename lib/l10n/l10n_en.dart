@@ -180,6 +180,19 @@ class L10nEn extends L10n {
   @override
   String get folderCleared => 'Removed from folder';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => 'Checking whether it can actually be used…';
+
+  @override
+  String get aiPingOk => 'Editing works. You are ready to go.';
+
+  @override
+  String aiPingFailed(String err) => 'The list came back, but the edit call was refused — $err';
+
+  @override
+  String get aiAdvancedNote => 'You usually do not need this. The key alone is enough.';
+
   @override
   String folderMoved(String name) => 'Moved to $name';
   @override

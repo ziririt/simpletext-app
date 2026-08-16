@@ -2043,7 +2043,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (rest.isNotEmpty)
                   _groupLabel(l.notesLabel, trailing: _sortFilterBtn(l, s)),
                 if (rest.isNotEmpty) _groupCard(rest),
-                const SliverToBoxAdapter(child: SizedBox(height: 110)),
+                // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
+                // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
+                const SliverToBoxAdapter(child: SizedBox(height: 176)),
               ],
                       ),
                     ),
@@ -3511,82 +3513,17 @@ class _EditorScreenState extends State<EditorScreen> {
     throw lastErr; // ignore: only_throw_errors
   }
 
-  /// 오류 본문에서 사람이 읽을 한 줄을 뽑는다. 전에는 'API 400'만 던져서
-  /// 무엇이 문제인지(키가 틀렸는지, 모델이 없는지) 알 수 없었다.
-  static String _apiErr(int code, List<int> bodyBytes) {
-    try {
-      final j = jsonDecode(utf8.decode(bodyBytes));
-      final e = j is Map ? j['error'] : null;
-      final m = (e is Map ? e['message'] : e)?.toString() ?? '';
-      if (m.isNotEmpty) {
-        return 'API $code: ${m.length > 140 ? m.substring(0, 140) : m}';
-      }
-    } catch (_) {}
-    return 'API $code';
-  }
 
-  Future<String> _aiCallOnce(
-      String provider, String model, String sys, String instruction, String body) async {
-    final s = store.settings;
-    final user = '[지시]\n$instruction\n\n[본문]\n$body';
-    if (provider == 'google') {
-      final res = await http.post(
-        Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${Uri.encodeComponent(s.aiKey)}'),
-        headers: {'content-type': 'application/json'},
-        body: jsonEncode({
-          'system_instruction': {'parts': [{'text': sys}]},
-          'contents': [{'role': 'user', 'parts': [{'text': user}]}],
-        }),
+  Future<String> _aiCallOnce(String provider, String model, String sys,
+          String instruction, String body) =>
+      aiCallOnce(
+        provider: provider,
+        model: model,
+        key: store.settings.aiKey,
+        sys: sys,
+        instruction: instruction,
+        body: body,
       );
-      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
-      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      final cands = (j['candidates'] ?? []) as List;
-      if (cands.isEmpty) return '';
-      final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
-      return parts.map((p) => (p['text'] ?? '') as String).join();
-    }
-    if (provider == 'anthropic') {
-      final res = await http.post(
-        Uri.parse('https://api.anthropic.com/v1/messages'),
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': s.aiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: jsonEncode({
-          'model': model,
-          'max_tokens': 8000,
-          'system': sys,
-          'messages': [{'role': 'user', 'content': user}],
-        }),
-      );
-      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
-      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      final content = (j['content'] ?? []) as List;
-      return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
-    }
-    // OpenAI(ChatGPT)와 xAI(Grok)는 동일한 chat/completions 형식
-    final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
-    final res = await http.post(
-      Uri.parse('$base/v1/chat/completions'),
-      headers: {
-        'content-type': 'application/json',
-        'authorization': 'Bearer ${s.aiKey}',
-      },
-      body: jsonEncode({
-        'model': model,
-        'messages': [
-          {'role': 'system', 'content': sys},
-          {'role': 'user', 'content': user},
-        ],
-      }),
-    );
-    if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
-    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    final choices = (j['choices'] ?? []) as List;
-    return choices.isEmpty ? '' : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
-  }
 
   Future<void> _showWizardDialog() async {
     if (await _blockedByLimit(wizard: true)) return;
@@ -5950,10 +5887,23 @@ class _SettingsScreenState extends State<SettingsScreen>
       if (pick != null) s.aiModel = pick;
       await store.persistSettings();
       if (!mounted) return;
-      setState(() {
-        _aiChecking = false;
-        _aiMsg = L10n.of(context).aiModelsFound(filterChatModels(p, ids).length);
-      });
+      final found = L10n.of(context).aiModelsFound(filterChatModels(p, ids).length);
+      // 목록을 받았다는 것과 쓸 수 있다는 것은 다르다. 진짜로 한 번 불러 본다.
+      setState(() => _aiMsg = '$found\n${L10n.of(context).aiPinging}');
+      try {
+        await aiPing(provider: p, model: s.aiModel, key: key);
+        if (!mounted) return;
+        setState(() {
+          _aiChecking = false;
+          _aiMsg = '$found\n${L10n.of(context).aiPingOk}';
+        });
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _aiChecking = false;
+          _aiMsg = '$found\n${L10n.of(context).aiPingFailed('$e')}';
+        });
+      }
     } catch (e) {
       // 목록을 못 받아도 회사 판정은 살리고 예비 사다리로 넘어간다.
       s.aiProvider = p;
@@ -6484,10 +6434,23 @@ class _SettingsScreenState extends State<SettingsScreen>
                       child: Text(_aiMsg,
                           style: TextStyle(fontSize: 14, height: 1.3, color: context.c.guideInk)),
                     ),
+                  // 소유자 지적: "어떤 LLM API 키 발급에 가더라도 세부
+                  // 모델명을 안내해 주지 않는데 사용자가 어떻게 아냐?"
+                  //
+                  // 맞다. 그래서 원래 설계가 키 하나로 끝난다 — 회사를
+                  // 알아내고, 회사에 물어 목록을 받고, 제일 싼 것을 고른다.
+                  // 고급은 **비상구**이지 거쳐야 하는 단계가 아닌데, 그
+                  // 사실이 화면에서 안 읽혔다. 한 줄로 적어 둔다.
                   TextButton(
                     onPressed: () => setState(() => _aiAdvOpen = !_aiAdvOpen),
                     child: Text(l.aiAdvancedLabel),
                   ),
+                  if (!_aiAdvOpen)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, bottom: 4),
+                      child: Text(l.aiAdvancedNote,
+                          style: TextStyle(fontSize: 13, color: context.c.sub)),
+                    ),
                   if (_aiAdvOpen) ...[
                     if (_aiPickList().isNotEmpty)
                       DropdownButton<String>(
@@ -6509,6 +6472,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ),
                     // 목록에도 사다리에도 없는 신형을 쓸 때의 비상구.
                     TextFormField(
+                      // 2026-08-17 — 값이 바뀌어도 칸은 처음 값을 붙들고
+                      // 있었다. 그래서 고르개와 이 칸이 서로 다른 모델
+                      // 이름을 보여 줬다. 데이터가 아니라 화면이 거짓말을
+                      // 한 것이다. 키를 붙여 값이 바뀌면 새로 그리게 한다.
+                      key: ValueKey('aiModel:${s.aiModel}'),
                       initialValue: s.aiModel,
                       decoration: InputDecoration(hintText: l.aiManualModelHint, isDense: true),
                       onFieldSubmitted: (v) {
@@ -6645,4 +6613,120 @@ class _SettingsScreenState extends State<SettingsScreen>
       ),
     );
   }
+}
+
+/// 회사에 한 번 물어본다.
+///
+/// 2026-08-17 — 편집 화면 안에만 있던 것을 밖으로 뺐다. 설정 화면의
+/// '키 확인'도 **진짜로 한 번 불러 봐야** 하는데, 안에 있으니 쓸 수가
+/// 없었다. 그래서 설정은 목록만 받아 보고 "확인했습니다"라고 말했다.
+/// 목록 API는 키가 살아 있기만 하면 누구에게나 답한다 — 잔액이 0이어도,
+/// 그 키에 대화 권한이 없어도.
+Future<String> aiCallOnce({
+  required String provider,
+  required String model,
+  required String key,
+  required String sys,
+  required String instruction,
+  required String body,
+}) async {
+    final user = '[지시]\n$instruction\n\n[본문]\n$body';
+    if (provider == 'google') {
+      final res = await http.post(
+        Uri.parse(
+            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${Uri.encodeComponent(key)}'),
+        headers: {'content-type': 'application/json'},
+        body: jsonEncode({
+          'system_instruction': {'parts': [{'text': sys}]},
+          'contents': [{'role': 'user', 'parts': [{'text': user}]}],
+        }),
+      );
+      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
+      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final cands = (j['candidates'] ?? []) as List;
+      if (cands.isEmpty) return '';
+      final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
+      return parts.map((p) => (p['text'] ?? '') as String).join();
+    }
+    if (provider == 'anthropic') {
+      final res = await http.post(
+        Uri.parse('https://api.anthropic.com/v1/messages'),
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+        },
+        body: jsonEncode({
+          'model': model,
+          'max_tokens': 8000,
+          'system': sys,
+          'messages': [{'role': 'user', 'content': user}],
+        }),
+      );
+      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
+      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final content = (j['content'] ?? []) as List;
+      return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
+    }
+    // OpenAI(ChatGPT)와 xAI(Grok)는 동일한 chat/completions 형식
+    final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
+    final res = await http.post(
+      Uri.parse('$base/v1/chat/completions'),
+      headers: {
+        'content-type': 'application/json',
+        'authorization': 'Bearer ${key}',
+      },
+      body: jsonEncode({
+        'model': model,
+        'messages': [
+          {'role': 'system', 'content': sys},
+          {'role': 'user', 'content': user},
+        ],
+      }),
+    );
+    if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
+    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    final choices = (j['choices'] ?? []) as List;
+    return choices.isEmpty ? '' : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
+  }
+
+/// 키가 **진짜로 쓸 수 있는지** 한 번 불러 본다.
+///
+/// 글자 몇 개짜리 호출이라 값은 거의 안 든다. 이걸 안 하면 "목록은 받았는데
+/// 편집은 안 되는" 상태를 사용자가 편집을 눌러 보고서야 알게 된다.
+/// 초록불을 보고 갔는데 길이 막혀 있는 것은 안 알려 주는 것보다 나쁘다.
+Future<void> aiPing({
+  required String provider,
+  required String model,
+  required String key,
+}) async {
+  await aiCallOnce(
+    provider: provider,
+    model: model,
+    key: key,
+    sys: 'Reply with the single word: OK',
+    instruction: 'OK',
+    body: 'OK',
+  );
+}
+
+/// 오류 본문에서 사람이 읽을 한 줄을 뽑는다.
+///
+/// 전에는 'API 400'만 던져서 무엇이 문제인지(키가 틀렸는지, 모델이 없는지,
+/// 잔액이 없는지) 알 수 없었다. 회사가 준 문장을 그대로 보여 주는 것이
+/// 우리가 지어낸 어떤 안내문보다 낫다.
+///
+/// 2026-08-17 — aiCallOnce를 클래스 밖으로 빼면서 이것도 같이 나왔다.
+/// **둘은 한 덩이다.** 부르는 코드와 그 답을 읽는 코드는 언제나 같이
+/// 움직인다.
+String _apiErr(int code, List<int> bodyBytes) {
+  try {
+    final j = jsonDecode(utf8.decode(bodyBytes));
+    final e = j is Map ? j['error'] : null;
+    final m = (e is Map ? e['message'] : e)?.toString() ?? '';
+    if (m.isNotEmpty) {
+      return 'API $code: ${m.length > 140 ? m.substring(0, 140) : m}';
+    }
+  } catch (_) {}
+  return 'API $code';
 }

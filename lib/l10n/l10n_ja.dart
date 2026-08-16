@@ -180,6 +180,19 @@ class L10nJa extends L10n {
   @override
   String get folderCleared => 'フォルダから外しました';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => '実際に使えるか確認中…';
+
+  @override
+  String get aiPingOk => '編集も動きます。このまま使えます。';
+
+  @override
+  String aiPingFailed(String err) => '一覧は取得できましたが、編集の呼び出しが拒否されました — $err';
+
+  @override
+  String get aiAdvancedNote => '普段は触らなくて大丈夫です。キーだけで選びます。';
+
   @override
   String folderMoved(String name) => '$name に移しました';
   @override

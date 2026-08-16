@@ -180,6 +180,19 @@ class L10nDe extends L10n {
   @override
   String get folderCleared => 'Aus dem Ordner entfernt';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => 'Wird geprüft, ob es wirklich nutzbar ist …';
+
+  @override
+  String get aiPingOk => 'Bearbeiten funktioniert. Sie können loslegen.';
+
+  @override
+  String aiPingFailed(String err) => 'Die Liste kam an, aber der Bearbeitungsaufruf wurde abgelehnt — $err';
+
+  @override
+  String get aiAdvancedNote => 'Normalerweise nicht nötig. Der Schlüssel allein genügt.';
+
   @override
   String folderMoved(String name) => 'Nach $name verschoben';
   @override

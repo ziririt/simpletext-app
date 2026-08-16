@@ -180,6 +180,19 @@ class L10nPt extends L10n {
   @override
   String get folderCleared => 'Removido da pasta';
 
+  // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
+  @override
+  String get aiPinging => 'Verificando se dá mesmo para usar…';
+
+  @override
+  String get aiPingOk => 'A edição funciona. Pode começar.';
+
+  @override
+  String aiPingFailed(String err) => 'A lista chegou, mas a chamada de edição foi recusada — $err';
+
+  @override
+  String get aiAdvancedNote => 'Normalmente não precisa mexer aqui. A chave já basta.';
+
   @override
   String folderMoved(String name) => 'Movido para $name';
   @override
