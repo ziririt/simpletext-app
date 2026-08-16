@@ -528,6 +528,48 @@ class L10nZhHant extends L10n {
   String get paperGrid => '方格';
 
   @override
+  String get lockSectionTitle => '鎖定';
+
+  @override
+  String get lockTitle => '應用程式鎖';
+
+  @override
+  String get lockSub => '使用 Face ID、Touch ID 或裝置密碼開啟 App。';
+
+  @override
+  String get lockNote => '此鎖定用於防止他人拿到裝置後開啟 App，並不會加密裝置中的檔案本身。';
+
+  @override
+  String get lockDelayTitle => '鎖定時機';
+
+  @override
+  String get lockDelayNow => '立即';
+
+  @override
+  String get lockDelay1m => '1 分鐘後';
+
+  @override
+  String get lockDelay5m => '5 分鐘後';
+
+  @override
+  String get lockUnlock => '解鎖';
+
+  @override
+  String get lockLocked => '已鎖定';
+
+  @override
+  String get lockUnavailable => '此裝置無法使用 Face ID、Touch ID 或裝置密碼。';
+
+  @override
+  String get lockReasonOpen => '開啟備忘錄需要驗證';
+
+  @override
+  String get lockReasonOn => '開啟鎖定需要驗證';
+
+  @override
+  String get lockReasonOff => '關閉鎖定需要驗證';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 來自 \$src';
 

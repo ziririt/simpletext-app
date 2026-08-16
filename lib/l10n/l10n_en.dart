@@ -529,6 +529,48 @@ class L10nEn extends L10n {
   String get paperGrid => 'Grid';
 
   @override
+  String get lockSectionTitle => 'Lock';
+
+  @override
+  String get lockTitle => 'App lock';
+
+  @override
+  String get lockSub => 'Open the app with Face ID, Touch ID, or your device passcode.';
+
+  @override
+  String get lockNote => 'This lock keeps someone who picks up your device from opening the app. It does not encrypt the files stored on the device.';
+
+  @override
+  String get lockDelayTitle => 'Lock after';
+
+  @override
+  String get lockDelayNow => 'Immediately';
+
+  @override
+  String get lockDelay1m => 'After 1 minute';
+
+  @override
+  String get lockDelay5m => 'After 5 minutes';
+
+  @override
+  String get lockUnlock => 'Unlock';
+
+  @override
+  String get lockLocked => 'Locked';
+
+  @override
+  String get lockUnavailable => 'Face ID, Touch ID, and device passcode are unavailable on this device.';
+
+  @override
+  String get lockReasonOpen => 'Verify to open your notes';
+
+  @override
+  String get lockReasonOn => 'Verify to turn on the lock';
+
+  @override
+  String get lockReasonOff => 'Verify to turn off the lock';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from \$src on \$date';
 

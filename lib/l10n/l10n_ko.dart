@@ -528,6 +528,48 @@ class L10nKo extends L10n {
   String get paperGrid => '모눈';
 
   @override
+  String get lockSectionTitle => '잠금';
+
+  @override
+  String get lockTitle => '앱 잠금';
+
+  @override
+  String get lockSub => 'Face ID·Touch ID나 기기 암호로 앱을 엽니다.';
+
+  @override
+  String get lockNote => '이 잠금은 남이 내 기기를 집었을 때 화면을 못 열게 하는 것입니다. 기기 안의 파일 자체를 암호로 잠그는 것은 아닙니다.';
+
+  @override
+  String get lockDelayTitle => '잠기는 시점';
+
+  @override
+  String get lockDelayNow => '바로';
+
+  @override
+  String get lockDelay1m => '1분 뒤';
+
+  @override
+  String get lockDelay5m => '5분 뒤';
+
+  @override
+  String get lockUnlock => '잠금 해제';
+
+  @override
+  String get lockLocked => '잠겨 있습니다';
+
+  @override
+  String get lockUnavailable => '이 기기에서는 Face ID·Touch ID나 기기 암호를 쓸 수 없습니다.';
+
+  @override
+  String get lockReasonOpen => '메모를 열려면 확인이 필요합니다';
+
+  @override
+  String get lockReasonOn => '잠금을 켜려면 확인이 필요합니다';
+
+  @override
+  String get lockReasonOff => '잠금을 끄려면 확인이 필요합니다';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 

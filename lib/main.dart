@@ -25,6 +25,7 @@ import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'core/auto_meta.dart';
 import 'core/hangul.dart';
+import 'core/lock.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
 import 'core/paper.dart';
@@ -36,6 +37,7 @@ import 'core/usage_gate.dart';
 import 'core/wizard.dart';
 import 'export_service.dart';
 import 'import_service.dart';
+import 'lock_service.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -317,6 +319,141 @@ extension AppColorsX on BuildContext {
   AppC get c => Theme.of(this).extension<AppC>() ?? AppC.light;
 }
 
+/// 잠금 문지기.
+///
+/// 2026-08-16 로드맵 B단계 — 잠금(Face ID). 남이 내 폰을 집어 들었을 때 제일
+/// 먼저 열어 보는 것이 메모다. 우리 앱은 특히 그렇다 — 여기 쌓이는 것은
+/// 남에게 물어본 것들이다.
+///
+/// MaterialApp의 builder 자리에 둔다. 화면 하나에 매달면 다른 화면(설정,
+/// 휴지통, 미리보기)이 그대로 열려 있는 채로 남는다. 여기라면 앱 안의 모든
+/// 화면 위를 한 장이 덮는다.
+///
+/// 덮개가 둘이라는 점이 중요하다.
+///
+///  - **잠김**: 확인을 받아야 열린다. 되돌아왔을 때 규칙(core/lock.dart)이
+///    잠그라고 하면 켜진다.
+///  - **가림막**: 확인을 받을 필요는 없고 그냥 안 보이게만 한다. 앱이
+///    잠깐 뒤로 갈 때(inactive) 켠다. iOS가 앱 전환기에 쓸 그림을 그때
+///    찍기 때문이다. 이걸 안 하면 잠금을 켜 놓고도 전환기 썸네일에 메모
+///    본문이 그대로 보인다 — 잠금이 있으나 마나가 된다.
+///
+/// 얼굴 확인 창이 뜨는 동안에도 앱은 inactive가 된다. 그래서 확인 중에는
+/// 생명주기 신호를 통째로 무시한다(_asking). 안 그러면 확인 창이 뜨는
+/// 순간 스스로 다시 잠그는 무한 반복에 빠진다.
+class LockGate extends StatefulWidget {
+  final Widget child;
+  const LockGate({super.key, required this.child});
+
+  @override
+  State<LockGate> createState() => _LockGateState();
+}
+
+class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
+  final store = Store.instance;
+  bool _locked = false;
+  bool _shield = false;
+  bool _asking = false;
+  int _leftAt = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // 앱을 방금 켰다. leftAt이 0이라 규칙이 무조건 잠그라고 한다.
+    if (store.settings.lockOn) {
+      _locked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_asking) return;
+    final on = store.settings.lockOn;
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        if (on && !_shield) setState(() => _shield = true);
+      case AppLifecycleState.paused:
+        _leftAt = DateTime.now().millisecondsSinceEpoch;
+        if (on && !_shield) setState(() => _shield = true);
+      case AppLifecycleState.resumed:
+        final lock = shouldLock(
+          enabled: on,
+          leftAtMs: _leftAt,
+          nowMs: DateTime.now().millisecondsSinceEpoch,
+          graceSec: store.settings.lockGraceSec,
+        );
+        setState(() {
+          _shield = false;
+          if (lock) _locked = true;
+        });
+        if (lock) _unlock();
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
+  Future<void> _unlock() async {
+    if (_asking) return;
+    _asking = true;
+    final ok = await LockService.instance.ask(L10n.of(context).lockReasonOpen);
+    _asking = false;
+    if (!mounted) return;
+    if (ok) setState(() => _locked = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    // 잠긴 화면 위에 가림막을 또 얹을 필요는 없다.
+    final cover = _locked || _shield;
+    return Stack(children: [
+      widget.child,
+      if (cover)
+        Positioned.fill(
+          child: Container(
+            color: c.bg,
+            child: SafeArea(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock_outline, size: 46, color: c.accent),
+                    const SizedBox(height: 14),
+                    Text(l.appTitle,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    Text(l.lockLocked,
+                        style: TextStyle(fontSize: 14, color: c.sub)),
+                    const SizedBox(height: 22),
+                    // 가림막일 때는 버튼을 안 낸다. 누를 일이 없고,
+                    // 앱 전환기 그림에 버튼이 찍히는 것도 이상하다.
+                    if (_locked)
+                      FilledButton.icon(
+                        onPressed: _unlock,
+                        icon: const Icon(Icons.lock_open, size: 18),
+                        label: Text(l.lockUnlock),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+    ]);
+  }
+}
+
 class SimpleTextApp extends StatelessWidget {
   /// 스토어 스크린샷 촬영용 강제 로케일. 평상시엔 null이라 기기 설정을 따른다.
   /// (integration_test/screenshots_test.dart에서 언어별로 지정한다 —
@@ -350,12 +487,16 @@ class SimpleTextApp extends StatelessWidget {
       // 17이 13.6으로 정확히 그 자리에 떨어진다. 화면마다 값을 따로 두면
       // 반드시 한 군데를 빠뜨리므로 한 곳에서 전역으로 줄인다.
       builder: (ctx, child) {
-        if (!isDesktopPlatform) return child!;
-        final mq = MediaQuery.of(ctx);
-        return MediaQuery(
-          data: mq.copyWith(textScaler: const TextScaler.linear(0.8)),
-          child: child!,
-        );
+        Widget w = child!;
+        if (isDesktopPlatform) {
+          final mq = MediaQuery.of(ctx);
+          w = MediaQuery(
+            data: mq.copyWith(textScaler: const TextScaler.linear(0.8)),
+            child: w,
+          );
+        }
+        // 잠금은 제일 바깥이다. 앱 안의 어느 화면이 열려 있든 한 장이 덮는다.
+        return LockGate(child: w);
       },
       // 2026-08-16 소유자 요청 — 설정에서 시스템/라이트/다크를 고른다.
       themeMode: tm == 'light'
@@ -638,6 +779,17 @@ class AppSettings {
   /// 정렬·필터와 같이 동기화하지 않는다.
   String paperMode = kPaperNone;
 
+  /// 앱 잠금. 2026-08-16 로드맵 B단계.
+  ///
+  /// 기기마다 다르다 — 집에 두는 맥은 안 잠그고 들고 다니는 폰만 잠그는
+  /// 것이 자연스럽다. 그래서 동기화하지 않는다. 애초에 동기화해서도 안
+  /// 된다: 잠금을 못 쓰는 기기에 켜진 값이 넘어오면 그 기기는 영영 안 열린다.
+  bool lockOn = false;
+
+  /// 뒤로 갔다가 돌아왔을 때 다시 잠그기까지 봐주는 시간(초).
+  /// 값과 규칙은 core/lock.dart.
+  int lockGraceSec = kLockNow;
+
   /// 전면 광고를 본 날(YYYY-MM-DD). 이 날짜가 오늘이면 그날은 배너까지
   /// 광고가 전부 사라진다(소유자 확정 규칙). 판정은 core/ad_gate.dart.
   String adFreeDate = '';
@@ -669,6 +821,8 @@ class AppSettings {
         'adFreeDate': adFreeDate,
         'themeMode': themeMode,
         'paperMode': paperMode,
+        'lockOn': lockOn,
+        'lockGraceSec': lockGraceSec,
         'premium': premium,
         'tidyDate': tidyDate,
         'tidyCount': tidyCount,
@@ -741,6 +895,8 @@ class AppSettings {
     s.filterTag = (j['filterTag'] ?? s.filterTag) as String;
     // 모르는 이름이 들어와도 paperById가 '기본'으로 떨어뜨린다.
     s.paperMode = (j['paperMode'] ?? s.paperMode) as String;
+    s.lockOn = (j['lockOn'] ?? s.lockOn) as bool;
+    s.lockGraceSec = normalizeLockDelay((j['lockGraceSec'] ?? s.lockGraceSec) as int);
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -3271,6 +3427,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   jump('theme', lm.themeTitle),
                   jump('fontsize', lm.bodyFontSizeTitle),
                   jump('paper', lm.paperTitle),
+                  jump('lock', lm.lockTitle),
                   jump('mono', lm.monoEditorTitle),
                   jump('tidy', lm.settingsSecTidy),
                   jump('rules', lm.rulesSectionTitle),
@@ -4431,6 +4588,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     'theme': GlobalKey(),
     'fontsize': GlobalKey(),
     'paper': GlobalKey(),
+    'lock': GlobalKey(),
     'mono': GlobalKey(),
     'tidy': GlobalKey(),
     'rules': GlobalKey(),
@@ -4656,6 +4814,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   ///
   /// 이름만 적지 않고 실제 색과 줄을 그대로 보여 준다. 종이는 글로
   /// 설명할 수 있는 것이 아니다.
+  /// 잠금을 켜고 끄는 일.
+  ///
+  /// 켤 때도 끌 때도 먼저 확인을 받는다.
+  ///
+  ///  - 켤 때 확인하는 이유: 확인이 안 되는 기기에서 켜 버리면 그 순간부터
+  ///    앱이 안 열린다. 켜기 전에 실제로 되는지 봐야 한다.
+  ///  - 끌 때 확인하는 이유: 확인을 안 받으면 잠긴 앱을 남이 열었을 때
+  ///    설정에서 잠금을 꺼 버릴 수 있다. 그러면 잠금은 장식이다.
+  Future<void> _toggleLock(bool want) async {
+    final l = L10n.of(context);
+    final s = store.settings;
+    if (want && !await LockService.instance.available()) {
+      if (!mounted) return;
+      _toast(context, l.lockUnavailable);
+      return;
+    }
+    final ok = await LockService.instance
+        .ask(want ? l.lockReasonOn : l.lockReasonOff);
+    if (!ok || !mounted) return;
+    setState(() => s.lockOn = want);
+    await store.persistSettings();
+  }
+
   Widget _paperBlock(L10n l, AppSettings s) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     String nameOf(String id) => switch (id) {
@@ -4945,6 +5126,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
               key: _anchors['mono'],
               child: _switchRow(l.monoEditorTitle, l.monoEditorSub, s.monoEditor,
                   (v) => s.monoEditor = v),
+            ),
+          ]),
+          KeyedSubtree(
+              key: _anchors['lock'], child: _secHeader(l.lockSectionTitle)),
+          _card([
+            // _switchRow를 안 쓴다. 그건 값을 바로 바꾸고 저장하는데,
+            // 잠금은 **확인을 받은 뒤에만** 바뀌어야 한다. 확인이 안 되면
+            // 스위치가 원래 자리로 돌아와야 하고, 그러려면 값을 우리가
+            // 직접 쥐고 있어야 한다.
+            SwitchListTile.adaptive(
+              title: Text(l.lockTitle,
+                  style:
+                      const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(l.lockSub,
+                    style: TextStyle(
+                        fontSize: 17, height: 1.35, color: context.c.guideInk)),
+              ),
+              value: s.lockOn,
+              onChanged: (v) => unawaited(_toggleLock(v)),
+            ),
+            if (s.lockOn) ...[
+              _sep(),
+              _dropRow<int>(l.lockDelayTitle, null, s.lockGraceSec, [
+                (kLockNow, l.lockDelayNow),
+                (kLockAfter1m, l.lockDelay1m),
+                (kLockAfter5m, l.lockDelay5m),
+              ], (v) => s.lockGraceSec = v),
+            ],
+            _sep(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+              child: Text(l.lockNote,
+                  style: TextStyle(fontSize: 15, color: context.c.guideInk)),
             ),
           ]),
           KeyedSubtree(

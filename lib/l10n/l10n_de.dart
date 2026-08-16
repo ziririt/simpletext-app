@@ -530,6 +530,48 @@ class L10nDe extends L10n {
   String get paperGrid => 'Karo';
 
   @override
+  String get lockSectionTitle => 'Sperre';
+
+  @override
+  String get lockTitle => 'App-Sperre';
+
+  @override
+  String get lockSub => 'Die App mit Face ID, Touch ID oder dem Gerätecode öffnen.';
+
+  @override
+  String get lockNote => 'Diese Sperre verhindert, dass jemand mit deinem Gerät die App öffnet. Die Dateien auf dem Gerät werden dadurch nicht verschlüsselt.';
+
+  @override
+  String get lockDelayTitle => 'Sperren nach';
+
+  @override
+  String get lockDelayNow => 'Sofort';
+
+  @override
+  String get lockDelay1m => 'Nach 1 Minute';
+
+  @override
+  String get lockDelay5m => 'Nach 5 Minuten';
+
+  @override
+  String get lockUnlock => 'Entsperren';
+
+  @override
+  String get lockLocked => 'Gesperrt';
+
+  @override
+  String get lockUnavailable => 'Face ID, Touch ID und Gerätecode sind auf diesem Gerät nicht verfügbar.';
+
+  @override
+  String get lockReasonOpen => 'Bestätigen, um die Notizen zu öffnen';
+
+  @override
+  String get lockReasonOn => 'Bestätigen, um die Sperre zu aktivieren';
+
+  @override
+  String get lockReasonOff => 'Bestätigen, um die Sperre zu deaktivieren';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

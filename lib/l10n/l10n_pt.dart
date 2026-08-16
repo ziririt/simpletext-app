@@ -529,6 +529,48 @@ class L10nPt extends L10n {
   String get paperGrid => 'Quadriculado';
 
   @override
+  String get lockSectionTitle => 'Bloqueio';
+
+  @override
+  String get lockTitle => 'Bloqueio do app';
+
+  @override
+  String get lockSub => 'Abra o app com Face ID, Touch ID ou a senha do dispositivo.';
+
+  @override
+  String get lockNote => 'Este bloqueio impede que alguém que pegue o seu dispositivo abra o app. Ele não criptografa os arquivos guardados no dispositivo.';
+
+  @override
+  String get lockDelayTitle => 'Bloquear após';
+
+  @override
+  String get lockDelayNow => 'Imediatamente';
+
+  @override
+  String get lockDelay1m => 'Após 1 minuto';
+
+  @override
+  String get lockDelay5m => 'Após 5 minutos';
+
+  @override
+  String get lockUnlock => 'Desbloquear';
+
+  @override
+  String get lockLocked => 'Bloqueado';
+
+  @override
+  String get lockUnavailable => 'Face ID, Touch ID e a senha do dispositivo não estão disponíveis neste aparelho.';
+
+  @override
+  String get lockReasonOpen => 'Verifique para abrir suas notas';
+
+  @override
+  String get lockReasonOn => 'Verifique para ativar o bloqueio';
+
+  @override
+  String get lockReasonOff => 'Verifique para desativar o bloqueio';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

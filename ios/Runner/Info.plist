@@ -6,6 +6,10 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<!-- 2026-08-16 앱 잠금. 이 문구가 없으면 Face ID를 부르는 순간
+	     iOS가 앱을 그냥 죽인다(권한 설명 누락). -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Skyblue Note uses Face ID to unlock your notes.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Skyblue Note</string>
 	<key>CFBundleExecutable</key>

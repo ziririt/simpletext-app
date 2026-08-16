@@ -528,6 +528,48 @@ class L10nJa extends L10n {
   String get paperGrid => '方眼';
 
   @override
+  String get lockSectionTitle => 'ロック';
+
+  @override
+  String get lockTitle => 'アプリのロック';
+
+  @override
+  String get lockSub => 'Face ID・Touch ID、またはデバイスのパスコードでアプリを開きます。';
+
+  @override
+  String get lockNote => 'このロックは、他人が端末を手にしたときに画面を開けなくするものです。端末内のファイル自体を暗号化するわけではありません。';
+
+  @override
+  String get lockDelayTitle => 'ロックするまで';
+
+  @override
+  String get lockDelayNow => 'すぐに';
+
+  @override
+  String get lockDelay1m => '1分後';
+
+  @override
+  String get lockDelay5m => '5分後';
+
+  @override
+  String get lockUnlock => 'ロック解除';
+
+  @override
+  String get lockLocked => 'ロック中';
+
+  @override
+  String get lockUnavailable => 'この端末では Face ID・Touch ID・パスコードを利用できません。';
+
+  @override
+  String get lockReasonOpen => 'メモを開くには確認が必要です';
+
+  @override
+  String get lockReasonOn => 'ロックを有効にするには確認が必要です';
+
+  @override
+  String get lockReasonOff => 'ロックを解除するには確認が必要です';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 

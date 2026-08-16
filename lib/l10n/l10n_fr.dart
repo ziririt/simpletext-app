@@ -530,6 +530,48 @@ class L10nFr extends L10n {
   String get paperGrid => 'Quadrillé';
 
   @override
+  String get lockSectionTitle => 'Verrouillage';
+
+  @override
+  String get lockTitle => 'Verrouillage de l\'app';
+
+  @override
+  String get lockSub => 'Ouvrez l\'app avec Face ID, Touch ID ou le code de l\'appareil.';
+
+  @override
+  String get lockNote => 'Ce verrouillage empêche quelqu\'un qui prend votre appareil d\'ouvrir l\'app. Il ne chiffre pas les fichiers stockés sur l\'appareil.';
+
+  @override
+  String get lockDelayTitle => 'Verrouiller après';
+
+  @override
+  String get lockDelayNow => 'Immédiatement';
+
+  @override
+  String get lockDelay1m => 'Après 1 minute';
+
+  @override
+  String get lockDelay5m => 'Après 5 minutes';
+
+  @override
+  String get lockUnlock => 'Déverrouiller';
+
+  @override
+  String get lockLocked => 'Verrouillé';
+
+  @override
+  String get lockUnavailable => 'Face ID, Touch ID et le code de l\'appareil ne sont pas disponibles ici.';
+
+  @override
+  String get lockReasonOpen => 'Vérifiez pour ouvrir vos notes';
+
+  @override
+  String get lockReasonOn => 'Vérifiez pour activer le verrouillage';
+
+  @override
+  String get lockReasonOff => 'Vérifiez pour désactiver le verrouillage';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src le \$date';
 

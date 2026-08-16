@@ -301,6 +301,20 @@ abstract class L10n {
   String get paperSepia;
   String get paperManuscript;
   String get paperGrid;
+  String get lockSectionTitle;
+  String get lockTitle;
+  String get lockSub;
+  String get lockNote;
+  String get lockDelayTitle;
+  String get lockDelayNow;
+  String get lockDelay1m;
+  String get lockDelay5m;
+  String get lockUnlock;
+  String get lockLocked;
+  String get lockUnavailable;
+  String get lockReasonOpen;
+  String get lockReasonOn;
+  String get lockReasonOff;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -566,6 +580,20 @@ abstract class L10n {
         'paperSepia': paperSepia,
         'paperManuscript': paperManuscript,
         'paperGrid': paperGrid,
+        'lockSectionTitle': lockSectionTitle,
+        'lockTitle': lockTitle,
+        'lockSub': lockSub,
+        'lockNote': lockNote,
+        'lockDelayTitle': lockDelayTitle,
+        'lockDelayNow': lockDelayNow,
+        'lockDelay1m': lockDelay1m,
+        'lockDelay5m': lockDelay5m,
+        'lockUnlock': lockUnlock,
+        'lockLocked': lockLocked,
+        'lockUnavailable': lockUnavailable,
+        'lockReasonOpen': lockReasonOpen,
+        'lockReasonOn': lockReasonOn,
+        'lockReasonOff': lockReasonOff,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

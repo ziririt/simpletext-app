@@ -528,6 +528,48 @@ class L10nZhHans extends L10n {
   String get paperGrid => '方格';
 
   @override
+  String get lockSectionTitle => '锁定';
+
+  @override
+  String get lockTitle => '应用锁';
+
+  @override
+  String get lockSub => '使用面容 ID、触控 ID 或设备密码打开应用。';
+
+  @override
+  String get lockNote => '此锁定用于防止他人拿到设备后打开应用，并不会加密设备中的文件本身。';
+
+  @override
+  String get lockDelayTitle => '锁定时机';
+
+  @override
+  String get lockDelayNow => '立即';
+
+  @override
+  String get lockDelay1m => '1 分钟后';
+
+  @override
+  String get lockDelay5m => '5 分钟后';
+
+  @override
+  String get lockUnlock => '解锁';
+
+  @override
+  String get lockLocked => '已锁定';
+
+  @override
+  String get lockUnavailable => '此设备无法使用面容 ID、触控 ID 或设备密码。';
+
+  @override
+  String get lockReasonOpen => '打开备忘录需要验证';
+
+  @override
+  String get lockReasonOn => '开启锁定需要验证';
+
+  @override
+  String get lockReasonOff => '关闭锁定需要验证';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 来自 \$src';
 
