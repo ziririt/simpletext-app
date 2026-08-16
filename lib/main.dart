@@ -29,7 +29,17 @@ void main() {
   runApp(const SimpleTextApp());
 }
 
-const _accent = Color(0xFF2F5FE0);
+// 2026-08-16 — 주조색을 브랜드(Cloudfall) 팔레트로 전환했다(소유자 지시:
+// "컬러 주조색은 모두 skyblue 기조로", "밝고 맑고 경쾌하게, 다크는
+// 눈부시지 않게").
+// 브랜드 팔레트: 글로우 #9BEDFF · 하늘 #3FB2F0 · 바탕/텍스트 #1A5FCB
+// · 딥 #08205A. 브랜드 가이드 규칙: 한 가지 색만 써야 하는 자리에서는
+// #1A5FCB를 쓴다 — 그래서 글자·아이콘용 강조색이 #1A5FCB다.
+// 명암비는 전부 계산으로 검증했다(값을 바꾸면 반드시 재계산):
+//   #1A5FCB on 흰 배경 5.9:1 · on #F2F2F7 5.3:1 · on 정보카드 5.3:1
+const _accent = Color(0xFF1A5FCB);
+// 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
+const _sky = Color(0xFF3FB2F0);
 
 /// ---------------- 색 (라이트/다크) ----------------
 /// 2026-08-12 — 다크 모드 미지원이 애플 기기에서 가장 크게 어색한 지점이었다.
@@ -119,7 +129,7 @@ class AppC extends ThemeExtension<AppC> {
     field: Color(0xFFE3E3E8),
     toolbar: Color(0xFFF2F2F0),
     toolbarLine: Color(0xFFE0E0DC),
-    infoBg: Color(0xFFEEF2FD),
+    infoBg: Color(0xFFE8F5FE), // 하늘빛 정보 카드 (#1A5FCB 글자 5.3:1)
     warnBg: Color(0xFFFDF3E7),
     warnInk: Color(0xFF9A6A1F),
     codeBg: Color(0xFFF6F6F4),
@@ -127,11 +137,15 @@ class AppC extends ThemeExtension<AppC> {
     pin: Color(0xFFF2B705),
     danger: Color(0xFFE53935),
     guideInk: Color(0xFF3A3A3C),
-    selBg: Color(0x664FC3F7),
-    selHandle: Color(0xFF0288D1),
-    tagBg: Color(0xFFDFF1FF),
-    tagInk: Color(0xFF0A66AA),
-    tagLine: Color(0xFFB6E0FB),
+    // 2026-08-16 브랜드 하늘색으로 통일. 계산값:
+    //   선택 블럭 #3FB2F0 40%+흰 배경 = #B2E0F9 → 검정 글자 14.9:1
+    //   손잡이 #1A5FCB on 흰 배경 5.9:1 (조작점 기준 3:1)
+    //   태그 글자 #1A5FCB on #E1F4FF 5.2:1
+    selBg: Color(0x663FB2F0),
+    selHandle: Color(0xFF1A5FCB),
+    tagBg: Color(0xFFE1F4FF),
+    tagInk: Color(0xFF1A5FCB),
+    tagLine: Color(0xFFB8E2FA),
   );
 
   static const dark = AppC(
@@ -139,11 +153,13 @@ class AppC extends ThemeExtension<AppC> {
     panel: Color(0xFF1C1C1E),
     line: Color(0xFF38383A),
     sub: Color(0xFF98989E),
-    accent: Color(0xFF6E9BFF),
+    // 다크 강조는 하늘색을 밝힌 톤 — 어두운 바탕에 쨍한 원색은 눈을
+    // 찌른다(소유자: 밤에 눈부시지 않게). on #1C1C1E 8.8:1, on 검정 10.9:1
+    accent: Color(0xFF6FC4F4),
     field: Color(0xFF1C1C1E),
     toolbar: Color(0xFF1C1C1E),
     toolbarLine: Color(0xFF38383A),
-    infoBg: Color(0xFF13203A),
+    infoBg: Color(0xFF0B2740), // 딥 네이비(#08205A 계열) 정보 카드
     warnBg: Color(0xFF2A2318),
     warnInk: Color(0xFFE0B96A),
     codeBg: Color(0xFF141416),
@@ -151,7 +167,9 @@ class AppC extends ThemeExtension<AppC> {
     pin: Color(0xFFF2B705),
     danger: Color(0xFFFF453A),
     guideInk: Color(0xFFE5E5EA),
-    selBg: Color(0x7A4FC3F7),
+    // 선택 블럭 #3FB2F0 48%+검정 = #1E5573 → 흰 글자 8.1:1
+    // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
+    selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -288,7 +306,7 @@ class SimpleTextApp extends StatelessWidget {
     final base = ThemeData(
       useMaterial3: true,
       brightness: b,
-      colorScheme: ColorScheme.fromSeed(seedColor: _accent, brightness: b),
+      colorScheme: ColorScheme.fromSeed(seedColor: _sky, brightness: b),
       scaffoldBackgroundColor: c.bg,
       appBarTheme: AppBarTheme(
         backgroundColor: c.bg,
