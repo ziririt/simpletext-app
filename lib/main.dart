@@ -46,6 +46,12 @@ const _accent = Color(0xFF1A5FCB);
 // 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
 const _sky = Color(0xFF3FB2F0);
 
+/// 데스크톱(맥·윈도우·리눅스)인가 — 글자 크기와 밀도를 가르는 기준.
+bool get isDesktopPlatform =>
+    defaultTargetPlatform == TargetPlatform.macOS ||
+    defaultTargetPlatform == TargetPlatform.windows ||
+    defaultTargetPlatform == TargetPlatform.linux;
+
 /// ---------------- 색 (라이트/다크) ----------------
 /// 2026-08-12 — 다크 모드 미지원이 애플 기기에서 가장 크게 어색한 지점이었다.
 /// 애플 메모장은 시스템 설정을 따라가는데 이 앱은 밤에도 흰 화면이었다.
@@ -301,6 +307,19 @@ class SimpleTextApp extends StatelessWidget {
       supportedLocales: L10n.supportedLocales,
       theme: _theme(Brightness.light, AppC.light),
       darkTheme: _theme(Brightness.dark, AppC.dark),
+      // 2026-08-16 소유자 신고 — 맥 앱 글자가 애플 메모장보다 훨씬 크다.
+      // 모바일 크기(본문 17 등)를 그대로 데스크톱에 내보내고 있었다.
+      // 애플 메모장 맥판 본문은 13~14 상당 — 데스크톱 전체를 0.8배로 줄이면
+      // 17이 13.6으로 정확히 그 자리에 떨어진다. 화면마다 값을 따로 두면
+      // 반드시 한 군데를 빠뜨리므로 한 곳에서 전역으로 줄인다.
+      builder: (ctx, child) {
+        if (!isDesktopPlatform) return child!;
+        final mq = MediaQuery.of(ctx);
+        return MediaQuery(
+          data: mq.copyWith(textScaler: const TextScaler.linear(0.8)),
+          child: child!,
+        );
+      },
       // 애플 메모장과 같이 기기 설정(라이트/다크)을 그대로 따른다
       themeMode: ThemeMode.system,
       home: const HomeScreen(),
@@ -983,7 +1002,9 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () =>
               Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(kListRowInset, 10, 16, 10),
+            // 데스크톱은 애플 메모장처럼 행을 촘촘하게(글자만 줄면 행이 뚱뚱해 보인다).
+          padding: EdgeInsets.fromLTRB(
+              kListRowInset, isDesktopPlatform ? 5 : 10, 16, isDesktopPlatform ? 5 : 10),
             child: Row(
               children: [
                 Expanded(
