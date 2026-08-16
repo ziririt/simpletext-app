@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Skyblue Note — 개발자 버전 무선 배포. 2026-08-16 신설.
+#
+# 왜 flutter run이 아니라 flutter install인가:
+#   flutter run은 (1) 설치 (2) 앱 실행 (3) 디버거 부착 을 다 한다. 무선
+#   연결에서는 (3)이 자주 타임아웃 나면서 "Error running application on
+#   ..."을 뱉는데, 정작 설치는 이미 끝나 있다. 우리는 개발자 버전을 기기에
+#   넣기만 하면 되므로 install이면 충분하고, 훨씬 안정적이다.
+#   (2026-08-16: run으로 다섯 번 연속 튕긴 뒤 install로 바꿔 한 번에 성공)
+#
+# 주의: --no-codesign으로 빌드해 두면 install이 실패한다(서명 없는 .app은
+#   기기에 못 올린다). 반드시 서명 포함으로 빌드할 것.
+#
+# 사용법:
+#   bash tool/deploy.sh          # 아이폰 + 아이패드 + 맥 전부
+#   bash tool/deploy.sh iphone
+#   bash tool/deploy.sh ipad
+#   bash tool/deploy.sh mac
+set -u
+export PATH="$HOME/development/flutter/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+cd ~/development/simpletext_app || exit 1
+
+IPHONE=00008140-000C11100113001C   # Ziririt iPhone 16
+IPAD=00008027-001A64441107002E     # 김성동의 iPad pro (12.9 3세대)
+WHAT="${1:-all}"
+
+log() { echo "[$(date '+%H:%M:%S')] $*"; }
+
+if [ "$WHAT" = "all" ] || [ "$WHAT" = "iphone" ] || [ "$WHAT" = "ipad" ]; then
+  log "iOS 서명 빌드…"
+  if ! flutter build ios --release > /tmp/dep_ios.log 2>&1; then
+    log "iOS 빌드 실패 — /tmp/dep_ios.log 확인"; tail -20 /tmp/dep_ios.log; exit 1
+  fi
+  log "iOS 빌드 완료"
+fi
+
+install_to() { # $1=udid $2=이름
+  log "$2 설치 중…"
+  if flutter install --release -d "$1" > "/tmp/dep_$2.log" 2>&1; then
+    if grep -q "Install failed" "/tmp/dep_$2.log"; then
+      log "$2 설치 실패:"; tail -6 "/tmp/dep_$2.log"; return 1
+    fi
+    log "$2 설치 완료"
+  else
+    log "$2 설치 실패:"; tail -6 "/tmp/dep_$2.log"; return 1
+  fi
+}
+
+[ "$WHAT" = "all" ] || [ "$WHAT" = "iphone" ] && install_to "$IPHONE" iphone
+[ "$WHAT" = "all" ] || [ "$WHAT" = "ipad" ] && install_to "$IPAD" ipad
+
+if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
+  log "맥 빌드…"
+  if flutter build macos --release > /tmp/dep_mac.log 2>&1; then
+    pkill -f "Products/Release/simpletext.app" >/dev/null 2>&1
+    sleep 1
+    open ~/development/simpletext_app/build/macos/Build/Products/Release/simpletext.app
+    log "맥 재실행 완료"
+  else
+    log "맥 빌드 실패 — /tmp/dep_mac.log 확인"; tail -20 /tmp/dep_mac.log
+  fi
+fi
+
+log "끝. 버전: $(grep -m1 appVersion lib/version.dart)"
+
+# ── 새 기기를 처음 붙일 때 (2026-08-16 아이패드에서 겪은 순서) ──────
+# 세 단계에서 연달아 막혔다. 다음에 새 기기를 붙이면 그대로 밟으면 된다.
+#
+# 1) unpaired
+#    xcrun devicectl list devices          # Identifier(UUID) 확인
+#    xcrun devicectl manage pair --device <UUID>
+#
+# 2) 개발자 모드 꺼짐 — 원격으로는 못 켠다. 기기에서 직접:
+#    설정 > 개인정보 보호 및 보안 > 개발자 모드 > 켬 > 재시동 >
+#    잠금 해제 직후 뜨는 팝업에서 '켜기' + 암호.
+#    이 마지막 팝업까지 해야 실제로 켜진다(여기서 한 번 헛돌았다).
+#    확인: xcrun devicectl device info details --device <UUID> | grep developerModeStatus
+#    주의: devicectl의 device info는 캐시가 남는다. xcrun xcdevice list 도 같이 볼 것.
+#
+# 3) 프로비저닝 프로파일에 그 기기가 없음
+#    (a) 개발자 계정에 기기 등록 — App Store Connect API로 가능:
+#        POST /v1/devices  {name, platform: "IOS", udid}
+#        (udid는 flutter devices가 보여주는 00008027-... 형식)
+#        ~/.appstoreconnect/asc.py 헬퍼 사용.
+#    (b) 프로파일 재발급 — 여기가 함정이다.
+#        xcodebuild -allowProvisioningUpdates 는 "No Accounts"로 실패한다.
+#        CLI가 Xcode에 저장된 개발자 계정을 못 읽기 때문이다(계정은 분명
+#        있는데도). 해결: Xcode를 GUI로 열고 실행 대상을 그 기기로 바꾼 뒤
+#        Cmd+B. 그러면 "iOS Team Provisioning Profile: *"가 그 기기를
+#        포함해 다시 발급된다.
+#        확인: ~/Library/Developer/Xcode/UserData/Provisioning Profiles/ 의
+#        .mobileprovision을 security cms -D 로 풀어 ProvisionedDevices 확인.
