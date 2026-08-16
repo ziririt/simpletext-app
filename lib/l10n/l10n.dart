@@ -126,6 +126,23 @@ abstract class L10n {
   String get copyAction;
   String get undoAction;
 
+  // 원본복귀 (2026-08-17). 아래 막대에서 빼고 '...' 메뉴로 옮긴 그 항목.
+  String get revertAction;
+  String get revertConfirmTitle;
+  String get revertConfirmBody;
+  String get revertConfirmOk;
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  String get listBulletAction;
+  String get listDashAction;
+  String get listNumberAction;
+
+  // 출처 칸 (2026-08-17)
+  String get sourceFieldLabel;
+  String sourceSaved(String name);
+  String sourceDetected(String name);
+  String get sourceCleared;
+
   // ---------------- 표 시트 ----------------
   String get noTablesFound;
   String tableInfo(int n, int cols, int rows);
@@ -479,6 +496,15 @@ abstract class L10n {
         'replaceAction': replaceAction,
         'copyAction': copyAction,
         'undoAction': undoAction,
+        'revertAction': revertAction,
+        'revertConfirmTitle': revertConfirmTitle,
+        'revertConfirmBody': revertConfirmBody,
+        'revertConfirmOk': revertConfirmOk,
+        'listBulletAction': listBulletAction,
+        'listDashAction': listDashAction,
+        'listNumberAction': listNumberAction,
+        'sourceFieldLabel': sourceFieldLabel,
+        'sourceCleared': sourceCleared,
         'noTablesFound': noTablesFound,
         'forSpreadsheet': forSpreadsheet,
         'copiedSpreadsheet': copiedSpreadsheet,

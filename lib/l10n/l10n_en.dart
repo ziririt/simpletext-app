@@ -125,7 +125,44 @@ class L10nEn extends L10n {
   @override
   String get noteNotFound => 'Note not found';
   @override
-  String get revertedToast => 'Reverted to the previous version';
+  String get revertedToast => 'Back to the original. The previous text is in Version history.';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => 'Restore original';
+
+  @override
+  String get revertConfirmTitle => 'Go back to the original?';
+
+  @override
+  String get revertConfirmBody =>
+      'This returns the note to the text you first pasted. Every tidy-up and every edit you made after that will be gone.\n\nThe text you have now is kept in Version history, so you can bring it back.';
+
+  @override
+  String get revertConfirmOk => 'Restore';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => 'Bullet list';
+
+  @override
+  String get listDashAction => 'Dash list';
+
+  @override
+  String get listNumberAction => 'Numbered list';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => 'Source';
+
+  @override
+  String sourceSaved(String name) => 'Source saved: $name';
+
+  @override
+  String sourceDetected(String name) => 'Source detected: $name';
+
+  @override
+  String get sourceCleared => 'Source cleared';
   @override
   String appliedDone(String summary) => 'Applied — $summary';
 

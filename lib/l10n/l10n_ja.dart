@@ -125,7 +125,44 @@ class L10nJa extends L10n {
   @override
   String get noteNotFound => 'メモが見つかりません';
   @override
-  String get revertedToast => '前のバージョンに戻しました';
+  String get revertedToast => '原文に戻しました。直前の文章は変更履歴にあります';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => '原文に戻す';
+
+  @override
+  String get revertConfirmTitle => '原文に戻しますか？';
+
+  @override
+  String get revertConfirmBody =>
+      '最初に貼り付けた文章に戻ります。そのあとの整形と手直しはすべて消えます。\n\n今の文章は変更履歴に残るので、いつでも取り出せます。';
+
+  @override
+  String get revertConfirmOk => '戻す';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => '中黒リスト';
+
+  @override
+  String get listDashAction => 'ダッシュリスト';
+
+  @override
+  String get listNumberAction => '番号リスト';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => '出典';
+
+  @override
+  String sourceSaved(String name) => '出典を保存しました · $name';
+
+  @override
+  String sourceDetected(String name) => '出典を判別しました · $name';
+
+  @override
+  String get sourceCleared => '出典を消しました';
   @override
   String appliedDone(String summary) => '適用しました — $summary';
 

@@ -125,7 +125,44 @@ class L10nDe extends L10n {
   @override
   String get noteNotFound => 'Notiz nicht gefunden';
   @override
-  String get revertedToast => 'Vorherige Version wiederhergestellt';
+  String get revertedToast => 'Zurück zum Original. Der vorherige Text liegt im Verlauf.';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => 'Original wiederherstellen';
+
+  @override
+  String get revertConfirmTitle => 'Zurück zum Original?';
+
+  @override
+  String get revertConfirmBody =>
+      'Die Notiz kehrt zu dem Text zurück, den Sie zuerst eingefügt haben. Jede Bereinigung und jede spätere Änderung ist dann weg.\n\nDer Text, den Sie jetzt haben, bleibt im Verlauf und lässt sich zurückholen.';
+
+  @override
+  String get revertConfirmOk => 'Wiederherstellen';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => 'Punktliste';
+
+  @override
+  String get listDashAction => 'Strichliste';
+
+  @override
+  String get listNumberAction => 'Nummerierte Liste';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => 'Quelle';
+
+  @override
+  String sourceSaved(String name) => 'Quelle gespeichert: $name';
+
+  @override
+  String sourceDetected(String name) => 'Quelle erkannt: $name';
+
+  @override
+  String get sourceCleared => 'Quelle entfernt';
   @override
   String appliedDone(String summary) => 'Angewendet — $summary';
 

@@ -125,7 +125,44 @@ class L10nZhHans extends L10n {
   @override
   String get noteNotFound => '找不到该备忘录';
   @override
-  String get revertedToast => '已恢复到上一版本';
+  String get revertedToast => '已还原到原文，之前的文字在版本记录里';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => '还原到原文';
+
+  @override
+  String get revertConfirmTitle => '还原到原文？';
+
+  @override
+  String get revertConfirmBody =>
+      '将回到你最初粘贴的文字。之后的整理和手动修改都会消失。\n\n现在的文字会留在版本记录里，随时可以取回。';
+
+  @override
+  String get revertConfirmOk => '还原';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => '圆点列表';
+
+  @override
+  String get listDashAction => '短横列表';
+
+  @override
+  String get listNumberAction => '编号列表';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => '来源';
+
+  @override
+  String sourceSaved(String name) => '已保存来源 · $name';
+
+  @override
+  String sourceDetected(String name) => '已识别来源 · $name';
+
+  @override
+  String get sourceCleared => '已清除来源';
   @override
   String appliedDone(String summary) => '已应用 — $summary';
 

@@ -125,7 +125,44 @@ class L10nFr extends L10n {
   @override
   String get noteNotFound => 'Note introuvable';
   @override
-  String get revertedToast => 'Version précédente restaurée';
+  String get revertedToast => 'Retour à l\'original. Le texte précédent est dans l\'historique.';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => 'Revenir à l\'original';
+
+  @override
+  String get revertConfirmTitle => 'Revenir à l\'original ?';
+
+  @override
+  String get revertConfirmBody =>
+      'La note retrouve le texte que vous avez collé au départ. Tous les nettoyages et toutes les retouches faites ensuite disparaîtront.\n\nLe texte actuel est conservé dans l\'historique ; vous pourrez le récupérer.';
+
+  @override
+  String get revertConfirmOk => 'Revenir';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => 'Liste à puces';
+
+  @override
+  String get listDashAction => 'Liste à tirets';
+
+  @override
+  String get listNumberAction => 'Liste numérotée';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => 'Source';
+
+  @override
+  String sourceSaved(String name) => 'Source enregistrée : $name';
+
+  @override
+  String sourceDetected(String name) => 'Source détectée : $name';
+
+  @override
+  String get sourceCleared => 'Source effacée';
   @override
   String appliedDone(String summary) => 'Appliqué — $summary';
 

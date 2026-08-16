@@ -125,7 +125,44 @@ class L10nKo extends L10n {
   @override
   String get noteNotFound => '메모를 찾을 수 없습니다';
   @override
-  String get revertedToast => '이전 버전으로 되돌렸습니다';
+  String get revertedToast => '원본으로 되돌렸습니다 · 직전 글은 버전기록에 있습니다';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => '원본복귀';
+
+  @override
+  String get revertConfirmTitle => '원본으로 되돌릴까요?';
+
+  @override
+  String get revertConfirmBody =>
+      '처음 붙여넣은 글로 돌아갑니다. 그 뒤에 정리한 것과 손으로 고친 것이 모두 사라집니다.\n\n지금 글은 버전기록에 남으니 언제든 다시 꺼낼 수 있습니다.';
+
+  @override
+  String get revertConfirmOk => '원본으로';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => '구분점 목록';
+
+  @override
+  String get listDashAction => '대시 목록';
+
+  @override
+  String get listNumberAction => '번호 목록';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => '출처';
+
+  @override
+  String sourceSaved(String name) => '출처를 저장했습니다 · $name';
+
+  @override
+  String sourceDetected(String name) => '출처를 알아냈습니다 · $name';
+
+  @override
+  String get sourceCleared => '출처를 지웠습니다';
   @override
   String appliedDone(String summary) => '적용 완료 — $summary';
 

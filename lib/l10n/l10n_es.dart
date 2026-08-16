@@ -125,7 +125,44 @@ class L10nEs extends L10n {
   @override
   String get noteNotFound => 'Nota no encontrada';
   @override
-  String get revertedToast => 'Se restauró la versión anterior';
+  String get revertedToast => 'De vuelta al original. El texto anterior está en el historial.';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => 'Volver al original';
+
+  @override
+  String get revertConfirmTitle => '¿Volver al original?';
+
+  @override
+  String get revertConfirmBody =>
+      'La nota vuelve al texto que pegaste al principio. Se perderán todas las limpiezas y todos los cambios que hiciste después.\n\nEl texto actual queda en el historial, así que podrás recuperarlo.';
+
+  @override
+  String get revertConfirmOk => 'Volver';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => 'Lista con viñetas';
+
+  @override
+  String get listDashAction => 'Lista con guiones';
+
+  @override
+  String get listNumberAction => 'Lista numerada';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => 'Fuente';
+
+  @override
+  String sourceSaved(String name) => 'Fuente guardada: $name';
+
+  @override
+  String sourceDetected(String name) => 'Fuente detectada: $name';
+
+  @override
+  String get sourceCleared => 'Fuente borrada';
   @override
   String appliedDone(String summary) => 'Aplicado — $summary';
 

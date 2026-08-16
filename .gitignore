@@ -44,5 +44,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# 배포 서명 열쇠 (2026-08-17). 저장소에 올리면 아무나 우리 앱의 갱신판을
+# 낼 수 있게 된다. 열쇠 자체는 소유자가 따로 백업해 두어야 한다 —
+# 잃어버리면 플레이 콘솔에서 재설정 신청을 해야 하고 며칠이 걸린다.
+/android/key.properties
+*.jks
+*.keystore
+
 # 스토어 스크린샷은 생성 파일이라 커밋하지 않는다 (노하우 10절)
 store/screenshots/

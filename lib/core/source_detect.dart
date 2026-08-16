@@ -3,23 +3,49 @@
 /// 2026-08-16 소유자 제안: "LLM마다 독특한 개성이 있지? 그걸 감지해서 자동으로
 /// 하면 좋겠다. 확신이 안 되는 경우에는 'ChatGPT(추정)'이라고 하면 되겠다."
 ///
-/// ## 두 단으로 간다
+/// ## 2026-08-17 — 짐작을 걷어내고 실제 원문으로 다시 짰다
 ///
-/// **1단 — 클립보드에 딸려 온 주소.** 브라우저에서 복사하면 글자만 오는 게
-/// 아니라 원본 주소가 함께 실려 오는 경우가 많다. 거기 chatgpt.com이 있으면
-/// 그건 추측이 아니라 사실이다. 이 파일의 [sourceFromUrl]이 그 일을 한다.
+/// 소유자 신고 — "여러 LLM의 답변을 붙여넣기 해 봤더니 출처 분석을 자동으로
+/// 하나도 못하네? 퍼플렉시티조차도 인식하지 못하는 건 문제가 있지 않니?"
 ///
-/// **2단 — 글의 생김새.** 1단이 비었을 때만 쓴다. 확실하지 않으므로 결과에
-/// 반드시 '(추정)'을 붙인다.
+/// 그래서 다섯 모델의 **실제 답변**을 하나씩 받아 재 봤다. 결과는 이랬다.
+///
+/// ```
+///                chatgpt   claude   gemini    grok  perplexity
+/// utm=chatgpt.com      8        0        0       0        0
+/// 마크다운 링크        15        0        0       0        0
+/// '•' 글머리            0        0        0      14        0
+/// '#' 소제목            0        0       12       3        0
+/// '**굵게**'            1        0       27       5        0
+/// '---' 구분선          0        0        8       0        0
+/// 표                    0        0        6       0        0
+/// 들여쓴 글머리          0        0        0       0       34
+/// 글머리 비율        0.34     0.38     0.28    0.54     0.73
+/// 긴 줄글 문단 수        4        6        1       0        1
+/// ```
+///
+/// 옛 규칙이 보던 것은 **각주(`[1]`)였는데 다섯 원문 모두 각주가 0이었다.**
+/// 엉뚱한 데를 보고 있었다. 그리고 별표 글머리만 보고 제미나이로 찍는 규칙
+/// 때문에 **퍼플렉시티 원문이 제미나이로 판정됐다** — 못 잡는 것보다 나쁘다.
+///
+/// 위 표에서 갈라지는 자리는 분명하다.
+///
+///   ChatGPT     인용 링크에 utm_source=chatgpt.com이 붙어 온다. 이건 표식이다
+///   Grok        글머리가 '•' 글자 그 자체. 나머지 넷은 이 글자를 안 낸다
+///   Gemini      '#' 소제목 + '---' + 표 + 굵게, 꾸밈이 전부 들어 있다
+///   Perplexity  '*' 글머리가 깊게 겹치고 꾸밈은 하나도 없다
+///   Claude      꾸밈 없이 '*' 글머리 + 긴 줄글 문단이 여럿
+///
+/// 다섯 원문은 test/core/llm_samples.dart에 그대로 굳혀 두었다. 규칙을
+/// 건드릴 때마다 이 다섯이 제대로 나오는지 자동으로 확인된다.
 ///
 /// ## 정확도에 대해 정직하게
 ///
-/// 학계·상용 분류기는 90%대를 보고하지만 그건 수십만 건으로 학습한 신경망이다.
-/// 우리는 앱 안에서 규칙으로 하므로 그만큼 못 나온다. 인용형(퍼플렉시티
-/// 계열)은 거의 확실하고, 나머지 셋은 그보다 훨씬 낮다.
-///
-/// 그래서 **점수 차이가 벌어질 때만 이름을 말한다.** 애매하면 아무 말도 하지
-/// 않는다. 틀린 출처를 조용히 박아 두는 것은 안 하느니만 못하다.
+/// 이건 다섯 편으로 맞춘 규칙이다. 같은 모델이라도 물어보는 방식이 달라지면
+/// 생김새가 달라진다 — 예컨대 웹 검색을 안 켠 ChatGPT는 링크가 없어 Claude와
+/// 구별하기 어렵다. 그래서 **점수 차이가 벌어질 때만 이름을 말한다.**
+/// 애매하면 아무 말도 하지 않는다. 틀린 출처를 조용히 박아 두는 것은
+/// 안 하느니만 못하다.
 library;
 
 /// 화면과 저장에 쓰는 이름. 편집 화면 출처 목록의 값과 정확히 같아야 한다.
@@ -33,7 +59,7 @@ class SourceGuess {
   /// 알아낸 이름. 모르면 빈 문자열.
   final String name;
 
-  /// 클립보드 주소로 확인됐는가. true면 '(추정)'을 붙이지 않는다.
+  /// 표식으로 확인됐는가. true면 '(추정)'을 붙이지 않는다.
   final bool certain;
 
   const SourceGuess(this.name, {this.certain = false});
@@ -63,28 +89,129 @@ SourceGuess sourceFromUrl(String? urlOrHtml) {
   return SourceGuess.unknown;
 }
 
+/// 붙여넣기로 새로 들어온 덩이만 떼어 낸다.
+///
+/// 2026-08-17 — 편집 화면에서 붙여넣어도 출처를 찍으려면, 글 전체가 아니라
+/// **방금 들어온 부분**을 봐야 한다. 이미 있던 글이 섞이면 그쪽 생김새가
+/// 판정을 끌고 간다.
+///
+/// 앞에서부터 같은 만큼, 뒤에서부터 같은 만큼을 걷어내면 가운데 남는 것이
+/// 새로 들어온 것이다. 붙여넣기는 한 자리에 한 덩이로 들어오므로 이 방법이
+/// 맞는다.
+String insertedChunk(String before, String after) {
+  if (after.length <= before.length) return '';
+  var head = 0;
+  final maxHead = before.length;
+  while (head < maxHead && before.codeUnitAt(head) == after.codeUnitAt(head)) {
+    head++;
+  }
+  var tail = 0;
+  final maxTail = before.length - head;
+  while (tail < maxTail &&
+      before.codeUnitAt(before.length - 1 - tail) ==
+          after.codeUnitAt(after.length - 1 - tail)) {
+    tail++;
+  }
+  return after.substring(head, after.length - tail);
+}
+
+// ---------------------------------------------------------------------------
+// 각주 세기 — 있을 때는 아주 강한 단서다. 다만 늘 있지는 않다.
+// ---------------------------------------------------------------------------
+
+final RegExp _citeBracket = RegExp(r'\[\d{1,3}\]');
+final RegExp _citeFootnote = RegExp(r'\[\^\d{1,3}\]');
+final RegExp _citeSuper = RegExp(r'[¹²³⁰⁴-⁹]');
+final RegExp _citeTagged =
+    RegExp(r'\[(?:web|post|x|news|video):\s*\d{1,3}\]', caseSensitive: false);
+
+/// 글 끝에 붙는 '출처' 뭉치의 줄 수. `1. https://…` 또는 `[1] https://…`.
+final RegExp _srcLine =
+    RegExp(r'^\s*(?:\[\d{1,3}\]|\d{1,3}[.)])\s*https?://', multiLine: true);
+
+/// 출처 목록의 머리말 줄.
+final RegExp _srcHeading = RegExp(
+    r'^\s*(출처|참고|참고자료|인용|sources?|references?|citations?)\s*[:：]?\s*$',
+    multiLine: true,
+    caseSensitive: false);
+
+/// 이 글에 각주가 몇 개나 있는가. 모양을 가리지 않는다.
+int citationCount(String text) =>
+    _citeBracket.allMatches(text).length +
+    _citeFootnote.allMatches(text).length +
+    _citeSuper.allMatches(text).length +
+    _citeTagged.allMatches(text).length;
+
+// ---------------------------------------------------------------------------
+// 생김새
+// ---------------------------------------------------------------------------
+
+/// ChatGPT가 인용 링크에 붙여 보내는 표식. 우리가 만든 규칙이 아니라
+/// OpenAI가 스스로 찍는 것이라, 이건 추측이 아니라 사실이다.
+final RegExp _utmChatGpt =
+    RegExp(r'utm_source=chatgpt\.com', caseSensitive: false);
+
+final RegExp _mdLink = RegExp(r'\[[^\]\n]{1,80}\]\(https?://');
+final RegExp _nestedBullet = RegExp(r'^[ \t]{2,}[*\-•] ', multiLine: true);
+final RegExp _heading = RegExp(r'^#{1,6}\s', multiLine: true);
+final RegExp _bold = RegExp(r'\*\*[^*\n]{2,}\*\*');
+final RegExp _blankLine = RegExp(r'\n\s*\n');
+
 /// 2단 — 글의 생김새로 추측. 애매하면 빈 결과를 준다.
 SourceGuess guessSource(String text) {
-  if (text.trim().length < 200) {
-    // 짧은 글은 어느 모델이 써도 비슷하게 생겼다. 찍으면 틀린다.
+  // 2026-08-17 — 문턱을 200자에서 140자로 내렸다. 200자는 한국어 한 문단이
+  // 넘는 길이라, 짧게 묻고 짧게 받은 답이 통째로 빠져나갔다.
+  if (text.trim().length < 140) {
+    // 그래도 아주 짧은 글은 어느 모델이 써도 비슷하게 생겼다. 찍으면 틀린다.
     return SourceGuess.unknown;
   }
+
+  // --- ChatGPT의 표식이 있으면 여기서 끝. 추측이 아니다.
+  if (_utmChatGpt.hasMatch(text)) {
+    return const SourceGuess(kChatGpt, certain: true);
+  }
+
   final lines = text.split('\n');
 
-  // --- 먼저 특징을 센다. 판정은 그다음이다.
-  final cites = RegExp(r'\[\d{1,2}\]').allMatches(text).length;
-  final hr = lines.where((l) {
-    final t = l.trim();
-    return t == '---' || t == '***' || t == '___';
-  }).length;
   int bullets(String mark) =>
       lines.where((l) => l.trimLeft().startsWith('$mark ')).length;
   final star = bullets('*');
   final hyphen = bullets('-');
-  final bulletLines = star + hyphen;
+  final dot = bullets('•');
+  final bulletLines = star + hyphen + dot;
+  final nested = _nestedBullet.allMatches(text).length;
+
+  final headings = _heading.allMatches(text).length;
+  final bolds = _bold.allMatches(text).length;
+  final hr = lines.where((l) {
+    final t = l.trim();
+    return t == '---' || t == '***' || t == '___';
+  }).length;
   final tableRows = lines.where((l) => '|'.allMatches(l).length >= 2).length;
-  final bolds = RegExp(r'\*\*[^*\n]{2,}\*\*').allMatches(text).length;
-  final headings = RegExp(r'^#{1,6}\s', multiLine: true).allMatches(text).length;
+  final code = '```'.allMatches(text).length;
+  final mdLinks = _mdLink.allMatches(text).length;
+
+  final cites = citationCount(text);
+  final tagged = _citeTagged.allMatches(text).length;
+  final srcLines = _srcLine.allMatches(text).length;
+  final hasSourceList = _srcHeading.hasMatch(text);
+
+  // 줄글 문단만 골라 평균 길이를 잰다. 소제목·글머리 줄은 빼야 한다 —
+  // 넣으면 평균이 끌어내려져 긴 줄글이 짧아 보인다.
+  final prose = text
+      .split(_blankLine)
+      .map((p) => p.trim())
+      .where((p) =>
+          p.length >= 40 &&
+          !p.startsWith('#') &&
+          !p.startsWith('*') &&
+          !p.startsWith('-') &&
+          !p.startsWith('•'))
+      .toList();
+  final proseAvg = prose.isEmpty
+      ? 0
+      : prose.fold<int>(0, (a, p) => a + p.length) ~/ prose.length;
+  final bulletRatio = lines.isEmpty ? 0.0 : bulletLines / lines.length;
 
   // --- 문턱: AI 답변처럼 생기지 않았으면 아예 찍지 않는다.
   //
@@ -92,14 +219,14 @@ SourceGuess guessSource(String text) {
   // Claude로 판정되는 것을 테스트가 잡아 줬다. 문단이 길고 불릿이 없다는
   // 이유만으로 이름을 붙인 것이다 — 사람이 쓴 글이 원래 그렇다.
   //
-  // AI가 채팅창에서 낸 글에는 거의 언제나 마크다운 흔적이 하나는 있다
-  // (소제목·굵게·글머리·구분선·각주·표). 그게 하나도 없으면 사람 글로 본다.
   // 놓치는 쪽이 틀리는 쪽보다 낫다.
   final looksFormatted = headings > 0 ||
       bolds > 0 ||
       bulletLines >= 2 ||
       hr > 0 ||
       cites >= 3 ||
+      srcLines >= 2 ||
+      mdLinks >= 3 ||
       tableRows >= 2;
   if (!looksFormatted) return SourceGuess.unknown;
 
@@ -107,76 +234,86 @@ SourceGuess guessSource(String text) {
     kChatGpt: 0,
     kClaude: 0,
     kGemini: 0,
+    kGrok: 0,
     kPerplexity: 0,
   };
 
-  // --- 인용 각주 + 출처 목록: 검색형(퍼플렉시티·코파일럿). 가장 확실한 신호다.
-  final hasSourceList = RegExp(
-          r'^\s*(출처|참고|참고자료|sources?|references?|citations?)\s*:?\s*$',
-          multiLine: true, caseSensitive: false)
-      .hasMatch(text);
-  if (cites >= 3) score[kPerplexity] = score[kPerplexity]! + 4;
-  if (cites >= 3 && hasSourceList) score[kPerplexity] = score[kPerplexity]! + 3;
+  void add(String who, int n) => score[who] = score[who]! + n;
 
-  // --- 가로 구분선: ChatGPT가 큰 절 사이에 즐겨 넣는다. Claude는 거의 안 쓴다.
-  if (hr >= 2) score[kChatGpt] = score[kChatGpt]! + 3;
-  if (hr == 0) score[kClaude] = score[kClaude]! + 1;
+  // --- 글머리 글자가 가장 힘센 단서다.
+  //
+  //   '•' → Grok. 나머지 넷은 이 글자를 글머리로 내지 않는다.
+  //   '*' → Gemini·Perplexity·Claude·ChatGPT (넷이 겹치므로 다른 것으로 가른다)
+  //   '-' → 예전 ChatGPT
+  if (dot >= 3) add(kGrok, 5);
+  if (dot >= 8) add(kGrok, 2);
 
-  // --- 번호 목록의 굵은 머리말: `1. **항목** — 설명`. ChatGPT 특유의 모양이다.
+  // --- 웹 검색을 켠 ChatGPT는 문장 끝마다 마크다운 링크를 단다.
+  if (mdLinks >= 5) add(kChatGpt, 5);
+  if (mdLinks >= 10) add(kChatGpt, 2);
+
+  // --- 제미나이는 꾸밈이 전부 들어 있다. 소제목·구분선·표·코드·굵게.
+  final ornament = (hr >= 2 ? 1 : 0) +
+      (tableRows >= 3 ? 1 : 0) +
+      (code >= 2 ? 1 : 0) +
+      (bolds >= 10 ? 1 : 0);
+  if (headings >= 3 && ornament >= 1) add(kGemini, 5);
+  if (headings >= 3 && ornament >= 3) add(kGemini, 2);
+
+  // --- 퍼플렉시티는 글머리를 깊게 겹치면서 꾸밈은 하나도 안 쓴다.
+  if (nested >= 5 && headings == 0 && bolds == 0) add(kPerplexity, 5);
+  if (bulletRatio >= 0.6) add(kPerplexity, 2);
+
+  // --- Claude는 꾸밈 없이 긴 줄글 문단을 여럿 쓴다.
+  //
+  // 링크가 없어야 한다는 조건이 중요하다. 웹 검색을 안 켠 ChatGPT가 이 모양에
+  // 가까운데, 그쪽은 링크가 붙어 오는 경우가 많아서 그걸로 갈린다.
+  if (prose.length >= 3 &&
+      proseAvg >= 200 &&
+      headings == 0 &&
+      bolds == 0 &&
+      hr == 0 &&
+      nested == 0 &&
+      mdLinks == 0 &&
+      bulletLines >= 5) {
+    add(kClaude, 5);
+  }
+
+  // 글머리를 거의 안 쓰고 줄글로만 가는 판도 있다. 위 규칙은 글머리가
+  // 다섯 줄 넘게 있을 때만 걸리므로, 그 반대쪽을 따로 본다.
+  if (prose.length >= 3 &&
+      proseAvg >= 200 &&
+      bulletRatio < 0.15 &&
+      bolds == 0 &&
+      hr == 0 &&
+      mdLinks == 0 &&
+      dot == 0) {
+    add(kClaude, 4);
+  }
+
+  // --- 각주는 있을 때 아주 강하다. 다섯 원문에는 하나도 없었지만,
+  //     검색을 켜고 물으면 붙어 오는 경우가 있다.
+  if (tagged >= 1) add(kGrok, 4);
+  final inline = cites - tagged;
+  if (inline >= 3) add(kPerplexity, 4);
+  if (inline >= 3 && hasSourceList) add(kPerplexity, 2);
+  if (srcLines >= 3) add(kPerplexity, 4);
+
+  // --- 번호 목록의 굵은 머리말: `1. **항목** — 설명`. 예전 ChatGPT의 모양이다.
+  //     다만 제미나이도 쓰므로, 소제목이 많으면 세지 않는다.
   final boldLead =
       RegExp(r'^\s*\d+\.\s+\*\*', multiLine: true).allMatches(text).length;
-  if (boldLead >= 2) score[kChatGpt] = score[kChatGpt]! + 3;
+  if (boldLead >= 2 && headings < 3) add(kChatGpt, 2);
 
-  // --- 글머리 기호: 별표를 쓰면 제미나이 쪽이다. 대부분은 하이픈으로 낸다.
-  if (star >= 3 && star > hyphen * 2) score[kGemini] = score[kGemini]! + 4;
-  if (hyphen >= 3 && star == 0) score[kChatGpt] = score[kChatGpt]! + 1;
-
-  // --- 표: 제미나이가 유난히 즐겨 만든다.
-  if (tableRows >= 3) score[kGemini] = score[kGemini]! + 1;
-
-  // --- 굵게의 밀도: 제미나이가 문장을 통째로 굵게 하는 일이 잦다.
-  if (bolds >= 8 && bolds * 100 >= text.length) {
-    score[kGemini] = score[kGemini]! + 1;
-  }
-
-  // --- 문단 길이: Claude는 불릿을 덜 쓰고 문단을 길게 쓴다.
-  final paras = text
-      .split(RegExp(r'\n\s*\n'))
-      .map((p) => p.trim())
-      .where((p) => p.isNotEmpty)
-      .toList();
-  // 소제목과 한 줄짜리는 '문단 길이'를 재는 데 넣지 않는다. 넣으면 평균이
-  // 끌어내려져서 긴 줄글이 짧아 보인다 — 2026-08-16에 테스트가 잡았다.
-  final prose =
-      paras.where((p) => p.length >= 40 && !p.startsWith('#')).toList();
-  if (prose.isNotEmpty) {
-    final avg = prose.fold<int>(0, (a, p) => a + p.length) ~/ prose.length;
-    final bulletRatio =
-        lines.isEmpty ? 0.0 : bulletLines / lines.length;
-    if (avg >= 220 && bulletRatio < 0.15) score[kClaude] = score[kClaude]! + 3;
-    if (avg >= 140 && bulletRatio < 0.25) score[kClaude] = score[kClaude]! + 1;
-  }
-
-  // --- 이모지: Claude는 거의 안 쓴다. 나머지는 소제목에 넣기도 한다.
-  final emoji = RegExp(
-          r'[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]',
-          unicode: true)
-      .allMatches(text)
-      .length;
-  if (emoji >= 3) {
-    score[kChatGpt] = score[kChatGpt]! + 1;
-    score[kGemini] = score[kGemini]! + 1;
-  } else if (emoji == 0) {
-    score[kClaude] = score[kClaude]! + 1;
-  }
-
-  // --- 맺음말: "원하시면 ~해 드릴까요?" 류는 ChatGPT가 거의 늘 붙인다.
-  if (RegExp(
-          r'(원하시면|필요하시면|would you like me to|shall i|want me to)',
+  // --- 맺음말: "원하시면 ~해 드릴까요?" 류는 ChatGPT가 즐겨 붙인다.
+  if (RegExp(r'(원하시면|필요하시면|would you like me to|shall i|want me to)',
           caseSensitive: false)
       .hasMatch(text)) {
-    score[kChatGpt] = score[kChatGpt]! + 1;
+    add(kChatGpt, 1);
   }
+
+  // --- 하이픈 글머리만 쓰고 별표를 안 쓰면 예전 ChatGPT 쪽.
+  if (hyphen >= 3 && star == 0 && dot == 0) add(kChatGpt, 1);
 
   // --- 판정: 1등과 2등의 차이가 확실할 때만 이름을 말한다.
   final ranked = score.entries.toList()

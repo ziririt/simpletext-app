@@ -125,7 +125,44 @@ class L10nPt extends L10n {
   @override
   String get noteNotFound => 'Nota não encontrada';
   @override
-  String get revertedToast => 'Versão anterior restaurada';
+  String get revertedToast => 'De volta ao original. O texto anterior está no histórico.';
+
+  // 원본복귀 (2026-08-17)
+  @override
+  String get revertAction => 'Voltar ao original';
+
+  @override
+  String get revertConfirmTitle => 'Voltar ao original?';
+
+  @override
+  String get revertConfirmBody =>
+      'A nota volta ao texto que colou no início. Todas as organizações e todas as edições feitas depois vão desaparecer.\n\nO texto atual fica no histórico, por isso pode trazê-lo de volta.';
+
+  @override
+  String get revertConfirmOk => 'Voltar';
+
+  // 자판 위 막대의 목록 셋 (2026-08-17)
+  @override
+  String get listBulletAction => 'Lista com marcadores';
+
+  @override
+  String get listDashAction => 'Lista com travessões';
+
+  @override
+  String get listNumberAction => 'Lista numerada';
+
+  // 출처 칸 (2026-08-17)
+  @override
+  String get sourceFieldLabel => 'Fonte';
+
+  @override
+  String sourceSaved(String name) => 'Fonte salva: $name';
+
+  @override
+  String sourceDetected(String name) => 'Fonte detectada: $name';
+
+  @override
+  String get sourceCleared => 'Fonte apagada';
   @override
   String appliedDone(String summary) => 'Aplicado — $summary';
 

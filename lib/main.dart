@@ -26,6 +26,7 @@ import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'core/auto_meta.dart';
 import 'core/hangul.dart';
+import 'core/listify.dart';
 import 'core/lock.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
@@ -2340,6 +2341,79 @@ class _EditorScreenState extends State<EditorScreen> {
   bool get _editing => _titleFocus.hasFocus || _bodyFocus.hasFocus || _tagsFocus.hasFocus;
 
   /// 커서 위치에 삽입, 선택 영역이 있으면 감싼다
+  /// 고른 줄들을 목록으로 만든다.
+  ///
+  /// 2026-08-17 소유자 지시 — "제일 필요한 구분점 목록, 대시 목록, 번호
+  /// 목록 이 3가지가 필요하다. 이것은 블록 안 씌웠을 때도 필요하고, 블록을
+  /// 씌운 부분도 줄바꿈 되어 있다면 이 3가지 중 하나로 처리해 줘야 한다."
+  ///
+  /// 한 가지 일만 한다.
+  ///   - 블록이 없으면 커서가 있는 그 줄에
+  ///   - 블록이 여러 줄에 걸쳐 있으면 걸친 줄 전부에
+  ///   - 이미 같은 표시가 붙어 있으면 뗀다
+  ///
+  /// 줄 가운데를 골라도 그 줄 전체가 대상이다. 목록은 줄 단위의 것이지
+  /// 글자 단위의 것이 아니다 — 반쪽만 목록이 되는 일은 아무도 원하지 않는다.
+  /// 붙여넣기를 알아채고 출처를 찍는다.
+  ///
+  /// 2026-08-17 소유자 신고 — "여러 LLM의 답변을 붙여넣기 해 봤더니 출처
+  /// 분석을 자동으로 하나도 못하네?"
+  ///
+  /// 열어 보니 출처를 알아내는 자리가 목록 화면의 '붙여넣고 정리' 하나뿐
+  /// 이었다. 새 문서를 만든 뒤 여기서 그냥 붙여넣으면 **검사 자체가 안
+  /// 돌았다.** 기능이 약한 게 아니라 없는 자리에서 찾고 있었다.
+  ///
+  /// 한 번에 [_pasteMin]자 넘게 늘어나면 사람이 친 게 아니라 붙여넣은
+  /// 것이다. 아무리 빨리 쳐도 한 번의 변화로 그만큼 늘어나지 않는다.
+  static const int _pasteMin = 140;
+
+  /// 직전 본문. 얼마나 늘었는지 재려면 있어야 한다.
+  String _lastBody = '';
+
+  void _onBodyChanged(String v) {
+    final before = _lastBody;
+    _lastBody = v;
+    _save();
+
+    if (v.length - before.length < _pasteMin) return;
+    // 이미 정해진 출처는 안 건드린다. 사람이 고른 것을 덮으면 최악이다.
+    if (note.source.isNotEmpty) return;
+
+    // 새로 들어온 덩이만 본다. 이미 있던 글이 섞이면 그쪽 생김새가
+    // 판정을 끌고 간다.
+    final chunk = insertedChunk(before, v);
+    final g = guessSource(chunk.length >= _pasteMin ? chunk : v);
+    if (!g.isKnown) return;
+
+    note.source = g.name;
+    note.sourceAuto = !g.certain;
+    if (note.pastedAt == 0) {
+      note.pastedAt = DateTime.now().millisecondsSinceEpoch;
+    }
+    _save();
+    if (!mounted) return;
+    setState(() {});
+    // 조용히 채워 넣으면 사용자는 자기가 고른 줄 안다.
+    _toast(context, L10n.of(context).sourceDetected(g.name));
+  }
+
+  void _makeList(String kind) {
+    final t = bodyCtl.text;
+    final sel = bodyCtl.selection;
+    final at = sel.isValid ? sel : TextSelection.collapsed(offset: t.length);
+    final (a, e) = lineSpan(t, at.start, at.end);
+    final made = listify(t.substring(a, e),
+        kind: kind, bullet: store.settings.bulletChar);
+    bodyCtl.value = TextEditingValue(
+      text: t.replaceRange(a, e, made),
+      // 손댄 곳을 그대로 잡아 둔다. 커서가 엉뚱한 데로 튀면 다음 버튼을
+      // 누를 때 다른 줄이 걸린다.
+      selection: TextSelection(baseOffset: a, extentOffset: a + made.length),
+    );
+    HapticFeedback.selectionClick();
+    _save();
+  }
+
   void _insertText(String left, [String right = '']) {
     final sel = bodyCtl.selection;
     final text = bodyCtl.text;
@@ -2353,28 +2427,6 @@ class _EditorScreenState extends State<EditorScreen> {
           offset: right.isEmpty ? start + ins.length : start + left.length + selected.length),
     );
     _save();
-  }
-
-  void _moveCursor(int delta) {
-    final sel = bodyCtl.selection;
-    if (!sel.isValid) return;
-    final pos = (sel.baseOffset + delta).clamp(0, bodyCtl.text.length);
-    bodyCtl.selection = TextSelection.collapsed(offset: pos);
-  }
-
-  void _moveToLineEdge(bool start) {
-    final sel = bodyCtl.selection;
-    if (!sel.isValid) return;
-    final text = bodyCtl.text;
-    int pos = sel.baseOffset.clamp(0, text.length);
-    if (start) {
-      final idx = text.lastIndexOf('\n', pos > 0 ? pos - 1 : 0);
-      pos = idx < 0 ? 0 : idx + 1;
-    } else {
-      final idx = text.indexOf('\n', pos);
-      pos = idx < 0 ? text.length : idx;
-    }
-    bodyCtl.selection = TextSelection.collapsed(offset: pos);
   }
 
   Widget _kbBtn({String? glyph, IconData? icon, required VoidCallback onTap, String? tip}) {
@@ -2553,9 +2605,6 @@ class _EditorScreenState extends State<EditorScreen> {
     return null;
   }
 
-  /// 지금 블록이 씌워져 있는가. 이 값이 바뀔 때만 다시 그린다.
-  bool _hasSel = false;
-
   /// 본문 칸의 스크롤. 종이 줄을 글과 같이 움직이게 하려고 잡는다.
   ///
   /// 글 칸은 안에서 따로 스크롤한다. 배경을 가만히 두면 글만 올라가고
@@ -2583,138 +2632,6 @@ class _EditorScreenState extends State<EditorScreen> {
     return _colW;
   }
 
-  void _watchSelection() {
-    final s = bodyCtl.selection;
-    final has = s.isValid && !s.isCollapsed;
-    if (has != _hasSel && mounted) setState(() => _hasSel = has);
-  }
-
-  /// 블록의 시작·끝을 한 글자씩 민다.
-  ///
-  /// 2026-08-16 소유자 지적 — "선택 블럭 씌울 때 정교함이 제일 중요.
-  /// 아래위로 내릴 때 자동 스크롤이 너무 빠르다."
-  ///
-  /// 그 자동 스크롤 속도는 플러터가 안에서 정하고 밖으로 열어 두지 않았다
-  /// (EditableText가 100ms짜리 ensureVisible로 캐럿을 따라간다). 그래서
-  /// 속도를 늦추는 대신 **끌지 않아도 되게** 만든다. 손가락으로 마지막 한
-  /// 글자를 맞추는 것보다 버튼 한 번이 언제나 정확하다. 애플이 커서 이동
-  /// 제스처를 따로 만든 것도 같은 이유다.
-  void _adjustSel({int start = 0, int end = 0}) {
-    final t = bodyCtl.text;
-    final s = bodyCtl.selection;
-    if (!s.isValid) return;
-    var a = (s.start + start).clamp(0, t.length);
-    var b = (s.end + end).clamp(0, t.length);
-    if (a > b) {
-      final tmp = a;
-      a = b;
-      b = tmp;
-    }
-    bodyCtl.selection = TextSelection(baseOffset: a, extentOffset: b);
-    HapticFeedback.selectionClick();
-  }
-
-  /// 줄·문단·문장·전체를 통째로 잡는다.
-  ///
-  /// 흔히 원하는 블록은 '여기부터 저기까지'가 아니라 '이 문단'이다. 그럴
-  /// 때는 끄는 것 자체가 낭비다.
-  void _selectUnit(String unit) {
-    final t = bodyCtl.text;
-    final s = bodyCtl.selection;
-    if (!s.isValid || t.isEmpty) return;
-    var a = s.start;
-    var b = s.end;
-    switch (unit) {
-      case 'all':
-        a = 0;
-        b = t.length;
-      case 'line':
-        final i = t.lastIndexOf('\n', a > 0 ? a - 1 : 0);
-        a = i < 0 ? 0 : i + 1;
-        final j = t.indexOf('\n', b);
-        b = j < 0 ? t.length : j;
-      case 'para':
-        final i = t.lastIndexOf('\n\n', a > 0 ? a - 1 : 0);
-        a = i < 0 ? 0 : i + 2;
-        final j = t.indexOf('\n\n', b);
-        b = j < 0 ? t.length : j;
-      case 'sentence':
-        // 문장 끝으로 치는 글자. 한국어 글에는 영어 문장부호와 전각이 섞여
-        // 들어오므로 둘 다 본다.
-        bool isEnd(int k) => '.!?。！？\n'.contains(t[k]);
-        var i = a > 0 ? a - 1 : 0;
-        while (i > 0 && !isEnd(i)) {
-          i--;
-        }
-        a = i == 0 ? 0 : i + 1;
-        while (a < t.length && t[a] == ' ') {
-          a++;
-        }
-        var j = b;
-        while (j < t.length && !isEnd(j)) {
-          j++;
-        }
-        b = j < t.length ? j + 1 : t.length;
-    }
-    if (a > b) return;
-    bodyCtl.selection = TextSelection(baseOffset: a, extentOffset: b);
-    HapticFeedback.selectionClick();
-  }
-
-  /// 블록이 씌워져 있을 때 뜨는 막대.
-  ///
-  /// 기호 막대를 잠시 밀어내고 이 막대가 나온다. 블록을 다루는 동안 괄호
-  /// 넣기 버튼은 쓸 일이 없고, 자리를 나눠 쓰면 둘 다 좁아진다.
-  Widget _selectionBar({bool atTop = false}) {
-    final l = L10n.of(context);
-    return Glass(
-      hairlineTop: !atTop,
-      hairlineBottom: atTop,
-      child: SizedBox(
-        height: 44,
-        child: Row(children: [
-          Expanded(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              children: [
-                _kbBtn(glyph: l.selUnitSentence, onTap: () => _selectUnit('sentence')),
-                _kbBtn(glyph: l.selUnitLine, onTap: () => _selectUnit('line')),
-                _kbBtn(glyph: l.selUnitPara, onTap: () => _selectUnit('para')),
-                _kbBtn(glyph: l.selUnitAll, onTap: () => _selectUnit('all')),
-                _kbBtn(
-                    icon: Icons.first_page,
-                    tip: l.selStartLeft,
-                    onTap: () => _adjustSel(start: -1)),
-                _kbBtn(
-                    icon: Icons.chevron_right,
-                    tip: l.selStartRight,
-                    onTap: () => _adjustSel(start: 1)),
-                _kbBtn(
-                    icon: Icons.chevron_left,
-                    tip: l.selEndLeft,
-                    onTap: () => _adjustSel(end: -1)),
-                _kbBtn(
-                    icon: Icons.last_page,
-                    tip: l.selEndRight,
-                    onTap: () => _adjustSel(end: 1)),
-              ],
-            ),
-          ),
-          Container(width: 1, height: 26, color: context.c.toolbarLine),
-          _kbBtn(
-            icon: Icons.close,
-            tip: l.selClear,
-            onTap: () {
-              bodyCtl.selection =
-                  TextSelection.collapsed(offset: bodyCtl.selection.end);
-            },
-          ),
-        ]),
-      ),
-    );
-  }
-
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
     // 2026-08-16 리퀴드 글래스 — 도구 막대는 이제 유리다.
@@ -2730,22 +2647,37 @@ class _EditorScreenState extends State<EditorScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 4),
               children: [
+                // 2026-08-17 소유자 지시로 열여섯 개에서 일곱 개로 줄였다.
+                // 괄호와 따옴표는 자판에 이미 있고, 커서 화살표는 화면을 한
+                // 번 누르는 것이 언제나 빠르다. 남긴 것은 실제로 손이 가는 것들.
                 _kbBtn(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
                 _kbBtn(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
-                _kbBtn(glyph: '( )', onTap: () => _insertText('(', ')')),
-                _kbBtn(glyph: '[ ]', onTap: () => _insertText('[', ']')),
-                _kbBtn(glyph: '" "', onTap: () => _insertText('"', '"')),
-                _kbBtn(glyph: "' '", onTap: () => _insertText("'", "'")),
                 _kbBtn(glyph: '·', onTap: () => _insertText('· ')),
                 _kbBtn(glyph: '-', onTap: () => _insertText('- ')),
-                _kbBtn(glyph: '@', onTap: () => _insertText('@')),
-                _kbBtn(glyph: '%', onTap: () => _insertText('%')),
-                _kbBtn(glyph: '/', onTap: () => _insertText('/')),
-                _kbBtn(icon: Icons.keyboard_arrow_left, tip: l.moveLeftTip, onTap: () => _moveCursor(-1)),
-                _kbBtn(icon: Icons.keyboard_arrow_right, tip: l.moveRightTip, onTap: () => _moveCursor(1)),
-                _kbBtn(icon: Icons.keyboard_double_arrow_left, tip: l.lineStartTip, onTap: () => _moveToLineEdge(true)),
-                _kbBtn(icon: Icons.keyboard_double_arrow_right, tip: l.lineEndTip, onTap: () => _moveToLineEdge(false)),
-                _kbBtn(icon: Icons.format_indent_increase, tip: l.indentTip, onTap: () => _insertText('  ')),
+                Container(
+                    width: 1,
+                    height: 26,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    color: context.c.toolbarLine),
+                // 목록 셋. 글을 쓰다가 목록으로 바꾸는 순간은 자판이 올라와
+                // 있는 순간이라 여기가 제자리다. 아래 기능 막대는 글을 다
+                // 쓰고 나서 누르는 것들이라 결이 다르다.
+                _kbBtn(
+                    glyph: '•',
+                    tip: l.listBulletAction,
+                    onTap: () => _makeList('bullet')),
+                _kbBtn(
+                    glyph: '–',
+                    tip: l.listDashAction,
+                    onTap: () => _makeList('dash')),
+                _kbBtn(
+                    glyph: '1.',
+                    tip: l.listNumberAction,
+                    onTap: () => _makeList('number')),
+                _kbBtn(
+                    icon: Icons.format_indent_increase,
+                    tip: l.indentTip,
+                    onTap: () => _insertText('  ')),
               ],
             ),
           ),
@@ -2776,13 +2708,14 @@ class _EditorScreenState extends State<EditorScreen> {
     }
     titleCtl = TextEditingController(text: note.title);
     bodyCtl = MonoTextController(text: note.body);
+    // 붙여넣기를 알아채려면 '직전에 얼마였나'를 알아야 한다.
+    _lastBody = note.body;
     // 태그의 진짜 값은 note.tags 하나뿐이다. 이 입력칸은 '새로 칠 것'만 담는다.
     // (전에는 입력칸의 글자가 곧 태그였다 — 그러면 블럭을 지우는 조작을 만들 수 없다)
     tagsCtl = TextEditingController();
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
     }
-    bodyCtl.addListener(_watchSelection);
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
     }
@@ -2791,7 +2724,6 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void dispose() {
     _tagTimer?.cancel();
-    bodyCtl.removeListener(_watchSelection);
     _bodyScroll.dispose();
     unawaited(store.flush());
     titleCtl.dispose();
@@ -3053,17 +2985,66 @@ class _EditorScreenState extends State<EditorScreen> {
     await store.persistSettings();
   }
 
-  /// 방금 한 정리를 물린다. 아래 도구 막대의 되돌리기와 같은 일을 한다.
+  /// 처음 붙여넣은 글로 돌아간다.
   ///
-  /// 2026-08-17 — 미리보기를 기본에서 뺐으니, 되돌리기가 손 닿는 곳에
-  /// 있어야 한다. 도구 막대까지 손을 옮기게 하면 '되돌릴 수 있다'는 사실
-  /// 자체를 모르는 사람이 생긴다.
-  Future<void> _undoLastTidy() async {
-    if (note.history.isEmpty) return;
-    note.body = note.history.removeLast();
-    if (note.historyAt.isNotEmpty) note.historyAt.removeLast();
+  /// 2026-08-17 소유자 신고 — "'되돌리기'가 1단계 이전으로 가는 것인 줄
+  /// 알았더니 '원본으로'구나. (…) 다 편집을 끝냈는데 이거 눌러 버리면 다
+  /// 도루묵 되어 버리네."
+  ///
+  /// 옛 버튼은 `history`의 마지막으로 갔는데, history에는 **정리한 순간만**
+  /// 쌓인다. 손으로 고친 것은 안 쌓인다. 그래서 '정리 → 한 시간 손질 →
+  /// 되돌리기'를 하면 한 시간이 통째로 날아갔다. 이름은 '되돌리기'라
+  /// 사람은 한 칸 뒤로 가는 줄 알고 눌렀다. **이름이 거짓말을 했다.**
+  ///
+  /// 이름과 동작을 맞췄다. 이제 진짜로 원본으로 간다. 한 칸 뒤로가 필요하면
+  /// 버전기록에서 고른다 — 그쪽이 더 정확하다.
+  ///
+  /// 되돌리기 전의 글을 **버전기록에 넣고 나서** 바꾼다. 그래서 이 동작
+  /// 자체를 취소할 수 있다. 사라지는 알림에 '취소' 버튼을 다는 길도 있었지만
+  /// 안 했다 — 사라지는 알림의 버튼은 누르려는 순간 사라진다. 버전기록은
+  /// 안 사라진다.
+  bool get _canRevert {
+    final t = _revertTarget;
+    return t != null && t != bodyCtl.text;
+  }
+
+  String? get _revertTarget {
+    if (note.originalBody.isNotEmpty) return note.originalBody;
+    if (note.history.isNotEmpty) return note.history.last;
+    return null;
+  }
+
+  Future<void> _revertToOriginal() async {
+    final target = _revertTarget;
+    if (target == null || target == bodyCtl.text) return;
+    final l = L10n.of(context);
+    final ok = await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog.adaptive(
+        title: Text(l.revertConfirmTitle),
+        content: Text(l.revertConfirmBody),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(L10n.of(ctx).cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l.revertConfirmOk)),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    // 지금 글을 먼저 남긴다. 이 순서가 뒤바뀌면 되돌리기를 되돌릴 수 없다.
+    note.history.add(bodyCtl.text);
+    note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
+    if (note.history.length > 30) {
+      note.history.removeAt(0);
+      if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
+    }
+    note.body = target;
     note.lastReport = '';
-    bodyCtl.text = note.body;
+    bodyCtl.text = target;
     await _save();
     if (!mounted) return;
     setState(() {});
@@ -3920,6 +3901,10 @@ class _EditorScreenState extends State<EditorScreen> {
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'revert') {
+                  await _revertToOriginal();
+                  return;
+                }
                 if (v == 'history') {
                   await showModalBottomSheet<void>(
                     context: context,
@@ -3987,6 +3972,20 @@ class _EditorScreenState extends State<EditorScreen> {
                     );
                 return [
                   // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
+                  // 원본복귀는 버전기록 바로 위에 둔다. 되돌린 뒤 마음이
+                  // 바뀌면 바로 아래 항목에서 되찾을 수 있다는 것이 눈에
+                  // 보여야 한다(소유자가 짚은 배치).
+                  PopupMenuItem<String>(
+                    value: 'revert',
+                    enabled: _canRevert,
+                    child: Row(children: [
+                      Icon(CupertinoIcons.arrow_uturn_left,
+                          size: 19,
+                          color: _canRevert ? ctx.c.sub : ctx.c.sub.withValues(alpha: 0.4)),
+                      const SizedBox(width: 10),
+                      Text(lm.revertAction),
+                    ]),
+                  ),
                   PopupMenuItem<String>(
                     value: 'history',
                     child: Row(children: [
@@ -4085,7 +4084,7 @@ class _EditorScreenState extends State<EditorScreen> {
           children: [
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
             if (_isDesktop)
-              _hasSel ? _selectionBar(atTop: true) : _accessoryBar(atTop: true),
+              _accessoryBar(atTop: true),
             _dateLine(note.updatedAt),
             // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
             // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
@@ -4119,6 +4118,21 @@ class _EditorScreenState extends State<EditorScreen> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
               child: Row(
                 children: [
+                  // 2026-08-17 소유자 신고 — "수동으로 출처를 선택해도 이게
+                  // 바로 저장이 된 것인지, 따로 저장 버튼을 눌러야 하는지
+                  // 직관적이지 않다."
+                  //
+                  // 저장은 원래 즉시 되고 있었다. 문제는 그걸 아무도 말해
+                  // 주지 않았다는 것이고, 이름표가 없어 그 칸이 무엇인지도
+                  // 흐렸다는 것이다.
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Text(l.sourceFieldLabel,
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: context.c.sub)),
+                  ),
                   DropdownButton<String>(
                     value: note.source.isEmpty ? '' : note.source,
                     items: [
@@ -4136,7 +4150,15 @@ class _EditorScreenState extends State<EditorScreen> {
                       // 손으로 고른 순간부터는 추측이 아니다.
                       note.sourceAuto = false;
                       await _save();
+                      if (!mounted) return;
                       setState(() {});
+                      // 눌렀는데 아무 일도 안 일어난 것처럼 보이면, 사람은
+                      // 저장 버튼을 찾는다. 없는 버튼을.
+                      _toast(
+                          context,
+                          note.source.isEmpty
+                              ? L10n.of(context).sourceCleared
+                              : L10n.of(context).sourceSaved(note.source));
                     },
                   ),
                   const Spacer(),
@@ -4307,7 +4329,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
                       // 계산해 정해 뒀다.
                       color: paperInk),
-                  onChanged: (_) => _save(),
+                  onChanged: _onBodyChanged,
                             ),
                           ),
                           // 글 끝 아래의 빈칸.
@@ -4358,7 +4380,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   0.0, MediaQuery.sizeOf(context).height * 0.6)),
           child: SafeArea(
             child: (_bodyFocus.hasFocus && !_isDesktop)
-                ? (_hasSel ? _selectionBar() : _accessoryBar())
+                ? _accessoryBar()
                 : Glass(
                     hairlineTop: true,
                     child: Row(
@@ -4377,15 +4399,11 @@ class _EditorScreenState extends State<EditorScreen> {
                       _barBtn(CupertinoIcons.table, l.tableAction, _showTables),
                       _barBtn(CupertinoIcons.search, l.replaceAction, _showReplaceDialog),
                       _barBtn(CupertinoIcons.doc_on_doc, l.copyAction, _showCopyMenu),
-                      _barBtn(
-                        CupertinoIcons.arrow_uturn_left,
-                        l.undoAction,
-                        // 2026-08-17 — 여기 같은 코드가 통째로 또 있었다.
-                        // 정리 알림에서 되돌리기 버튼을 떼자 analyze가
-                        // _undoLastTidy가 안 쓰인다고 잡았고, 그때 두 벌인
-                        // 것이 드러났다. 두 벌은 반드시 어긋난다.
-                        note.history.isEmpty ? null : _undoLastTidy,
-                      ),
+                      // 2026-08-17 — 여기 있던 '되돌리기'를 뺐다.
+                      // 하루에 스무 번 누르는 버튼들 옆에, 한 번 누르면 한
+                      // 시간이 사라지는 버튼이 같은 크기 같은 모양으로 있었다.
+                      // 손가락은 자리를 기억하지 뜻을 기억하지 않는다.
+                      // '...' 메뉴로 옮겼다(_revertToOriginal).
                     ],
                   )),
           ),
