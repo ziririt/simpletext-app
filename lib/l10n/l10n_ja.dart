@@ -454,6 +454,9 @@ class L10nJa extends L10n {
   String get sourceGuessSuffix => '（推定）';
 
   @override
+  String get splitEmpty => '左からメモを選んでください';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 

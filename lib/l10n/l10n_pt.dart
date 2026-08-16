@@ -455,6 +455,9 @@ class L10nPt extends L10n {
   String get sourceGuessSuffix => '(estimado)';
 
   @override
+  String get splitEmpty => 'Escolha uma nota à esquerda';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

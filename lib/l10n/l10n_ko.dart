@@ -454,6 +454,9 @@ class L10nKo extends L10n {
   String get sourceGuessSuffix => '(추정)';
 
   @override
+  String get splitEmpty => '왼쪽에서 메모를 고르세요';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 

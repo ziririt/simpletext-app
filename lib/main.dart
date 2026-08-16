@@ -347,7 +347,7 @@ class SimpleTextApp extends StatelessWidget {
           : tm == 'dark'
               ? ThemeMode.dark
               : ThemeMode.system,
-      home: const HomeScreen(),
+      home: const SplitShell(),
     );
       },
     );
@@ -979,8 +979,124 @@ class Glass extends StatelessWidget {
   }
 }
 
+/// 메모를 연다 — 화면이 넓으면 오른쪽 칸에, 좁으면 새 화면으로 민다.
+///
+/// 메모를 여는 자리가 앱 안에 네 군데 있다. 규칙을 이 함수 하나에 모으지
+/// 않았다면 넓은 화면을 지원하면서 그중 하나는 반드시 빠뜨렸을 것이다.
+Future<void> openNote(BuildContext context, String id,
+    {bool autoTidy = false}) async {
+  final shell = SplitShell.of(context);
+  if (shell != null && shell.isWide) {
+    shell.open(id, autoTidy: autoTidy);
+    return;
+  }
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+        builder: (_) => EditorScreen(noteId: id, autoTidy: autoTidy)),
+  );
+}
+
+/// 넓은 화면에서 왼쪽에 목록, 오른쪽에 본문을 함께 보여 주는 껍데기.
+///
+/// 2026-08-16 소유자 요청 — "맥이나 윈도의 경우 왼쪽에 리스트를 보여주면
+/// 어떨까?" 지금까지 맥 앱은 휴대폰 화면을 크게 늘린 모양이었다. 넓은
+/// 화면에서 한 번에 하나만 보이는 것은 자리 낭비이고, 목록과 글을 오갈
+/// 때마다 화면이 통째로 바뀌어 지금 어디에 있는지 감각이 끊긴다.
+///
+/// 갈림목을 900으로 잡았다. 아이패드 세로(834)는 한 칸, 가로(1194)는 두
+/// 칸이 된다. 애플 자체 앱들이 쓰는 값과 같다 — 독자 설계를 하지 않는다.
+class SplitShell extends StatefulWidget {
+  const SplitShell({super.key});
+
+  /// 이 폭부터 두 칸으로 나눈다.
+  static const double kWideAt = 900;
+
+  /// 목록 칸의 폭. 애플 메모·메일과 비슷한 값이다.
+  static const double kListWidth = 320;
+
+  static SplitShellState? of(BuildContext c) =>
+      c.findAncestorStateOfType<SplitShellState>();
+
+  @override
+  State<SplitShell> createState() => SplitShellState();
+}
+
+class SplitShellState extends State<SplitShell> {
+  String? _openId;
+  bool _autoTidy = false;
+
+  bool get isWide => MediaQuery.sizeOf(context).width >= SplitShell.kWideAt;
+
+  void open(String id, {bool autoTidy = false}) {
+    setState(() {
+      _openId = id;
+      _autoTidy = autoTidy;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.sizeOf(context).width < SplitShell.kWideAt) {
+      // 좁으면 예전 그대로다. 오른쪽 칸이 없으니 목록만 보여 준다.
+      return const HomeScreen();
+    }
+    final c = context.c;
+    final store = Store.instance;
+
+    // 열어 둔 메모가 지워졌을 수 있다(휴지통으로 보냈거나 다른 기기에서
+    // 지웠거나). 그때 "메모를 찾을 수 없습니다"를 띄우는 것보다 빈 칸으로
+    // 돌아가는 편이 낫다 — 사용자가 한 일의 결과로는 그게 자연스럽다.
+    final id = _openId;
+    final alive = id != null && store.notes.any((n) => n.id == id);
+
+    return Scaffold(
+      backgroundColor: c.bg,
+      body: SafeArea(
+        bottom: false,
+        child: Column(children: [
+          // 배너는 두 칸 위를 가로지른다. 왼쪽 칸 안에만 두면 320pt짜리
+          // 광고 자리가 되어 채울 소재가 거의 없다.
+          const TopBannerBar(),
+          Expanded(
+            child: Row(children: [
+              const SizedBox(
+                  width: SplitShell.kListWidth,
+                  child: HomeScreen(embedded: true)),
+              VerticalDivider(width: 1, thickness: 1, color: c.line),
+              Expanded(
+                child: !alive
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Text(
+                            L10n.of(context).splitEmpty,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 16, height: 1.5, color: c.sub),
+                          ),
+                        ),
+                      )
+                    : EditorScreen(
+                        key: ValueKey(id),
+                        noteId: id,
+                        autoTidy: _autoTidy,
+                        embedded: true,
+                      ),
+              ),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.embedded = false});
+
+  /// 두 칸 화면의 왼쪽에 들어가 있는가. 그렇다면 배너는 껍데기가 그린다.
+  final bool embedded;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -1041,8 +1157,7 @@ class _HomeScreenState extends State<HomeScreen> {
     store.notes.insert(0, note);
     await store.persist();
     if (!mounted) return;
-    await Navigator.push(
-        context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: note.id, autoTidy: true)));
+    await openNote(context, note.id, autoTidy: true);
   }
 
   @override
@@ -1089,7 +1204,7 @@ class _HomeScreenState extends State<HomeScreen> {
           : SafeArea(
               bottom: false,
               child: Column(children: [
-                const TopBannerBar(),
+                if (!widget.embedded) const TopBannerBar(),
                 Expanded(
                   child: Stack(children: [
                     Positioned.fill(
@@ -1192,7 +1307,7 @@ class _HomeScreenState extends State<HomeScreen> {
               store.notes.insert(0, note);
               await store.persist();
               if (!mounted) return;
-              Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: note.id)));
+              openNote(context, note.id);
             },
             icon: const Icon(Icons.add),
             label: Text(l.newNoteTooltip, style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -1313,7 +1428,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: context.c.panel,
         child: InkWell(
           onTap: () =>
-              Navigator.push(context, MaterialPageRoute(builder: (_) => EditorScreen(noteId: n.id))),
+              openNote(context, n.id),
           child: Padding(
             // 데스크톱은 애플 메모장처럼 행을 촘촘하게(글자만 줄면 행이 뚱뚱해 보인다).
           padding: EdgeInsets.fromLTRB(
@@ -1368,7 +1483,17 @@ class _HomeScreenState extends State<HomeScreen> {
 class EditorScreen extends StatefulWidget {
   final String noteId;
   final bool autoTidy;
-  const EditorScreen({super.key, required this.noteId, this.autoTidy = false});
+
+  /// 두 칸 화면의 오른쪽에 들어가 있는가. 그렇다면 뒤로가기 화살표를 안
+  /// 그린다 — 돌아갈 화면이 없다. 목록이 이미 왼쪽에 있다.
+  final bool embedded;
+
+  const EditorScreen({
+    super.key,
+    required this.noteId,
+    this.autoTidy = false,
+    this.embedded = false,
+  });
 
   @override
   State<EditorScreen> createState() => _EditorScreenState();
@@ -2649,12 +2774,13 @@ class _EditorScreenState extends State<EditorScreen> {
         body: SafeArea(
           bottom: false,
           child: Column(children: [
-            const TopBannerBar(),
+            if (!widget.embedded) const TopBannerBar(),
             Expanded(
               child: Scaffold(
         backgroundColor: context.c.panel,
         appBar: AppBar(
           backgroundColor: context.c.panel,
+          automaticallyImplyLeading: !widget.embedded,
           title: const SizedBox.shrink(),
           actions: [
             if (_editing)
@@ -2836,8 +2962,9 @@ class _EditorScreenState extends State<EditorScreen> {
                     store.notes.insert(0, fresh);
                     await store.persist();
                     if (!mounted) return;
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (_) => EditorScreen(noteId: fresh.id)));
+                    // 두 칸 화면에서는 오른쪽 칸만 바뀌면 된다.
+                    // pushReplacement는 밀어 넣을 화면이 있을 때만 뜻이 있다.
+                    await openNote(context, fresh.id);
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(7),

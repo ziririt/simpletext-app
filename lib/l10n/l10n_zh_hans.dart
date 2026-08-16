@@ -454,6 +454,9 @@ class L10nZhHans extends L10n {
   String get sourceGuessSuffix => '（推测）';
 
   @override
+  String get splitEmpty => '请在左侧选择一条备忘';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 来自 \$src';
 

@@ -456,6 +456,9 @@ class L10nDe extends L10n {
   String get sourceGuessSuffix => '(vermutlich)';
 
   @override
+  String get splitEmpty => 'Wählen Sie links eine Notiz';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

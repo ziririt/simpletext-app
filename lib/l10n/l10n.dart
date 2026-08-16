@@ -278,6 +278,7 @@ abstract class L10n {
   String get importNone;
   String importDone(int n);
   String get sourceGuessSuffix;
+  String get splitEmpty;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -521,6 +522,7 @@ abstract class L10n {
         'importFilesSub': importFilesSub,
         'importAppend': importAppend,
         'sourceGuessSuffix': sourceGuessSuffix,
+        'splitEmpty': splitEmpty,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
