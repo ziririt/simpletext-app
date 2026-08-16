@@ -370,7 +370,7 @@ class L10nKo extends L10n {
   @override
   String get sponsorTitle => '광고 한 편이 다음 업데이트를 만듭니다';
   @override
-  String get sponsorBody => '스카이블루 노트는 서버 없이 기기 안에서만 동작합니다. 그래도 개발과 유지에는 실비가 듭니다. 전면 광고를 하루 한 편만 보시면, 오늘 하루는 위쪽 작은 배너 광고 없이 쓰실 수 있습니다.';
+  String get sponsorBody => '더 나은 기능과 꾸준한 업데이트를 만드는 데 응원이 필요합니다. 전면 광고를 하루 한 편 보시면 오늘 하루는 위쪽 배너 없이, 프리미엄을 이용하시면 광고 없이 영원히 쓰실 수 있습니다.';
   @override
   String get sponsorWatch => '광고 보고 후원하기';
   @override
@@ -379,6 +379,24 @@ class L10nKo extends L10n {
   String get sponsorLoading => '광고 불러오는 중…';
   @override
   String get sponsorFailed => '광고를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+  @override
+  String get moreTooltip => '더 보기';
+  @override
+  String get sponsorGoPremium => '프리미엄으로 광고 없이 쓰기';
+  @override
+  String get premiumTitle => '프리미엄';
+  @override
+  String get premiumPitch => '광고 없이, 모든 기기에서';
+  @override
+  String get premiumPitchSub => '평생 US\$29.99 또는 월 US\$1.99 · 아이폰과 아이패드, 맥까지 한 번에';
+  @override
+  String get premiumBody => '프리미엄은 광고를 모두 없애고, 아이폰·아이패드·맥 어디서나 제한 없이 쓰게 해 줍니다. 결제는 한 번이면 세 기기 모두에 적용됩니다. 여러분의 응원이 다음 업데이트를 만듭니다.';
+  @override
+  String get premiumLifetime => '평생 이용권 · US\$29.99';
+  @override
+  String get premiumMonthly => '월간 구독 · 월 US\$1.99';
+  @override
+  String get premiumComingSoon => '결제는 스토어 출시 버전에서 활성화됩니다. 조금만 기다려 주세요.';
   @override
   String get aiKeyVerify => '키 확인';
   @override

@@ -277,6 +277,15 @@ abstract class L10n {
   String get sponsorSkip;
   String get sponsorLoading;
   String get sponsorFailed;
+  String get moreTooltip;
+  String get sponsorGoPremium;
+  String get premiumTitle;
+  String get premiumPitch;
+  String get premiumPitchSub;
+  String get premiumBody;
+  String get premiumLifetime;
+  String get premiumMonthly;
+  String get premiumComingSoon;
   String get aiKeyVerify;
   String get aiKeyChecking;
   String get aiKeyUnknownFormat;
@@ -451,6 +460,15 @@ abstract class L10n {
         'sponsorSkip': sponsorSkip,
         'sponsorLoading': sponsorLoading,
         'sponsorFailed': sponsorFailed,
+        'moreTooltip': moreTooltip,
+        'sponsorGoPremium': sponsorGoPremium,
+        'premiumTitle': premiumTitle,
+        'premiumPitch': premiumPitch,
+        'premiumPitchSub': premiumPitchSub,
+        'premiumBody': premiumBody,
+        'premiumLifetime': premiumLifetime,
+        'premiumMonthly': premiumMonthly,
+        'premiumComingSoon': premiumComingSoon,
         'aiKeyVerify': aiKeyVerify,
         'aiKeyChecking': aiKeyChecking,
         'aiKeyUnknownFormat': aiKeyUnknownFormat,

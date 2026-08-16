@@ -372,7 +372,7 @@ class L10nEs extends L10n {
   @override
   String get sponsorTitle => 'Un anuncio financia la próxima actualización';
   @override
-  String get sponsorBody => 'Skyblue Note funciona solo en tu dispositivo, sin servidores. Aun así, el desarrollo y el mantenimiento cuestan dinero real. Mira un anuncio de pantalla completa al día y el pequeño banner superior desaparecerá durante el resto del día.';
+  String get sponsorBody => 'Tu apoyo mantiene vivas las actualizaciones. Mira un anuncio de pantalla completa al día y usa la app sin banner ese día; con Premium, los anuncios desaparecen para siempre.';
   @override
   String get sponsorWatch => 'Ver un anuncio para apoyar';
   @override
@@ -381,6 +381,24 @@ class L10nEs extends L10n {
   String get sponsorLoading => 'Cargando anuncio…';
   @override
   String get sponsorFailed => 'No se pudo cargar el anuncio. Inténtalo de nuevo en un momento.';
+  @override
+  String get moreTooltip => 'Más';
+  @override
+  String get sponsorGoPremium => 'Hazte Premium, sin anuncios';
+  @override
+  String get premiumTitle => 'Premium';
+  @override
+  String get premiumPitch => 'Sin anuncios, en todos tus dispositivos';
+  @override
+  String get premiumPitchSub => 'US\$29.99 una vez o US\$1.99/mes · iPhone, iPad y Mac juntos';
+  @override
+  String get premiumBody => 'Premium elimina todos los anuncios y desbloquea Skyblue Note en iPhone, iPad y Mac. Una sola compra cubre los tres. Tu apoyo construye la próxima actualización.';
+  @override
+  String get premiumLifetime => 'De por vida · US\$29.99';
+  @override
+  String get premiumMonthly => 'Mensual · US\$1.99/mes';
+  @override
+  String get premiumComingSoon => 'Las compras se activarán en la versión de la App Store. Ya falta poco.';
   @override
   String get aiKeyVerify => 'Comprobar clave';
   @override

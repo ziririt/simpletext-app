@@ -370,7 +370,7 @@ class L10nJa extends L10n {
   @override
   String get sponsorTitle => '広告1本が次のアップデートを作ります';
   @override
-  String get sponsorBody => 'Skyblue Noteはサーバーを使わず、端末の中だけで動きます。それでも開発と維持には実費がかかります。全画面広告を1日1本ご覧いただくと、その日は上部の小さなバナー広告なしでお使いいただけます。';
+  String get sponsorBody => '応援が次のアップデートを支えます。全画面広告を1日1本ご覧いただくと、その日はバナーなしで。プレミアムなら広告は永久になくなります。';
   @override
   String get sponsorWatch => '広告を見て応援する';
   @override
@@ -379,6 +379,24 @@ class L10nJa extends L10n {
   String get sponsorLoading => '広告を読み込み中…';
   @override
   String get sponsorFailed => '広告を読み込めませんでした。しばらくしてからもう一度お試しください。';
+  @override
+  String get moreTooltip => 'その他';
+  @override
+  String get sponsorGoPremium => 'プレミアムで広告なしに';
+  @override
+  String get premiumTitle => 'プレミアム';
+  @override
+  String get premiumPitch => '広告なしで、すべてのデバイスで';
+  @override
+  String get premiumPitchSub => '買い切りUS\$29.99または月額US\$1.99 · iPhone・iPad・Macまとめて';
+  @override
+  String get premiumBody => 'プレミアムはすべての広告をなくし、iPhone・iPad・Macで制限なく使えるようにします。1回の購入で3つのデバイスすべてに適用されます。皆さまの応援が次のアップデートを作ります。';
+  @override
+  String get premiumLifetime => '買い切り · US\$29.99';
+  @override
+  String get premiumMonthly => '月額 · US\$1.99/月';
+  @override
+  String get premiumComingSoon => '購入はApp Store公開版で有効になります。もうしばらくお待ちください。';
   @override
   String get aiKeyVerify => 'キーを確認';
   @override

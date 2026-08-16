@@ -369,7 +369,7 @@ class L10nZhHans extends L10n {
   @override
   String get sponsorTitle => '一条广告，成就下一次更新';
   @override
-  String get sponsorBody => 'Skyblue Note 完全在您的设备上运行，没有服务器。但开发与维护仍需实际成本。每天观看一条全屏广告，当天顶部的小横幅广告即会消失。';
+  String get sponsorBody => '您的支持让更新不断。每天观看一条全屏广告，当天即可无横幅使用；升级高级版，广告将永久消失。';
   @override
   String get sponsorWatch => '看广告支持我们';
   @override
@@ -378,6 +378,24 @@ class L10nZhHans extends L10n {
   String get sponsorLoading => '正在加载广告…';
   @override
   String get sponsorFailed => '广告加载失败，请稍后重试。';
+  @override
+  String get moreTooltip => '更多';
+  @override
+  String get sponsorGoPremium => '升级高级版，无广告';
+  @override
+  String get premiumTitle => '高级版';
+  @override
+  String get premiumPitch => '无广告，全设备通用';
+  @override
+  String get premiumPitchSub => '买断 US\$29.99 或每月 US\$1.99 · iPhone、iPad、Mac 一次搞定';
+  @override
+  String get premiumBody => '高级版将移除所有广告，并可在 iPhone、iPad 和 Mac 上不受限制地使用。一次购买，三端通用。您的支持成就下一次更新。';
+  @override
+  String get premiumLifetime => '买断 · US\$29.99';
+  @override
+  String get premiumMonthly => '订阅 · US\$1.99/月';
+  @override
+  String get premiumComingSoon => '购买将在 App Store 正式版中开放，敬请期待。';
   @override
   String get aiKeyVerify => '验证密钥';
   @override

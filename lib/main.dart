@@ -2126,10 +2126,13 @@ class _EditorScreenState extends State<EditorScreen> {
                 setState(() {});
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              tooltip: l.deleteTooltip,
-              onPressed: () async {
+            // 2026-08-16 소유자 요청 — 애플 메모장처럼 '...' 메뉴.
+            // 이 메모에 대한 설정이 앞으로 여기에 쌓인다. 지금은 삭제 하나.
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_horiz),
+              tooltip: l.moreTooltip,
+              onSelected: (v) async {
+                if (v != 'delete') return;
                 final ok = await showAdaptiveDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog.adaptive(
@@ -2147,6 +2150,44 @@ class _EditorScreenState extends State<EditorScreen> {
                   Navigator.pop(context);
                 }
               },
+              itemBuilder: (ctx) => [
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(children: [
+                    Icon(Icons.delete_outline, size: 20, color: ctx.c.danger),
+                    const SizedBox(width: 10),
+                    Text(L10n.of(ctx).delete, style: TextStyle(color: ctx.c.danger)),
+                  ]),
+                ),
+              ],
+            ),
+            // 새 노트 — 이 메모와 무관한 지시라서 일부러 '떠 있는' 동그란
+            // 버튼으로 다르게 생겼다(소유자: 직관적으로 구분, 둥둥 뜨는 느낌).
+            // 납작한 아이콘들 사이에서 유일하게 색이 차 있고 그림자가 있다.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 8, 12, 8),
+              child: Material(
+                color: context.c.accent,
+                elevation: 3,
+                shadowColor: context.c.accent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () async {
+                    await _save();
+                    final fresh = Note.fresh(body: '');
+                    store.notes.insert(0, fresh);
+                    await store.persist();
+                    if (!mounted) return;
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (_) => EditorScreen(noteId: fresh.id)));
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(7),
+                    child: Icon(CupertinoIcons.square_pencil, size: 19, color: Colors.white),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -2461,6 +2502,63 @@ class _PreviewScreenState extends State<PreviewScreen> {
   }
 }
 
+/// ---------------- 프리미엄 안내 ----------------
+/// 2026-08-16 소유자 요청 — 유료 결제·구독 유도 페이지.
+/// 실제 결제(StoreKit/Play 결제)는 스토어 제출 작업에서 붙는다. 지금은
+/// 안내와 버튼 자리를 만들고, 누르면 준비 중임을 알린다. 후원 시트와
+/// 설정 상단 배너가 여기로 이끈다.
+class PremiumScreen extends StatelessWidget {
+  const PremiumScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(l.premiumTitle)),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Center(
+            child: CircleAvatar(
+              radius: 34,
+              backgroundColor: context.c.infoBg,
+              child: Icon(Icons.workspace_premium, size: 38, color: context.c.accent),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(l.premiumPitch,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 10),
+          Text(l.premiumBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15.5, height: 1.55, color: context.c.guideInk)),
+          const SizedBox(height: 24),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            onPressed: () => _toast(context, l.premiumComingSoon),
+            child: Text(l.premiumLifetime,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            onPressed: () => _toast(context, l.premiumComingSoon),
+            child: Text(l.premiumMonthly,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// ---------------- 정리 규칙 설정 ----------------
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -2713,6 +2811,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 8),
         children: [
+          // 2026-08-16 소유자 요청 — 설정 맨 위에 프리미엄(결제) 유도 배너.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            child: Material(
+              color: context.c.infoBg,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const PremiumScreen())),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(children: [
+                    Icon(Icons.workspace_premium, color: context.c.accent, size: 30),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l.premiumPitch,
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: context.c.accent)),
+                            const SizedBox(height: 3),
+                            Text(l.premiumPitchSub,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.35,
+                                    color: context.c.guideInk)),
+                          ]),
+                    ),
+                    Icon(Icons.chevron_right, color: context.c.sub),
+                  ]),
+                ),
+              ),
+            ),
+          ),
           // 2026-08-14 소유자 요청: 설정 메뉴를 그룹으로 묶는다.
           //
           // 전에는 열여섯 줄이 한 줄로 늘어서 있었고, 성격이 다른 것들이 섞여

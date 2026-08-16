@@ -372,7 +372,7 @@ class L10nEn extends L10n {
   @override
   String get sponsorTitle => 'One ad funds the next update';
   @override
-  String get sponsorBody => 'Skyblue Note runs entirely on your device, with no servers. Development and upkeep still cost real money. Watch one full-screen ad a day, and the small banner at the top disappears for the rest of the day.';
+  String get sponsorBody => 'Your support keeps the updates coming. Watch one full-screen ad a day to use the app banner-free for the day — or go Premium and the ads are gone for good.';
   @override
   String get sponsorWatch => 'Watch an ad to support';
   @override
@@ -381,6 +381,24 @@ class L10nEn extends L10n {
   String get sponsorLoading => 'Loading ad…';
   @override
   String get sponsorFailed => "Couldn't load the ad. Please try again in a moment.";
+  @override
+  String get moreTooltip => 'More';
+  @override
+  String get sponsorGoPremium => 'Go Premium — no ads';
+  @override
+  String get premiumTitle => 'Premium';
+  @override
+  String get premiumPitch => 'No ads, on every device';
+  @override
+  String get premiumPitchSub => 'US\$29.99 once or US\$1.99/month · iPhone, iPad and Mac together';
+  @override
+  String get premiumBody => 'Premium removes all ads and unlocks Skyblue Note on iPhone, iPad and Mac. One purchase covers all three. Your support builds the next update.';
+  @override
+  String get premiumLifetime => 'Lifetime · US\$29.99';
+  @override
+  String get premiumMonthly => 'Monthly · US\$1.99/mo';
+  @override
+  String get premiumComingSoon => 'Purchases will be enabled in the App Store release. Almost there.';
   @override
   String get aiKeyVerify => 'Verify key';
   @override

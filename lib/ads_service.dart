@@ -32,7 +32,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'core/ad_gate.dart';
 import 'l10n/l10n.dart';
-import 'main.dart' show Store;
+import 'main.dart' show Store, PremiumScreen;
 
 const bool kRealAds = bool.fromEnvironment('REAL_ADS');
 
@@ -321,6 +321,16 @@ class _SponsorSheetState extends State<SponsorSheet> {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(l.sponsorSkip),
+              ),
+              // 결제 유도(소유자 요청) — 광고가 싫으면 프리미엄이 답이다.
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const PremiumScreen()));
+                },
+                child: Text(l.sponsorGoPremium,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
               ),
             ],
           ),
