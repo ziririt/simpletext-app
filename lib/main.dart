@@ -294,7 +294,12 @@ class SimpleTextApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // 설정(화면 모드)이 바뀌면 앱 전체가 다시 그려져야 한다 — Store를 듣는다.
+    return ListenableBuilder(
+      listenable: Store.instance,
+      builder: (context, _) {
+        final tm = Store.instance.settings.themeMode;
+        return MaterialApp(
       locale: locale,
       onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
       debugShowCheckedModeBanner: false,
@@ -320,9 +325,15 @@ class SimpleTextApp extends StatelessWidget {
           child: child!,
         );
       },
-      // 애플 메모장과 같이 기기 설정(라이트/다크)을 그대로 따른다
-      themeMode: ThemeMode.system,
+      // 2026-08-16 소유자 요청 — 설정에서 시스템/라이트/다크를 고른다.
+      themeMode: tm == 'light'
+          ? ThemeMode.light
+          : tm == 'dark'
+              ? ThemeMode.dark
+              : ThemeMode.system,
       home: const HomeScreen(),
+    );
+      },
     );
   }
 
@@ -485,6 +496,9 @@ class AppSettings {
   String aiModel = 'gemini-2.5-flash-lite';
   List<String> aiModels = []; // '키 확인' 때 받아 온 실제 모델 목록
 
+  /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
+  String themeMode = 'system';
+
   /// 전면 광고를 본 날(YYYY-MM-DD). 이 날짜가 오늘이면 그날은 배너까지
   /// 광고가 전부 사라진다(소유자 확정 규칙). 판정은 core/ad_gate.dart.
   String adFreeDate = '';
@@ -514,6 +528,7 @@ class AppSettings {
         'aiModel': aiModel,
         'aiModels': aiModels,
         'adFreeDate': adFreeDate,
+        'themeMode': themeMode,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -551,6 +566,7 @@ class AppSettings {
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
     s.adFreeDate = (j['adFreeDate'] ?? s.adFreeDate) as String;
+    s.themeMode = (j['themeMode'] ?? s.themeMode) as String;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -2886,6 +2902,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
           _secHeader(l.settingsSecView),
           _card([
+            // 2026-08-16 소유자 요청 — 다크 모드 선택(기기 따름/라이트/다크).
+            _dropRow(l.themeTitle, null, s.themeMode, [
+              ('system', l.themeSystem),
+              ('light', l.themeLight),
+              ('dark', l.themeDark),
+            ], (v) => s.themeMode = v),
+            _sep(),
             _fontSizeBlock(l, s),
             _sep(),
             _switchRow(l.monoEditorTitle, l.monoEditorSub, s.monoEditor,

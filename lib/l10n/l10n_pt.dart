@@ -400,6 +400,14 @@ class L10nPt extends L10n {
   @override
   String get premiumComingSoon => 'As compras serão ativadas na versão da App Store. Falta pouco.';
   @override
+  String get themeTitle => 'Aparência';
+  @override
+  String get themeSystem => 'Seguir o aparelho';
+  @override
+  String get themeLight => 'Claro';
+  @override
+  String get themeDark => 'Escuro';
+  @override
   String get aiKeyVerify => 'Verificar chave';
   @override
   String get aiKeyChecking => 'Verificando…';

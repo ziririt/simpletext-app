@@ -400,6 +400,14 @@ class L10nEs extends L10n {
   @override
   String get premiumComingSoon => 'Las compras se activarán en la versión de la App Store. Ya falta poco.';
   @override
+  String get themeTitle => 'Apariencia';
+  @override
+  String get themeSystem => 'Según el dispositivo';
+  @override
+  String get themeLight => 'Claro';
+  @override
+  String get themeDark => 'Oscuro';
+  @override
   String get aiKeyVerify => 'Comprobar clave';
   @override
   String get aiKeyChecking => 'Comprobando…';

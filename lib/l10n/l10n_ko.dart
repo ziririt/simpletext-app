@@ -398,6 +398,14 @@ class L10nKo extends L10n {
   @override
   String get premiumComingSoon => '결제는 스토어 출시 버전에서 활성화됩니다. 조금만 기다려 주세요.';
   @override
+  String get themeTitle => '화면 모드';
+  @override
+  String get themeSystem => '기기 설정 따름';
+  @override
+  String get themeLight => '라이트';
+  @override
+  String get themeDark => '다크';
+  @override
   String get aiKeyVerify => '키 확인';
   @override
   String get aiKeyChecking => '확인 중…';

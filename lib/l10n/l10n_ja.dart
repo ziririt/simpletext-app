@@ -398,6 +398,14 @@ class L10nJa extends L10n {
   @override
   String get premiumComingSoon => '購入はApp Store公開版で有効になります。もうしばらくお待ちください。';
   @override
+  String get themeTitle => '画面モード';
+  @override
+  String get themeSystem => '端末の設定に従う';
+  @override
+  String get themeLight => 'ライト';
+  @override
+  String get themeDark => 'ダーク';
+  @override
   String get aiKeyVerify => 'キーを確認';
   @override
   String get aiKeyChecking => '確認中…';

@@ -401,6 +401,14 @@ class L10nFr extends L10n {
   @override
   String get premiumComingSoon => "Les achats seront activés dans la version App Store. C'est pour bientôt.";
   @override
+  String get themeTitle => 'Apparence';
+  @override
+  String get themeSystem => 'Suivre l\'appareil';
+  @override
+  String get themeLight => 'Clair';
+  @override
+  String get themeDark => 'Sombre';
+  @override
   String get aiKeyVerify => 'Vérifier la clé';
   @override
   String get aiKeyChecking => 'Vérification…';

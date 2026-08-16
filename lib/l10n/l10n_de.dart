@@ -401,6 +401,14 @@ class L10nDe extends L10n {
   @override
   String get premiumComingSoon => 'Käufe werden in der App-Store-Version freigeschaltet. Bald ist es so weit.';
   @override
+  String get themeTitle => 'Erscheinungsbild';
+  @override
+  String get themeSystem => 'Gerät folgen';
+  @override
+  String get themeLight => 'Hell';
+  @override
+  String get themeDark => 'Dunkel';
+  @override
   String get aiKeyVerify => 'Schlüssel prüfen';
   @override
   String get aiKeyChecking => 'Prüfe…';

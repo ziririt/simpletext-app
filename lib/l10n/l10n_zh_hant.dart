@@ -397,6 +397,14 @@ class L10nZhHant extends L10n {
   @override
   String get premiumComingSoon => '購買將在 App Store 正式版中開放，敬請期待。';
   @override
+  String get themeTitle => '外觀模式';
+  @override
+  String get themeSystem => '跟隨裝置';
+  @override
+  String get themeLight => '淺色';
+  @override
+  String get themeDark => '深色';
+  @override
   String get aiKeyVerify => '驗證金鑰';
   @override
   String get aiKeyChecking => '驗證中…';

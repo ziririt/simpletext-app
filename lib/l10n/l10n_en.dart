@@ -400,6 +400,14 @@ class L10nEn extends L10n {
   @override
   String get premiumComingSoon => 'Purchases will be enabled in the App Store release. Almost there.';
   @override
+  String get themeTitle => 'Appearance';
+  @override
+  String get themeSystem => 'Follow device';
+  @override
+  String get themeLight => 'Light';
+  @override
+  String get themeDark => 'Dark';
+  @override
   String get aiKeyVerify => 'Verify key';
   @override
   String get aiKeyChecking => 'Checking…';

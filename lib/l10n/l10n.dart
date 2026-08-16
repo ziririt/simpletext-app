@@ -286,6 +286,10 @@ abstract class L10n {
   String get premiumLifetime;
   String get premiumMonthly;
   String get premiumComingSoon;
+  String get themeTitle;
+  String get themeSystem;
+  String get themeLight;
+  String get themeDark;
   String get aiKeyVerify;
   String get aiKeyChecking;
   String get aiKeyUnknownFormat;
@@ -469,6 +473,10 @@ abstract class L10n {
         'premiumLifetime': premiumLifetime,
         'premiumMonthly': premiumMonthly,
         'premiumComingSoon': premiumComingSoon,
+        'themeTitle': themeTitle,
+        'themeSystem': themeSystem,
+        'themeLight': themeLight,
+        'themeDark': themeDark,
         'aiKeyVerify': aiKeyVerify,
         'aiKeyChecking': aiKeyChecking,
         'aiKeyUnknownFormat': aiKeyUnknownFormat,
