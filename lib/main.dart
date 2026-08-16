@@ -16,6 +16,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'ads_service.dart';
 import 'core/ai_provider.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
@@ -26,6 +27,9 @@ import 'l10n/l10n.dart';
 import 'version.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
+  AdsService.instance.boot();
   runApp(const SimpleTextApp());
 }
 
@@ -443,6 +447,10 @@ class AppSettings {
   String aiProvider = ''; // google | anthropic | openai | xai | ''(미판정)
   String aiModel = 'gemini-2.5-flash-lite';
   List<String> aiModels = []; // '키 확인' 때 받아 온 실제 모델 목록
+
+  /// 전면 광고를 본 날(YYYY-MM-DD). 이 날짜가 오늘이면 그날은 배너까지
+  /// 광고가 전부 사라진다(소유자 확정 규칙). 판정은 core/ad_gate.dart.
+  String adFreeDate = '';
   /// 마법사에서 등록해 둔 지시문. 최근에 쓴 것이 앞이다(core/mru.dart).
   List<String> favPrompts = [];
   List<CustomRule> customRules = [];
@@ -468,6 +476,7 @@ class AppSettings {
         'aiProvider': aiProvider,
         'aiModel': aiModel,
         'aiModels': aiModels,
+        'adFreeDate': adFreeDate,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -504,6 +513,7 @@ class AppSettings {
     s.aiProvider = (j['aiProvider'] ?? s.aiProvider) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
+    s.adFreeDate = (j['adFreeDate'] ?? s.adFreeDate) as String;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -690,24 +700,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: !store.loaded
           ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
+          // 2026-08-16 소유자 요청: 큰 '메모' 타이틀을 없애고 검색을 설정
+          // 톱니 왼쪽으로. 그 위 최상단은 배너 자리다(광고 없는 날은 0px).
+          : SafeArea(
+              bottom: false,
+              child: Column(children: [
+                const TopBannerBar(),
+                Expanded(
+                  child: CustomScrollView(
               slivers: [
-                SliverAppBar.large(
-                  title: Text(l.homeTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
-                  backgroundColor: context.c.bg,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      tooltip: l.settingsTooltip,
-                      onPressed: () => Navigator.push(
-                          context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
-                    ),
-                  ],
-                ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                    child: TextField(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 6, 6),
+                    child: Row(children: [
+                      Expanded(
+                          child: TextField(
                       decoration: InputDecoration(
                         hintText: l.searchHint,
                         prefixIcon: const Icon(Icons.search, size: 20),
@@ -720,7 +727,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderSide: BorderSide.none),
                       ),
                       onChanged: (v) => setState(() => query = v),
-                    ),
+                    )),
+                      IconButton(
+                        icon: const Icon(Icons.settings_outlined),
+                        tooltip: l.settingsTooltip,
+                        onPressed: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const SettingsScreen())),
+                      ),
+                    ]),
                   ),
                 ),
                 if (pinned.isEmpty && rest.isEmpty)
@@ -734,6 +748,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (rest.isNotEmpty) _groupCard(rest),
                 const SliverToBoxAdapter(child: SizedBox(height: 110)),
               ],
+                  ),
+                ),
+              ]),
             ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
@@ -2035,6 +2052,7 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
         body: Column(
           children: [
+            const TopBannerBar(),
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
             if (_isDesktop) _accessoryBar(atTop: true),
             Padding(

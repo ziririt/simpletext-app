@@ -3,6 +3,11 @@
         android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- 애드몹 앱 ID (발급 기록: _agent/admob_ids.md). 광고 단위는
+             코드(ads_service.dart)에서 테스트/실전을 가른다. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2336764115275414~3203962965"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

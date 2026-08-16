@@ -26,3 +26,11 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+# 2026-08-16 — google_mobile_ads를 넣자 스위프트 패키지 관리자(SPM)가
+# build/ios/SourcePackages 안에 같은 다트 패키지 사본을 받아 놓았고,
+# 분석기가 그 사본까지 훑어서 '같은 이름이 두 곳에 있다'는 가짜 오류를
+# 수백 개 쏟아냈다. build/ 는 산출물이지 코드가 아니다 — 분석에서 뺀다.
+analyzer:
+  exclude:
+    - build/**
