@@ -72,9 +72,6 @@ class L10nKo extends L10n {
   String get done => '완료';
 
   @override
-  String get autoTidy => '자동 정리';
-
-  @override
   String get bodyFontSizeTitle => '본문 글자 크기';
 
   @override
@@ -152,7 +149,7 @@ class L10nKo extends L10n {
   @override
   String get tidyAction => '정리';
   @override
-  String get wizardAction => '마법사';
+  String get wizardAction => 'AI 편집';
   @override
   String get tableAction => '표';
   @override
@@ -176,7 +173,7 @@ class L10nKo extends L10n {
   String get copiedMarkdown => 'Markdown 표로 복사했습니다';
 
   @override
-  String get wizardTitle => '마법사';
+  String get wizardTitle => 'AI 편집';
   @override
   String get wizardHint => '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘';
   @override
@@ -264,25 +261,35 @@ class L10nKo extends L10n {
   String get apply => '적용';
 
   @override
-  String get presetAiName => 'AI 답변 정리';
+  String get presetAiName =>
+      '기본 정리';
   @override
-  String get presetAiDesc => '마크다운 마커·이모지·AI 서두 제거, 표 복구';
+  String get presetAiDesc =>
+      '붙여넣은 AI 답변을 그대로 읽을 수 있게. 대부분 이걸로 충분합니다';
   @override
-  String get presetStripName => 'Markdown 완전 제거';
+  String get presetStripName =>
+      '기호 싹 지우기';
   @override
-  String get presetStripDesc => '마크다운 문법 최대 제거, 표는 TSV로';
+  String get presetStripDesc =>
+      '카톡·문자처럼 서식이 안 되는 곳에 보낼 때';
   @override
-  String get presetMinimalName => '최소 정리';
+  String get presetMinimalName =>
+      '잡티만 털기';
   @override
-  String get presetMinimalDesc => '구조 보존, 잡티(공백·제로폭 문자 등)만 제거';
+  String get presetMinimalDesc =>
+      '구조는 그대로 두고 눈에 안 보이는 찌꺼기만';
   @override
-  String get presetTablesName => '표만 뽑기';
+  String get presetTablesName =>
+      '표만 꺼내기';
   @override
-  String get presetTablesDesc => '문서에서 표를 추출해 TSV로';
+  String get presetTablesDesc =>
+      '엑셀·구글시트에 바로 붙이려고';
   @override
-  String get presetBlogName => '블로그 붙여넣기';
+  String get presetBlogName =>
+      '블로그·카페용';
   @override
-  String get presetBlogDesc => '마커 제거, 링크는 주소 유지, 표 복구';
+  String get presetBlogDesc =>
+      '링크는 살리고 기호만 없앨 때';
 
   @override
   String get settingsTitle => '설정';
@@ -420,6 +427,9 @@ class L10nKo extends L10n {
   @override
   String get exportEmpty =>
       '내보낼 메모가 없습니다';
+
+  @override
+  String get choosePreset => '정리 방식 고르기';
   @override
   String get settingsSecView => '보기';
   @override
@@ -493,10 +503,10 @@ class L10nKo extends L10n {
   @override
   String get fillerHeadingSub => 'ㅤ로 감싼 유사 소제목에 여백·제목 규칙 적용';
   @override
-  String get aiSectionTitle => 'AI 마법사 연결 (자유 편집)';
+  String get aiSectionTitle => 'AI 편집 연결';
   @override
   String get aiSectionDesc =>
-      'API 키를 넣으면 "더 간결하게 써줘" 같은 자유 편집 명령을 마법사가 처리합니다. 키는 이 기기에만 저장됩니다.';
+      'API 키를 넣으면 "더 간결하게 써줘" 같은 지시를 AI가 처리합니다. 정리는 기기 안 규칙이라 키가 필요 없고, AI 편집만 키를 씁니다.';
   @override
   String get aiKeyHint => 'API 키 (Gemini · Claude · ChatGPT · Grok)';
   @override
@@ -536,7 +546,8 @@ class L10nKo extends L10n {
   @override
   String limitTidyBody(int n) => '무료로는 하루에 \$n번까지 정리할 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
-  String limitWizardBody(int n) => '무료로는 하루에 \$n번까지 마법사를 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+  String limitWizardBody(int n) =>
+      '무료로는 하루에 \$n번까지 AI 편집을 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String get limitSeePremium => '프리미엄 보기';
   @override
@@ -552,7 +563,7 @@ class L10nKo extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      '체험 동안 정리 $tidy번, 마법사 $wiz번 쓰셨습니다. 이제부터 무료로는 하루 정리 $tidyLimit번, 마법사 $wizLimit번입니다. 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+      '체험 동안 정리 \$tidy번, AI 편집 \$wiz번 쓰셨습니다. 이제부터 무료로는 하루 정리 \$tidyLimit번, AI 편집 \$wizLimit번입니다. 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String get themeTitle => '화면 모드';
   @override

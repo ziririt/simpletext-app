@@ -1392,7 +1392,8 @@ class _EditorScreenState extends State<EditorScreen> {
   /// 6분의 1은 "되돌리기"가 들어가기에 좁아서 글자가 두 줄로 깨졌다(실제 화면에서 확인).
   /// 아이콘을 위에 두고 글자를 작게 내리면 아이폰 도구 막대의 일반적인 모양이 되고,
   /// 글자가 짧아져 깨지지도 않는다. 그래도 넘칠 때를 대비해 한 줄로 줄여 맞춘다.
-  Widget _barBtn(IconData icon, String label, VoidCallback? onTap, {bool primary = false}) {
+  Widget _barBtn(IconData icon, String label, VoidCallback? onTap,
+      {bool primary = false, VoidCallback? onLongPress}) {
     final on = onTap != null;
     final color = !on
         ? context.c.sub.withValues(alpha: 0.5)
@@ -1400,6 +1401,7 @@ class _EditorScreenState extends State<EditorScreen> {
     return Expanded(
       child: TextButton(
         onPressed: onTap,
+        onLongPress: onLongPress,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           minimumSize: const Size(0, 52),
@@ -2517,7 +2519,7 @@ class _EditorScreenState extends State<EditorScreen> {
             if (!_editing)
               TextButton(
                 onPressed: () => _runTidyWithPreset(buildPresets().first),
-                child: Text(l.autoTidy, style: const TextStyle(fontWeight: FontWeight.w800)),
+                child: Text(l.tidyAction, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
             IconButton(
               icon: Icon(_showMeta ? Icons.sell : Icons.sell_outlined),
@@ -2560,6 +2562,12 @@ class _EditorScreenState extends State<EditorScreen> {
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'preset') {
+                  // 길게 누르기는 맥·PC에서 자연스럽지 않다. 여기 하나 더
+                  // 두어 어느 기기에서든 찾을 수 있게 한다.
+                  _showPresetSheet();
+                  return;
+                }
                 if (v == 'export') {
                   final ok = await ExportService.shareNote(note);
                   if (!ok && mounted) {
@@ -2600,6 +2608,14 @@ class _EditorScreenState extends State<EditorScreen> {
                     );
                 return [
                   // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
+                  PopupMenuItem<String>(
+                    value: 'preset',
+                    child: Row(children: [
+                      Icon(CupertinoIcons.wand_stars, size: 19, color: ctx.c.sub),
+                      const SizedBox(width: 10),
+                      Text(lm.choosePreset),
+                    ]),
+                  ),
                   PopupMenuItem<String>(
                     value: 'export',
                     child: Row(children: [
@@ -2825,8 +2841,16 @@ class _EditorScreenState extends State<EditorScreen> {
                     hairlineTop: true,
                     child: Row(
                     children: [
-                      _barBtn(CupertinoIcons.wand_stars, l.tidyAction, _showPresetSheet,
-                          primary: true),
+                      // 2026-08-16 소유자 지적 — '정리'와 '자동 정리'가 따로
+                      // 있어서 뭐가 다른지 알 수 없었다. 이름 문제가 아니라
+                      // 구조 문제였다: 같은 기능에 문이 둘이었다.
+                      //
+                      // 문을 하나로 합쳤다. 누르면 기본 정리가 **바로** 돈다.
+                      // 다른 방식이 필요하면 길게 누르거나 '...' 메뉴에서
+                      // 고른다. 흔한 경우(대부분)는 한 번 누르면 끝난다.
+                      _barBtn(CupertinoIcons.wand_stars, l.tidyAction,
+                          () => _runTidyWithPreset(buildPresets().first),
+                          primary: true, onLongPress: _showPresetSheet),
                       _barBtn(CupertinoIcons.sparkles, l.wizardAction, _showWizardDialog),
                       _barBtn(CupertinoIcons.table, l.tableAction, _showTables),
                       _barBtn(CupertinoIcons.search, l.replaceAction, _showReplaceDialog),

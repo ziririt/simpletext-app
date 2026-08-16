@@ -72,9 +72,6 @@ class L10nZhHant extends L10n {
   String get done => '完成';
 
   @override
-  String get autoTidy => '自動整理';
-
-  @override
   String get bodyFontSizeTitle => '內文字級';
 
   @override
@@ -152,7 +149,7 @@ class L10nZhHant extends L10n {
   @override
   String get tidyAction => '整理';
   @override
-  String get wizardAction => '精靈';
+  String get wizardAction => 'AI編輯';
   @override
   String get tableAction => '表格';
   @override
@@ -176,7 +173,7 @@ class L10nZhHant extends L10n {
   String get copiedMarkdown => '已複製為 Markdown 表格';
 
   @override
-  String get wizardTitle => '精靈';
+  String get wizardTitle => 'AI 編輯';
   @override
   String get wizardHint => '用自然語言下指令。例如：\n小標題上方空2行，下方空1行\n把微軟取代成 Microsoft';
   @override
@@ -264,25 +261,35 @@ class L10nZhHant extends L10n {
   String get apply => '套用';
 
   @override
-  String get presetAiName => '整理 AI 回答';
+  String get presetAiName =>
+      '標準整理';
   @override
-  String get presetAiDesc => '移除 Markdown 標記、表情符號、AI 開場白，修復表格';
+  String get presetAiDesc =>
+      '把貼上的 AI 回答變得可讀。多數情況夠用';
   @override
-  String get presetStripName => '完全移除 Markdown';
+  String get presetStripName =>
+      '清除所有符號';
   @override
-  String get presetStripDesc => '盡可能移除 Markdown 語法，表格轉為 TSV';
+  String get presetStripDesc =>
+      '傳到聊天、簡訊等沒有格式的地方時';
   @override
-  String get presetMinimalName => '最小整理';
+  String get presetMinimalName =>
+      '只去雜質';
   @override
-  String get presetMinimalDesc => '保留結構，只移除雜訊（空白、零寬字元等）';
+  String get presetMinimalDesc =>
+      '保留結構，只清除看不見的雜質';
   @override
-  String get presetTablesName => '只取表格';
+  String get presetTablesName =>
+      '只取表格';
   @override
-  String get presetTablesDesc => '從文件中擷取表格並轉為 TSV';
+  String get presetTablesDesc =>
+      '直接貼到 Excel 或 Google 試算表';
   @override
-  String get presetBlogName => '部落格貼上';
+  String get presetBlogName =>
+      '部落格用';
   @override
-  String get presetBlogDesc => '移除標記，連結保留網址，修復表格';
+  String get presetBlogDesc =>
+      '保留連結網址，去掉符號';
 
   @override
   String get settingsTitle => '設定';
@@ -420,6 +427,9 @@ class L10nZhHant extends L10n {
   @override
   String get exportEmpty =>
       '沒有可輸出的備忘';
+
+  @override
+  String get choosePreset => '選擇整理方式';
   @override
   String get settingsSecView => '顯示';
   @override
@@ -493,9 +503,10 @@ class L10nZhHant extends L10n {
   @override
   String get fillerHeadingSub => '對被ㅤ包住的類小標題套用留白與標題規則';
   @override
-  String get aiSectionTitle => 'AI 精靈連接（自由編輯）';
+  String get aiSectionTitle => 'AI 編輯連線';
   @override
-  String get aiSectionDesc => '填入 API 金鑰後，精靈可處理「寫得更簡潔些」這類自由編輯指令。金鑰只儲存在這部裝置上。';
+  String get aiSectionDesc =>
+      '填入 API 金鑰後，AI 可處理「寫得更簡潔」這類自由指令。整理使用裝置內規則，不需金鑰；只有 AI 編輯需要。';
   @override
   String get aiKeyHint => 'API 金鑰（Gemini · Claude · ChatGPT · Grok）';
   @override
@@ -535,7 +546,8 @@ class L10nZhHant extends L10n {
   @override
   String limitTidyBody(int n) => '免費版每天可整理 \$n 次，明天恢復。進階版不限次數。';
   @override
-  String limitWizardBody(int n) => '免費版每天可使用精靈 \$n 次，明天恢復。進階版不限次數。';
+  String limitWizardBody(int n) =>
+      '免費版每天可使用 \$n 次 AI 編輯，明天恢復 — 進階版沒有限制。';
   @override
   String get limitSeePremium => '查看進階版';
   @override
@@ -551,7 +563,7 @@ class L10nZhHant extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      '體驗期間您整理了$tidy次，使用精靈$wiz次。從現在起免費版每天可整理$tidyLimit次、使用精靈$wizLimit次。升級進階版即可解除限制。';
+      '體驗期間您整理了 \$tidy 次，使用 AI 編輯 \$wiz 次。從現在起免費版每天可整理 \$tidyLimit 次、AI 編輯 \$wizLimit 次。升級進階版即可解除限制。';
   @override
   String get themeTitle => '外觀模式';
   @override

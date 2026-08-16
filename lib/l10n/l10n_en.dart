@@ -72,9 +72,6 @@ class L10nEn extends L10n {
   String get done => 'Done';
 
   @override
-  String get autoTidy => 'Auto tidy';
-
-  @override
   String get bodyFontSizeTitle => 'Body text size';
 
   @override
@@ -152,7 +149,7 @@ class L10nEn extends L10n {
   @override
   String get tidyAction => 'Tidy';
   @override
-  String get wizardAction => 'Wizard';
+  String get wizardAction => 'AI edit';
   @override
   String get tableAction => 'Table';
   @override
@@ -176,7 +173,7 @@ class L10nEn extends L10n {
   String get copiedMarkdown => 'Copied as a Markdown table';
 
   @override
-  String get wizardTitle => 'Wizard';
+  String get wizardTitle => 'AI edit';
   @override
   String get wizardHint =>
       'Tell it what to do. e.g.\nMake it 2 blank lines above headings, 1 below\nReplace MS with Microsoft';
@@ -265,25 +262,35 @@ class L10nEn extends L10n {
   String get apply => 'Apply';
 
   @override
-  String get presetAiName => 'Tidy AI answer';
+  String get presetAiName =>
+      'Standard tidy';
   @override
-  String get presetAiDesc => 'Strips markdown markers, emoji, AI preamble; repairs tables';
+  String get presetAiDesc =>
+      'Makes a pasted AI answer readable. This is enough most of the time';
   @override
-  String get presetStripName => 'Strip all Markdown';
+  String get presetStripName =>
+      'Strip all marks';
   @override
-  String get presetStripDesc => 'Removes as much markdown syntax as possible; tables become TSV';
+  String get presetStripDesc =>
+      'For places without formatting, like chat and SMS';
   @override
-  String get presetMinimalName => 'Minimal tidy';
+  String get presetMinimalName =>
+      'Lint only';
   @override
-  String get presetMinimalDesc => 'Keeps structure; removes only noise (spaces, zero-width chars)';
+  String get presetMinimalDesc =>
+      'Keeps the structure, removes only invisible junk';
   @override
-  String get presetTablesName => 'Tables only';
+  String get presetTablesName =>
+      'Tables only';
   @override
-  String get presetTablesDesc => 'Extracts tables from the document as TSV';
+  String get presetTablesDesc =>
+      'To paste straight into Excel or Google Sheets';
   @override
-  String get presetBlogName => 'Paste to blog';
+  String get presetBlogName =>
+      'For blogs';
   @override
-  String get presetBlogDesc => 'Strips markers, keeps link URLs, repairs tables';
+  String get presetBlogDesc =>
+      'Keeps link addresses, drops the marks';
 
   @override
   String get settingsTitle => 'Settings';
@@ -421,6 +428,9 @@ class L10nEn extends L10n {
   @override
   String get exportEmpty =>
       'There are no notes to export';
+
+  @override
+  String get choosePreset => 'Choose how to tidy';
   @override
   String get settingsSecView => 'Display';
   @override
@@ -495,10 +505,10 @@ class L10nEn extends L10n {
   @override
   String get fillerHeadingSub => 'Applies spacing and heading rules to ㅤ-wrapped pseudo-headings';
   @override
-  String get aiSectionTitle => 'AI Wizard connection (free-form edits)';
+  String get aiSectionTitle => 'AI edit setup';
   @override
   String get aiSectionDesc =>
-      'With an API key, the Wizard handles free-form commands like "make this more concise". The key is stored only on this device.';
+      'With an API key, AI handles free-form instructions like "make this shorter". Tidy runs on device rules and needs no key — only AI edit does.';
   @override
   String get aiKeyHint => 'API key (Gemini · Claude · ChatGPT · Grok)';
   @override
@@ -538,7 +548,8 @@ class L10nEn extends L10n {
   @override
   String limitTidyBody(int n) => 'The free plan includes \$n cleanups a day. It resets tomorrow — Premium removes the limit.';
   @override
-  String limitWizardBody(int n) => 'The free plan includes \$n wizard runs a day. It resets tomorrow — Premium removes the limit.';
+  String limitWizardBody(int n) =>
+      'The free plan includes \$n AI edits a day. It resets tomorrow — Premium removes the limit.';
   @override
   String get limitSeePremium => 'See Premium';
   @override
@@ -554,7 +565,7 @@ class L10nEn extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      'During the trial you ran $tidy cleanups and $wiz wizard sessions. From now on the free plan gives you $tidyLimit cleanups and $wizLimit wizard runs a day. Premium removes the limit.';
+      'During the trial you ran \$tidy tidy-ups and \$wiz AI edits. From now on the free plan gives you \$tidyLimit tidy-ups and \$wizLimit AI edits a day. Premium removes the limit.';
   @override
   String get themeTitle => 'Appearance';
   @override

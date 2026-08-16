@@ -72,9 +72,6 @@ class L10nEs extends L10n {
   String get done => 'OK';
 
   @override
-  String get autoTidy => 'Limpieza automática';
-
-  @override
   String get bodyFontSizeTitle => 'Tamaño del texto';
 
   @override
@@ -152,7 +149,7 @@ class L10nEs extends L10n {
   @override
   String get tidyAction => 'Ordenar';
   @override
-  String get wizardAction => 'Asistente';
+  String get wizardAction => 'IA';
   @override
   String get tableAction => 'Tabla';
   @override
@@ -176,7 +173,7 @@ class L10nEs extends L10n {
   String get copiedMarkdown => 'Copiado como tabla Markdown';
 
   @override
-  String get wizardTitle => 'Asistente';
+  String get wizardTitle => 'Edición con IA';
   @override
   String get wizardHint =>
       'Da instrucciones en tu idioma. Ej.:\nDeja 2 líneas antes de los subtítulos y 1 después\nReemplaza MS por Microsoft';
@@ -265,25 +262,35 @@ class L10nEs extends L10n {
   String get apply => 'Aplicar';
 
   @override
-  String get presetAiName => 'Ordenar respuesta de IA';
+  String get presetAiName =>
+      'Limpieza estándar';
   @override
-  String get presetAiDesc => 'Quita marcas de markdown, emojis y preámbulos de IA; repara tablas';
+  String get presetAiDesc =>
+      'Deja legible una respuesta de IA pegada. Casi siempre basta con esto';
   @override
-  String get presetStripName => 'Quitar todo el Markdown';
+  String get presetStripName =>
+      'Quitar todos los símbolos';
   @override
-  String get presetStripDesc => 'Elimina al máximo la sintaxis markdown; las tablas pasan a TSV';
+  String get presetStripDesc =>
+      'Para sitios sin formato, como chats y SMS';
   @override
-  String get presetMinimalName => 'Limpieza mínima';
+  String get presetMinimalName =>
+      'Solo la pelusa';
   @override
-  String get presetMinimalDesc => 'Conserva la estructura; solo quita ruido (espacios, caracteres de ancho cero)';
+  String get presetMinimalDesc =>
+      'Conserva la estructura, quita solo lo invisible';
   @override
-  String get presetTablesName => 'Solo tablas';
+  String get presetTablesName =>
+      'Solo tablas';
   @override
-  String get presetTablesDesc => 'Extrae las tablas del documento como TSV';
+  String get presetTablesDesc =>
+      'Para pegar directamente en Excel o Google Sheets';
   @override
-  String get presetBlogName => 'Pegar en blog';
+  String get presetBlogName =>
+      'Para blogs';
   @override
-  String get presetBlogDesc => 'Quita marcas, conserva las URL de los enlaces, repara tablas';
+  String get presetBlogDesc =>
+      'Conserva las direcciones de los enlaces, quita los símbolos';
 
   @override
   String get settingsTitle => 'Ajustes';
@@ -421,6 +428,9 @@ class L10nEs extends L10n {
   @override
   String get exportEmpty =>
       'No hay notas para exportar';
+
+  @override
+  String get choosePreset => 'Elegir cómo limpiar';
   @override
   String get settingsSecView => 'Pantalla';
   @override
@@ -495,10 +505,10 @@ class L10nEs extends L10n {
   @override
   String get fillerHeadingSub => 'Aplica las reglas de espaciado y títulos a pseudotítulos envueltos en ㅤ';
   @override
-  String get aiSectionTitle => 'Conexión del Asistente de IA (edición libre)';
+  String get aiSectionTitle => 'Conexión de edición IA';
   @override
   String get aiSectionDesc =>
-      'Con una clave de API, el Asistente procesa comandos libres como "hazlo más conciso". La clave se guarda solo en este dispositivo.';
+      'Con una clave API, la IA atiende instrucciones libres como "hazlo más corto". La limpieza usa reglas del dispositivo y no necesita clave; solo la edición IA la usa.';
   @override
   String get aiKeyHint => 'Clave API (Gemini · Claude · ChatGPT · Grok)';
   @override
@@ -538,7 +548,8 @@ class L10nEs extends L10n {
   @override
   String limitTidyBody(int n) => 'El plan gratuito incluye \$n limpiezas al día. Se renueva mañana; Premium quita el límite.';
   @override
-  String limitWizardBody(int n) => 'El plan gratuito incluye \$n usos del asistente al día. Se renueva mañana; Premium quita el límite.';
+  String limitWizardBody(int n) =>
+      'El plan gratuito incluye \$n ediciones IA al día. Se reinicia mañana; Premium quita el límite.';
   @override
   String get limitSeePremium => 'Ver Premium';
   @override
@@ -554,7 +565,7 @@ class L10nEs extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      'Durante la prueba hiciste $tidy limpiezas y $wiz sesiones del asistente. A partir de ahora el plan gratuito incluye $tidyLimit limpiezas y $wizLimit usos del asistente al día. Premium quita el límite.';
+      'Durante la prueba hiciste \$tidy limpiezas y \$wiz ediciones IA. A partir de ahora el plan gratuito incluye \$tidyLimit limpiezas y \$wizLimit ediciones IA al día. Premium quita el límite.';
   @override
   String get themeTitle => 'Apariencia';
   @override

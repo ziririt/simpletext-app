@@ -70,7 +70,6 @@ abstract class L10n {
   String get done;
 
   /// 상단 툴바의 한 번 누르면 'AI 답변 정리'가 도는 버튼
-  String get autoTidy;
 
   /// 설정의 본문 글자 크기
   String get bodyFontSizeTitle;
@@ -272,6 +271,7 @@ abstract class L10n {
   String get exportBackupSub;
   String get exportFailed;
   String get exportEmpty;
+  String get choosePreset;
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -379,7 +379,6 @@ abstract class L10n {
         'seedTag': seedTag,
         'seedBody': seedBody,
         'done': done,
-        'autoTidy': autoTidy,
         'bodyFontSizeTitle': bodyFontSizeTitle,
         'bodyFontSizeSample': bodyFontSizeSample,
         'wizardNothingToDo': wizardNothingToDo,
@@ -508,6 +507,7 @@ abstract class L10n {
         'exportBackupSub': exportBackupSub,
         'exportFailed': exportFailed,
         'exportEmpty': exportEmpty,
+        'choosePreset': choosePreset,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,

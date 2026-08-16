@@ -72,9 +72,6 @@ class L10nJa extends L10n {
   String get done => '完了';
 
   @override
-  String get autoTidy => '自動整理';
-
-  @override
   String get bodyFontSizeTitle => '本文の文字サイズ';
 
   @override
@@ -152,7 +149,7 @@ class L10nJa extends L10n {
   @override
   String get tidyAction => '整理';
   @override
-  String get wizardAction => 'ウィザード';
+  String get wizardAction => 'AI編集';
   @override
   String get tableAction => '表';
   @override
@@ -176,7 +173,7 @@ class L10nJa extends L10n {
   String get copiedMarkdown => 'Markdownの表としてコピーしました';
 
   @override
-  String get wizardTitle => 'ウィザード';
+  String get wizardTitle => 'AI編集';
   @override
   String get wizardHint => '言葉で指示してください。例：\n小見出しの上の空白は2行、下は1行にして\nマイクロソフトをMSに置換して';
   @override
@@ -264,25 +261,35 @@ class L10nJa extends L10n {
   String get apply => '適用';
 
   @override
-  String get presetAiName => 'AI回答の整理';
+  String get presetAiName =>
+      '標準の整理';
   @override
-  String get presetAiDesc => 'マークダウン記号・絵文字・AIの前置きを除去、表を復元';
+  String get presetAiDesc =>
+      '貼り付けたAIの回答をそのまま読める形に。ほとんどはこれで十分です';
   @override
-  String get presetStripName => 'Markdown完全除去';
+  String get presetStripName =>
+      '記号をすべて削除';
   @override
-  String get presetStripDesc => 'マークダウン記法を最大限除去、表はTSVに';
+  String get presetStripDesc =>
+      'LINEやSMSなど書式が使えない場所へ送るとき';
   @override
-  String get presetMinimalName => '最小限の整理';
+  String get presetMinimalName =>
+      '汚れだけ落とす';
   @override
-  String get presetMinimalDesc => '構造は保持し、ノイズ（空白・ゼロ幅文字など）だけ除去';
+  String get presetMinimalDesc =>
+      '構造はそのまま、見えないゴミだけ';
   @override
-  String get presetTablesName => '表だけ抽出';
+  String get presetTablesName =>
+      '表だけ取り出す';
   @override
-  String get presetTablesDesc => '文書から表を抽出してTSVに';
+  String get presetTablesDesc =>
+      'ExcelやGoogleスプレッドシートに直接貼るため';
   @override
-  String get presetBlogName => 'ブログ貼り付け用';
+  String get presetBlogName =>
+      'ブログ用';
   @override
-  String get presetBlogDesc => '記号を除去、リンクはURLを保持、表を復元';
+  String get presetBlogDesc =>
+      'リンクのアドレスは残し、記号だけ外す';
 
   @override
   String get settingsTitle => '設定';
@@ -420,6 +427,9 @@ class L10nJa extends L10n {
   @override
   String get exportEmpty =>
       '書き出すメモがありません';
+
+  @override
+  String get choosePreset => '整理の方法を選ぶ';
   @override
   String get settingsSecView => '表示';
   @override
@@ -493,10 +503,10 @@ class L10nJa extends L10n {
   @override
   String get fillerHeadingSub => 'ㅤで囲まれた擬似見出しに余白・見出しルールを適用';
   @override
-  String get aiSectionTitle => 'AIウィザード連携（自由編集）';
+  String get aiSectionTitle => 'AI編集の接続';
   @override
   String get aiSectionDesc =>
-      'APIキーを入れると「もっと簡潔にして」のような自由編集の指示をウィザードが処理します。キーはこの端末にのみ保存されます。';
+      'APIキーを入れると「もっと簡潔に」のような指示をAIが処理します。整理は端末内のルールなのでキー不要で、AI編集だけがキーを使います。';
   @override
   String get aiKeyHint => 'APIキー (Gemini · Claude · ChatGPT · Grok)';
   @override
@@ -536,7 +546,8 @@ class L10nJa extends L10n {
   @override
   String limitTidyBody(int n) => '無料では1日\$n回まで整理できます。明日また使えます。プレミアムなら制限はありません。';
   @override
-  String limitWizardBody(int n) => '無料では1日\$n回までウィザードを使えます。明日また使えます。プレミアムなら制限はありません。';
+  String limitWizardBody(int n) =>
+      '無料プランでは1日に\$n回までAI編集を使えます。明日また開きます — プレミアムなら制限がありません。';
   @override
   String get limitSeePremium => 'プレミアムを見る';
   @override
@@ -552,7 +563,7 @@ class L10nJa extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      '体験中に整理を$tidy回、ウィザードを$wiz回お使いになりました。これからは無料プランで1日に整理$tidyLimit回、ウィザード$wizLimit回です。プレミアムなら制限がありません。';
+      '体験中に整理を\$tidy回、AI編集を\$wiz回お使いになりました。これからは無料プランで1日に整理\$tidyLimit回、AI編集\$wizLimit回です。プレミアムなら制限がありません。';
   @override
   String get themeTitle => '画面モード';
   @override

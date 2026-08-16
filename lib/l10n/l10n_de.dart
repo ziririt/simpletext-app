@@ -72,9 +72,6 @@ class L10nDe extends L10n {
   String get done => 'Fertig';
 
   @override
-  String get autoTidy => 'Auto-Bereinigung';
-
-  @override
   String get bodyFontSizeTitle => 'Textgröße';
 
   @override
@@ -152,7 +149,7 @@ class L10nDe extends L10n {
   @override
   String get tidyAction => 'Aufräumen';
   @override
-  String get wizardAction => 'Assistent';
+  String get wizardAction => 'KI';
   @override
   String get tableAction => 'Tabelle';
   @override
@@ -176,7 +173,7 @@ class L10nDe extends L10n {
   String get copiedMarkdown => 'Als Markdown-Tabelle kopiert';
 
   @override
-  String get wizardTitle => 'Assistent';
+  String get wizardTitle => 'KI-Bearbeitung';
   @override
   String get wizardHint =>
       'Gib Anweisungen in deiner Sprache. Z. B.:\nVor Zwischenüberschriften 2 Leerzeilen, danach 1\nErsetze MS durch Microsoft';
@@ -266,25 +263,35 @@ class L10nDe extends L10n {
   String get apply => 'Anwenden';
 
   @override
-  String get presetAiName => 'KI-Antwort aufräumen';
+  String get presetAiName =>
+      'Standard-Aufräumen';
   @override
-  String get presetAiDesc => 'Entfernt Markdown-Zeichen, Emojis, KI-Vorreden; repariert Tabellen';
+  String get presetAiDesc =>
+      'Macht eine eingefügte KI-Antwort lesbar. Meistens reicht das';
   @override
-  String get presetStripName => 'Markdown vollständig entfernen';
+  String get presetStripName =>
+      'Alle Zeichen entfernen';
   @override
-  String get presetStripDesc => 'Entfernt Markdown-Syntax so weit wie möglich; Tabellen werden TSV';
+  String get presetStripDesc =>
+      'Für Orte ohne Formatierung wie Chat und SMS';
   @override
-  String get presetMinimalName => 'Minimal aufräumen';
+  String get presetMinimalName =>
+      'Nur Fusseln';
   @override
-  String get presetMinimalDesc => 'Erhält die Struktur; entfernt nur Störendes (Leerzeichen, Nullbreite-Zeichen)';
+  String get presetMinimalDesc =>
+      'Behält die Struktur, entfernt nur Unsichtbares';
   @override
-  String get presetTablesName => 'Nur Tabellen';
+  String get presetTablesName =>
+      'Nur Tabellen';
   @override
-  String get presetTablesDesc => 'Extrahiert Tabellen aus dem Dokument als TSV';
+  String get presetTablesDesc =>
+      'Zum direkten Einfügen in Excel oder Google Tabellen';
   @override
-  String get presetBlogName => 'In Blog einfügen';
+  String get presetBlogName =>
+      'Für Blogs';
   @override
-  String get presetBlogDesc => 'Entfernt Zeichen, behält Link-URLs, repariert Tabellen';
+  String get presetBlogDesc =>
+      'Behält Linkadressen, entfernt die Zeichen';
 
   @override
   String get settingsTitle => 'Einstellungen';
@@ -422,6 +429,9 @@ class L10nDe extends L10n {
   @override
   String get exportEmpty =>
       'Es gibt keine Notizen zum Exportieren';
+
+  @override
+  String get choosePreset => 'Aufräum-Art wählen';
   @override
   String get settingsSecView => 'Anzeige';
   @override
@@ -496,10 +506,10 @@ class L10nDe extends L10n {
   @override
   String get fillerHeadingSub => 'Wendet Abstands- und Überschriftenregeln auf ㅤ-umschlossene Pseudo-Überschriften an';
   @override
-  String get aiSectionTitle => 'KI-Assistent verbinden (freie Bearbeitung)';
+  String get aiSectionTitle => 'KI-Bearbeitung einrichten';
   @override
   String get aiSectionDesc =>
-      'Mit einem API-Schlüssel verarbeitet der Assistent freie Befehle wie „mach das knapper". Der Schlüssel wird nur auf diesem Gerät gespeichert.';
+      'Mit einem API-Schlüssel führt die KI freie Anweisungen wie "mach das kürzer" aus. Das Aufräumen nutzt Geräteregeln und braucht keinen Schlüssel — nur die KI-Bearbeitung.';
   @override
   String get aiKeyHint => 'API-Schlüssel (Gemini · Claude · ChatGPT · Grok)';
   @override
@@ -539,7 +549,8 @@ class L10nDe extends L10n {
   @override
   String limitTidyBody(int n) => 'Der Gratisplan enthält \$n Bereinigungen pro Tag. Morgen geht es weiter – Premium hebt das Limit auf.';
   @override
-  String limitWizardBody(int n) => 'Der Gratisplan enthält \$n Assistent-Läufe pro Tag. Morgen geht es weiter – Premium hebt das Limit auf.';
+  String limitWizardBody(int n) =>
+      'Die kostenlose Version enthält \$n KI-Bearbeitungen pro Tag. Morgen geht es weiter — Premium hebt das Limit auf.';
   @override
   String get limitSeePremium => 'Premium ansehen';
   @override
@@ -555,7 +566,7 @@ class L10nDe extends L10n {
 
   @override
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit) =>
-      'Während der Testphase haben Sie $tidy Aufräumvorgänge und $wiz Assistenten-Durchläufe genutzt. Ab jetzt bietet die kostenlose Version $tidyLimit Aufräumvorgänge und $wizLimit Assistenten-Durchläufe pro Tag. Premium hebt das Limit auf.';
+      'Während der Testphase haben Sie \$tidy Aufräumvorgänge und \$wiz KI-Bearbeitungen genutzt. Ab jetzt bietet die kostenlose Version \$tidyLimit Aufräumvorgänge und \$wizLimit KI-Bearbeitungen pro Tag. Premium hebt das Limit auf.';
   @override
   String get themeTitle => 'Erscheinungsbild';
   @override
