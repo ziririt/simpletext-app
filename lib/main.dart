@@ -29,6 +29,7 @@ import 'core/tidy_engine.dart';
 import 'core/trash.dart';
 import 'core/usage_gate.dart';
 import 'core/wizard.dart';
+import 'export_service.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -2559,6 +2560,13 @@ class _EditorScreenState extends State<EditorScreen> {
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'export') {
+                  final ok = await ExportService.shareNote(note);
+                  if (!ok && mounted) {
+                    _toast(context, L10n.of(context).exportFailed);
+                  }
+                  return;
+                }
                 if (v != 'delete') return;
                 final ok = await showAdaptiveDialog<bool>(
                   context: context,
@@ -2592,6 +2600,14 @@ class _EditorScreenState extends State<EditorScreen> {
                     );
                 return [
                   // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
+                  PopupMenuItem<String>(
+                    value: 'export',
+                    child: Row(children: [
+                      Icon(Icons.ios_share, size: 19, color: ctx.c.sub),
+                      const SizedBox(width: 10),
+                      Text(lm.exportNote),
+                    ]),
+                  ),
                   PopupMenuItem<String>(
                     value: 'delete',
                     child: Row(children: [
@@ -4049,6 +4065,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ],
               ),
+            ),
+          ]),
+          // 2026-08-16 — 내보내기.
+          //
+          // 조사에서 나온 것: "갇힌다"는 인상은 그 자체로 이탈 사유다.
+          // 2023년 에버노트 가격 인상 이후 "내 글을 꺼낼 수 있나"가 리뷰의
+          // 필수 항목이 됐고, 한국은 더하다 — 네이버 메모 종료를 겪은
+          // 사용자들이 "언제 없어질지 모르는 걸 어떻게 믿고 쓰나"라고 한다.
+          // 그래서 이건 기능이 아니라 약속이다.
+          _secHeader(l.exportSectionTitle),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
+            child: Text(l.exportSubtitle,
+                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+          ),
+          _card([
+            ListTile(
+              leading: Icon(Icons.folder_zip_outlined, color: context.c.sub),
+              title: Text(l.exportAllMd,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: Text(l.exportAllMdSub,
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              onTap: () async {
+                final ok = await ExportService.shareAllMarkdown();
+                if (!mounted) return;
+                if (!ok) _toast(context, l.exportEmpty);
+              },
+            ),
+            _sep(),
+            ListTile(
+              leading: Icon(Icons.settings_backup_restore, color: context.c.sub),
+              title: Text(l.exportBackup,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: Text(l.exportBackupSub,
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              onTap: () async {
+                final ok = await ExportService.shareBackup();
+                if (!mounted) return;
+                if (!ok) _toast(context, l.exportFailed);
+              },
             ),
           ]),
           // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로

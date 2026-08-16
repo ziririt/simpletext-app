@@ -263,6 +263,15 @@ abstract class L10n {
   String get trashEmptyConfirm;
   String get trashRestored;
   String trashDaysLeftLabel(int days);
+  String get exportSectionTitle;
+  String get exportSubtitle;
+  String get exportNote;
+  String get exportAllMd;
+  String get exportAllMdSub;
+  String get exportBackup;
+  String get exportBackupSub;
+  String get exportFailed;
+  String get exportEmpty;
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -490,6 +499,15 @@ abstract class L10n {
         'trashEmptyAll': trashEmptyAll,
         'trashEmptyConfirm': trashEmptyConfirm,
         'trashRestored': trashRestored,
+        'exportSectionTitle': exportSectionTitle,
+        'exportSubtitle': exportSubtitle,
+        'exportNote': exportNote,
+        'exportAllMd': exportAllMd,
+        'exportAllMdSub': exportAllMdSub,
+        'exportBackup': exportBackup,
+        'exportBackupSub': exportBackupSub,
+        'exportFailed': exportFailed,
+        'exportEmpty': exportEmpty,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,

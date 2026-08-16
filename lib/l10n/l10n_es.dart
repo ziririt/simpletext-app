@@ -385,6 +385,42 @@ class L10nEs extends L10n {
 
   @override
   String trashDaysLeftLabel(int days) => 'Se eliminará definitivamente en $days días';
+
+  @override
+  String get exportSectionTitle =>
+      'Exportar';
+
+  @override
+  String get exportSubtitle =>
+      'Tus notas pueden salir cuando quieras. Markdown se abre en Notas de Apple, Obsidian, Notion y más.';
+
+  @override
+  String get exportNote =>
+      'Exportar esta nota';
+
+  @override
+  String get exportAllMd =>
+      'Exportar todas las notas';
+
+  @override
+  String get exportAllMdSub =>
+      'Todas las notas en Markdown, en un zip';
+
+  @override
+  String get exportBackup =>
+      'Guardar copia de seguridad';
+
+  @override
+  String get exportBackupSub =>
+      'Un archivo que lo restaura todo aquí (sin tu clave API)';
+
+  @override
+  String get exportFailed =>
+      'No se pudo exportar';
+
+  @override
+  String get exportEmpty =>
+      'No hay notas para exportar';
   @override
   String get settingsSecView => 'Pantalla';
   @override

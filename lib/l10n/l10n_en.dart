@@ -385,6 +385,42 @@ class L10nEn extends L10n {
 
   @override
   String trashDaysLeftLabel(int days) => 'Deleted permanently in $days days';
+
+  @override
+  String get exportSectionTitle =>
+      'Export';
+
+  @override
+  String get exportSubtitle =>
+      'Your notes can leave any time. Markdown opens in Apple Notes, Obsidian, Notion and the rest.';
+
+  @override
+  String get exportNote =>
+      'Export this note';
+
+  @override
+  String get exportAllMd =>
+      'Export all notes';
+
+  @override
+  String get exportAllMdSub =>
+      'Every note as Markdown, in one zip';
+
+  @override
+  String get exportBackup =>
+      'Save a backup file';
+
+  @override
+  String get exportBackupSub =>
+      'One file that restores everything here (your API key is left out)';
+
+  @override
+  String get exportFailed =>
+      'Export failed';
+
+  @override
+  String get exportEmpty =>
+      'There are no notes to export';
   @override
   String get settingsSecView => 'Display';
   @override

@@ -384,6 +384,42 @@ class L10nZhHant extends L10n {
 
   @override
   String trashDaysLeftLabel(int days) => '$days 天後徹底刪除';
+
+  @override
+  String get exportSectionTitle =>
+      '輸出';
+
+  @override
+  String get exportSubtitle =>
+      '備忘隨時可以帶走。Markdown 可匯入蘋果備忘錄、Obsidian、Notion 等。';
+
+  @override
+  String get exportNote =>
+      '輸出此備忘';
+
+  @override
+  String get exportAllMd =>
+      '輸出全部備忘';
+
+  @override
+  String get exportAllMdSub =>
+      '所有備忘的 Markdown 打包為一個 ZIP';
+
+  @override
+  String get exportBackup =>
+      '儲存備份檔案';
+
+  @override
+  String get exportBackupSub =>
+      '可完整還原到本 App 的單一檔案（不含 API 金鑰）';
+
+  @override
+  String get exportFailed =>
+      '輸出失敗';
+
+  @override
+  String get exportEmpty =>
+      '沒有可輸出的備忘';
   @override
   String get settingsSecView => '顯示';
   @override

@@ -384,6 +384,42 @@ class L10nKo extends L10n {
 
   @override
   String trashDaysLeftLabel(int days) => '$days일 뒤 완전히 지워집니다';
+
+  @override
+  String get exportSectionTitle =>
+      '내보내기';
+
+  @override
+  String get exportSubtitle =>
+      '메모는 언제든 꺼낼 수 있습니다. 마크다운으로 나가면 애플 메모·옵시디언·노션 어디로든 들어갑니다.';
+
+  @override
+  String get exportNote =>
+      '이 메모 내보내기';
+
+  @override
+  String get exportAllMd =>
+      '메모 전체 내보내기';
+
+  @override
+  String get exportAllMdSub =>
+      '마크다운 여러 장을 압축 파일 하나로';
+
+  @override
+  String get exportBackup =>
+      '백업 파일 저장';
+
+  @override
+  String get exportBackupSub =>
+      '이 앱으로 그대로 되돌릴 수 있는 한 장 (AI 키는 빼고 저장합니다)';
+
+  @override
+  String get exportFailed =>
+      '내보내기에 실패했습니다';
+
+  @override
+  String get exportEmpty =>
+      '내보낼 메모가 없습니다';
   @override
   String get settingsSecView => '보기';
   @override

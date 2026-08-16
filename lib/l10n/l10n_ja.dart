@@ -384,6 +384,42 @@ class L10nJa extends L10n {
 
   @override
   String trashDaysLeftLabel(int days) => '$days日後に完全に削除されます';
+
+  @override
+  String get exportSectionTitle =>
+      '書き出し';
+
+  @override
+  String get exportSubtitle =>
+      'メモはいつでも取り出せます。Markdownならアップルのメモ・Obsidian・Notionのどれにも入ります。';
+
+  @override
+  String get exportNote =>
+      'このメモを書き出す';
+
+  @override
+  String get exportAllMd =>
+      'すべてのメモを書き出す';
+
+  @override
+  String get exportAllMdSub =>
+      'Markdownをまとめて1つのZIPに';
+
+  @override
+  String get exportBackup =>
+      'バックアップを保存';
+
+  @override
+  String get exportBackupSub =>
+      'このアプリにそのまま戻せる1ファイル（APIキーは除きます）';
+
+  @override
+  String get exportFailed =>
+      '書き出しに失敗しました';
+
+  @override
+  String get exportEmpty =>
+      '書き出すメモがありません';
   @override
   String get settingsSecView => '表示';
   @override
