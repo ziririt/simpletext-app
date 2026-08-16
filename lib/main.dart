@@ -4235,10 +4235,43 @@ class _EditorScreenState extends State<EditorScreen> {
                         ),
                       ),
                     ),
-                  TextField(
+                  // 2026-08-17 소유자 지시 — "화면의 반 정도는 스크롤되게.
+                  // 그래야 하단에 뭔가 더 입력할 수 있다는 느낌이 든다."
+                  //
+                  // 이건 취향이 아니라 글 쓰는 도구의 기본이다. 마지막 줄이
+                  // 화면 맨 아래에 붙어 있으면 (1) 거기가 끝인지 더 있는지
+                  // 눈으로 알 수 없고 (2) 그 줄을 고칠 때 손가락이 가린다.
+                  //
+                  // **스크롤의 임자를 바꿨다.** 전에는 본문 칸이 자기 안에서
+                  // 스스로 굴렀는데(expands + 내부 스크롤), 그 방식에서는
+                  // '글 끝보다 더 내려가기'를 만들 수 없다 — 굴릴 수 있는
+                  // 양이 글 길이로 정해지기 때문이다. 아래에 여백을 주면
+                  // 칸이 작아져서 보이는 글만 줄어든다.
+                  //
+                  // 이제 본문 칸은 글 길이만큼 늘어나기만 하고, 스크롤은
+                  // 이것을 감싼 바깥이 맡는다. 바깥이 [글 + 빈칸]을 함께
+                  // 굴리므로 글 끝을 지나 빈칸까지 내려갈 수 있다.
+                  LayoutBuilder(builder: (_, box) {
+                    // 빈칸은 화면의 절반. 마지막 줄을 화면 한가운데까지
+                    // 끌어올릴 수 있는 양이다.
+                    final blank = box.maxHeight * 0.5;
+                    // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
+                    // [본문 + 빈칸]이 정확히 한 화면이라 스크롤이 안 생긴다.
+                    // 한 줄짜리 메모에서 화면이 덜컹거리면 더 이상하다.
+                    final minBody = (box.maxHeight - blank).clamp(0.0, double.infinity);
+                    return SingleChildScrollView(
+                      controller: _bodyScroll,
+                      // 튕기는 스크롤은 블록을 씌우는 중에 문서가 더 크게
+                      // 흔들려 보이게 한다.
+                      physics: const ClampingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: minBody),
+                            child: TextField(
                   controller: bodyCtl,
                   focusNode: _bodyFocus,
-                  scrollController: _bodyScroll,
                   // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
                   //
                   // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
@@ -4246,16 +4279,14 @@ class _EditorScreenState extends State<EditorScreen> {
                   // 시작되는 것은 기능이 아니라 마찰이다.
                   autofocus: bodyCtl.text.isEmpty,
                   undoController: _undoCtl,
+                  // expands를 뗐다. 이제 이 칸은 글 길이만큼 늘어나고,
+                  // 굴리는 일은 바깥이 맡는다.
                   maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
                   // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
                   // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
                   // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은
                   // 돋보기가 아니다 — 기기에서 직접 만져 보며 찾아야 한다.
                   //
-                  // 튕기는 스크롤은 선택 중에 문서가 더 크게 흔들려 보이게 한다.
-                  scrollPhysics: const ClampingScrollPhysics(),
                   // 블록을 끌 때 화면 끝에 닿으면 플러터가 캐럿을 보이게
                   // 스크롤한다. 그 한 번에 움직이는 양이 이 여백만큼이라,
                   // 기본값(20)보다 줄이면 덜 뛴다. 0으로 두지는 않는다 —
@@ -4277,7 +4308,26 @@ class _EditorScreenState extends State<EditorScreen> {
                       // 계산해 정해 뒀다.
                       color: paperInk),
                   onChanged: (_) => _save(),
-                ),
+                            ),
+                          ),
+                          // 글 끝 아래의 빈칸.
+                          //
+                          // 그냥 두면 눌러도 아무 일이 없다 — 본문 칸 밖이기
+                          // 때문이다. 종이 아래쪽을 짚었는데 펜이 안 잡히는
+                          // 셈이라, 누르면 커서를 글 맨 끝에 놓는다.
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              _bodyFocus.requestFocus();
+                              bodyCtl.selection = TextSelection.collapsed(
+                                  offset: bodyCtl.text.length);
+                            },
+                            child: SizedBox(height: blank),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 ]),
               ),
             ),
