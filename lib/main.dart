@@ -2232,8 +2232,12 @@ class _EditorScreenState extends State<EditorScreen> {
           children: [
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
             if (_isDesktop) _accessoryBar(atTop: true),
+            // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
+            // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
+            // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
+            if (_showMeta)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
               child: TextField(
                 controller: titleCtl,
                 focusNode: _titleFocus,
