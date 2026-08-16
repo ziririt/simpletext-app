@@ -1812,21 +1812,16 @@ class _HomeScreenState extends State<HomeScreen> {
               await Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const TrashScreen()));
               if (mounted) setState(() {});
-            case 'settings':
-              await Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()));
-              if (mounted) setState(() {});
           }
         },
         itemBuilder: (ctx) {
-          PopupMenuItem<String> row(String v, IconData ic, String label,
-                  {Color? ink, FontWeight? w}) =>
+          PopupMenuItem<String> row(String v, IconData ic, String label) =>
               PopupMenuItem<String>(
                 value: v,
                 child: Row(children: [
-                  Icon(ic, size: 19, color: ink ?? ctx.c.sub),
+                  Icon(ic, size: 19, color: ctx.c.sub),
                   const SizedBox(width: 10),
-                  Text(label, style: TextStyle(color: ink, fontWeight: w)),
+                  Text(label),
                 ]),
               );
           return [
@@ -1835,11 +1830,13 @@ class _HomeScreenState extends State<HomeScreen> {
             row('exportMd', Icons.folder_zip_outlined, l.exportAllMd),
             row('backup', Icons.settings_backup_restore, l.exportBackup),
             const PopupMenuDivider(),
+            // 2026-08-17 소유자 지시 — '앱 설정'을 메뉴에서 뺐다.
+            //
+            // 설정은 메뉴 안에 있을 이유가 없다. 메뉴 안의 것들은 가끔 하는
+            // 일이고 설정은 자주 여는 곳이다. 한 번 더 눌러야 열리는 것은
+            // 그만한 이유가 있을 때만 그렇게 둔다. 이제 위 줄 오른쪽 끝에
+            // 톱니바퀴로 나와 있다.
             row('trash', Icons.delete_outline, l.trashTitle),
-            const PopupMenuDivider(),
-            // --- 앱 전체 설정 ---
-            row('settings', Icons.settings_outlined, l.menuAppSettings,
-                ink: ctx.c.accent, w: FontWeight.w600),
           ];
         },
       );
@@ -1977,7 +1974,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 if (pinned.isNotEmpty) _groupLabel(l.pinnedLabel),
                 if (pinned.isNotEmpty) _groupCard(pinned),
-                if (rest.isNotEmpty) _groupLabel(l.notesLabel),
+                if (rest.isNotEmpty)
+                  _groupLabel(l.notesLabel, trailing: _sortFilterBtn(l, s)),
                 if (rest.isNotEmpty) _groupCard(rest),
                 const SliverToBoxAdapter(child: SizedBox(height: 110)),
               ],
@@ -2011,28 +2009,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 onChanged: (v) => setState(() => query = v),
                               )),
-                              // 정렬·필터. 뭔가 걸려 있으면 아이콘에 색이
-                              // 들어가 "지금 목록이 전부가 아니다"를 알린다.
-                              // 이게 없으면 사용자는 메모가 사라진 줄 안다.
+                              // 2026-08-17 소유자 지시 — 자리를 바꿨다.
+                              //
+                              // 전에는 [검색] [필터] [메뉴]였는데, 셋 중
+                              // 필터만 성격이 다르다. 검색과 필터는 '지금
+                              // 보이는 목록을 좁히는 일'이고 메뉴는 '앱에
+                              // 대해 하는 일'인데, 필터가 메뉴 옆에 붙어
+                              // 있으니 같은 무리로 보였다.
+                              //
+                              // 필터는 '메모' 소제목 옆으로 내렸다(_groupLabel).
+                              // 자기가 다루는 것 바로 위에 놓이면 무엇을
+                              // 거르는 단추인지 자리만으로 알 수 있다.
+                              //
+                              // 이제 [검색] [메뉴] [설정]이다. 왼쪽에서
+                              // 오른쪽으로 갈수록 '이 목록'에서 '이 앱'으로
+                              // 넓어진다.
+                              _listMenu(l),
                               IconButton(
-                                icon: Icon(Icons.tune,
-                                    color: (s.sortMode != 'updated' ||
-                                            s.filterSource.isNotEmpty ||
-                                            s.filterTag.isNotEmpty)
-                                        ? context.c.accent
-                                        : null),
-                                tooltip: l.sortFilterTooltip,
+                                icon: const Icon(Icons.settings_outlined),
+                                tooltip: l.menuAppSettings,
                                 onPressed: () async {
-                                  await showModalBottomSheet<void>(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => const SortFilterSheet(),
-                                  );
+                                  await Navigator.push<void>(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const SettingsScreen()));
                                   if (mounted) setState(() {});
                                 },
                               ),
-                              _listMenu(l),
                             ]),
                           ),
                         ),
@@ -2075,15 +2078,54 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _groupLabel(String label) => SliverToBoxAdapter(
+  /// 목록의 소제목. [trailing]을 주면 오른쪽 끝에 단추가 붙는다.
+  ///
+  /// 2026-08-17 소유자 지시로 정렬·필터가 '메모' 소제목 옆에 붙었다.
+  /// 자기가 다루는 것 바로 위에 놓이면 무엇을 거르는 단추인지 자리만으로
+  /// 알 수 있다.
+  Widget _groupLabel(String label, {Widget? trailing}) => SliverToBoxAdapter(
         child: Padding(
           // 애플 메모의 '고정된 메모' 헤더 실측: 글자높이 52px, 좌측 135px(45pt).
           // 제목 46px=17pt 비율로 환산하면 19.2pt → 애플 .title3(20pt) 굵게.
           // 색도 회색이 아니라 본문색이다.
-          padding: const EdgeInsets.fromLTRB(kListRowInset + 16, 18, 16, 8),
-          child: Text(label,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+          //
+          // 단추가 붙는 쪽은 위아래 여백을 줄인다. 단추가 이미 자기 여백을
+          // 가지고 있어서 그대로 두면 그 줄만 뚱뚱해 보인다.
+          padding: EdgeInsets.fromLTRB(
+              kListRowInset + 16, trailing == null ? 18 : 10, 8,
+              trailing == null ? 8 : 0),
+          child: Row(children: [
+            Expanded(
+              child: Text(label,
+                  style:
+                      const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+            ),
+            if (trailing != null) trailing,
+          ]),
         ),
+      );
+
+  /// 정렬·필터 단추.
+  ///
+  /// 뭔가 걸려 있으면 아이콘에 색이 들어가 "지금 목록이 전부가 아니다"를
+  /// 알린다. 이게 없으면 사용자는 메모가 사라진 줄 안다.
+  Widget _sortFilterBtn(L10n l, AppSettings s) => IconButton(
+        icon: Icon(Icons.tune,
+            color: (s.sortMode != 'updated' ||
+                    s.filterSource.isNotEmpty ||
+                    s.filterTag.isNotEmpty)
+                ? context.c.accent
+                : context.c.sub),
+        tooltip: l.sortFilterTooltip,
+        onPressed: () async {
+          await showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => const SortFilterSheet(),
+          );
+          if (mounted) setState(() {});
+        },
       );
 
   Widget _groupCard(List<Note> group) => SliverToBoxAdapter(
