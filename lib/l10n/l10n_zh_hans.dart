@@ -507,6 +507,27 @@ class L10nZhHans extends L10n {
   String get selClear => '取消选择';
 
   @override
+  String get paperTitle => '编辑页纸张';
+
+  @override
+  String get paperSub => '背景与格线成套选择。行距自动跟随字号。';
+
+  @override
+  String get paperNone => '默认';
+
+  @override
+  String get paperMoleskine => '摩斯奇诺';
+
+  @override
+  String get paperSepia => '棕褐';
+
+  @override
+  String get paperManuscript => '稿纸';
+
+  @override
+  String get paperGrid => '方格';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 来自 \$src';
 

@@ -294,6 +294,13 @@ abstract class L10n {
   String get selEndLeft;
   String get selEndRight;
   String get selClear;
+  String get paperTitle;
+  String get paperSub;
+  String get paperNone;
+  String get paperMoleskine;
+  String get paperSepia;
+  String get paperManuscript;
+  String get paperGrid;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -552,6 +559,13 @@ abstract class L10n {
         'selEndLeft': selEndLeft,
         'selEndRight': selEndRight,
         'selClear': selClear,
+        'paperTitle': paperTitle,
+        'paperSub': paperSub,
+        'paperNone': paperNone,
+        'paperMoleskine': paperMoleskine,
+        'paperSepia': paperSepia,
+        'paperManuscript': paperManuscript,
+        'paperGrid': paperGrid,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

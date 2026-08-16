@@ -509,6 +509,27 @@ class L10nFr extends L10n {
   String get selClear => 'Effacer la sélection';
 
   @override
+  String get paperTitle => 'Papier de l\'éditeur';
+
+  @override
+  String get paperSub => 'Fond et lignes en un ensemble. L\'interligne suit la taille du texte.';
+
+  @override
+  String get paperNone => 'Uni';
+
+  @override
+  String get paperMoleskine => 'Moleskine';
+
+  @override
+  String get paperSepia => 'Sépia';
+
+  @override
+  String get paperManuscript => 'Manuscrit';
+
+  @override
+  String get paperGrid => 'Quadrillé';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src le \$date';
 

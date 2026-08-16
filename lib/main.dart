@@ -27,6 +27,7 @@ import 'core/auto_meta.dart';
 import 'core/hangul.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
+import 'core/paper.dart';
 import 'core/source_detect.dart';
 import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
@@ -629,6 +630,14 @@ class AppSettings {
   /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
   String themeMode = 'system';
 
+  /// 편집 화면 종이. 2026-08-16 소유자 요청 — "원고지 등 백그라운드 설정은?
+  /// 굿노트처럼", 그리고 "몰스킨 스타일 프리셋은 필요하다."
+  ///
+  /// 값의 뜻과 색은 core/paper.dart에 있다. 여기는 고른 이름만 담는다.
+  /// 기기마다 다른 게 자연스러워서(맥은 큰 화면이라 모눈, 폰은 몰스킨처럼)
+  /// 정렬·필터와 같이 동기화하지 않는다.
+  String paperMode = kPaperNone;
+
   /// 전면 광고를 본 날(YYYY-MM-DD). 이 날짜가 오늘이면 그날은 배너까지
   /// 광고가 전부 사라진다(소유자 확정 규칙). 판정은 core/ad_gate.dart.
   String adFreeDate = '';
@@ -659,6 +668,7 @@ class AppSettings {
         'aiModels': aiModels,
         'adFreeDate': adFreeDate,
         'themeMode': themeMode,
+        'paperMode': paperMode,
         'premium': premium,
         'tidyDate': tidyDate,
         'tidyCount': tidyCount,
@@ -729,6 +739,8 @@ class AppSettings {
     s.sortMode = (j['sortMode'] ?? s.sortMode) as String;
     s.filterSource = (j['filterSource'] ?? s.filterSource) as String;
     s.filterTag = (j['filterTag'] ?? s.filterTag) as String;
+    // 모르는 이름이 들어와도 paperById가 '기본'으로 떨어뜨린다.
+    s.paperMode = (j['paperMode'] ?? s.paperMode) as String;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -1802,6 +1814,33 @@ class _EditorScreenState extends State<EditorScreen> {
   /// 지금 블록이 씌워져 있는가. 이 값이 바뀔 때만 다시 그린다.
   bool _hasSel = false;
 
+  /// 본문 칸의 스크롤. 종이 줄을 글과 같이 움직이게 하려고 잡는다.
+  ///
+  /// 글 칸은 안에서 따로 스크롤한다. 배경을 가만히 두면 글만 올라가고
+  /// 줄은 제자리라 첫 줄부터 어긋난다 — 종이처럼 안 보이는 가장 흔한
+  /// 실패다. 그래서 스크롤 값을 받아 배경을 같은 만큼 밀어 준다.
+  final ScrollController _bodyScroll = ScrollController();
+
+  /// 원고지 한 칸의 너비. 한글 한 글자 폭이다.
+  ///
+  /// 글자 크기가 바뀔 때만 다시 잰다. 재는 일 자체는 싸지만 build마다
+  /// 하면 타자 경로에 얹히고, 그건 이 앱이 방금 걷어낸 종류의 낭비다.
+  double _colW = 0;
+  double _colWFor = -1;
+
+  double _colWidth(double fontSize) {
+    if (_colWFor == fontSize) return _colW;
+    final tp = TextPainter(
+      // '가'로 재는 이유: 원고지는 한글 한 글자를 한 칸에 넣는 종이다.
+      // 영문 글자로 재면 칸이 절반이 된다.
+      text: TextSpan(text: '가', style: TextStyle(fontSize: fontSize)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    _colWFor = fontSize;
+    _colW = tp.width;
+    return _colW;
+  }
+
   void _watchSelection() {
     final s = bodyCtl.selection;
     final has = s.isValid && !s.isCollapsed;
@@ -2011,6 +2050,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void dispose() {
     _tagTimer?.cancel();
     bodyCtl.removeListener(_watchSelection);
+    _bodyScroll.dispose();
     unawaited(store.flush());
     titleCtl.dispose();
     bodyCtl.dispose();
@@ -2989,6 +3029,13 @@ class _EditorScreenState extends State<EditorScreen> {
     // 설정을 바꾸면 다음 build에서 바로 반영된다(컨트롤러가 매번 이 값을 본다).
     bodyCtl.monoEnabled = store.settings.monoEditor;
     bodyCtl.bodyFontSize = store.settings.bodyFontSize;
+
+    // 종이. 고르지 않았으면 paper.id == kPaperNone이고 아래 색은 안 쓴다.
+    final paper = paperById(store.settings.paperMode);
+    final onPaper = paper.id != kPaperNone;
+    final darkNow = Theme.of(context).brightness == Brightness.dark;
+    final paperBg = onPaper ? Color(paper.bgOf(darkNow)) : context.c.panel;
+    final paperInk = onPaper ? Color(paper.inkOf(darkNow)) : null;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) {
@@ -2998,7 +3045,7 @@ class _EditorScreenState extends State<EditorScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: context.c.panel,
+        backgroundColor: paperBg,
         // 2026-08-16 소유자 지시 — 배너는 상단바(뒤로가기 줄)보다도 위,
         // 화면 진짜 꼭대기다. 원래 화면 전체(상단바 포함)를 안쪽
         // Scaffold로 감싸 배너 아래로 넣는다.
@@ -3008,9 +3055,12 @@ class _EditorScreenState extends State<EditorScreen> {
             if (!widget.embedded) const TopBannerBar(),
             Expanded(
               child: Scaffold(
-        backgroundColor: context.c.panel,
+        // 종이는 화면 전체에 깔린다. 글 칸만 색을 바꾸면 위아래로 흰 띠가
+        // 남아서 '색을 잘못 칠한 화면'으로 보인다. 실제 수첩도 종이가
+        // 먼저 있고 그 위에 줄이 있다.
+        backgroundColor: paperBg,
         appBar: AppBar(
-          backgroundColor: context.c.panel,
+          backgroundColor: paperBg,
           automaticallyImplyLeading: !widget.embedded,
           title: const SizedBox.shrink(),
           actions: [
@@ -3191,6 +3241,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   ),
                   jump('theme', lm.themeTitle),
                   jump('fontsize', lm.bodyFontSizeTitle),
+                  jump('paper', lm.paperTitle),
                   jump('mono', lm.monoEditorTitle),
                   jump('tidy', lm.settingsSecTidy),
                   jump('rules', lm.rulesSectionTitle),
@@ -3354,9 +3405,39 @@ class _EditorScreenState extends State<EditorScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
+                // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
+                // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
+                // 칸이 납작하게 접힌다.
+                child: Stack(fit: StackFit.expand, children: [
+                  // 종이의 줄은 글 뒤에 있다. 그리는 일은 선 몇 개뿐이라
+                  // 싸지만, RepaintBoundary로 감싸서 스크롤할 때 글 칸까지
+                  // 다시 그리지 않게 막는다.
+                  if (onPaper && paper.ruling != kRulingNone)
+                    Positioned.fill(
+                      child: RepaintBoundary(
+                        child: AnimatedBuilder(
+                          animation: _bodyScroll,
+                          builder: (_, __) => CustomPaint(
+                            painter: _PaperPainter(
+                              ruling: paper.ruling,
+                              color: Color(paper.ruleOf(darkNow)),
+                              lineHeight: store.settings.bodyFontSize *
+                                  MonoTextController.bodyHeight,
+                              colWidth: _colWidth(store.settings.bodyFontSize),
+                              // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
+                              // 죽는다. 그때는 0이 맞다.
+                              scroll: _bodyScroll.hasClients
+                                  ? _bodyScroll.offset
+                                  : 0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  TextField(
                   controller: bodyCtl,
                   focusNode: _bodyFocus,
+                  scrollController: _bodyScroll,
                   // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
                   //
                   // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
@@ -3388,9 +3469,15 @@ class _EditorScreenState extends State<EditorScreen> {
                   // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
                   style: TextStyle(
                       fontSize: store.settings.bodyFontSize,
-                      height: MonoTextController.bodyHeight),
+                      height: MonoTextController.bodyHeight,
+                      // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
+                      // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
+                      // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
+                      // 계산해 정해 뒀다.
+                      color: paperInk),
                   onChanged: (_) => _save(),
                 ),
+                ]),
               ),
             ),
             if (note.lastReport.isNotEmpty)
@@ -4022,6 +4109,71 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
   }
 }
 
+/// 종이의 줄을 그린다.
+///
+/// 간격을 눈으로 정하지 않는다 — 글줄 높이를 그대로 받아 쓴다. 조금이라도
+/// 어긋나면 화면 아래로 갈수록 글자가 줄에서 떠오르거나 잠긴다. 좌표를 내는
+/// 셈은 core/paper.dart에 있고 테스트로 고정돼 있다.
+class _PaperPainter extends CustomPainter {
+  final String ruling;
+  final Color color;
+  final double lineHeight;
+  final double colWidth;
+  final double scroll;
+
+  const _PaperPainter({
+    required this.ruling,
+    required this.color,
+    required this.lineHeight,
+    required this.colWidth,
+    required this.scroll,
+  });
+
+  /// 글 칸이 안쪽으로 두는 위 여백. 테두리 없는 TextField의 기본값이다
+  /// (InputDecorator: 테두리 없고 dense 아님 → 위아래 12).
+  static const double _topPad = 12;
+
+  /// 줄을 글자 밑선보다 살짝 아래로 내린다. 글줄 상자의 맨 밑에 그대로
+  /// 그으면 다음 줄 글자에 닿아 보인다.
+  static const double _nudge = 3;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..isAntiAlias = false; // 1px 선은 안티에일리어싱하면 흐려진다
+
+    for (final y in ruleOffsets(
+      lineHeight: lineHeight,
+      viewHeight: size.height,
+      scroll: scroll,
+      topPad: _topPad,
+    )) {
+      final yy = y - _nudge;
+      if (yy < 0 || yy > size.height) continue;
+      canvas.drawLine(Offset(0, yy), Offset(size.width, yy), p);
+    }
+
+    if (ruling == kRulingLine) return;
+
+    // 모눈은 줄 높이와 같은 정사각이라 어느 글꼴에서도 맞는다.
+    // 원고지는 한글 한 글자 폭으로 잰 칸이다.
+    final w = ruling == kRulingManuscript ? colWidth : lineHeight;
+    for (final x in columnOffsets(colWidth: w, viewWidth: size.width)) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PaperPainter old) =>
+      old.ruling != ruling ||
+      old.color != color ||
+      old.lineHeight != lineHeight ||
+      old.colWidth != colWidth ||
+      old.scroll != scroll;
+}
+
 /// 아이클라우드가 꺼져 있을 때 여는 안내.
 ///
 /// 왜 '설정으로 바로 가기'가 아니라 글인가: 애플이 앱에서 열 수 있게 허용한
@@ -4238,6 +4390,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final Map<String, GlobalKey> _anchors = {
     'theme': GlobalKey(),
     'fontsize': GlobalKey(),
+    'paper': GlobalKey(),
     'mono': GlobalKey(),
     'tidy': GlobalKey(),
     'rules': GlobalKey(),
@@ -4455,6 +4608,106 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// 숫자를 코드에 박아 두면 맞출 때마다 설치 왕복이 생긴다(2026-08-14).
   /// 견본 문장은 소유자 지정: 자국어와 영어가 섞인 세 줄짜리 문장이다.
   /// 한쪽 글자만 보고 맞추면 다른 쪽이 어긋나기 때문이다.
+  /// 종이 고르개.
+  ///
+  /// 자유 색상 고르개를 주지 않는 이유는 core/paper.dart 머리말에 적어
+  /// 뒀다 — 짧게는, 배경을 마음대로 고르게 하면 사람은 반드시 글자가
+  /// 안 읽히는 조합을 만들고 그건 우리가 못 만든 화면으로 보인다.
+  ///
+  /// 이름만 적지 않고 실제 색과 줄을 그대로 보여 준다. 종이는 글로
+  /// 설명할 수 있는 것이 아니다.
+  Widget _paperBlock(L10n l, AppSettings s) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    String nameOf(String id) => switch (id) {
+          'moleskine' => l.paperMoleskine,
+          'sepia' => l.paperSepia,
+          'manuscript' => l.paperManuscript,
+          'grid' => l.paperGrid,
+          _ => l.paperNone,
+        };
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.paperTitle,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+          const SizedBox(height: 2),
+          Text(l.paperSub,
+              style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 104,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: kPapers.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (_, i) {
+                final p = kPapers[i];
+                final on = s.paperMode == p.id;
+                final isNone = p.id == kPaperNone;
+                return GestureDetector(
+                  onTap: () {
+                    // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다.
+                    HapticFeedback.selectionClick();
+                    setState(() => s.paperMode = p.id);
+                    store.persistSettings();
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 62,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          color: isNone
+                              ? context.c.panel
+                              : Color(p.bgOf(dark)),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: on ? context.c.accent : context.c.line,
+                            width: on ? 2 : 1,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: isNone
+                            ? Icon(Icons.block,
+                                size: 20, color: context.c.sub)
+                            : CustomPaint(
+                                painter: _PaperPainter(
+                                  ruling: p.ruling,
+                                  color: Color(p.ruleOf(dark)),
+                                  // 견본은 실제 글자 크기와 상관없이 좁게
+                                  // 그린다 — 62×76 안에 결이 보여야 한다.
+                                  lineHeight: 11,
+                                  colWidth: 11,
+                                  scroll: 0,
+                                ),
+                                child: Center(
+                                  child: Text('가',
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          color: Color(p.inkOf(dark)))),
+                                ),
+                              ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(nameOf(p.id),
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight:
+                                  on ? FontWeight.w700 : FontWeight.w400,
+                              color: on ? context.c.accent : context.c.sub)),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _fontSizeBlock(L10n l, AppSettings s) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: Column(
@@ -4645,6 +4898,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _sep(),
             KeyedSubtree(
                 key: _anchors['fontsize'], child: _fontSizeBlock(l, s)),
+            _sep(),
+            KeyedSubtree(key: _anchors['paper'], child: _paperBlock(l, s)),
             _sep(),
             KeyedSubtree(
               key: _anchors['mono'],

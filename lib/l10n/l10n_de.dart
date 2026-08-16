@@ -509,6 +509,27 @@ class L10nDe extends L10n {
   String get selClear => 'Auswahl aufheben';
 
   @override
+  String get paperTitle => 'Editor-Papier';
+
+  @override
+  String get paperSub => 'Hintergrund und Linien als Satz. Der Zeilenabstand folgt der Schriftgröße.';
+
+  @override
+  String get paperNone => 'Schlicht';
+
+  @override
+  String get paperMoleskine => 'Moleskine';
+
+  @override
+  String get paperSepia => 'Sepia';
+
+  @override
+  String get paperManuscript => 'Manuskript';
+
+  @override
+  String get paperGrid => 'Karo';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

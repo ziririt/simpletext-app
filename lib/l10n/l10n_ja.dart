@@ -507,6 +507,27 @@ class L10nJa extends L10n {
   String get selClear => '選択解除';
 
   @override
+  String get paperTitle => '編集画面の紙';
+
+  @override
+  String get paperSub => '背景と罫線をセットで選びます。行間は文字サイズに自動で合います。';
+
+  @override
+  String get paperNone => '標準';
+
+  @override
+  String get paperMoleskine => 'モレスキン';
+
+  @override
+  String get paperSepia => 'セピア';
+
+  @override
+  String get paperManuscript => '原稿用紙';
+
+  @override
+  String get paperGrid => '方眼';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 

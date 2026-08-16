@@ -508,6 +508,27 @@ class L10nEn extends L10n {
   String get selClear => 'Clear selection';
 
   @override
+  String get paperTitle => 'Editor paper';
+
+  @override
+  String get paperSub => 'Background and ruling as a set. Line spacing follows your text size automatically.';
+
+  @override
+  String get paperNone => 'Plain';
+
+  @override
+  String get paperMoleskine => 'Moleskine';
+
+  @override
+  String get paperSepia => 'Sepia';
+
+  @override
+  String get paperManuscript => 'Manuscript';
+
+  @override
+  String get paperGrid => 'Grid';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from \$src on \$date';
 

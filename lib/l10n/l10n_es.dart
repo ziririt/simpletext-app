@@ -508,6 +508,27 @@ class L10nEs extends L10n {
   String get selClear => 'Quitar selección';
 
   @override
+  String get paperTitle => 'Papel del editor';
+
+  @override
+  String get paperSub => 'Fondo y pauta como conjunto. El interlineado sigue el tamaño de letra.';
+
+  @override
+  String get paperNone => 'Liso';
+
+  @override
+  String get paperMoleskine => 'Moleskine';
+
+  @override
+  String get paperSepia => 'Sepia';
+
+  @override
+  String get paperManuscript => 'Manuscrito';
+
+  @override
+  String get paperGrid => 'Cuadrícula';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src el \$date';
 

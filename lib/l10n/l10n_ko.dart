@@ -507,6 +507,27 @@ class L10nKo extends L10n {
   String get selClear => '선택 해제';
 
   @override
+  String get paperTitle => '편집 화면 종이';
+
+  @override
+  String get paperSub => '배경과 줄을 한 벌로 고릅니다. 줄 간격은 글자 크기에 맞춰 자동으로 맞습니다.';
+
+  @override
+  String get paperNone => '기본';
+
+  @override
+  String get paperMoleskine => '몰스킨';
+
+  @override
+  String get paperSepia => '세피아';
+
+  @override
+  String get paperManuscript => '원고지';
+
+  @override
+  String get paperGrid => '모눈';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 
