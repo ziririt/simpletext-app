@@ -602,7 +602,7 @@ class L10nDe extends L10n {
   String get menuPrefs => 'Einstellungen…';
 
   @override
-  String get appliedTitle => 'Aufgeräumt';
+  String get appliedTitle => 'Alles sauber aufgeräumt';
 
   @override
   String pastedFrom(String src, String date) =>

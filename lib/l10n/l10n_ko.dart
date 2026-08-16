@@ -600,7 +600,7 @@ class L10nKo extends L10n {
   String get menuPrefs => '설정…';
 
   @override
-  String get appliedTitle => '정리했습니다';
+  String get appliedTitle => '깔끔하게 정리했습니다';
 
   @override
   String pastedFrom(String src, String date) =>

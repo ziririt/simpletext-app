@@ -600,7 +600,7 @@ class L10nZhHant extends L10n {
   String get menuPrefs => '設定…';
 
   @override
-  String get appliedTitle => '已整理';
+  String get appliedTitle => '已整理得乾乾淨淨';
 
   @override
   String pastedFrom(String src, String date) =>

@@ -600,7 +600,7 @@ class L10nJa extends L10n {
   String get menuPrefs => '設定…';
 
   @override
-  String get appliedTitle => '整えました';
+  String get appliedTitle => 'すっきり整いました';
 
   @override
   String pastedFrom(String src, String date) =>

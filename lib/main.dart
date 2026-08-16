@@ -1296,7 +1296,15 @@ class _MagicPuff extends StatefulWidget {
   final AppC c;
   const _MagicPuff({required this.title, required this.detail, required this.c});
 
-  static const Duration life = Duration(milliseconds: 1700);
+  /// 2026-08-17 소유자 지적 — "너무 속전속결이라 뭐라는지 모르겠다."
+  ///
+  /// 1.7초는 '알림'의 길이지 '연출'의 길이가 아니다. 3.4초로 늘리고
+  /// 안에서 셋으로 나눴다.
+  ///   0.00~0.22 (0.75초)  판이 천천히 떠오른다
+  ///   0.22~0.80 (2.0초)   머문다. 읽을 시간이다
+  ///   0.80~1.00 (0.7초)   스러진다
+  /// 빛알은 앞 62%(2.1초)에 걸쳐 아주 천천히 퍼진다.
+  static const Duration life = Duration(milliseconds: 3400);
 
   @override
   State<_MagicPuff> createState() => _MagicPuffState();
@@ -1327,15 +1335,19 @@ class _MagicPuffState extends State<_MagicPuff>
           builder: (_, __) {
             final t = _a.value;
 
-            // 판: 앞의 20%에 나타나고, 뒤의 30%에 살짝 떠오르며 사라진다.
-            final inT = (t / 0.20).clamp(0.0, 1.0);
-            final outT = ((t - 0.70) / 0.30).clamp(0.0, 1.0);
-            final opacity = (calm ? inT : Curves.easeOut.transform(inT)) *
-                (1 - Curves.easeIn.transform(outT));
+            final inT = (t / 0.22).clamp(0.0, 1.0);
+            final outT = ((t - 0.80) / 0.20).clamp(0.0, 1.0);
+            final opacity = (calm ? inT : Curves.easeOutSine.transform(inT)) *
+                (1 - Curves.easeInSine.transform(outT));
+            // 튀어 오르는 곡선(easeOutBack)을 뺐다. 통통 튀는 것은
+            // 경쾌하지 우아하지 않다. 아주 조금만 커지며 조용히 자리를
+            // 잡는 쪽이 '마법'에 가깝다.
             final scale = calm
                 ? 1.0
-                : 0.86 + 0.14 * Curves.easeOutBack.transform(inT);
-            final lift = -10.0 * Curves.easeIn.transform(outT);
+                : 0.94 + 0.06 * Curves.easeOutCubic.transform(inT);
+            // 들어올 때 살짝 내려앉고, 나갈 때 살짝 떠오른다. 숨 쉬듯이.
+            final lift = 6.0 * (1 - Curves.easeOutCubic.transform(inT)) -
+                14.0 * Curves.easeInSine.transform(outT);
 
             return Stack(
               alignment: Alignment.center,
@@ -1362,7 +1374,15 @@ class _MagicPuffState extends State<_MagicPuff>
     );
   }
 
-  Widget _card(AppC c) => Container(
+  /// 2026-08-17 소유자 지적 — "피드백 메시지에 밑줄은 치지 마라."
+  ///
+  /// 우리가 그은 밑줄이 아니다. 오버레이는 Material 위가 아니라 화면
+  /// 꼭대기에 얹히는 층이라 조상에 Material이 없고, 그러면 프레임워크가
+  /// 글자에 노란 이중 밑줄을 긋는다 — "이 글자가 어디에 얹힌 건지 모르겠다"는
+  /// 표시다. 투명한 Material 한 겹을 두면 사라진다.
+  Widget _card(AppC c) => Material(
+        type: MaterialType.transparency,
+        child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 40),
         padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
         decoration: BoxDecoration(
@@ -1390,6 +1410,13 @@ class _MagicPuffState extends State<_MagicPuff>
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: c.accent)),
+            // 2026-08-17 소유자 지적 — "'마커 51개 제거'라는 말은 보여 줄
+            // 필요도 없다." 맞다. 몇 개를 지웠는지는 우리가 열심히 했다는
+            // 자랑이지 사용자가 알고 싶은 것이 아니다. 사용자가 알고 싶은
+            // 것은 '됐나?' 하나뿐이다.
+            //
+            // 자세한 셈은 편집 화면 밑줄에 그대로 남아 있다. 궁금한 사람은
+            // 거기서 본다.
             if (widget.detail.isNotEmpty) ...[
               const SizedBox(height: 5),
               Text(widget.detail,
@@ -1399,6 +1426,7 @@ class _MagicPuffState extends State<_MagicPuff>
                   style: TextStyle(fontSize: 13.5, height: 1.35, color: c.sub)),
             ],
           ],
+        ),
         ),
       );
 }
@@ -1420,16 +1448,20 @@ class _DustPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 빛알은 앞의 72%만 산다. 판이 사라지기 전에 먼저 스러져야
-    // '가루가 뿌려지고 글이 정리됐다'는 차례로 읽힌다.
-    final u = (t / 0.72).clamp(0.0, 1.0);
+    // 빛알은 앞의 62%(약 2.1초)에 걸쳐 아주 천천히 퍼진다. 판이 스러지기
+    // 전에 먼저 사그라들어야 '가루가 뿌려지고 글이 정리됐다'는 차례로
+    // 읽힌다.
+    final u = (t / 0.62).clamp(0.0, 1.0);
     if (u >= 1.0) return;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final reach = size.shortestSide * 0.42;
-    final ease = Curves.easeOutCubic.transform(u);
-    // 처음엔 확 밝았다가 사그라든다.
-    final fade = (1 - u) * (1 - u);
+    final reach = size.shortestSide * 0.46;
+    // easeOutCubic은 앞이 너무 빠르다 — '터진다'로 보인다.
+    // easeOutSine은 처음부터 끝까지 고르게 흘러서 '떠간다'로 보인다.
+    final ease = Curves.easeOutSine.transform(u);
+    // 처음엔 없다가 차오르고, 끝에서 사그라든다. 확 켜졌다 꺼지는 것보다
+    // 훨씬 조용하다.
+    final fade = math.sin(math.pi * u);
 
     final p = Paint()..style = PaintingStyle.fill;
 
@@ -1715,7 +1747,10 @@ class _HomeScreenState extends State<HomeScreen> {
   /// 맨 아래는 앱 설정, 그 사이에 구분선. 두 화면의 메뉴가 다르게 생기면
   /// 사용자는 매번 새로 배운다.
   Widget _listMenu(L10n l) => PopupMenuButton<String>(
-        icon: const Icon(Icons.more_horiz),
+        // 2026-08-17 소유자 요청 — 삼선. '...'은 애플이 '더 있음'을 뜻할 때
+        // 쓰는 표시고, 삼선은 '메뉴'를 뜻한다. 이 자리는 이제 불러오기·
+        // 내보내기·휴지통·설정이 들어 있는 진짜 메뉴다.
+        icon: const Icon(Icons.menu),
         tooltip: l.moreTooltip,
         // 메뉴가 '...' 버튼을 덮으면 같은 자리를 다시 눌러 닫을 수 없다
         // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
@@ -3009,8 +3044,10 @@ class _EditorScreenState extends State<EditorScreen> {
         // (2026-08-17 소유자 요청). 되돌리기 버튼은 안 붙인다 — 사라지는
         // 알림에 버튼을 달면 누르려는 순간 사라진다. 되돌리기는 아래 도구
         // 막대에 늘 있고, 무엇이 바뀌었는지는 밑줄에 계속 남는다.
-        unawaited(
-            showMagic(context, L10n.of(context).appliedTitle, r.summary));
+        // 요약은 안 넘긴다. 몇 개를 지웠는지는 사용자가 알고 싶은 것이
+        // 아니다(2026-08-17 소유자 지적). 자세한 셈은 편집 화면 밑줄에
+        // 그대로 남는다.
+        unawaited(showMagic(context, L10n.of(context).appliedTitle, ''));
       }
     }
   }
@@ -3777,7 +3814,9 @@ class _EditorScreenState extends State<EditorScreen> {
             // 2026-08-16 소유자 요청 — 애플 메모장처럼 '...' 메뉴.
             // 이 메모에 대한 설정이 앞으로 여기에 쌓인다. 지금은 삭제 하나.
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_horiz),
+              // 목록 화면과 같은 삼선. 한쪽만 바꾸면 같은 일을 하는 버튼이
+              // 두 모양이 된다(2026-08-17).
+              icon: const Icon(Icons.menu),
               tooltip: l.moreTooltip,
               // 2026-08-16 소유자 신고 — 메뉴가 '...' 버튼 위를 덮어서, 같은
               // 자리를 다시 눌러 닫는 토글이 안 됐다. 기본값이 버튼을 중심에
@@ -5943,60 +5982,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ]),
-          // 2026-08-16 — 내보내기.
+          // 2026-08-17 소유자 지적 — "'파일에서 가져오기' '내보내기' '백업
+          // 파일 저장'은 설정 안에 있는 게 아니라 '메뉴'의 항목이어야 한다."
           //
-          // 조사에서 나온 것: "갇힌다"는 인상은 그 자체로 이탈 사유다.
-          // 2023년 에버노트 가격 인상 이후 "내 글을 꺼낼 수 있나"가 리뷰의
-          // 필수 항목이 됐고, 한국은 더하다 — 네이버 메모 종료를 겪은
-          // 사용자들이 "언제 없어질지 모르는 걸 어떻게 믿고 쓰나"라고 한다.
-          // 그래서 이건 기능이 아니라 약속이다.
-          _secHeader(l.exportSectionTitle),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
-            child: Text(l.exportSubtitle,
-                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
-          ),
-          _card([
-            ListTile(
-              leading: Icon(Icons.file_open_outlined, color: context.c.sub),
-              title: Text(l.importFiles,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              subtitle: Text(l.importFilesSub,
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              onTap: () async {
-                final n = await ImportService.importFiles();
-                if (!mounted) return;
-                setState(() {});
-                _toast(context, n > 0 ? l.importDone(n) : l.importNone);
-              },
-            ),
-            _sep(),
-            ListTile(
-              leading: Icon(Icons.folder_zip_outlined, color: context.c.sub),
-              title: Text(l.exportAllMd,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              subtitle: Text(l.exportAllMdSub,
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              onTap: () async {
-                final ok = await ExportService.shareAllMarkdown();
-                if (!mounted) return;
-                if (!ok) _toast(context, l.exportEmpty);
-              },
-            ),
-            _sep(),
-            ListTile(
-              leading: Icon(Icons.settings_backup_restore, color: context.c.sub),
-              title: Text(l.exportBackup,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              subtitle: Text(l.exportBackupSub,
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              onTap: () async {
-                final ok = await ExportService.shareBackup();
-                if (!mounted) return;
-                if (!ok) _toast(context, l.exportFailed);
-              },
-            ),
-          ]),
+          // 맞다. 이 셋은 **하는 일**이지 **정하는 일**이 아니다. 설정은 한
+          // 번 정해 놓고 안 여는 곳이다. 원래 여기 넣었던 것은 넣을 자리가
+          // 거기밖에 없어서였고, 목록 화면에 메뉴가 생겼으니 옮길 게 아니라
+          // 여기서 빼야 한다.
+          //
+          // 두 군데에 다 두는 것도 답이 아니다. 같은 일이 두 곳에 있으면
+          // 사용자는 둘이 다른 일인가 의심한다.
+          //
+          // 내보내기가 왜 있어야 하는지에 대한 조사 결론은 그대로다 —
+          // "갇힌다"는 인상은 그 자체로 이탈 사유이고, 네이버 메모 종료를
+          // 겪은 한국 사용자는 더 그렇다. 그건 기능이 아니라 약속이다.
+          // 약속은 그대로 두고 자리만 옮겼다.
+
           // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로
           // 느끼게 하는 여섯 원인 중 하나로 나왔다. 애플 메모 30일, 구글 킵
           // 7일이 관습이라 30일을 따랐다(독자 설계 금지).

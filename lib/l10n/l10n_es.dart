@@ -601,7 +601,7 @@ class L10nEs extends L10n {
   String get menuPrefs => 'Ajustes…';
 
   @override
-  String get appliedTitle => 'Listo';
+  String get appliedTitle => 'Todo bien ordenado';
 
   @override
   String pastedFrom(String src, String date) =>
