@@ -393,9 +393,21 @@ class L10nZhHans extends L10n {
   @override
   String get premiumLifetime => '买断 · US\$29.99';
   @override
-  String get premiumMonthly => '订阅 · US\$1.99/月';
+  String get premiumMonthly => '订阅 · US\$2.99/月';
   @override
   String get premiumComingSoon => '购买将在 App Store 正式版中开放，敬请期待。';
+  @override
+  String get limitTitle => '今天的免费次数已用完';
+  @override
+  String limitTidyBody(int n) => '免费版每天可整理 \$n 次，明天恢复。高级版不限次数。';
+  @override
+  String limitWizardBody(int n) => '免费版每天可使用向导 \$n 次，明天恢复。高级版不限次数。';
+  @override
+  String get limitSeePremium => '查看高级版';
+  @override
+  String get premiumYearly => '年付 · US\$14.99/年';
+  @override
+  String get premiumLifetimeNote => '上市纪念价 · 原价 US\$39.99';
   @override
   String get themeTitle => '外观模式';
   @override

@@ -394,9 +394,21 @@ class L10nKo extends L10n {
   @override
   String get premiumLifetime => '평생 이용권 · US\$29.99';
   @override
-  String get premiumMonthly => '월간 구독 · 월 US\$1.99';
+  String get premiumMonthly => '월간 구독 · 월 US\$2.99';
   @override
   String get premiumComingSoon => '결제는 스토어 출시 버전에서 활성화됩니다. 조금만 기다려 주세요.';
+  @override
+  String get limitTitle => '오늘 무료 사용을 다 쓰셨습니다';
+  @override
+  String limitTidyBody(int n) => '무료로는 하루에 \$n번까지 정리할 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+  @override
+  String limitWizardBody(int n) => '무료로는 하루에 \$n번까지 마법사를 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+  @override
+  String get limitSeePremium => '프리미엄 보기';
+  @override
+  String get premiumYearly => '연간 구독 · 연 US\$14.99';
+  @override
+  String get premiumLifetimeNote => '출시 기념가 · 정가 US\$39.99';
   @override
   String get themeTitle => '화면 모드';
   @override

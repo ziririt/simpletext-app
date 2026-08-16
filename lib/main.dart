@@ -23,6 +23,7 @@ import 'core/mono_controller.dart';
 import 'core/mru.dart';
 import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
+import 'core/usage_gate.dart';
 import 'core/wizard.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -496,6 +497,16 @@ class AppSettings {
   String aiModel = 'gemini-2.5-flash-lite';
   List<String> aiModels = []; // '키 확인' 때 받아 온 실제 모델 목록
 
+  /// 프리미엄 구매 여부. 실제 결제(StoreKit/Play)는 스토어 제출 작업에서
+  /// 붙는다 — 그때 이 값을 영수증으로 채운다. 지금은 항상 false.
+  bool premium = false;
+
+  /// 무료 한도 계수기(정리·마법사). 규칙은 core/usage_gate.dart.
+  String tidyDate = '';
+  int tidyCount = 0;
+  String wizDate = '';
+  int wizCount = 0;
+
   /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
   String themeMode = 'system';
 
@@ -529,6 +540,11 @@ class AppSettings {
         'aiModels': aiModels,
         'adFreeDate': adFreeDate,
         'themeMode': themeMode,
+        'premium': premium,
+        'tidyDate': tidyDate,
+        'tidyCount': tidyCount,
+        'wizDate': wizDate,
+        'wizCount': wizCount,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -567,6 +583,11 @@ class AppSettings {
     s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
     s.adFreeDate = (j['adFreeDate'] ?? s.adFreeDate) as String;
     s.themeMode = (j['themeMode'] ?? s.themeMode) as String;
+    s.premium = (j['premium'] ?? s.premium) as bool;
+    s.tidyDate = (j['tidyDate'] ?? s.tidyDate) as String;
+    s.tidyCount = (j['tidyCount'] ?? s.tidyCount) as int;
+    s.wizDate = (j['wizDate'] ?? s.wizDate) as String;
+    s.wizCount = (j['wizCount'] ?? s.wizCount) as int;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -1423,7 +1444,62 @@ class _EditorScreenState extends State<EditorScreen> {
     return first.length > 40 ? first.substring(0, 40) : first;
   }
 
+  /// 무료 한도에 걸렸는가. 걸렸으면 프리미엄 안내를 띄우고 true를 준다.
+  ///
+  /// 2026-08-16 — 핵심 기능을 아예 막지 않는다. 가볍게 쓰는 사람은 한도에
+  /// 닿지도 않는다(정리 10회·마법사 3회). 매일 쓰는 사람에게만 결제 이유가
+  /// 생기게 하는 선이다. 규칙은 core/usage_gate.dart(테스트로 고정).
+  Future<bool> _blockedByLimit({required bool wizard}) async {
+    final s = store.settings;
+    final now = DateTime.now();
+    final ok = canUse(
+      now: now,
+      savedDate: wizard ? s.wizDate : s.tidyDate,
+      savedCount: wizard ? s.wizCount : s.tidyCount,
+      limit: wizard ? kFreeWizardPerDay : kFreeTidyPerDay,
+      premium: s.premium,
+    );
+    if (ok) return false;
+    if (!mounted) return true;
+    final go = await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog.adaptive(
+        title: Text(L10n.of(ctx).limitTitle),
+        content: Text(wizard
+            ? L10n.of(ctx).limitWizardBody(kFreeWizardPerDay)
+            : L10n.of(ctx).limitTidyBody(kFreeTidyPerDay)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(L10n.of(ctx).cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(L10n.of(ctx).limitSeePremium)),
+        ],
+      ),
+    );
+    if (go == true && mounted) {
+      await Navigator.push(context,
+          MaterialPageRoute(builder: (_) => const PremiumScreen()));
+    }
+    return true;
+  }
+
+  Future<void> _bumpUse({required bool wizard}) async {
+    final s = store.settings;
+    final now = DateTime.now();
+    if (wizard) {
+      s.wizCount = nextCount(now: now, savedDate: s.wizDate, savedCount: s.wizCount);
+      s.wizDate = usageDateKey(now);
+    } else {
+      s.tidyCount = nextCount(now: now, savedDate: s.tidyDate, savedCount: s.tidyCount);
+      s.tidyDate = usageDateKey(now);
+    }
+    await store.persistSettings();
+  }
+
   Future<void> _runTidyWithPreset(Preset preset) async {
+    if (await _blockedByLimit(wizard: false)) return;
     await _save();
     final r = tidy(note.body, store.effOpts(preset));
     if (!mounted) return;
@@ -1441,6 +1517,7 @@ class _EditorScreenState extends State<EditorScreen> {
           )
         : true;
     if (apply == true) {
+      await _bumpUse(wizard: false);
       note.history.add(note.body);
       if (note.history.length > 30) note.history.removeAt(0);
       if (note.originalBody.isEmpty) note.originalBody = note.body;
@@ -1702,6 +1779,8 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _showWizardDialog() async {
+    if (await _blockedByLimit(wizard: true)) return;
+    await _bumpUse(wizard: true);
     final cmdCtl = TextEditingController();
     List<String> applied = [];
     List<String> unknown = [];
@@ -2575,13 +2654,30 @@ class PremiumScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15.5, height: 1.55, color: context.c.guideInk)),
           const SizedBox(height: 24),
+          // 2026-08-16 확정 가격(경쟁 앱 조사 후): 평생이 주력, 연간이
+          // 물량, 월간은 진입용. 평생 정가 US\$39.99는 UpNote와 같은 값이고
+          // 연간의 2.7배라 구독을 잠식하지 않는다. 출시 3개월은 기념가.
           FilledButton(
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: () => _toast(context, l.premiumComingSoon),
-            child: Text(l.premiumLifetime,
+            child: Column(children: [
+              Text(l.premiumLifetime,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              Text(l.premiumLifetimeNote,
+                  style: const TextStyle(fontSize: 12.5, height: 1.3)),
+            ]),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            onPressed: () => _toast(context, l.premiumComingSoon),
+            child: Text(l.premiumYearly,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 10),

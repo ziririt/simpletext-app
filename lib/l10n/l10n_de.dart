@@ -397,9 +397,21 @@ class L10nDe extends L10n {
   @override
   String get premiumLifetime => 'Lebenslang · US\$29.99';
   @override
-  String get premiumMonthly => 'Monatlich · US\$1.99/Monat';
+  String get premiumMonthly => 'Monatlich · US\$2.99/Monat';
   @override
   String get premiumComingSoon => 'Käufe werden in der App-Store-Version freigeschaltet. Bald ist es so weit.';
+  @override
+  String get limitTitle => 'Die kostenlosen Durchläufe für heute sind aufgebraucht';
+  @override
+  String limitTidyBody(int n) => 'Der Gratisplan enthält \$n Bereinigungen pro Tag. Morgen geht es weiter – Premium hebt das Limit auf.';
+  @override
+  String limitWizardBody(int n) => 'Der Gratisplan enthält \$n Assistent-Läufe pro Tag. Morgen geht es weiter – Premium hebt das Limit auf.';
+  @override
+  String get limitSeePremium => 'Premium ansehen';
+  @override
+  String get premiumYearly => 'Jährlich · US\$14.99/Jahr';
+  @override
+  String get premiumLifetimeNote => 'Einführungspreis · regulär US\$39.99';
   @override
   String get themeTitle => 'Erscheinungsbild';
   @override

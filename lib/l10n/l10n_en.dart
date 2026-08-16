@@ -396,9 +396,21 @@ class L10nEn extends L10n {
   @override
   String get premiumLifetime => 'Lifetime · US\$29.99';
   @override
-  String get premiumMonthly => 'Monthly · US\$1.99/mo';
+  String get premiumMonthly => 'Monthly · US\$2.99/mo';
   @override
   String get premiumComingSoon => 'Purchases will be enabled in the App Store release. Almost there.';
+  @override
+  String get limitTitle => 'You have used up today\'s free runs';
+  @override
+  String limitTidyBody(int n) => 'The free plan includes \$n cleanups a day. It resets tomorrow — Premium removes the limit.';
+  @override
+  String limitWizardBody(int n) => 'The free plan includes \$n wizard runs a day. It resets tomorrow — Premium removes the limit.';
+  @override
+  String get limitSeePremium => 'See Premium';
+  @override
+  String get premiumYearly => 'Yearly · US\$14.99/yr';
+  @override
+  String get premiumLifetimeNote => 'Launch price · regularly US\$39.99';
   @override
   String get themeTitle => 'Appearance';
   @override

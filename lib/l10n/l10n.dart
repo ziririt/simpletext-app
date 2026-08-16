@@ -286,6 +286,12 @@ abstract class L10n {
   String get premiumLifetime;
   String get premiumMonthly;
   String get premiumComingSoon;
+  String get limitTitle;
+  String limitTidyBody(int n);
+  String limitWizardBody(int n);
+  String get limitSeePremium;
+  String get premiumYearly;
+  String get premiumLifetimeNote;
   String get themeTitle;
   String get themeSystem;
   String get themeLight;
@@ -473,6 +479,10 @@ abstract class L10n {
         'premiumLifetime': premiumLifetime,
         'premiumMonthly': premiumMonthly,
         'premiumComingSoon': premiumComingSoon,
+        'limitTitle': limitTitle,
+        'limitSeePremium': limitSeePremium,
+        'premiumYearly': premiumYearly,
+        'premiumLifetimeNote': premiumLifetimeNote,
         'themeTitle': themeTitle,
         'themeSystem': themeSystem,
         'themeLight': themeLight,

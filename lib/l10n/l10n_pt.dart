@@ -396,9 +396,21 @@ class L10nPt extends L10n {
   @override
   String get premiumLifetime => 'Vitalício · US\$29.99';
   @override
-  String get premiumMonthly => 'Mensal · US\$1.99/mês';
+  String get premiumMonthly => 'Mensal · US\$2.99/mês';
   @override
   String get premiumComingSoon => 'As compras serão ativadas na versão da App Store. Falta pouco.';
+  @override
+  String get limitTitle => 'Você usou todos os usos gratuitos de hoje';
+  @override
+  String limitTidyBody(int n) => 'O plano gratuito inclui \$n limpezas por dia. Renova amanhã; o Premium tira o limite.';
+  @override
+  String limitWizardBody(int n) => 'O plano gratuito inclui \$n usos do assistente por dia. Renova amanhã; o Premium tira o limite.';
+  @override
+  String get limitSeePremium => 'Ver Premium';
+  @override
+  String get premiumYearly => 'Anual · US\$14.99/ano';
+  @override
+  String get premiumLifetimeNote => 'Preço de lançamento · normal US\$39.99';
   @override
   String get themeTitle => 'Aparência';
   @override

@@ -394,9 +394,21 @@ class L10nJa extends L10n {
   @override
   String get premiumLifetime => '買い切り · US\$29.99';
   @override
-  String get premiumMonthly => '月額 · US\$1.99/月';
+  String get premiumMonthly => '月額 · US\$2.99/月';
   @override
   String get premiumComingSoon => '購入はApp Store公開版で有効になります。もうしばらくお待ちください。';
+  @override
+  String get limitTitle => '本日の無料利用を使い切りました';
+  @override
+  String limitTidyBody(int n) => '無料では1日\$n回まで整理できます。明日また使えます。プレミアムなら制限はありません。';
+  @override
+  String limitWizardBody(int n) => '無料では1日\$n回までウィザードを使えます。明日また使えます。プレミアムなら制限はありません。';
+  @override
+  String get limitSeePremium => 'プレミアムを見る';
+  @override
+  String get premiumYearly => '年間 · 年US\$14.99';
+  @override
+  String get premiumLifetimeNote => '発売記念価格 · 通常US\$39.99';
   @override
   String get themeTitle => '画面モード';
   @override

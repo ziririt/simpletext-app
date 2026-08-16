@@ -397,9 +397,21 @@ class L10nFr extends L10n {
   @override
   String get premiumLifetime => 'À vie · US\$29.99';
   @override
-  String get premiumMonthly => 'Mensuel · US\$1.99/mois';
+  String get premiumMonthly => 'Mensuel · US\$2.99/mois';
   @override
   String get premiumComingSoon => "Les achats seront activés dans la version App Store. C'est pour bientôt.";
+  @override
+  String get limitTitle => "Vous avez épuisé les usages gratuits du jour";
+  @override
+  String limitTidyBody(int n) => "L'offre gratuite comprend \$n nettoyages par jour. Réinitialisation demain ; Premium supprime la limite.";
+  @override
+  String limitWizardBody(int n) => "L'offre gratuite comprend \$n utilisations de l'assistant par jour. Réinitialisation demain ; Premium supprime la limite.";
+  @override
+  String get limitSeePremium => 'Voir Premium';
+  @override
+  String get premiumYearly => 'Annuel · US\$14.99/an';
+  @override
+  String get premiumLifetimeNote => 'Prix de lancement · normalement US\$39.99';
   @override
   String get themeTitle => 'Apparence';
   @override
