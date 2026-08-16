@@ -327,6 +327,36 @@ class L10nKo extends L10n {
   @override
   String get syncHelpNote =>
       '방금 앱을 깔았다면 준비에 1~2분이 걸리기도 합니다. 그때는 다시 확인만 눌러 보십시오.';
+
+  @override
+  String get sortFilterTooltip => '정렬·필터';
+
+  @override
+  String get sortFilterTitle => '정렬과 필터';
+
+  @override
+  String get sortLabel => '정렬';
+
+  @override
+  String get sortUpdated => '최근 수정순';
+
+  @override
+  String get sortCreated => '만든 순';
+
+  @override
+  String get sortByTitle => '제목순';
+
+  @override
+  String get filterSourceLabel => '출처';
+
+  @override
+  String get filterTagLabel => '태그';
+
+  @override
+  String get filterAll => '전체';
+
+  @override
+  String get filterReset => '초기화';
   @override
   String get settingsSecView => '보기';
   @override

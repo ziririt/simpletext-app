@@ -327,6 +327,36 @@ class L10nZhHant extends L10n {
   @override
   String get syncHelpNote =>
       '剛安裝完成時可能需要一兩分鐘準備。稍後點一下重新檢查即可。';
+
+  @override
+  String get sortFilterTooltip => '排序和篩選';
+
+  @override
+  String get sortFilterTitle => '排序與篩選';
+
+  @override
+  String get sortLabel => '排序';
+
+  @override
+  String get sortUpdated => '最近修改';
+
+  @override
+  String get sortCreated => '建立時間';
+
+  @override
+  String get sortByTitle => '標題';
+
+  @override
+  String get filterSourceLabel => '來源';
+
+  @override
+  String get filterTagLabel => '標籤';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get filterReset => '重設';
   @override
   String get settingsSecView => '顯示';
   @override

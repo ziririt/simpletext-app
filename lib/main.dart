@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
 import 'core/ai_provider.dart';
+import 'core/hangul.dart';
 import 'core/mono_controller.dart';
 import 'core/mru.dart';
 import 'core/tag_suggest.dart';
@@ -539,6 +540,16 @@ class AppSettings {
   int rulesStamp = 0;
   String rulesSig = '';
 
+  // 2026-08-16 — 정렬과 필터. 조사해 보니 "정렬 옵션이 없다"는 것이 앱을
+  // 미완성으로 느끼게 만드는 대표 원인 중 하나였다. 있으면 아무도 눈치
+  // 못 채고, 없으면 리뷰에 남는 종류다.
+  //
+  // 규칙과 달리 이건 기기마다 다른 게 자연스러워서 동기화하지 않는다
+  // (맥에서는 제목순, 폰에서는 최근순으로 보고 싶을 수 있다).
+  String sortMode = 'updated'; // updated | created | title
+  String filterSource = ''; // 빈 문자열 = 전체
+  String filterTag = '';
+
   /// 화면 모드: system(기기 따름) | light | dark. 2026-08-16 소유자 요청.
   String themeMode = 'system';
 
@@ -584,6 +595,9 @@ class AppSettings {
         'trialNoticeShown': trialNoticeShown,
         'rulesStamp': rulesStamp,
         'rulesSig': rulesSig,
+        'sortMode': sortMode,
+        'filterSource': filterSource,
+        'filterTag': filterTag,
         'favPrompts': favPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
@@ -636,6 +650,9 @@ class AppSettings {
     s.trialNoticeShown = (j['trialNoticeShown'] ?? s.trialNoticeShown) as bool;
     s.rulesStamp = (j['rulesStamp'] ?? s.rulesStamp) as int;
     s.rulesSig = (j['rulesSig'] ?? s.rulesSig) as String;
+    s.sortMode = (j['sortMode'] ?? s.sortMode) as String;
+    s.filterSource = (j['filterSource'] ?? s.filterSource) as String;
+    s.filterTag = (j['filterTag'] ?? s.filterTag) as String;
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
@@ -904,16 +921,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
-    final q = query.trim().toLowerCase();
+    final s = store.settings;
+    final q = query.trim();
     final filtered = store.notes.where((n) {
+      if (s.filterSource.isNotEmpty && n.source != s.filterSource) return false;
+      if (s.filterTag.isNotEmpty && !n.tags.contains(s.filterTag)) return false;
       if (q.isEmpty) return true;
-      final hay = '${n.title} ${n.body} ${n.tags.join(' ')} ${n.source}'.toLowerCase();
-      return hay.contains(q);
+      // 2026-08-16 — contains에서 hangulContains로 바꿨다. "ㅌㅅㄹ"을 치면
+      // "테슬라"가 나와야 한다. 한국 사용자에게 초성 검색은 있으면 좋은
+      // 기능이 아니라 기본 기대치다(규칙은 core/hangul.dart, 테스트로 고정).
+      return hangulContains(
+          '${n.title} ${n.body} ${n.tags.join(' ')} ${n.source}', q);
     }).toList();
-    final pinned = filtered.where((n) => n.pinned).toList()
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-    final rest = filtered.where((n) => !n.pinned).toList()
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    int order(Note a, Note b) {
+      switch (s.sortMode) {
+        case 'created':
+          return b.createdAt.compareTo(a.createdAt);
+        case 'title':
+          String key(Note n) =>
+              (n.title.trim().isNotEmpty ? n.title : n.body).trim().toLowerCase();
+          final r = key(a).compareTo(key(b));
+          // 제목이 같으면 최근 것이 위로. 안 그러면 순서가 그때그때 달라져
+          // 목록이 흔들리는 것처럼 보인다.
+          return r != 0 ? r : b.updatedAt.compareTo(a.updatedAt);
+        default:
+          return b.updatedAt.compareTo(a.updatedAt);
+      }
+    }
+
+    // 고정된 메모는 정렬 방식과 무관하게 늘 위다. '고정'의 뜻이 그거다.
+    final pinned = filtered.where((n) => n.pinned).toList()..sort(order);
+    final rest = filtered.where((n) => !n.pinned).toList()..sort(order);
 
     return Scaffold(
       body: !store.loaded
@@ -972,6 +1011,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 onChanged: (v) => setState(() => query = v),
                               )),
+                              // 정렬·필터. 뭔가 걸려 있으면 아이콘에 색이
+                              // 들어가 "지금 목록이 전부가 아니다"를 알린다.
+                              // 이게 없으면 사용자는 메모가 사라진 줄 안다.
+                              IconButton(
+                                icon: Icon(Icons.tune,
+                                    color: (s.sortMode != 'updated' ||
+                                            s.filterSource.isNotEmpty ||
+                                            s.filterTag.isNotEmpty)
+                                        ? context.c.accent
+                                        : null),
+                                tooltip: l.sortFilterTooltip,
+                                onPressed: () async {
+                                  await showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (_) => const SortFilterSheet(),
+                                  );
+                                  if (mounted) setState(() {});
+                                },
+                              ),
                               IconButton(
                                 icon: const Icon(Icons.settings_outlined),
                                 tooltip: l.settingsTooltip,
@@ -2848,6 +2908,157 @@ class _PreviewScreenState extends State<PreviewScreen> {
 /// 실제 결제(StoreKit/Play 결제)는 스토어 제출 작업에서 붙는다. 지금은
 /// 안내와 버튼 자리를 만들고, 누르면 준비 중임을 알린다. 후원 시트와
 /// 설정 상단 배너가 여기로 이끈다.
+/// 정렬과 필터를 고르는 시트.
+///
+/// 메뉴가 아니라 시트인 이유: 태그가 여러 개면 메뉴로는 감당이 안 되고,
+/// 지금 무엇이 걸려 있는지 한눈에 보여 줘야 하기 때문이다. 목록에 메모가
+/// 안 보이는데 왜 안 보이는지 모르는 상태가 가장 나쁘다.
+class SortFilterSheet extends StatefulWidget {
+  const SortFilterSheet({super.key});
+
+  @override
+  State<SortFilterSheet> createState() => _SortFilterSheetState();
+}
+
+class _SortFilterSheetState extends State<SortFilterSheet> {
+  final store = Store.instance;
+
+  Future<void> _save() async {
+    setState(() {});
+    await store.persistSettings();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    final s = store.settings;
+
+    // 실제로 쓰인 출처·태그만 보여 준다. 안 쓰는 항목을 늘어놓으면
+    // 고르는 일이 일이 된다.
+    final sources = <String>{};
+    final tagCount = <String, int>{};
+    for (final n in store.notes) {
+      if (n.source.trim().isNotEmpty) sources.add(n.source);
+      for (final t in n.tags) {
+        tagCount[t] = (tagCount[t] ?? 0) + 1;
+      }
+    }
+    final tags = tagCount.keys.toList()
+      ..sort((a, b) => tagCount[b]!.compareTo(tagCount[a]!));
+    final topTags = tags.take(14).toList();
+
+    Widget chip(String label, bool on, VoidCallback tap) => Padding(
+          padding: const EdgeInsets.only(right: 8, bottom: 8),
+          child: ChoiceChip(
+            label: Text(label),
+            selected: on,
+            onSelected: (_) => tap(),
+            showCheckmark: false,
+            selectedColor: c.accent,
+            labelStyle: TextStyle(
+                color: on ? Colors.white : c.guideInk,
+                fontWeight: on ? FontWeight.w700 : FontWeight.w500),
+          ),
+        );
+
+    Widget section(String title, List<Widget> chips) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 14, bottom: 8),
+              child: Text(title,
+                  style: TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w700, color: c.sub)),
+            ),
+            Wrap(children: chips),
+          ],
+        );
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                      color: c.line, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Row(children: [
+                Expanded(
+                  child: Text(l.sortFilterTitle,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w800)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    s.sortMode = 'updated';
+                    s.filterSource = '';
+                    s.filterTag = '';
+                    _save();
+                  },
+                  child: Text(l.filterReset),
+                ),
+              ]),
+              section(l.sortLabel, [
+                chip(l.sortUpdated, s.sortMode == 'updated', () {
+                  s.sortMode = 'updated';
+                  _save();
+                }),
+                chip(l.sortCreated, s.sortMode == 'created', () {
+                  s.sortMode = 'created';
+                  _save();
+                }),
+                chip(l.sortByTitle, s.sortMode == 'title', () {
+                  s.sortMode = 'title';
+                  _save();
+                }),
+              ]),
+              if (sources.isNotEmpty)
+                section(l.filterSourceLabel, [
+                  chip(l.filterAll, s.filterSource.isEmpty, () {
+                    s.filterSource = '';
+                    _save();
+                  }),
+                  for (final v in sources)
+                    chip(v, s.filterSource == v, () {
+                      s.filterSource = s.filterSource == v ? '' : v;
+                      _save();
+                    }),
+                ]),
+              if (topTags.isNotEmpty)
+                section(l.filterTagLabel, [
+                  chip(l.filterAll, s.filterTag.isEmpty, () {
+                    s.filterTag = '';
+                    _save();
+                  }),
+                  for (final t in topTags)
+                    chip(t, s.filterTag == t, () {
+                      s.filterTag = s.filterTag == t ? '' : t;
+                      _save();
+                    }),
+                ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 아이클라우드가 꺼져 있을 때 여는 안내.
 ///
 /// 왜 '설정으로 바로 가기'가 아니라 글인가: 애플이 앱에서 열 수 있게 허용한

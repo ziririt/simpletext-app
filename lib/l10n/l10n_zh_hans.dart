@@ -327,6 +327,36 @@ class L10nZhHans extends L10n {
   @override
   String get syncHelpNote =>
       '刚安装完成时可能需要一两分钟准备。稍后点按重新检查即可。';
+
+  @override
+  String get sortFilterTooltip => '排序和筛选';
+
+  @override
+  String get sortFilterTitle => '排序与筛选';
+
+  @override
+  String get sortLabel => '排序';
+
+  @override
+  String get sortUpdated => '最近修改';
+
+  @override
+  String get sortCreated => '创建时间';
+
+  @override
+  String get sortByTitle => '标题';
+
+  @override
+  String get filterSourceLabel => '来源';
+
+  @override
+  String get filterTagLabel => '标签';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get filterReset => '重置';
   @override
   String get settingsSecView => '显示';
   @override

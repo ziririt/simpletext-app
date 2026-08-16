@@ -328,6 +328,36 @@ class L10nPt extends L10n {
   @override
   String get syncHelpNote =>
       'Se você acabou de instalar o app, pode levar um ou dois minutos até ficar pronto. Toque em Verificar novamente.';
+
+  @override
+  String get sortFilterTooltip => 'Ordenar e filtrar';
+
+  @override
+  String get sortFilterTitle => 'Ordenar e filtrar';
+
+  @override
+  String get sortLabel => 'Ordem';
+
+  @override
+  String get sortUpdated => 'Editado recentemente';
+
+  @override
+  String get sortCreated => 'Data de criação';
+
+  @override
+  String get sortByTitle => 'Título';
+
+  @override
+  String get filterSourceLabel => 'Origem';
+
+  @override
+  String get filterTagLabel => 'Tag';
+
+  @override
+  String get filterAll => 'Tudo';
+
+  @override
+  String get filterReset => 'Redefinir';
   @override
   String get settingsSecView => 'Visualização';
   @override

@@ -329,6 +329,36 @@ class L10nDe extends L10n {
   @override
   String get syncHelpNote =>
       'Direkt nach der Installation kann die Vorbereitung ein bis zwei Minuten dauern. Tippen Sie dann einfach auf Erneut prüfen.';
+
+  @override
+  String get sortFilterTooltip => 'Sortieren & filtern';
+
+  @override
+  String get sortFilterTitle => 'Sortieren und filtern';
+
+  @override
+  String get sortLabel => 'Sortierung';
+
+  @override
+  String get sortUpdated => 'Zuletzt bearbeitet';
+
+  @override
+  String get sortCreated => 'Erstellungsdatum';
+
+  @override
+  String get sortByTitle => 'Titel';
+
+  @override
+  String get filterSourceLabel => 'Quelle';
+
+  @override
+  String get filterTagLabel => 'Tag';
+
+  @override
+  String get filterAll => 'Alle';
+
+  @override
+  String get filterReset => 'Zurücksetzen';
   @override
   String get settingsSecView => 'Anzeige';
   @override

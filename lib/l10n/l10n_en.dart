@@ -328,6 +328,36 @@ class L10nEn extends L10n {
   @override
   String get syncHelpNote =>
       'If you just installed the app, it can take a minute or two to get ready. Just tap Check again.';
+
+  @override
+  String get sortFilterTooltip => 'Sort & filter';
+
+  @override
+  String get sortFilterTitle => 'Sort and filter';
+
+  @override
+  String get sortLabel => 'Sort';
+
+  @override
+  String get sortUpdated => 'Last edited';
+
+  @override
+  String get sortCreated => 'Date created';
+
+  @override
+  String get sortByTitle => 'Title';
+
+  @override
+  String get filterSourceLabel => 'Source';
+
+  @override
+  String get filterTagLabel => 'Tag';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterReset => 'Reset';
   @override
   String get settingsSecView => 'Display';
   @override

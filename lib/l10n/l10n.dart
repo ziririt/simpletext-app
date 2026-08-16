@@ -244,6 +244,16 @@ abstract class L10n {
   String get syncOpenSettings;
   String get syncRecheck;
   String get syncHelpNote;
+  String get sortFilterTooltip;
+  String get sortFilterTitle;
+  String get sortLabel;
+  String get sortUpdated;
+  String get sortCreated;
+  String get sortByTitle;
+  String get filterSourceLabel;
+  String get filterTagLabel;
+  String get filterAll;
+  String get filterReset;
   String get settingsSecView;
   String get settingsSecTidy;
   String get settingsSecWhen;
@@ -453,6 +463,16 @@ abstract class L10n {
         'syncOpenSettings': syncOpenSettings,
         'syncRecheck': syncRecheck,
         'syncHelpNote': syncHelpNote,
+        'sortFilterTooltip': sortFilterTooltip,
+        'sortFilterTitle': sortFilterTitle,
+        'sortLabel': sortLabel,
+        'sortUpdated': sortUpdated,
+        'sortCreated': sortCreated,
+        'sortByTitle': sortByTitle,
+        'filterSourceLabel': filterSourceLabel,
+        'filterTagLabel': filterTagLabel,
+        'filterAll': filterAll,
+        'filterReset': filterReset,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,
         'settingsSecWhen': settingsSecWhen,

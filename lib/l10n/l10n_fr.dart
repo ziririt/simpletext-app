@@ -329,6 +329,36 @@ class L10nFr extends L10n {
   @override
   String get syncHelpNote =>
       'Juste après l installation, la préparation peut prendre une ou deux minutes. Touchez alors Vérifier à nouveau.';
+
+  @override
+  String get sortFilterTooltip => 'Trier et filtrer';
+
+  @override
+  String get sortFilterTitle => 'Trier et filtrer';
+
+  @override
+  String get sortLabel => 'Tri';
+
+  @override
+  String get sortUpdated => 'Modifié récemment';
+
+  @override
+  String get sortCreated => 'Date de création';
+
+  @override
+  String get sortByTitle => 'Titre';
+
+  @override
+  String get filterSourceLabel => 'Source';
+
+  @override
+  String get filterTagLabel => 'Tag';
+
+  @override
+  String get filterAll => 'Tout';
+
+  @override
+  String get filterReset => 'Réinitialiser';
   @override
   String get settingsSecView => 'Affichage';
   @override

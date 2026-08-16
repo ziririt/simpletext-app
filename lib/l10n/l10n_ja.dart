@@ -327,6 +327,36 @@ class L10nJa extends L10n {
   @override
   String get syncHelpNote =>
       'インストール直後は準備に1〜2分かかることがあります。その場合は再確認を押してください。';
+
+  @override
+  String get sortFilterTooltip => '並べ替え・絞り込み';
+
+  @override
+  String get sortFilterTitle => '並べ替えと絞り込み';
+
+  @override
+  String get sortLabel => '並べ替え';
+
+  @override
+  String get sortUpdated => '最近の変更順';
+
+  @override
+  String get sortCreated => '作成順';
+
+  @override
+  String get sortByTitle => 'タイトル順';
+
+  @override
+  String get filterSourceLabel => '出典';
+
+  @override
+  String get filterTagLabel => 'タグ';
+
+  @override
+  String get filterAll => 'すべて';
+
+  @override
+  String get filterReset => 'リセット';
   @override
   String get settingsSecView => '表示';
   @override
