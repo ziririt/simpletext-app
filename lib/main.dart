@@ -41,6 +41,21 @@ import 'version.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 앱이 뒤로 갈 때 모아 둔 저장을 즉시 비운다.
+  //
+  // 사용자가 앱을 스와이프로 닫으면 그 뒤에는 우리 코드가 돌지 않는다.
+  // 여기가 마지막 기회다. 화면 하나에 매달아 두지 않는 이유는 그 화면이
+  // 사라질 때 같이 사라지기 때문이다.
+  //
+  // 돌려받은 값을 변수에 담지 않는다. 생성자가 스스로를 프레임워크의 관찰자
+  // 목록에 넣으므로 그것만으로 살아 있고, 우리는 앱이 끝날 때까지 떼지
+  // 않는다. 변수에 담아 두면 읽는 곳이 없어 analyze가 잡는다(실제로 잡혔다).
+  AppLifecycleListener(
+    onInactive: () => unawaited(Store.instance.flush()),
+    onPause: () => unawaited(Store.instance.flush()),
+    onDetach: () => unawaited(Store.instance.flush()),
+  );
   // 날짜·시각을 사용자 언어로 찍기 위한 자료(intl). 이걸 안 깔면 영어(en_US)
   // 형식만 나온다 — 9개 언어로 파는 앱에서 이건 버그다. 자료는 앱에 함께
   // 들어 있어 네트워크를 타지 않는다.
@@ -810,6 +825,33 @@ class Store extends ChangeNotifier {
   /// 화면만 다시 그리게 한다(동기화가 남의 기기 것을 받아 왔을 때).
   void bump() => notifyListeners();
 
+  Timer? _writeTimer;
+  bool _dirty = false;
+
+  /// 메모가 바뀌었다고 알린다. **디스크 쓰기는 잠시 모았다가 한 번에 한다.**
+  ///
+  /// 2026-08-16 — 이걸 넣기 전에는 글자 하나 칠 때마다 persist()가 돌았다.
+  /// persist()는 **모든 메모를 통째로 JSON으로 바꿔서** 저장소에 쓰고,
+  /// 끝나면 notifyListeners()로 목록 화면까지 다시 그린다. 메모가 수백 개면
+  /// 타자 한 번에 그 일이 전부 일어난다 — 손이 무겁게 느껴지는 진짜 원인이다.
+  ///
+  /// 메모리에는 즉시 반영되므로 화면은 늘 최신이고, 잃어버릴 것도 없다.
+  /// 디스크에 늦게 닿을 뿐이다. 그 사이에 앱이 죽는 경우는 flush()로 막는다
+  /// (편집 화면을 나갈 때, 앱이 뒤로 갈 때).
+  void touch() {
+    _dirty = true;
+    _writeTimer?.cancel();
+    _writeTimer = Timer(const Duration(milliseconds: 700), () => unawaited(flush()));
+  }
+
+  /// 모아 둔 것을 지금 쓴다. 안 바뀌었으면 아무것도 안 한다.
+  Future<void> flush() async {
+    _writeTimer?.cancel();
+    if (!_dirty) return;
+    _dirty = false;
+    await persist();
+  }
+
   Future<void> persist() async {
     await persistLocalOnly();
     // 저장은 글자를 칠 때마다 일어난다. scheduleUp이 3초 모았다가 한 번만
@@ -1077,11 +1119,24 @@ class SplitShellState extends State<SplitShell> {
                           ),
                         ),
                       )
-                    : EditorScreen(
-                        key: ValueKey(id),
-                        noteId: id,
-                        autoTidy: _autoTidy,
-                        embedded: true,
+                    : AnimatedSwitcher(
+                        // 오른쪽 칸이 바뀔 때 뚝 끊기지 않게 아주 짧게 겹친다.
+                        // 180ms는 '봤다'와 '기다렸다' 사이의 값이다 — 더 길면
+                        // 목록을 훑을 때 답답해진다.
+                        //
+                        // 움직임을 줄이도록 설정한 사용자에게는 아예 끈다.
+                        // 그 설정은 취향이 아니라 어지럼증 대응인 경우가 많다.
+                        duration: MediaQuery.of(context).disableAnimations
+                            ? Duration.zero
+                            : const Duration(milliseconds: 180),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        child: EditorScreen(
+                          key: ValueKey(id),
+                          noteId: id,
+                          autoTidy: _autoTidy,
+                          embedded: true,
+                        ),
                       ),
               ),
             ]),
@@ -1806,6 +1861,7 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void dispose() {
     _tagTimer?.cancel();
+    unawaited(store.flush());
     titleCtl.dispose();
     bodyCtl.dispose();
     tagsCtl.dispose();
@@ -1948,7 +2004,9 @@ class _EditorScreenState extends State<EditorScreen> {
     }
 
     note.updatedAt = DateTime.now().millisecondsSinceEpoch;
-    await store.persist();
+    // persist()가 아니라 touch()다. 글자마다 디스크에 쓰지 않는다 — 이유는
+    // Store.touch()의 주석에 적었다.
+    store.touch();
     _scheduleAutoTags();
   }
 
@@ -2095,6 +2153,9 @@ class _EditorScreenState extends State<EditorScreen> {
       final wasAuto = note.titleAuto;
       note.body = r.text;
       note.lastReport = r.summary;
+      // 정리가 끝난 순간. 눈으로는 글이 확 바뀌는데 손에는 아무것도 없으면
+      // '되긴 된 건가' 싶다. 가벼운 한 번이 그 틈을 메운다.
+      HapticFeedback.lightImpact();
       if (wasAuto) {
         note.title = _titleFrom(r.text);
         titleCtl.text = note.title;
@@ -2764,7 +2825,11 @@ class _EditorScreenState extends State<EditorScreen> {
     bodyCtl.bodyFontSize = store.settings.bodyFontSize;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) _save();
+        if (didPop) {
+          _save();
+          // 화면을 나가는 순간은 모아 둘 이유가 없다. 바로 쓴다.
+          unawaited(store.flush());
+        }
       },
       child: Scaffold(
         backgroundColor: context.c.panel,
@@ -2806,6 +2871,8 @@ class _EditorScreenState extends State<EditorScreen> {
               tooltip: note.pinned ? l.unpinTooltip : l.pinTooltip,
               onPressed: () async {
                 note.pinned = !note.pinned;
+                // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다. 이런 데만 준다.
+                HapticFeedback.selectionClick();
                 await store.persist();
                 setState(() {});
               },
@@ -2992,7 +3059,13 @@ class _EditorScreenState extends State<EditorScreen> {
                 focusNode: _titleFocus,
                 decoration: InputDecoration(
                     hintText: l.titleHint, border: InputBorder.none, isDense: true),
-                style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
+                // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
+                // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서 -0.02em
+                // 은 약 -0.45다. 본문은 0 그대로 둔다.
+                style: const TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.45),
                 onChanged: (v) {
                   // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
                   // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
@@ -3470,7 +3543,10 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
           child: ChoiceChip(
             label: Text(label),
             selected: on,
-            onSelected: (_) => tap(),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              tap();
+            },
             showCheckmark: false,
             selectedColor: c.accent,
             labelStyle: TextStyle(
