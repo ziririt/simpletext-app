@@ -279,6 +279,12 @@ abstract class L10n {
   String importDone(int n);
   String get sourceGuessSuffix;
   String get splitEmpty;
+  String get historyTitle;
+  String get historySub;
+  String get historyEmpty;
+  String get historyRestore;
+  String get historyOriginal;
+  String historyUnknownTime(int n);
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -523,6 +529,11 @@ abstract class L10n {
         'importAppend': importAppend,
         'sourceGuessSuffix': sourceGuessSuffix,
         'splitEmpty': splitEmpty,
+        'historyTitle': historyTitle,
+        'historySub': historySub,
+        'historyEmpty': historyEmpty,
+        'historyRestore': historyRestore,
+        'historyOriginal': historyOriginal,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

@@ -457,6 +457,29 @@ class L10nZhHant extends L10n {
   String get splitEmpty => '請在左側選擇一則備忘';
 
   @override
+  String get historyTitle =>
+      '版本紀錄';
+
+  @override
+  String get historySub =>
+      '可以回到整理或取代之前的文字';
+
+  @override
+  String get historyEmpty =>
+      '還沒有可回復的版本';
+
+  @override
+  String get historyRestore =>
+      '回復';
+
+  @override
+  String get historyOriginal =>
+      '貼上時的原文';
+
+  @override
+  String historyUnknownTime(int n) => '先前版本 \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date 來自 \$src';
 

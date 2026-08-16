@@ -457,6 +457,29 @@ class L10nJa extends L10n {
   String get splitEmpty => '左からメモを選んでください';
 
   @override
+  String get historyTitle =>
+      'バージョン履歴';
+
+  @override
+  String get historySub =>
+      '整理や置換の前の文に戻せます';
+
+  @override
+  String get historyEmpty =>
+      'まだ戻せる版がありません';
+
+  @override
+  String get historyRestore =>
+      '戻す';
+
+  @override
+  String get historyOriginal =>
+      '貼り付けた原文';
+
+  @override
+  String historyUnknownTime(int n) => '以前の版 \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$date に \$src から';
 

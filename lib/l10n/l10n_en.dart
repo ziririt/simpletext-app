@@ -458,6 +458,29 @@ class L10nEn extends L10n {
   String get splitEmpty => 'Pick a note on the left';
 
   @override
+  String get historyTitle =>
+      'Version history';
+
+  @override
+  String get historySub =>
+      'Go back to the text before a tidy or replace';
+
+  @override
+  String get historyEmpty =>
+      'Nothing to go back to yet';
+
+  @override
+  String get historyRestore =>
+      'Restore';
+
+  @override
+  String get historyOriginal =>
+      'As pasted';
+
+  @override
+  String historyUnknownTime(int n) => 'Earlier version \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       'from \$src on \$date';
 

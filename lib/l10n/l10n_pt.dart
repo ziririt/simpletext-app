@@ -458,6 +458,29 @@ class L10nPt extends L10n {
   String get splitEmpty => 'Escolha uma nota à esquerda';
 
   @override
+  String get historyTitle =>
+      'Histórico de versões';
+
+  @override
+  String get historySub =>
+      'Volte ao texto anterior a uma organização ou substituição';
+
+  @override
+  String get historyEmpty =>
+      'Ainda não há nada para restaurar';
+
+  @override
+  String get historyRestore =>
+      'Restaurar';
+
+  @override
+  String get historyOriginal =>
+      'Como foi colado';
+
+  @override
+  String historyUnknownTime(int n) => 'Versão anterior \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src em \$date';
 

@@ -459,6 +459,29 @@ class L10nFr extends L10n {
   String get splitEmpty => 'Choisissez une note à gauche';
 
   @override
+  String get historyTitle =>
+      'Historique des versions';
+
+  @override
+  String get historySub =>
+      'Revenez au texte avant un nettoyage ou un remplacement';
+
+  @override
+  String get historyEmpty =>
+      'Rien à restaurer pour l instant';
+
+  @override
+  String get historyRestore =>
+      'Restaurer';
+
+  @override
+  String get historyOriginal =>
+      'Tel que collé';
+
+  @override
+  String historyUnknownTime(int n) => 'Version précédente \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       'de \$src le \$date';
 

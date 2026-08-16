@@ -424,6 +424,13 @@ class Note {
   int createdAt;
   int updatedAt;
   List<String> history;
+
+  /// 각 이전 판을 남긴 시각. history와 같은 자리끼리 짝이다.
+  ///
+  /// 2026-08-16 — 예전 저장본에는 이 칸이 없다. 없으면 빈 목록이고, 그때는
+  /// 화면에 시각 대신 '이전 판 n'이라고 쓴다. 짝이 안 맞아도 죽지 않는다.
+  List<int> historyAt;
+
   String lastReport;
 
   /// 이 글을 붙여넣은 시각. 0이면 붙여넣은 게 아니라 직접 쓴 글이다.
@@ -459,13 +466,15 @@ class Note {
     required this.createdAt,
     required this.updatedAt,
     List<String>? history,
+    List<int>? historyAt,
     this.lastReport = '',
     this.pastedAt = 0,
     this.sourceAuto = false,
     this.titleAuto = true,
     this.tagsAuto = true,
   })  : tags = tags ?? [],
-        history = history ?? [];
+        history = history ?? [],
+        historyAt = historyAt ?? [];
 
   factory Note.fresh({String body = ''}) {
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -489,6 +498,7 @@ class Note {
         'createdAt': createdAt,
         'updatedAt': updatedAt,
         'history': history,
+        'historyAt': historyAt,
         'lastReport': lastReport,
         'pastedAt': pastedAt,
         'sourceAuto': sourceAuto,
@@ -503,6 +513,9 @@ class Note {
         originalBody: (j['originalBody'] ?? '') as String,
         pinned: (j['pinned'] ?? false) as bool,
         source: (j['source'] ?? '') as String,
+        historyAt: ((j['historyAt'] ?? const []) as List)
+            .map((e) => e is int ? e : 0)
+            .toList(),
         pastedAt: (j['pastedAt'] ?? 0) as int,
         sourceAuto: (j['sourceAuto'] ?? false) as bool,
         // 예전 저장본에는 이 칸이 없다. 없으면 그냥 true로 두면 안 된다 —
@@ -2142,7 +2155,11 @@ class _EditorScreenState extends State<EditorScreen> {
     if (apply == true) {
       await _bumpUse(wizard: false);
       note.history.add(note.body);
-      if (note.history.length > 30) note.history.removeAt(0);
+      note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
+      if (note.history.length > 30) {
+        note.history.removeAt(0);
+        if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
+      }
       if (note.originalBody.isEmpty) note.originalBody = note.body;
       // 제목은 "본문 맨 위 한 줄"이다(소유자 확정 2026-08-14).
       // 정리하면서 맨 윗줄이 바뀔 수 있으므로(출력 시각 줄 제거 등) 다시 뽑는다.
@@ -2615,7 +2632,11 @@ class _EditorScreenState extends State<EditorScreen> {
                         child: FilledButton(
                           onPressed: () async {
                             note.history.add(bodyCtl.text);
-                            if (note.history.length > 30) note.history.removeAt(0);
+                            note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
+                            if (note.history.length > 30) {
+                              note.history.removeAt(0);
+                              if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
+                            }
                             bodyCtl.text = aiResult!;
                             await _save();
                             if (ctx.mounted) Navigator.pop(ctx);
@@ -2643,7 +2664,11 @@ class _EditorScreenState extends State<EditorScreen> {
                       command: cmdCtl.text, settings: store.settings, body: bodyCtl.text);
                   if (r.bodyChanged) {
                     note.history.add(bodyCtl.text);
-                    if (note.history.length > 30) note.history.removeAt(0);
+                    note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
+                    if (note.history.length > 30) {
+                      note.history.removeAt(0);
+                      if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
+                    }
                     bodyCtl.text = r.body;
                   }
                   await store.persistSettings();
@@ -2746,7 +2771,11 @@ class _EditorScreenState extends State<EditorScreen> {
                     return;
                   }
                   note.history.add(bodyCtl.text);
-                  if (note.history.length > 30) note.history.removeAt(0);
+                  note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
+                  if (note.history.length > 30) {
+                    note.history.removeAt(0);
+                    if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
+                  }
                   bodyCtl.text = result;
                   if (saveRule) {
                     store.settings.customRules.add(CustomRule(find: find, replace: rawRepl, regex: useRegex));
@@ -2904,6 +2933,19 @@ class _EditorScreenState extends State<EditorScreen> {
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'history') {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => HistorySheet(note: note),
+                  );
+                  if (!mounted) return;
+                  bodyCtl.text = note.body;
+                  titleCtl.text = note.title;
+                  setState(() {});
+                  return;
+                }
                 if (v == 'append') {
                   final text = await ImportService.pickAppendText();
                   if (text == null || !mounted) return;
@@ -2958,6 +3000,14 @@ class _EditorScreenState extends State<EditorScreen> {
                     );
                 return [
                   // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
+                  PopupMenuItem<String>(
+                    value: 'history',
+                    child: Row(children: [
+                      Icon(Icons.history, size: 19, color: ctx.c.sub),
+                      const SizedBox(width: 10),
+                      Text(lm.historyTitle),
+                    ]),
+                  ),
                   PopupMenuItem<String>(
                     value: 'append',
                     child: Row(children: [
@@ -3169,6 +3219,12 @@ class _EditorScreenState extends State<EditorScreen> {
                 child: TextField(
                   controller: bodyCtl,
                   focusNode: _bodyFocus,
+                  // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
+                  //
+                  // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
+                  // '켜자마자 바로 쓸 수 있음'이었다. 한 번 더 눌러야 쓰기가
+                  // 시작되는 것은 기능이 아니라 마찰이다.
+                  autofocus: bodyCtl.text.isEmpty,
                   undoController: _undoCtl,
                   maxLines: null,
                   expands: true,
@@ -3237,6 +3293,9 @@ class _EditorScreenState extends State<EditorScreen> {
                             ? null
                             : () async {
                                 note.body = note.history.removeLast();
+                                if (note.historyAt.isNotEmpty) {
+                                  note.historyAt.removeLast();
+                                }
                                 note.lastReport = '';
                                 bodyCtl.text = note.body;
                                 await _save();
@@ -3494,6 +3553,174 @@ class _TrashScreenState extends State<TrashScreen> {
                 );
               },
             ),
+    );
+  }
+}
+
+/// 버전 기록 — 이전 판으로 되돌린다.
+///
+/// 2026-08-16. 조사에서 나온 것 중 값어치 대비 가장 싼 항목이다. 애플 메모를
+/// **떠나는** 가장 큰 이유가 버전 기록이 없다는 것이고, 에버노트에 **남는**
+/// 이유 중 하나가 있다는 것이다. 한 사용자의 말이 정확하다 — "거의 안 쓰지만
+/// 필요한 그 한 번이 값을 한다."
+///
+/// 우리는 되돌리기용 이전 판을 이미 쌓고 있었다(정리·바꾸기를 할 때마다).
+/// 데이터는 다 있었고 화면만 없었다.
+class HistorySheet extends StatefulWidget {
+  const HistorySheet({super.key, required this.note});
+
+  final Note note;
+
+  @override
+  State<HistorySheet> createState() => _HistorySheetState();
+}
+
+class _HistorySheetState extends State<HistorySheet> {
+  final store = Store.instance;
+
+  Future<void> _restore(String text) async {
+    final n = widget.note;
+    // 되돌리기 자체도 되돌릴 수 있어야 한다. 지금 글을 먼저 기록에 넣는다 —
+    // 안 그러면 '되돌리기'가 곧 '지금 글을 버리기'가 된다.
+    n.history.add(n.body);
+    n.historyAt.add(DateTime.now().millisecondsSinceEpoch);
+    if (n.history.length > 30) {
+      n.history.removeAt(0);
+      if (n.historyAt.isNotEmpty) n.historyAt.removeAt(0);
+    }
+    n.body = text;
+    n.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    await store.persist();
+    HapticFeedback.lightImpact();
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    final n = widget.note;
+    final tag = Localizations.localeOf(context).toLanguageTag();
+
+    // 최신 것이 위로. 그리고 맨 아래에 붙여넣은 원본을 둔다.
+    final items = <(String, String, String)>[];
+    for (var i = n.history.length - 1; i >= 0; i--) {
+      final at = i < n.historyAt.length ? n.historyAt[i] : 0;
+      String when;
+      if (at > 0) {
+        final t = DateTime.fromMillisecondsSinceEpoch(at);
+        try {
+          when = '${DateFormat.MMMd(tag).format(t)} ${DateFormat.Hm(tag).format(t)}';
+        } catch (_) {
+          when = DateFormat.Hm().format(t);
+        }
+      } else {
+        when = l.historyUnknownTime(i + 1);
+      }
+      items.add((when, n.history[i], _peek(n.history[i])));
+    }
+    final orig = n.originalBody.trim();
+    final hasOrig = orig.isNotEmpty && orig != n.body.trim();
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.75),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 38,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                    color: c.line, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            Text(l.historyTitle,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text(l.historySub,
+                style: TextStyle(fontSize: 14, height: 1.4, color: c.sub)),
+            const SizedBox(height: 12),
+            if (items.isEmpty && !hasOrig)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                child: Text(l.historyEmpty,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 15, color: c.guideInk)),
+              )
+            else
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final it in items)
+                      _row(it.$1, it.$3, () => _restore(it.$2)),
+                    if (hasOrig)
+                      _row(l.historyOriginal, _peek(n.originalBody),
+                          () => _restore(n.originalBody),
+                          accent: true),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _peek(String s) {
+    final one = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return one.length > 90 ? '${one.substring(0, 90)}…' : one;
+  }
+
+  Widget _row(String when, String peek, VoidCallback onTap,
+      {bool accent = false}) {
+    final c = context.c;
+    final l = L10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: c.panel,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Expanded(
+                    child: Text(when,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: accent ? c.accent : c.guideInk)),
+                  ),
+                  Text(l.historyRestore,
+                      style: TextStyle(fontSize: 13.5, color: c.accent)),
+                ]),
+                const SizedBox(height: 4),
+                Text(peek,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 13.5, height: 1.4, color: c.sub)),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

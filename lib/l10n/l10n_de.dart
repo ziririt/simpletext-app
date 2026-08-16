@@ -459,6 +459,29 @@ class L10nDe extends L10n {
   String get splitEmpty => 'Wählen Sie links eine Notiz';
 
   @override
+  String get historyTitle =>
+      'Versionsverlauf';
+
+  @override
+  String get historySub =>
+      'Zurück zum Text vor dem Aufräumen oder Ersetzen';
+
+  @override
+  String get historyEmpty =>
+      'Noch nichts zum Zurückgehen';
+
+  @override
+  String get historyRestore =>
+      'Wiederherstellen';
+
+  @override
+  String get historyOriginal =>
+      'Wie eingefügt';
+
+  @override
+  String historyUnknownTime(int n) => 'Frühere Version \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       'von \$src am \$date';
 

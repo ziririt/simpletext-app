@@ -457,6 +457,29 @@ class L10nKo extends L10n {
   String get splitEmpty => '왼쪽에서 메모를 고르세요';
 
   @override
+  String get historyTitle =>
+      '버전 기록';
+
+  @override
+  String get historySub =>
+      '정리하거나 바꾸기 전의 글로 돌아갈 수 있습니다';
+
+  @override
+  String get historyEmpty =>
+      '아직 되돌릴 판이 없습니다';
+
+  @override
+  String get historyRestore =>
+      '되돌리기';
+
+  @override
+  String get historyOriginal =>
+      '붙여넣은 원본';
+
+  @override
+  String historyUnknownTime(int n) => '이전 판 \$n';
+
+  @override
   String pastedFrom(String src, String date) =>
       '\$src에서 \$date에 가져옴';
 
