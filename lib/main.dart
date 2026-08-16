@@ -781,7 +781,7 @@ class Note {
 /// 사용자 정리 규칙 설정 (웹 프로토타입과 동일 기본값)
 class AppSettings {
   /// 저장된 설정의 판(版). 기본값을 바꿀 때 '한 번만' 갈아엎기 위해 쓴다.
-  static const int settingsRev = 1;
+  static const int settingsRev = 2;
 
   // 2026-08-14 소유자 신고 — **굵게**가 '굵게'로 바뀌어 나온다.
   // 따옴표가 필요 없는 자리에까지 따옴표가 붙어서 붙여넣기 뒤에 손이 간다.
@@ -807,9 +807,21 @@ class AppSettings {
   // 이 앱의 핵심이 표라서 기본값을 켜는 쪽이 맞다(CotEditor도 등폭이 기본).
   bool monoEditor = true;
 
-  /// 정리 결과를 먼저 보여 줄지. 미리보기 화면에서 '앞으로 생략'을 켜면 꺼지고,
-  /// 설정에서 다시 켤 수 있다(2026-08-14 소유자 요청).
-  bool previewBeforeApply = true;
+  /// 정리 결과를 먼저 보여 줄지.
+  ///
+  /// 2026-08-17 소유자 지적 — "정리하기 하면 왜 미리보기를 거치나? 이유가
+  /// 있나? 가능하면 안 거치면 좋겠다." 기본값을 껐다.
+  ///
+  /// 원래 켜 뒀던 까닭은 정리가 본문을 통째로 갈아 치우기 때문이었다.
+  /// 그 사이에 안전망이 셋으로 늘었다 — 판마다 쌓이는 이전 판(30개),
+  /// 버전 기록 화면, 붙여넣은 원본 보관. **안전망이 갖춰지면 확인 절차는
+  /// 안전이 아니라 마찰이다.** 열에 아홉은 그냥 '네'를 누른다.
+  ///
+  /// 대신 정리 뒤 알림에 '되돌리기' 버튼을 붙였다. 먼저 하고, 무엇을
+  /// 했는지 보여 주고, 한 번에 물릴 수 있게 한다.
+  ///
+  /// 미리보기를 좋아하는 사람을 위해 설정은 남긴다.
+  bool previewBeforeApply = false;
 
   /// 본문 글자 크기. 쓰던 메모앱과 눈으로 맞출 수 있게 설정에서 고른다
   /// (2026-08-14 — 고정값을 바꿔 가며 맞추려니 매번 설치 왕복이 생겼다).
@@ -954,7 +966,10 @@ class AppSettings {
     // 그래서 판(rev)이 없던 옛 설정에 한해 한 번만 갈아엎는다.
     // rev를 안 남기면, 사용자가 일부러 따옴표로 되돌려 놔도 다음 실행에서
     // 또 지워 버린다. 그건 고치는 게 아니라 설정을 뺏는 것이다.
-    if (((j['rev'] ?? 0) as int) < settingsRev && s.emphStyle == 'quoteSingle') {
+    // 2026-08-17 — 여기 settingsRev를 쓰고 있었다. 판을 올리는 순간 이
+    // 갈아엎기가 **다시 돈다**(따옴표로 되돌려 놓은 사람의 뜻을 두 번째로
+    // 뺏는다). 갈아엎기는 언제나 '내가 도입된 판'을 적어야 한다.
+    if (((j['rev'] ?? 0) as int) < 1 && s.emphStyle == 'quoteSingle') {
       s.emphStyle = 'remove';
     }
     s.hrMode = (j['hrMode'] ?? s.hrMode) as String;
@@ -970,6 +985,18 @@ class AppSettings {
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
     s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
     s.previewBeforeApply = (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
+    // 2026-08-17 — 기본값을 껐다. 기본값만 바꾸면 이미 쓰던 기기는 저장된
+    // true를 그대로 읽어 와서 아무것도 안 바뀐다(2026-08-14에 따옴표
+    // 규칙에서 똑같은 일을 겪었다). 그래서 판(rev)이 2보다 낮은 저장본에
+    // 한해 한 번만 끈다.
+    //
+    // 일부러 켜 놓은 사람의 뜻을 뺏는 셈이 될 수 있다. 그럴 수 있는 것은
+    // 이 값이 지금까지 '켜짐'이 기본이라 대부분 손대지 않은 채였기
+    // 때문이다. 그래도 뺏는 것은 뺏는 것이라, rev를 남겨서 **두 번은
+    // 안 하게** 한다. 다시 켜면 그 뒤로는 지켜진다.
+    if (((j['rev'] ?? 0) as int) < 2 && s.previewBeforeApply) {
+      s.previewBeforeApply = false;
+    }
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiProvider = (j['aiProvider'] ?? s.aiProvider) as String;
@@ -2715,6 +2742,23 @@ class _EditorScreenState extends State<EditorScreen> {
     await store.persistSettings();
   }
 
+  /// 방금 한 정리를 물린다. 아래 도구 막대의 되돌리기와 같은 일을 한다.
+  ///
+  /// 2026-08-17 — 미리보기를 기본에서 뺐으니, 되돌리기가 손 닿는 곳에
+  /// 있어야 한다. 도구 막대까지 손을 옮기게 하면 '되돌릴 수 있다'는 사실
+  /// 자체를 모르는 사람이 생긴다.
+  Future<void> _undoLastTidy() async {
+    if (note.history.isEmpty) return;
+    note.body = note.history.removeLast();
+    if (note.historyAt.isNotEmpty) note.historyAt.removeLast();
+    note.lastReport = '';
+    bodyCtl.text = note.body;
+    await _save();
+    if (!mounted) return;
+    setState(() {});
+    _toast(context, L10n.of(context).revertedToast);
+  }
+
   Future<void> _runTidyWithPreset(Preset preset) async {
     if (await _blockedByLimit(wizard: false)) return;
     await _save();
@@ -2762,7 +2806,21 @@ class _EditorScreenState extends State<EditorScreen> {
       await _save();
       if (mounted) {
         setState(() {});
-        _toast(context, L10n.of(context).appliedDone(r.summary));
+        // 그냥 알리지 않고 '되돌리기'를 같이 낸다. 먼저 하고, 무엇을
+        // 했는지 보여 주고, 한 번에 물릴 수 있게 — 묻고 나서 하는 것보다
+        // 언제나 빠르고 안전은 같다.
+        final lm = L10n.of(context);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            content: Text(lm.appliedDone(r.summary)),
+            // 2초는 읽고 누르기엔 짧다. 되돌릴지 말지 판단할 틈을 준다.
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: lm.undoAction,
+              onPressed: () => unawaited(_undoLastTidy()),
+            ),
+          ));
       }
     }
   }
