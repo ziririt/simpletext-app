@@ -1474,7 +1474,10 @@ class _EditorScreenState extends State<EditorScreen> {
         lastErr = e;
       }
     }
-    throw Exception('$lastErr');
+    // 2026-08-16 — Exception을 또 Exception으로 싸면 화면에
+    // "Exception: Exception: ..."이 두 겹으로 나온다(소유자 화면에서 확인).
+    // 마지막 오류를 그대로 던진다.
+    throw lastErr; // ignore: only_throw_errors
   }
 
   /// 오류 본문에서 사람이 읽을 한 줄을 뽑는다. 전에는 'API 400'만 던져서
