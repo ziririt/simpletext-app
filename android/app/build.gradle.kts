@@ -55,6 +55,32 @@ android {
 
     buildTypes {
         release {
+            // 2026-08-17 — 릴리스 앱이 켜자마자 죽었다. 실제 로그:
+            //
+            //   java.lang.RuntimeException: Unable to get provider
+            //   androidx.startup.InitializationProvider:
+            //   Failed to create an instance of androidx.work.impl.WorkDatabase
+            //
+            // 까닭. 애드몹(play-services-ads)이 WorkManager를 끌고 들어오고,
+            // WorkManager는 Room으로 데이터베이스를 만든다. Room은 컴파일 때
+            // 생성된 클래스를 **이름으로 찾아** 만드는데(WorkDatabase_Impl),
+            // R8이 그 이름을 줄여 버리면 못 찾는다. 그래서 앱이 첫 프레임도
+            // 못 그리고 죽는다.
+            //
+            // 이 고장의 못된 점은 **디버그로는 절대 안 난다**는 것이다.
+            // R8은 릴리스에서만 돈다. 그러니 `flutter run`으로는 백 번을
+            // 해도 멀쩡하고, 스토어에 올린 판만 죽는다.
+            //
+            // 지금은 줄이기를 끈다. 켜 두려면 Room·WorkManager를 남기라는
+            // 규칙을 손으로 적어야 하는데, 그 규칙이 맞는지는 **릴리스로
+            // 빌드해서 실제 기기에서 켜 봐야만** 알 수 있다. 스토어에 처음
+            // 내는 자리에서 그런 것을 안고 갈 이유가 없다.
+            //
+            // 값으로 치르는 것: APK가 몇 메가 커진다. 이 앱은 62MB이고 그중
+            // 대부분이 플러터 엔진이라 비율로는 얼마 안 된다. 앱이 켜지는
+            // 것과 몇 메가는 견줄 것이 아니다.
+            isMinifyEnabled = false
+            isShrinkResources = false
             signingConfig = if (keystoreFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
