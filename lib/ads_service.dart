@@ -404,31 +404,40 @@ class InlineAdBlock extends StatefulWidget {
 }
 
 class _InlineAdBlockState extends State<InlineAdBlock> {
-  /// 불러오기 전에 잡아 두는 높이. 실제 높이는 광고가 온 뒤에 물어서
-  /// 바꾼다(_adH).
-  static const double _fallbackH = 250;
+  /// 요청할 크기의 차례 — **큰 것부터**.
+  ///
+  /// 2026-08-17 소유자 신고 — "내가 말한 페이지 풀사이즈 광고가 아니라
+  /// 오히려 작은 배너가 중간에 나온다."
+  ///
+  /// 앞 판에서 인라인 적응형(크기를 안 박고 '이만큼까지 되니 알아서 좋은
+  /// 걸 달라')으로 바꿨는데, 돌아온 것은 **더 작은** 띠 배너였다.
+  ///
+  /// 까닭: 적응형은 '최대'를 말할 뿐 '최소'를 말하지 않는다. 구글은 그
+  /// 안에서 자기가 팔기 좋은 것을 고르고, 그건 대개 제일 흔한 작은 띠다.
+  /// 우리가 원하는 것은 '되도록 크게'인데 요청은 '이보다 작게'였으니
+  /// 정확히 반대를 말한 셈이다.
+  ///
+  /// 그래서 되돌린다. 크기를 **박되, 큰 것부터 차례로** 묻는다.
+  ///   300×600  하프페이지. 단가가 제일 높고 화면을 크게 쓴다
+  ///   300×250  미디엄 렉탱글. 채워지는 비율(fill rate)이 제일 높다
+  /// 하나가 실패하면 다음 것으로 내려간다. 마지막까지 실패하면 아무것도
+  /// 안 그린다 — 빈 회색 네모를 남기지 않는다.
+  ///
+  /// 작은 화면에서는 600을 아예 안 묻는다. 화면보다 큰 광고는 스크롤
+  /// 도중에 나타나면 사람이 무엇을 보고 있었는지 잃어버린다.
+  static const List<AdSize> _big = [
+    AdSize(width: 300, height: 600),
+    AdSize.mediumRectangle,
+  ];
+  static const List<AdSize> _small = [AdSize.mediumRectangle];
 
-  /// 광고에게 허락하는 최대 높이. 화면 높이의 이만큼까지 준다.
-  ///
-  /// 2026-08-17 소유자 물음 — "풀 페이지 광고는 없어서 그런가? 광고 단가가
-  /// 훨씬 높을 것 같은데."
-  ///
-  /// 반은 맞다. 전에는 우리가 300×250이라고 **못 박아** 요청하고 있었다.
-  /// 그러면 구글은 그 크기의 소재만 보낸다. 인라인 적응형(inline adaptive)은
-  /// 크기를 못 박지 않고 "이만큼까지 되니 있는 것 중 제일 좋은 걸 달라"고
-  /// 묻는 방식이다. 그러면 300×600(하프페이지) 같은 큰 판이 들어올 수
-  /// 있고, 그쪽이 단가가 훨씬 높다.
-  ///
-  /// 0.8로 두는 이유: 1.0을 주면 화면을 통째로 덮는 소재가 올 수 있는데,
-  /// 그건 스크롤 도중에 나타나는 자리에 놓기엔 위험하다. 사용자가 무엇을
-  /// 보고 있었는지 잃어버리고, 애플·구글 둘 다 '글과 구별되지 않는 전면
-  /// 광고'를 싫어한다. 화면의 8할이면 충분히 크고, 위아래로 우리 화면이
-  /// 남아 있어 '광고 안에 갇혔다'는 느낌이 안 든다.
-  static const double _maxHFrac = 0.8;
+  /// 300×600을 물을 만한 화면 높이(논리 픽셀). 이보다 낮으면 안 묻는다.
+  static const double _tallEnough = 760;
 
   BannerAd? _ad;
-  double _adH = _fallbackH;
+  double _adH = 250;
   double _adW = 300;
+  int _step = 0;
   bool _loaded = false;
   bool _creating = false;
   ScrollPosition? _pos;
@@ -451,36 +460,28 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     if (mounted) setState(() {});
   }
 
-  void _create(double width, double maxHeight) {
+  List<AdSize> _ladder(double screenHeight) =>
+      screenHeight >= _tallEnough ? _big : _small;
+
+  void _create(double screenHeight) {
     if (_creating || _ad != null) return;
+    final sizes = _ladder(screenHeight);
+    // 다 물어봤는데 아무도 안 줬다. 더 조르지 않는다.
+    if (_step >= sizes.length) return;
+    final size = sizes[_step];
     _creating = true;
-    // 크기를 못 박지 않고 '이만큼까지 되니 제일 좋은 걸 달라'고 묻는다.
-    // 300×250만 요청하던 것을 이렇게 바꾸면 300×600(하프페이지)처럼
-    // 단가가 높은 판이 들어올 수 있다.
-    final size = AdSize.getInlineAdaptiveBannerAdSize(
-        width.truncate(), maxHeight.truncate());
     final ad = BannerAd(
       adUnitId: bannerUnitId,
       size: size,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: (loaded) async {
-          // 인라인 적응형은 **온 뒤에야 실제 크기를 안다.** 물어보지 않고
-          // 요청한 값으로 자리를 잡으면, 작은 소재가 왔을 때 아래가 텅 빈
-          // 회색 칸으로 남는다(어제 편집 화면에서 본 그 회색 네모가 이것과
-          // 같은 종류의 실수였다).
-          AdSize? real;
-          try {
-            real = await (loaded as BannerAd).getPlatformAdSize();
-          } catch (_) {
-            real = null;
-          }
+        onAdLoaded: (_) {
           if (!mounted) return;
+          // 크기를 박아 요청했으니 온 것도 그 크기다. 따로 물어볼 필요가
+          // 없고, 물어보는 사이 자리가 흔들릴 일도 없다.
           setState(() {
-            if (real != null && real.height > 0) {
-              _adH = real.height.toDouble();
-              _adW = real.width.toDouble();
-            }
+            _adW = size.width.toDouble();
+            _adH = size.height.toDouble();
             _loaded = true;
           });
         },
@@ -490,7 +491,9 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
             setState(() {
               _ad = null;
               _loaded = false;
-              _creating = false; // 다음 rebuild 때 재시도
+              _creating = false;
+              // 한 칸 내려가서 다음 rebuild 때 더 작은 것을 묻는다.
+              _step += 1;
             });
           }
         },
@@ -555,8 +558,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
-    final media = MediaQuery.of(context);
-    _create(media.size.width, media.size.height * _maxHFrac);
+    _create(MediaQuery.of(context).size.height);
     if (_ad == null || !_loaded) return const SizedBox.shrink();
 
     final c = context.c;
