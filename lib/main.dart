@@ -34,7 +34,6 @@ import 'core/mono_controller.dart';
 import 'core/mru.dart';
 import 'core/paper.dart';
 import 'core/source_detect.dart';
-import 'core/tag_suggest.dart';
 import 'core/tidy_engine.dart';
 import 'core/trash.dart';
 import 'core/usage_gate.dart';
@@ -3643,12 +3642,19 @@ class _EditorScreenState extends State<EditorScreen>
     if (!wasCollapsed || sel.isCollapsed) return;
     final t = bodyCtl.text;
     if (t.isEmpty || sel.start != 0 || sel.end != t.length) return;
+    if (kScrollTopOnSelectAll && _bodyScroll.hasClients && _bodyScroll.offset > 0) {
+      _bodyScroll.animateTo(0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic);
+    }
     _reshowToolbar();
   }
 
   Future<void> _reshowToolbar() async {
     // 스크롤이 멎기를 기다린다. 프레임 하나로는 모자랄 때가 있어 조금 준다.
-    await Future<void>.delayed(const Duration(milliseconds: 140));
+    // 위에서 맨 위로 올리는 동안(180ms)에 불러 버리면 메뉴가 다시 밀린다.
+    await Future<void>.delayed(Duration(
+        milliseconds: kScrollTopOnSelectAll ? 260 : 140));
     if (!mounted) return;
     final ctx = _bodyKey.currentContext;
     if (ctx == null) return;
@@ -3897,6 +3903,25 @@ class _EditorScreenState extends State<EditorScreen>
       '3~5개를 쉼표로만 구분해 한 줄로 출력한다. 번호·설명·따옴표·해시(#)·코드펜스는 붙이지 않는다. '
       '입력 언어를 그대로 유지한다.';
 
+/// 전체 선택을 하면 문서 맨 위로 올릴 것인가. **실험이다.**
+///
+/// 2026-08-17 소유자 신고 — "전체 선택을 하면 블록 씌운 범위 선택을 못하는
+/// 문제가 여전하다. 범위 선택할 수 있는 핸들이 없어."
+///
+/// 핸들은 있다. 화면 밖에 있을 뿐이다. 이 앱의 본문 칸은 스스로 구르지
+/// 않아서(글 끝 반 화면 여백을 만들려고 스크롤 임자를 바깥에 뒀다) 글
+/// 길이만큼 통째로 펼쳐져 있고, 전체 선택을 하면 시작 핸들은 문서 맨
+/// 처음에, 끝 핸들은 맨 끝에 놓인다. 긴 메모에서는 둘 다 화면 밖이다.
+///
+/// 제대로 고치려면 본문 칸이 자기 스크롤을 갖게 해야 하는데, 그러면 날짜
+/// 줄·글 끝 여백·광고 자리를 다시 짜야 한다. 그 전에 **가벼운 쪽을 먼저
+/// 써 보고 판단하기로 했다**(소유자 지시). 전체 선택 직후 맨 위로 올려
+/// 시작 핸들만이라도 손에 닿게 한다.
+///
+/// **되돌리려면 이 값을 false 로 바꾸면 된다.** 그러면 이 판 이전과
+/// 완전히 같아진다 — 다른 곳은 손대지 않았다.
+static const bool kScrollTopOnSelectAll = true;
+
 /// 태그를 뽑을 때 훑는 본문 길이.
 ///
 /// 2026-08-17 소유자 지적 — "자동 태그. 제목만 분석하냐?"
@@ -3909,38 +3934,50 @@ static const int kTagScanChars = 3000;
 
   bool _tagAiBusy = false;
 
-  /// 제목과 본문 앞부분에서 태그를 뽑아 넣는다.
+  /// 제목과 본문 앞부분에서 태그를 뽑아 넣는다. **AI만 한다.**
   ///
-  /// AI 키가 있으면 AI가, 없거나 실패하면 앱이 뽑는다(소유자 확정 2026-08-14).
-  /// 앱이 뽑았을 때는 그 사실을 알려 준다 — 어느 쪽이 뽑았는지 모르면
-  /// 사용자가 결과 품질을 오해한다.
+  /// 2026-08-17 소유자 지시 — "태그는 명사로 한정하고 싶다. (…) 이 모든
+  /// 것을 ai편집을 위한 이용자 자신의 api키를 넣은 경우에만, 해당 api키를
+  /// 활용해서 그 ai의 힘을 빌어서 태그를 추출하게하면 좋겠다."
+  ///
+  /// 규칙으로 명사만 골라내는 일은 사전 없이는 안 된다. 한국어에서 명사와
+  /// 용언은 형태가 겹치기 때문이다 — '사랑'은 명사, '사랑하다'는 동사,
+  /// '사랑한'은 활용형이다. 규칙을 늘리면 늘린 만큼 멀쩡한 낱말이 같이
+  /// 죽는다(오늘 '보고'·'문서'·'수요'를 살리려고 어미를 두 글자 이상만
+  /// 보기로 한 것이 이미 그 타협이었다).
+  ///
+  /// 그래서 뽑개를 통째로 AI로 옮겼다. 키가 없으면 **이유를 말하고 아무
+  /// 것도 하지 않는다.** 어설픈 답을 조용히 내놓는 것보다 낫다.
   Future<void> _autoTags() async {
     final l = L10n.of(context);
+    if (store.settings.aiKey.trim().isEmpty) {
+      _toast(context, l.tagAiNeedKey);
+      return;
+    }
     setState(() => _tagAiBusy = true);
     final head = note.body.length > kTagScanChars
         ? note.body.substring(0, kTagScanChars)
         : note.body;
     var got = <String>[];
-    var byAi = false;
     try {
-      if (store.settings.aiKey.trim().isNotEmpty) {
-        final out = await _aiEditCall(
-          '이 글의 태그를 뽑아라.',
-          '[제목]\n${note.title}\n\n[본문 앞부분]\n$head',
-          system: _tagSys,
-        );
-        got = out
-            .split(RegExp(r'[,\n]'))
-            .map((s) => s.trim().replaceFirst(RegExp(r'^#+'), '').trim())
-            .where((s) => s.isNotEmpty && s.length <= 24)
-            .take(5)
-            .toList();
-        byAi = got.isNotEmpty;
-      }
-    } catch (_) {
-      got = const [];
+      final out = await _aiEditCall(
+        '이 글의 태그를 뽑아라.',
+        '[제목]\n${note.title}\n\n[본문 앞부분]\n$head',
+        system: _tagSys,
+      );
+      got = out
+          .split(RegExp(r'[,\n]'))
+          .map((s) => s.trim().replaceFirst(RegExp(r'^#+'), '').trim())
+          .where((s) => s.isNotEmpty && s.length <= 24)
+          .take(5)
+          .toList();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _tagAiBusy = false);
+      final fix = aiRemedy(l, '$e');
+      _toast(context, fix.isNotEmpty ? fix : l.aiCallFailed('$e'));
+      return;
     }
-    if (got.isEmpty) got = suggestTags(note.title, head);
     // 사용자가 버튼을 눌러 뽑은 태그는 배경 갱신이 덮으면 안 된다.
     note.tagsAuto = false;
     if (!mounted) return;
@@ -3950,7 +3987,6 @@ static const int kTagScanChars = 3000;
       return;
     }
     await _commitTags(got.join(','), clear: false);
-    if (mounted && !byAi) _toast(context, l.tagAiLocalNote);
   }
 
   /// 태그를 다시 뽑기 위한 타이머. 글자마다 뽑으면 낭비다.
@@ -3973,33 +4009,14 @@ static const int kTagScanChars = 3000;
     // persist()가 아니라 touch()다. 글자마다 디스크에 쓰지 않는다 — 이유는
     // Store.touch()의 주석에 적었다.
     store.touch();
-    _scheduleAutoTags();
   }
 
-  /// 타이핑이 멈춘 뒤에 한 번만 태그를 다시 뽑는다.
-  ///
-  /// 제목은 첫 줄만 보면 되니 글자마다 다시 지어도 싸지만, 태그는 글 전체를
-  /// 훑는다. 글자마다 하면 긴 메모에서 손이 무거워진다.
-  void _scheduleAutoTags() {
-    if (!note.tagsAuto) return;
-    _tagTimer?.cancel();
-    _tagTimer = Timer(const Duration(milliseconds: 1500), () async {
-      if (!mounted || !note.tagsAuto) return;
-      final head = note.body.length > kTagScanChars
-        ? note.body.substring(0, kTagScanChars)
-        : note.body;
-      // 기기 안에서만 뽑는다. 배경에서 AI를 부르면 사용자 요금이 샌다.
-      final got = suggestTags(note.title, head, max: 3);
-      if (got.isEmpty) return;
-      if (got.length == note.tags.length &&
-          got.every((t) => note.tags.contains(t))) {
-        return; // 바뀐 게 없으면 저장도 화면 갱신도 하지 않는다
-      }
-      note.tags = got;
-      await store.persist();
-      if (mounted) setState(() {});
-    });
-  }
+  // 여기 있던 '타이핑이 멈추면 배경에서 태그를 다시 뽑는다'를 걷어냈다
+  // (2026-08-17). 그게 '해야하는데'와 '꺾인'을 붙이고 있던 자리다.
+  //
+  // AI로 대신할 수도 없다. 글자를 칠 때마다 회사를 부르면 사용자 요금이
+  // 샌다. 그러니 태그는 사용자가 단추를 눌렀을 때만 붙는다 — 돈이 드는
+  // 일은 시켰을 때만 한다.
 
   /// 본문에서 뽑은 제목 — core/auto_meta.dart의 규칙을 쓴다.
   static String _titleFrom(String body) => autoTitle(body);

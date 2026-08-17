@@ -299,6 +299,9 @@ abstract class L10n {
   /// 회사 계정에 돈이 없다. 제일 흔하고, 제일 앱 탓으로 오해받는 경우다.
   /// 어느 회사 키인지 서버에 물어보는 동안.
   /// 넓은 화면에서 왼쪽 목록을 접었다 폈다 하는 단추.
+  /// AI 자동 태그를 눌렀는데 키가 없을 때.
+  String get tagAiNeedKey;
+
   String get toggleListTooltip;
 
   String get aiDetecting;
@@ -684,6 +687,7 @@ abstract class L10n {
         'filterTagLabel': filterTagLabel,
         'filterAll': filterAll,
         'filterReset': filterReset,
+        'tagAiNeedKey': tagAiNeedKey,
         'toggleListTooltip': toggleListTooltip,
         'aiDetecting': aiDetecting,
         'aiErrNoCredits': aiErrNoCredits,

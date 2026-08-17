@@ -467,6 +467,9 @@ class L10nPt extends L10n {
   String get filterReset => 'Redefinir';
 
   @override
+  String get tagAiNeedKey => 'Insira uma chave de API nas Configurações para usar a marcação automática por IA.';
+
+  @override
   String get toggleListTooltip => 'Ocultar ou mostrar a lista';
 
   @override

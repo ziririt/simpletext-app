@@ -468,6 +468,9 @@ class L10nDe extends L10n {
   String get filterReset => 'Zurücksetzen';
 
   @override
+  String get tagAiNeedKey => 'Geben Sie in den Einstellungen einen API-Schlüssel ein, um die automatische KI-Verschlagwortung zu nutzen.';
+
+  @override
   String get toggleListTooltip => 'Liste aus- oder einblenden';
 
   @override
