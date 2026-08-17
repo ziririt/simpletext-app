@@ -383,7 +383,21 @@ class _SponsorSheetState extends State<SponsorSheet> {
 /// '후원' 이름표를 위에 붙인다. 광고를 광고라고 밝히지 않는 것은 속임수이고,
 /// 애플·구글 둘 다 그것으로 반려한다.
 class InlineAdBlock extends StatefulWidget {
-  const InlineAdBlock({super.key});
+  /// 광고 위에 두는 빈 자리.
+  ///
+  /// 2026-08-17 소유자 신고 — "목록에서는 너무 목록에 바짝 붙어서 광고가
+  /// 나온다. 항목 2개 정도 더 여유를 두고 광고를 나오게 해라."
+  ///
+  /// 옳다. 목록의 마지막 줄과 광고가 붙어 있으면 광고가 **목록의 다음
+  /// 항목처럼** 보인다. 그건 우리가 원하는 것도 아니고 정직하지도 않다.
+  /// 목록 한 줄이 대략 60이니 두 줄 자리를 비운다.
+  ///
+  /// 이 값을 바깥에 따로 두지 않고 광고 위젯이 갖는 이유: 광고가 안 뜨는
+  /// 날(광고 없는 날·불러오기 실패·맥/윈도우)에는 이 빈 자리도 같이
+  /// 사라져야 한다. 바깥에 두면 아무것도 없는 자리에 여백만 남는다.
+  final double gapAbove;
+
+  const InlineAdBlock({super.key, this.gapAbove = 0});
 
   @override
   State<InlineAdBlock> createState() => _InlineAdBlockState();
@@ -507,6 +521,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (widget.gapAbove > 0) SizedBox(height: widget.gapAbove),
           // 이름표. 광고 위에 가는 실선을 좌우로 뻗어 '여기서부터는 우리
           // 글이 아니다'를 눈으로 먼저 알린다.
           Padding(

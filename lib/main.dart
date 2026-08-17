@@ -2222,7 +2222,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   _groupLabel(l.notesLabel, trailing: _sortFilterBtn(l, s)),
                 if (rest.isNotEmpty) _groupCard(rest),
                 // 목록 맨 아래의 큰 광고. 끝까지 내려간 사람만 본다.
-                const SliverToBoxAdapter(child: InlineAdBlock()),
+                // 목록에서 두 줄쯤 떨어뜨린다 — 바짝 붙으면 광고가
+                // '목록의 다음 항목'처럼 보인다(2026-08-17 소유자 신고).
+                const SliverToBoxAdapter(child: InlineAdBlock(gapAbove: 120)),
                 // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
                 // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
                 const SliverToBoxAdapter(child: SizedBox(height: 176)),
