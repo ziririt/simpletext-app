@@ -111,7 +111,9 @@ if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
   if flutter build macos --release > /tmp/dep_mac.log 2>&1; then
     pkill -f "Products/Release/Skyblue Note.app" >/dev/null 2>&1
     sleep 1
-    open ~/development/simpletext_app/build/macos/Build/Products/Release/Skyblue Note.app
+    # 따옴표를 뺀 채로 두면 'Skyblue' 와 'Note.app' 두 조각으로 갈라진다.
+    # 번들 이름에 공백이 있다는 것을 잊기 쉬운 자리다.
+    open "$HOME/development/simpletext_app/build/macos/Build/Products/Release/Skyblue Note.app"
     # 'open' 은 열리지 않아도 조용하다. 이 한 줄이 없어서 몇 주 동안
     # "맥 재실행 완료"가 거짓말을 했다(2026-08-16). 살아 있는지 본다.
     sleep 4
