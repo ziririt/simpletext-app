@@ -150,6 +150,28 @@ int tierRank(String provider, String id) {
   return 9;
 }
 
+/// 시험판인가.
+///
+/// 회사들은 정식판과 시험판을 한 목록에 같이 내놓는다.
+///
+///   gemini-2.5-flash-lite
+///   gemini-2.5-flash-lite-preview-09-2025
+///
+/// 아래 _cmpNums 는 '숫자가 크면 최신'으로 읽는데, 시험판 이름에 붙은
+/// **날짜가 숫자로 읽혀서** 시험판이 언제나 이긴다. 그리고 시험판은 어느
+/// 날 조용히 사라진다 — 그날 사용자의 AI 편집이 아무 예고 없이 멈추고,
+/// 사용자는 자기가 한 것이 없으니 원인을 찾을 수도 없다.
+///
+/// 그래서 같은 등급이면 정식판을 앞에 둔다. 시험판을 목록에서 아예 빼지는
+/// 않는다 — 어떤 등급이 시험판으로만 나와 있는 시기가 실제로 있다.
+bool isPreviewModel(String id) {
+  final lo = id.toLowerCase();
+  return lo.contains('preview') ||
+      lo.contains('-exp') ||
+      lo.contains('beta') ||
+      lo.contains('-rc');
+}
+
 List<int> _nums(String id) =>
     [for (final m in RegExp(r'\d+').allMatches(id)) int.parse(m.group(0)!)];
 
@@ -172,15 +194,25 @@ int _cmpNums(List<int> a, List<int> b) {
 /// 한계를 적어 둔다: 가격표를 주는 목록 API가 거의 없어서 값을 등급
 /// 이름으로 대신 판정한다. 등급명과 실제 가격 서열이 어긋나는 날이 오면
 /// 여기가 틀린다 — 그래도 '안 됨'이 아니라 '조금 비싼 걸 골랐음'이다.
+/// a 가 b 를 이기는가. 보는 순서가 곧 우선순위다.
+///
+///   1. 등급 — 싸고 쓸 만한 쪽 (tierRank)
+///   2. 정식판 — 같은 등급이면 시험판보다 앞
+///   3. 세대 — 그래도 같으면 숫자가 큰 쪽
+bool _beats(String provider, String a, String b) {
+  final ra = tierRank(provider, a), rb = tierRank(provider, b);
+  if (ra != rb) return ra < rb;
+  final pa = isPreviewModel(a), pb = isPreviewModel(b);
+  if (pa != pb) return !pa;
+  return _cmpNums(_nums(a), _nums(b)) > 0;
+}
+
 String? pickCheapest(String provider, List<String> ids) {
   final f = filterChatModels(provider, ids);
   if (f.isEmpty) return null;
   var best = f.first;
   for (final m in f.skip(1)) {
-    final rb = tierRank(provider, best), rm = tierRank(provider, m);
-    if (rm < rb || (rm == rb && _cmpNums(_nums(m), _nums(best)) > 0)) {
-      best = m;
-    }
+    if (_beats(provider, m, best)) best = m;
   }
   return best;
 }
