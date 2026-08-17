@@ -297,6 +297,9 @@ abstract class L10n {
 
   // ---------------- AI 호출이 막혔을 때의 처방 (2026-08-17) ----------------
   /// 회사 계정에 돈이 없다. 제일 흔하고, 제일 앱 탓으로 오해받는 경우다.
+  /// 어느 회사 키인지 서버에 물어보는 동안.
+  String get aiDetecting;
+
   String get aiErrNoCredits;
 
   /// 키 자체가 거절당했다.
@@ -678,6 +681,7 @@ abstract class L10n {
         'filterTagLabel': filterTagLabel,
         'filterAll': filterAll,
         'filterReset': filterReset,
+        'aiDetecting': aiDetecting,
         'aiErrNoCredits': aiErrNoCredits,
         'aiErrBadKey': aiErrBadKey,
         'aiErrRateLimit': aiErrRateLimit,

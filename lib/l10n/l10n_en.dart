@@ -467,6 +467,9 @@ class L10nEn extends L10n {
   String get filterReset => 'Reset';
 
   @override
+  String get aiDetecting => 'Checking which provider this key belongs to…';
+
+  @override
   String get aiErrNoCredits => 'The key is fine, but the account has no balance. Add a payment method or credits on the provider\'s site. To avoid paying, try a Google Gemini key (starts with AIza…) — it has a free tier.';
 
   @override
@@ -936,7 +939,7 @@ class L10nEn extends L10n {
   @override
   String get aiKeyChecking => 'Checking…';
   @override
-  String get aiKeyUnknownFormat => 'Unrecognized key format. Set the model manually under Advanced.';
+  String get aiKeyUnknownFormat => 'Could not identify the provider. All four were asked and none accepted this key. Please copy and paste the key again.';
   @override
   String get aiAdvancedLabel => 'Advanced — choose the model yourself';
   @override

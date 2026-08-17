@@ -468,6 +468,9 @@ class L10nDe extends L10n {
   String get filterReset => 'Zurücksetzen';
 
   @override
+  String get aiDetecting => 'Es wird geprüft, zu welchem Anbieter dieser Schlüssel gehört…';
+
+  @override
   String get aiErrNoCredits => 'Der Schlüssel ist in Ordnung, aber das Konto hat kein Guthaben. Hinterlegen Sie beim Anbieter eine Zahlungsmethode oder laden Sie Guthaben auf. Wenn Sie nichts zahlen möchten, probieren Sie einen Google-Gemini-Schlüssel (beginnt mit AIza…) — er hat ein kostenloses Kontingent.';
 
   @override
@@ -937,7 +940,7 @@ class L10nDe extends L10n {
   @override
   String get aiKeyChecking => 'Prüfe…';
   @override
-  String get aiKeyUnknownFormat => 'Schlüsselformat nicht erkannt. Modell unter „Erweitert“ manuell festlegen.';
+  String get aiKeyUnknownFormat => 'Der Anbieter konnte nicht ermittelt werden. Alle vier wurden gefragt, keiner hat diesen Schlüssel akzeptiert. Bitte kopieren und fügen Sie den Schlüssel erneut ein.';
   @override
   String get aiAdvancedLabel => 'Erweitert — Modell selbst wählen';
   @override

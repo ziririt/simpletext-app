@@ -468,6 +468,9 @@ class L10nFr extends L10n {
   String get filterReset => 'Réinitialiser';
 
   @override
+  String get aiDetecting => 'Recherche du fournisseur auquel appartient cette clé…';
+
+  @override
   String get aiErrNoCredits => 'La clé est valide, mais le compte n\'a plus de solde. Ajoutez un moyen de paiement ou des crédits chez le fournisseur. Pour ne rien payer, essayez une clé Google Gemini (commence par AIza…) — elle a un palier gratuit.';
 
   @override
@@ -937,7 +940,7 @@ class L10nFr extends L10n {
   @override
   String get aiKeyChecking => 'Vérification…';
   @override
-  String get aiKeyUnknownFormat => 'Format de clé non reconnu. Définissez le modèle dans Avancé.';
+  String get aiKeyUnknownFormat => 'Impossible d\'identifier le fournisseur. Les quatre ont été interrogés et aucun n\'a accepté cette clé. Copiez-collez la clé à nouveau.';
   @override
   String get aiAdvancedLabel => 'Avancé — choisir le modèle soi-même';
   @override

@@ -466,6 +466,9 @@ class L10nZhHans extends L10n {
   String get filterReset => '重置';
 
   @override
+  String get aiDetecting => '正在确认这是哪家服务商的密钥…';
+
+  @override
   String get aiErrNoCredits => '密钥没问题，但该账户没有余额。请在服务商网站添加付款方式或充值。若不想付费，可以试试 Google Gemini 密钥（以 AIza… 开头）——它有免费额度。';
 
   @override
@@ -932,7 +935,7 @@ class L10nZhHans extends L10n {
   @override
   String get aiKeyChecking => '验证中…';
   @override
-  String get aiKeyUnknownFormat => '无法识别密钥格式。请在高级选项中手动指定模型。';
+  String get aiKeyUnknownFormat => '无法识别服务商。已向四家全部询问，均未接受此密钥。请重新复制并粘贴密钥。';
   @override
   String get aiAdvancedLabel => '高级 — 手动选择模型';
   @override

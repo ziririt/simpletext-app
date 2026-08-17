@@ -466,6 +466,9 @@ class L10nKo extends L10n {
   String get filterReset => '초기화';
 
   @override
+  String get aiDetecting => '어느 회사 키인지 확인하고 있습니다…';
+
+  @override
   String get aiErrNoCredits => '키는 멀쩡한데 그 회사 계정에 잔액이 없습니다. 회사 홈페이지에서 결제 수단을 등록하거나 크레딧을 충전해야 합니다. 돈을 안 쓰고 싶으시면 구글 제미나이(AIza…로 시작하는 키)를 넣어 보세요 — 무료 한도가 있습니다.';
 
   @override
@@ -932,7 +935,7 @@ class L10nKo extends L10n {
   @override
   String get aiKeyChecking => '확인 중…';
   @override
-  String get aiKeyUnknownFormat => '키 형식을 인식하지 못했습니다. 고급에서 모델을 직접 지정해 주세요.';
+  String get aiKeyUnknownFormat => '어느 회사의 키인지 알아내지 못했습니다. 네 회사 모두에 물어봤지만 받아 주지 않았습니다. 키를 다시 복사해 붙여 주세요.';
   @override
   String get aiAdvancedLabel => '고급 — 모델 직접 선택';
   @override

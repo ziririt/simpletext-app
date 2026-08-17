@@ -466,6 +466,9 @@ class L10nJa extends L10n {
   String get filterReset => 'リセット';
 
   @override
+  String get aiDetecting => 'どの提供元のキーか確認しています…';
+
+  @override
   String get aiErrNoCredits => 'キーは正常ですが、そのアカウントに残高がありません。提供元のサイトで支払い方法を登録するかクレジットを追加してください。無料で使いたい場合は Google Gemini のキー（AIza… で始まる）をお試しください — 無料枠があります。';
 
   @override
@@ -932,7 +935,7 @@ class L10nJa extends L10n {
   @override
   String get aiKeyChecking => '確認中…';
   @override
-  String get aiKeyUnknownFormat => 'キー形式を認識できませんでした。詳細設定でモデルを直接指定してください。';
+  String get aiKeyUnknownFormat => 'どの提供元のキーか判別できませんでした。4社すべてに問い合わせましたが受け付けられませんでした。キーをコピーし直して貼り付けてください。';
   @override
   String get aiAdvancedLabel => '詳細 — モデルを直接選択';
   @override

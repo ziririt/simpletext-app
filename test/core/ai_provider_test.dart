@@ -70,16 +70,25 @@ void main() {
       expect(pick, 'claude-haiku-4-5-20251001');
     });
 
-    test('OpenAI — nano 우선, 세대는 최신 (gpt-4.1-nano보다 gpt-5-nano)', () {
+    // 2026-08-17 — nano에서 mini로 바꿨다.
+    //
+    // 이 앱이 AI에게 시키는 일은 한국어 글을 다시 쓰는 것이라, 제일 작은
+    // 모델이 자주 어그러진다. 어그러진 결과는 안 나온 것보다 나쁘다.
+    // 메모 하나 고치는 값은 어차피 몇 원이라 아낄 자리가 아니다.
+    test('OpenAI — mini 우선, 세대는 최신 (gpt-4.1-mini보다 gpt-5-mini)', () {
       final pick = pickCheapest('openai', [
-        'gpt-5-mini',
-        'gpt-4.1-nano',
         'gpt-5-nano',
+        'gpt-4.1-mini',
+        'gpt-5-mini',
         'gpt-4o-audio-preview',
         'text-embedding-3-small',
         'o3',
       ]);
-      expect(pick, 'gpt-5-nano');
+      expect(pick, 'gpt-5-mini');
+    });
+
+    test('nano밖에 없으면 nano라도 고른다', () {
+      expect(pickCheapest('openai', ['gpt-5-nano', 'gpt-5']), 'gpt-5-nano');
     });
 
     test('쓸 만한 게 하나도 없으면 null', () {

@@ -66,9 +66,11 @@ List<String> defaultLadder(String provider) {
     case 'anthropic':
       return const ['claude-haiku-4-5-20251001', 'claude-haiku-4-5', 'claude-sonnet-5'];
     case 'openai':
-      return const ['gpt-5-nano', 'gpt-5-mini', 'gpt-5'];
+      // 2026-08-17 — nano에서 mini로 올렸다. 아래 tierRank의 주석 참고.
+      return const ['gpt-5-mini', 'gpt-5-nano', 'gpt-5'];
     case 'xai':
-      return const ['grok-4.1-fast', 'grok-4.1', 'grok-4'];
+      // grok-4.1-fast는 물러났다. 지금 공식 주력은 4.6 하나다.
+      return const ['grok-4.6', 'grok-4.1-fast', 'grok-4'];
   }
   return const [];
 }
@@ -105,8 +107,24 @@ List<String> filterChatModels(String provider, List<String> ids) {
   return [for (final id in ids) if (ok(id)) id];
 }
 
-/// 등급 서열. 숫자가 작을수록 싸다. 등급 이름은 해가 바뀌어도 그대로라서
-/// 이 표는 모델이 세대 교체돼도 고칠 일이 없다.
+/// 등급 서열. 숫자가 작을수록 먼저 고른다. 등급 이름은 해가 바뀌어도
+/// 그대로라서 이 표는 모델이 세대 교체돼도 고칠 일이 없다.
+///
+/// 2026-08-17 — 기준을 '제일 싼 것'에서 **'값은 낮추되 이 앱이 시키는 일을
+/// 해낼 수 있는 것'**으로 바꿨다.
+///
+/// 이 앱이 AI에게 시키는 일은 분류나 추출이 아니라 **한국어 글을 다시
+/// 쓰는 것**이다("더 간결하게 써줘", "날짜 줄을 지워줘"). 이건 제일 작은
+/// 모델이 자주 어그러지는 종류의 일이고, 어그러진 결과는 안 나온 것보다
+/// 나쁘다 — 사용자가 그 기능을 다시 안 쓰기 때문이다.
+///
+/// 그래서 OpenAI만 순서를 바꿨다. nano가 mini보다 다섯 배 싸지만, 메모
+/// 하나 고치는 데 드는 값은 어차피 몇 원 단위다. 몇 원을 아끼려고 결과를
+/// 잃는 거래는 하지 않는다.
+///
+/// 다른 회사는 그대로다. 구글 flash-lite와 앤트로픽 haiku는 각 회사에서
+/// 제일 싸면서 동시에 글을 다룰 만한 등급이라, 값과 품질이 같은 칸에서
+/// 만난다.
 int tierRank(String provider, String id) {
   final lo = id.toLowerCase();
   switch (provider) {
@@ -121,8 +139,8 @@ int tierRank(String provider, String id) {
       if (lo.contains('opus')) return 2;
       return 3;
     case 'openai':
-      if (lo.contains('nano')) return 0;
-      if (lo.contains('mini')) return 1;
+      if (lo.contains('mini')) return 0;
+      if (lo.contains('nano')) return 1;
       if (lo.contains('pro')) return 3;
       return 2;
     case 'xai':
@@ -144,9 +162,14 @@ int _cmpNums(List<int> a, List<int> b) {
   return 0;
 }
 
-/// 목록에서 '제일 싼 등급의 제일 최신'을 고른다. 쓸 만한 게 없으면 null.
+/// 목록에서 '고른 등급의 제일 최신'을 뽑는다. 쓸 만한 게 없으면 null.
 ///
-/// 한계를 적어 둔다: 가격표를 주는 목록 API가 거의 없어서 '싸다'를 등급
+/// 이름은 pickCheapest지만 하는 일은 tierRank가 정한 차례의 맨 앞을
+/// 고르는 것이고, 그 차례는 이제 값만이 아니라 **쓸 만한지**도 본다.
+/// (이름을 안 바꾼 이유: 부르는 곳이 여럿이고 뜻이 크게 어긋나지 않는다.
+///  값을 낮추는 것이 여전히 이 함수의 첫째 목적이다.)
+///
+/// 한계를 적어 둔다: 가격표를 주는 목록 API가 거의 없어서 값을 등급
 /// 이름으로 대신 판정한다. 등급명과 실제 가격 서열이 어긋나는 날이 오면
 /// 여기가 틀린다 — 그래도 '안 됨'이 아니라 '조금 비싼 걸 골랐음'이다.
 String? pickCheapest(String provider, List<String> ids) {

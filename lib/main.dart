@@ -6933,6 +6933,16 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _aiAdvOpen = false;
   String _aiMsg = '';
 
+  /// 붙여넣고 잠깐 기다렸다가 저절로 확인에 들어가는 시계.
+  ///
+  /// 2026-08-17 소유자 지시 — "'고급설정' 같은 건 안된다. 나도 지금 이렇게
+  /// api키 설정이 어려운데, 일반인들에게는 불가능한 설정이다."
+  ///
+  /// 맞는 말이고, 사실 '키 확인'을 누르게 하는 것부터가 한 단계 더다.
+  /// 붙여넣었으면 그게 곧 "이걸 써 달라"는 뜻이다. 한 글자 칠 때마다
+  /// 부르지 않으려고 잠깐만 기다린다.
+  Timer? _aiAutoTimer;
+
   /// 고급에서 보여 줄 모델 후보. 받아 온 목록이 있으면 그것을, 없으면
   /// 예비 사다리를 보여 준다.
   List<String> _aiPickList() {
@@ -7003,28 +7013,89 @@ class _SettingsScreenState extends State<SettingsScreen>
     return 'API $code';
   }
 
+  /// 키를 넣으면 회사도 모델도 우리가 알아낸다.
+  ///
+  /// 2026-08-17 소유자 신고 — 구글 AI 스튜디오 키를 넣었는데 "키 형식을
+  /// 인식하지 못했습니다"가 뜨고, 고급 목록에는 **엉뚱하게 GPT 모델들**이
+  /// 그대로 남아 있었다.
+  ///
+  /// 두 가지가 겹친 사고였다.
+  ///
+  ///   1. 회사를 **키 앞글자로만** 판정했다. 앞글자는 회사가 언제든 바꿀 수
+  ///      있는 것이고, 실제로 못 알아본 키가 나왔다. 앞글자 표를 늘리는 것은
+  ///      해결이 아니다 — 다음에 또 바뀌면 또 막힌다.
+  ///   2. 키를 바꿔도 **앞서 알아낸 회사·모델·목록이 그대로 남아 있었다.**
+  ///      그래서 구글 키를 넣은 화면에 ChatGPT와 gpt-5-nano가 떠 있었다.
+  ///      데이터가 아니라 화면이 거짓말을 한 셈이다.
+  ///
+  /// 그래서 판정 방식을 바꾼다. **앞글자는 짐작일 뿐이고, 진짜 판정은 서버가
+  /// 한다.** 회사마다 모델 목록 주소가 다르니, 받아 주는 곳이 곧 그 키의
+  /// 주인이다. 앞글자가 짚이면 그 회사를 맨 앞에 놓아 한 번에 끝내고,
+  /// 못 짚으면 네 곳에 차례로 물어본다.
+  ///
+  /// 남의 회사에 키를 보내는 일은 최소로 한다 — 짚이는 회사가 있으면 거기만
+  /// 부르고, **거절당했을 때만** 다음으로 넘어간다. 거절이 아니라 '잔액 없음'
+  /// 같은 답이 오면 그건 주인을 찾은 것이므로 거기서 멈춘다.
   Future<void> _verifyAiKey() async {
     final s = store.settings;
     final key = s.aiKey.trim();
     if (key.isEmpty) return;
-    final p = providerOfKey(key);
-    if (p == null) {
-      setState(() => _aiMsg = L10n.of(context).aiKeyUnknownFormat);
-      return;
-    }
+    _aiAutoTimer?.cancel();
+
+    final guess = providerOfKey(key);
+    final order = <String>[
+      if (guess != null) guess,
+      for (final p in const ['google', 'openai', 'anthropic', 'xai'])
+        if (p != guess) p,
+    ];
+
     setState(() {
       _aiChecking = true;
-      _aiMsg = '';
+      _aiMsg = L10n.of(context).aiDetecting;
     });
-    try {
-      final ids = await _fetchModelIds(p, key);
+
+    String lastErr = '';
+    for (var i = 0; i < order.length; i++) {
+      final p = order[i];
+      List<String> ids;
+      try {
+        ids = await _fetchModelIds(p, key);
+      } catch (e) {
+        lastErr = '$e';
+        final lo = lastErr.toLowerCase();
+        // 이 회사 것이 아니다 → 다음 회사. 그 밖의 사유(잔액·한도·그물)는
+        // 주인을 찾았다는 뜻이므로 여기서 멈춘다.
+        final wrongOwner = lo.contains('api 401') ||
+            lo.contains('api 403') ||
+            lo.contains('api 400') ||
+            lo.contains('api key not valid') ||
+            lo.contains('invalid api key') ||
+            lo.contains('incorrect api key');
+        if (wrongOwner && i < order.length - 1) continue;
+        // 짚이는 회사가 있었는데 딴 사유로 막힌 경우 — 그 회사로 확정하고
+        // 예비 사다리로 넘어간다.
+        if (!mounted) return;
+        s.aiProvider = p;
+        if (s.aiModel.isEmpty || !modelMatchesProvider(s.aiModel, p)) {
+          s.aiModel = defaultLadder(p).first;
+        }
+        await store.persistSettings();
+        if (!mounted) return;
+        setState(() {
+          _aiChecking = false;
+          _aiMsg = L10n.of(context).aiListFailed(lastErr);
+        });
+        return;
+      }
+
+      // 받아 줬다 = 이 키의 주인이다.
       s.aiProvider = p;
       s.aiModels = ids;
-      final pick = pickCheapest(p, ids);
-      if (pick != null) s.aiModel = pick;
+      s.aiModel = pickCheapest(p, ids) ?? defaultLadder(p).first;
       await store.persistSettings();
       if (!mounted) return;
-      final found = L10n.of(context).aiModelsFound(filterChatModels(p, ids).length);
+      final found =
+          L10n.of(context).aiModelsFound(filterChatModels(p, ids).length);
       // 목록을 받았다는 것과 쓸 수 있다는 것은 다르다. 진짜로 한 번 불러 본다.
       setState(() => _aiMsg = '$found\n${L10n.of(context).aiPinging}');
       try {
@@ -7041,19 +7112,18 @@ class _SettingsScreenState extends State<SettingsScreen>
           _aiMsg = '$found\n${L10n.of(context).aiPingFailed('$e')}';
         });
       }
-    } catch (e) {
-      // 목록을 못 받아도 회사 판정은 살리고 예비 사다리로 넘어간다.
-      s.aiProvider = p;
-      if (s.aiModel.isEmpty || !modelMatchesProvider(s.aiModel, p)) {
-        s.aiModel = defaultLadder(p).first;
-      }
-      await store.persistSettings();
-      if (!mounted) return;
-      setState(() {
-        _aiChecking = false;
-        _aiMsg = L10n.of(context).aiListFailed('$e');
-      });
+      return;
     }
+
+    // 네 곳 모두 아니라고 했다.
+    if (!mounted) return;
+    s.aiProvider = '';
+    s.aiModels = [];
+    await store.persistSettings();
+    setState(() {
+      _aiChecking = false;
+      _aiMsg = L10n.of(context).aiKeyUnknownFormat;
+    });
   }
 
 
@@ -7643,8 +7713,26 @@ class _SettingsScreenState extends State<SettingsScreen>
                             ),
                           ),
                           onChanged: (v) {
-                            s.aiKey = v.trim();
+                            final nv = v.trim();
+                            if (nv == s.aiKey) return;
+                            s.aiKey = nv;
+                            // 키가 바뀌면 앞서 알아낸 것은 **전부 남의
+                            // 것이다.** 이걸 안 지워서, 구글 키를 넣은
+                            // 화면에 ChatGPT와 gpt-5-nano가 남아 있었다.
+                            s.aiProvider = '';
+                            s.aiModel = '';
+                            s.aiModels = [];
+                            _aiMsg = '';
                             store.persistSettings();
+                            setState(() {});
+                            // 붙여넣었으면 그게 곧 "써 달라"는 뜻이다.
+                            // 누를 단추를 하나라도 줄인다.
+                            _aiAutoTimer?.cancel();
+                            if (nv.length >= 20) {
+                              _aiAutoTimer = Timer(
+                                  const Duration(milliseconds: 900),
+                                  _verifyAiKey);
+                            }
                           },
                         ),
                       ),
@@ -7701,17 +7789,36 @@ class _SettingsScreenState extends State<SettingsScreen>
                   // 알아내고, 회사에 물어 목록을 받고, 제일 싼 것을 고른다.
                   // 고급은 **비상구**이지 거쳐야 하는 단계가 아닌데, 그
                   // 사실이 화면에서 안 읽혔다. 한 줄로 적어 둔다.
-                  TextButton(
-                    onPressed: () => setState(() => _aiAdvOpen = !_aiAdvOpen),
-                    child: Text(l.aiAdvancedLabel),
-                  ),
-                  if (!_aiAdvOpen)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 12, bottom: 4),
-                      child: Text(l.aiAdvancedNote,
-                          style: TextStyle(fontSize: 13, color: context.c.sub)),
+                  // 고급은 **알아내기가 실패했을 때만** 나온다.
+                  //
+                  // 2026-08-17 소유자 지시 — "'고급설정' 같은 건 안된다. (…)
+                  // 내가 llm 마다 api키 다 들어가봐도 세부 모델이 나오는 게
+                  // 없어. 그러니 이걸 설정을 사용자에게 맡길 수는 없다."
+                  //
+                  // 옳다. 어느 회사도 키 발급 화면에서 모델 이름을 알려 주지
+                  // 않는다. 알 수 없는 것을 고르라고 내미는 칸은 도움이 아니라
+                  // 벽이다. 게다가 늘 보이면 사람은 그걸 **거쳐야 하는
+                  // 단계**로 읽는다 — 비상구를 복도 한가운데 두면 아무도
+                  // 그게 비상구인 줄 모른다.
+                  //
+                  // 그래서 성공한 화면에서는 아예 안 보인다. 우리가 회사를
+                  // 못 알아냈을 때만, 그때 처음 나타난다.
+                  if (s.aiKey.trim().isNotEmpty &&
+                      s.aiProvider.isEmpty &&
+                      !_aiChecking) ...[
+                    TextButton(
+                      onPressed: () => setState(() => _aiAdvOpen = !_aiAdvOpen),
+                      child: Text(l.aiAdvancedLabel),
                     ),
-                  if (_aiAdvOpen) ...[
+                    if (!_aiAdvOpen)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12, bottom: 4),
+                        child: Text(l.aiAdvancedNote,
+                            style:
+                                TextStyle(fontSize: 13, color: context.c.sub)),
+                      ),
+                  ],
+                  if (_aiAdvOpen && s.aiProvider.isEmpty) ...[
                     if (_aiPickList().isNotEmpty)
                       DropdownButton<String>(
                         isExpanded: true,

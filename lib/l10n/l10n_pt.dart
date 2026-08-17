@@ -467,6 +467,9 @@ class L10nPt extends L10n {
   String get filterReset => 'Redefinir';
 
   @override
+  String get aiDetecting => 'Verificando a qual provedor esta chave pertence…';
+
+  @override
   String get aiErrNoCredits => 'A chave está correta, mas a conta não tem saldo. Adicione um meio de pagamento ou créditos no site do provedor. Para não pagar, experimente uma chave do Google Gemini (começa com AIza…) — ela tem camada gratuita.';
 
   @override
@@ -936,7 +939,7 @@ class L10nPt extends L10n {
   @override
   String get aiKeyChecking => 'Verificando…';
   @override
-  String get aiKeyUnknownFormat => 'Formato de chave não reconhecido. Defina o modelo em Avançado.';
+  String get aiKeyUnknownFormat => 'Não foi possível identificar o provedor. Os quatro foram consultados e nenhum aceitou esta chave. Copie e cole a chave novamente.';
   @override
   String get aiAdvancedLabel => 'Avançado — escolher modelo manualmente';
   @override
