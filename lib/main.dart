@@ -3671,6 +3671,40 @@ class _EditorScreenState extends State<EditorScreen>
     final st = found;
     if (st == null) return;
     if (st.textEditingValue.selection.isCollapsed) return;
+
+    // 손잡이(양 끝의 점)를 눈에 보이게 한다.
+    //
+    // 2026-08-17 소유자 신고 — "점 포인트(핸들)만 없어서 그렇지, 점
+    // 포인트가 있다고 생각하고 드래그를 하니 곧 점 포인트가 생기면서
+    // 조절이 되네."
+    //
+    // 이 한 문장이 원인을 다 말해 준다. 손잡이는 제자리에 있었고 그리기만
+    // 안 되고 있었다. 플러터는 선택이 바뀔 때마다 '지금 손잡이를 보여야
+    // 하나'를 다시 판정하는데, 메뉴의 '전체 선택'처럼 손가락이 직접 만든
+    // 선택이 아니면 그 판정이 false 로 떨어진다. 그러다 그 자리를 문지르면
+    // 손가락 사건이 생겨 그때 켜진다.
+    //
+    // 보이지 않는 조작점은 없는 것과 같다. 있는 줄 알고 더듬어야 잡히는
+    // 것은 기능이 아니라 요행이다.
+    // selectionOverlay 는 @visibleForTesting 이다. 규칙을 어기는 것을 알고
+    // 쓰므로 이유를 적어 둔다.
+    //
+    // 손잡이를 켜는 공개 통로가 플러터에 없다. EditableTextState 가 밖으로
+    // 내주는 것은 showToolbar/hideToolbar 뿐이고, 손잡이는 오버레이 안에만
+    // 있다. 우회로로 '이 선택은 길게 누르기였다'고 거짓 신호를 보내는
+    // 방법이 있으나, 그건 거짓말을 코드에 심는 것이고 플러터가 그 신호를
+    // 어떻게 쓰는지에 우리가 계속 매이게 된다.
+    //
+    // 보이는 규칙 위반이 안 보이는 우회로보다 낫다. 플러터가 이 이름을
+    // 바꾸면 빌드가 깨져서 바로 알게 된다 — 조용히 손잡이만 다시 사라지는
+    // 것보다 그편이 안전하다.
+    // ignore: invalid_use_of_visible_for_testing_member
+    final ov = st.selectionOverlay;
+    if (ov != null) {
+      ov.handlesVisible = true;
+      ov.showHandles();
+    }
+
     // 이미 떠 있으면 false를 돌려주고 아무 일도 안 한다 — 깜빡이지 않는다.
     st.showToolbar();
   }
@@ -7499,7 +7533,31 @@ class _SettingsScreenState extends State<SettingsScreen>
     final l = L10n.of(context);
     final s = store.settings;
     return Scaffold(
-      appBar: AppBar(title: Text(l.settingsTitle)),
+      // 2026-08-17 소유자 지시 — "버전을 설정페이지 맨 밑에 표시하는데,
+      // 설정 페이지 맨 위에 표시해줘. 가운데는 '설정'이라고 나오고, 우측에
+      // 버전을 기본 폰트 사이즈로 표시해줘."
+      //
+      // 판 번호를 확인하려고 설정을 끝까지 굴려 내려가야 했다. 배포가
+      // 실제로 닿았는지 보려고 여는 것이 대부분인데, 그걸 보려면 맨
+      // 아래까지 가야 하는 것은 순서가 뒤집힌 것이다.
+      //
+      // SelectableText 그대로 둔다 — 길게 눌러 복사할 수 있어야 한다는
+      // 2026-08-14 요청은 자리를 옮겨도 유효하다.
+      appBar: AppBar(
+        title: Text(l.settingsTitle),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: SelectableText(
+                appVersionLabel,
+                style: TextStyle(fontSize: 15, color: context.c.sub),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 8),
         child: Column(
@@ -8084,17 +8142,8 @@ class _SettingsScreenState extends State<SettingsScreen>
               child: Text(l.settingsFooter,
                   style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
             ),
-            _sep(),
-            // 버전은 여기서 눈으로 확인한다. 업데이트가 실제로 반영됐는지
-            // 이 숫자 하나로 알 수 있어야 한다(소유자 요청 2026-08-12).
-            // 2026-08-14: 눈으로 읽고 옮겨 적는 대신 그대로 복사할 수 있어야
-            // 한다는 요청. SelectableText면 길게 눌러 선택 → 복사 —
-            // 애플 기본 방식 그대로다(탭 한 번에 복사되는 독자 동작은 안 만든다).
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: SelectableText(appVersionLabel,
-                  style: TextStyle(fontSize: 15, color: context.c.guideInk)),
-            ),
+            // 버전은 이 화면 맨 위 오른쪽으로 옮겼다(2026-08-17).
+            // 같은 것을 두 곳에 두면 한 곳은 반드시 뒤처진다.
           ]),
           // 바로가기(앵커)가 겨냥한 자리를 화면 '맨 위'에 붙이려면 그 아래에
           // 화면 한 장만큼의 여유가 있어야 한다. 없으면 목록 끝에 가까운
