@@ -467,6 +467,21 @@ class L10nEs extends L10n {
   String get filterReset => 'Restablecer';
 
   @override
+  String get aiErrNoCredits => 'La clave está bien, pero la cuenta no tiene saldo. Añade un método de pago o créditos en el sitio del proveedor. Si prefieres no pagar, prueba una clave de Google Gemini (empieza por AIza…) — tiene nivel gratuito.';
+
+  @override
+  String get aiErrBadKey => 'La clave fue rechazada. Revisa si hay espacios o comillas sobrantes y, si sigue igual, genera una clave nueva.';
+
+  @override
+  String get aiErrRateLimit => 'El proveedor está saturado ahora mismo. No es un fallo de la app: inténtalo de nuevo en un momento.';
+
+  @override
+  String get aiErrNoModel => 'Ese modelo no está disponible en esta cuenta. Elige otro en \'Avanzado — elegir modelo\'.';
+
+  @override
+  String get aiErrNetwork => 'No se pudo conectar a internet. Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
   String get multiSelectStart => 'Eliminar varias notas';
 
   @override

@@ -466,6 +466,21 @@ class L10nZhHant extends L10n {
   String get filterReset => '重設';
 
   @override
+  String get aiErrNoCredits => '金鑰沒問題，但該帳戶沒有餘額。請在服務商網站新增付款方式或儲值。若不想付費，可以試試 Google Gemini 金鑰（以 AIza… 開頭）——它有免費額度。';
+
+  @override
+  String get aiErrBadKey => '金鑰被拒絕。請檢查前後是否有空格或引號，仍然不行就到服務商網站重新申請。';
+
+  @override
+  String get aiErrRateLimit => '目前請求過於集中。這不是應用程式的問題，請稍後再試。';
+
+  @override
+  String get aiErrNoModel => '該帳戶無法使用這個模型。請在下方「進階 — 直接選擇模型」中換一個。';
+
+  @override
+  String get aiErrNetwork => '無法連線到網際網路。請檢查網路後重試。';
+
+  @override
   String get multiSelectStart => '選擇多筆刪除';
 
   @override

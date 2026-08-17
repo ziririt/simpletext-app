@@ -4554,7 +4554,14 @@ class _EditorScreenState extends State<EditorScreen> {
                                     });
                                   } catch (e) {
                                     setD(() => aiBusy = false);
-                                    if (mounted) _toast(context, L10n.of(context).aiCallFailed('$e'));
+                                    if (!mounted) return;
+                                    // 짧게 지나가는 알림에는 처방을 띄운다.
+                                    // 영어 예외 문자열을 2초 보여 주는 것은
+                                    // 아무것도 안 보여 주는 것과 같다.
+                                    final ll = L10n.of(context);
+                                    final fix = aiRemedy(ll, '$e');
+                                    _toast(context,
+                                        fix.isNotEmpty ? fix : ll.aiCallFailed('$e'));
                                   }
                                 },
                           child: Text(aiBusy ? l.aiBusyLabel : l.aiRunUnknown),
@@ -7584,13 +7591,57 @@ class _SettingsScreenState extends State<SettingsScreen>
                   // 키 한 칸이 전부다. 회사도 모델도 키에서 알아낸다.
                   // (소유자: "키 발급 시 모델을 알려주지 않는데?" — 맞는 말이라
                   //  모델 선택을 기본 화면에서 치웠다. 2026-08-16 승인)
+                  // 2026-08-17 소유자 지시 — "입력칸에 소제목을 넣지 말고,
+                  // 그냥 소제목으로 빼고, 입력칸은 입력칸스럽게 보이게 해줘."
+                  //
+                  // 그동안 'API 키 (Gemini · Claude · ChatGPT · Grok)'가
+                  // 칸 **안**에 힌트로 들어가 있었다. 힌트는 글자를 한 자라도
+                  // 치면 사라진다. 즉 이 칸이 무엇을 받는 칸인지 알려 주는
+                  // 유일한 글자가, 값을 넣는 순간 없어졌다. 나중에 다시 와서
+                  // 보면 점 마흔 개만 있고 이게 무슨 칸인지 알 길이 없다.
+                  //
+                  // 이름표는 칸 밖에서 늘 보여야 하고, 칸 안에는 **모양의
+                  // 본보기**만 있으면 된다. 회사 이름은 이름표로 올리고,
+                  // 안에는 키가 어떻게 생겼는지를 둔다.
+                  //
+                  // 테두리 없는 밑줄 칸도 고쳤다. 밑줄 하나로는 '여기를 눌러
+                  // 넣으라'는 신호가 약하다 — 칸처럼 보여야 칸으로 쓴다.
+                  Text(l.aiKeyHint,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
                           initialValue: s.aiKey,
                           obscureText: true,
-                          decoration: InputDecoration(hintText: l.aiKeyHint, isDense: true),
+                          style: const TextStyle(fontSize: 15),
+                          decoration: InputDecoration(
+                            // 나라말이 필요 없는 자리다. 어느 말을 쓰든
+                            // 키는 이렇게 생겼다.
+                            hintText: 'sk-…  ·  AIza…  ·  sk-ant-…  ·  xai-…',
+                            hintStyle:
+                                TextStyle(fontSize: 14, color: context.c.sub),
+                            filled: true,
+                            fillColor: context.c.field,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: context.c.line),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  BorderSide(color: context.c.accent, width: 2),
+                            ),
+                          ),
                           onChanged: (v) {
                             s.aiKey = v.trim();
                             store.persistSettings();
@@ -7615,6 +7666,33 @@ class _SettingsScreenState extends State<SettingsScreen>
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(_aiMsg,
                           style: TextStyle(fontSize: 14, height: 1.3, color: context.c.guideInk)),
+                    ),
+                  // 회사가 준 줄 밑에 우리 말 처방을 붙인다. 회사 줄을
+                  // 지우지 않는 이유: 그건 우리가 지어낼 수 없는 정보이고,
+                  // 검색해서 해결하려는 사람에게는 그 원문이 필요하다.
+                  if (aiRemedy(l, _aiMsg).isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                      decoration: BoxDecoration(
+                        color: context.c.warnBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.info_outline,
+                                size: 18, color: context.c.warnInk),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(aiRemedy(l, _aiMsg),
+                                  style: TextStyle(
+                                      fontSize: 14.5,
+                                      height: 1.45,
+                                      fontWeight: FontWeight.w600,
+                                      color: context.c.warnInk)),
+                            ),
+                          ]),
                     ),
                   // 소유자 지적: "어떤 LLM API 키 발급에 가더라도 세부
                   // 모델명을 안내해 주지 않는데 사용자가 어떻게 아냐?"
@@ -7901,6 +7979,54 @@ Future<void> aiPing({
 /// 2026-08-17 — aiCallOnce를 클래스 밖으로 빼면서 이것도 같이 나왔다.
 /// **둘은 한 덩이다.** 부르는 코드와 그 답을 읽는 코드는 언제나 같이
 /// 움직인다.
+/// 회사가 준 오류 한 줄을 **무엇을 해야 하는지**로 옮긴다.
+///
+/// 2026-08-17 소유자 신고 — "api키 잘 넣었는데도 api호출 실패로 나온다."
+///
+/// 화면에 찍혀 있던 것은 이랬다.
+///
+///   Exception: API 429: You have no credits remaining. Add credits to
+///   continue using the API at https://platform.openai.com/settings/...
+///
+/// 이 줄은 **거짓이 아니다.** 키도 멀쩡했고(모델 69개를 받아 왔다) 앱도
+/// 제 할 일을 했다. 회사가 "잔액이 없다"고 답한 것을 그대로 옮겼을 뿐이다.
+///
+/// 그런데 사용자에게는 이게 '앱이 안 되는 것'으로 읽힌다. 영어고, 앞에
+/// Exception이 붙어 있고, 무엇보다 **다음에 뭘 해야 하는지가 없다.** 원인을
+/// 정확히 말하는 것과 길을 알려 주는 것은 다른 일이다.
+///
+/// 그래서 회사 문장은 그대로 두고(그건 우리가 지어낼 수 없는 정보다) 그
+/// 아래에 우리 말로 처방을 한 줄 붙인다. 짚이는 데가 없으면 빈 문자열을
+/// 돌려주고 아무것도 안 붙인다 — 모르면서 아는 척하는 안내가 제일 나쁘다.
+String aiRemedy(L10n l, String raw) {
+  final s = raw.toLowerCase();
+  // 잔액을 먼저 본다. 잔액 없음도 429로 오기 때문에 순서를 바꾸면
+  // '잠시 뒤에 다시'라는 엉뚱한 처방이 나간다 — 기다려도 영영 안 된다.
+  if (s.contains('no credits') ||
+      s.contains('insufficient_quota') ||
+      s.contains('insufficient quota') ||
+      s.contains('billing') ||
+      s.contains('exceeded your current quota')) {
+    return l.aiErrNoCredits;
+  }
+  if (s.contains('api 401') ||
+      s.contains('api 403') ||
+      s.contains('invalid api key') ||
+      s.contains('unauthorized') ||
+      s.contains('api key not valid')) {
+    return l.aiErrBadKey;
+  }
+  if (s.contains('api 429')) return l.aiErrRateLimit;
+  if (s.contains('api 404')) return l.aiErrNoModel;
+  if (s.contains('socketexception') ||
+      s.contains('failed host lookup') ||
+      s.contains('timed out') ||
+      s.contains('connection refused')) {
+    return l.aiErrNetwork;
+  }
+  return '';
+}
+
 String _apiErr(int code, List<int> bodyBytes) {
   try {
     final j = jsonDecode(utf8.decode(bodyBytes));

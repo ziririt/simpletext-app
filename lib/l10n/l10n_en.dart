@@ -467,6 +467,21 @@ class L10nEn extends L10n {
   String get filterReset => 'Reset';
 
   @override
+  String get aiErrNoCredits => 'The key is fine, but the account has no balance. Add a payment method or credits on the provider\'s site. To avoid paying, try a Google Gemini key (starts with AIza…) — it has a free tier.';
+
+  @override
+  String get aiErrBadKey => 'The key was rejected. Check for stray spaces or quotes, then issue a new key on the provider\'s site.';
+
+  @override
+  String get aiErrRateLimit => 'The provider is busy right now. Nothing is wrong with the app — try again in a moment.';
+
+  @override
+  String get aiErrNoModel => 'That model is not available on this account. Pick another one under \'Advanced — choose a model\'.';
+
+  @override
+  String get aiErrNetwork => 'Could not reach the internet. Check your connection and try again.';
+
+  @override
   String get multiSelectStart => 'Delete several notes';
 
   @override

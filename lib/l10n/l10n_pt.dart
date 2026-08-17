@@ -467,6 +467,21 @@ class L10nPt extends L10n {
   String get filterReset => 'Redefinir';
 
   @override
+  String get aiErrNoCredits => 'A chave está correta, mas a conta não tem saldo. Adicione um meio de pagamento ou créditos no site do provedor. Para não pagar, experimente uma chave do Google Gemini (começa com AIza…) — ela tem camada gratuita.';
+
+  @override
+  String get aiErrBadKey => 'A chave foi recusada. Verifique espaços ou aspas sobrando e, se continuar, gere uma nova chave.';
+
+  @override
+  String get aiErrRateLimit => 'O provedor está sobrecarregado agora. Não é falha do app: tente de novo em instantes.';
+
+  @override
+  String get aiErrNoModel => 'Esse modelo não está disponível nesta conta. Escolha outro em \'Avançado — escolher modelo\'.';
+
+  @override
+  String get aiErrNetwork => 'Não foi possível acessar a internet. Verifique a conexão e tente de novo.';
+
+  @override
   String get multiSelectStart => 'Excluir várias notas';
 
   @override

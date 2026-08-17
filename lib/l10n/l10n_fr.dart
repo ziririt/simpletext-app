@@ -468,6 +468,21 @@ class L10nFr extends L10n {
   String get filterReset => 'Réinitialiser';
 
   @override
+  String get aiErrNoCredits => 'La clé est valide, mais le compte n\'a plus de solde. Ajoutez un moyen de paiement ou des crédits chez le fournisseur. Pour ne rien payer, essayez une clé Google Gemini (commence par AIza…) — elle a un palier gratuit.';
+
+  @override
+  String get aiErrBadKey => 'La clé a été refusée. Vérifiez les espaces ou guillemets en trop, puis générez une nouvelle clé si besoin.';
+
+  @override
+  String get aiErrRateLimit => 'Le fournisseur est saturé pour le moment. Ce n\'est pas l\'application : réessayez dans un instant.';
+
+  @override
+  String get aiErrNoModel => 'Ce modèle n\'est pas disponible sur ce compte. Choisissez-en un autre dans \'Avancé — choisir un modèle\'.';
+
+  @override
+  String get aiErrNetwork => 'Impossible d\'accéder à internet. Vérifiez la connexion et réessayez.';
+
+  @override
   String get multiSelectStart => 'Supprimer plusieurs notes';
 
   @override

@@ -466,6 +466,21 @@ class L10nKo extends L10n {
   String get filterReset => '초기화';
 
   @override
+  String get aiErrNoCredits => '키는 멀쩡한데 그 회사 계정에 잔액이 없습니다. 회사 홈페이지에서 결제 수단을 등록하거나 크레딧을 충전해야 합니다. 돈을 안 쓰고 싶으시면 구글 제미나이(AIza…로 시작하는 키)를 넣어 보세요 — 무료 한도가 있습니다.';
+
+  @override
+  String get aiErrBadKey => '키가 거절당했습니다. 앞뒤에 공백이나 따옴표가 붙지 않았는지 보시고, 그래도 안 되면 회사 홈페이지에서 새로 발급받으세요.';
+
+  @override
+  String get aiErrRateLimit => '지금 요청이 몰려 있습니다. 앱 잘못이 아니니 잠시 뒤에 다시 눌러 주세요.';
+
+  @override
+  String get aiErrNoModel => '이 계정에서 그 모델을 쓸 수 없습니다. 아래 \'고급 — 모델 직접 선택\'에서 다른 모델을 골라 보세요.';
+
+  @override
+  String get aiErrNetwork => '인터넷에 닿지 못했습니다. 연결을 확인하고 다시 해 주세요.';
+
+  @override
   String get multiSelectStart => '선택 메모 한번에 삭제';
 
   @override

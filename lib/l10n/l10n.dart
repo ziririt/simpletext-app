@@ -295,6 +295,22 @@ abstract class L10n {
   String get filterAll;
   String get filterReset;
 
+  // ---------------- AI 호출이 막혔을 때의 처방 (2026-08-17) ----------------
+  /// 회사 계정에 돈이 없다. 제일 흔하고, 제일 앱 탓으로 오해받는 경우다.
+  String get aiErrNoCredits;
+
+  /// 키 자체가 거절당했다.
+  String get aiErrBadKey;
+
+  /// 잔액은 있는데 잠깐 몰렸다.
+  String get aiErrRateLimit;
+
+  /// 그 모델이 이 계정에 없다.
+  String get aiErrNoModel;
+
+  /// 인터넷에 못 닿았다.
+  String get aiErrNetwork;
+
   // ---------------- 여러 개 골라 지우기 (2026-08-17) ----------------
   /// 정렬·필터 시트에서 고르기 상태로 들어가는 단추.
   String get multiSelectStart;
@@ -662,6 +678,11 @@ abstract class L10n {
         'filterTagLabel': filterTagLabel,
         'filterAll': filterAll,
         'filterReset': filterReset,
+        'aiErrNoCredits': aiErrNoCredits,
+        'aiErrBadKey': aiErrBadKey,
+        'aiErrRateLimit': aiErrRateLimit,
+        'aiErrNoModel': aiErrNoModel,
+        'aiErrNetwork': aiErrNetwork,
         'multiSelectStart': multiSelectStart,
         'selectAllTooltip': selectAllTooltip,
         'deleteSelected': deleteSelected,

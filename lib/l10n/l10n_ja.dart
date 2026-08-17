@@ -466,6 +466,21 @@ class L10nJa extends L10n {
   String get filterReset => 'リセット';
 
   @override
+  String get aiErrNoCredits => 'キーは正常ですが、そのアカウントに残高がありません。提供元のサイトで支払い方法を登録するかクレジットを追加してください。無料で使いたい場合は Google Gemini のキー（AIza… で始まる）をお試しください — 無料枠があります。';
+
+  @override
+  String get aiErrBadKey => 'キーが拒否されました。前後の空白や引用符を確認し、それでも駄目なら提供元で新しいキーを発行してください。';
+
+  @override
+  String get aiErrRateLimit => '今アクセスが集中しています。アプリの問題ではありません。少し待って再度お試しください。';
+
+  @override
+  String get aiErrNoModel => 'このアカウントではそのモデルを使えません。下の「詳細 — モデルを直接選択」で別のモデルを選んでください。';
+
+  @override
+  String get aiErrNetwork => 'インターネットに接続できませんでした。接続を確認してもう一度お試しください。';
+
+  @override
   String get multiSelectStart => '選んでまとめて削除';
 
   @override

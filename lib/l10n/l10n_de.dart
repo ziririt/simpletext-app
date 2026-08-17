@@ -468,6 +468,21 @@ class L10nDe extends L10n {
   String get filterReset => 'Zurücksetzen';
 
   @override
+  String get aiErrNoCredits => 'Der Schlüssel ist in Ordnung, aber das Konto hat kein Guthaben. Hinterlegen Sie beim Anbieter eine Zahlungsmethode oder laden Sie Guthaben auf. Wenn Sie nichts zahlen möchten, probieren Sie einen Google-Gemini-Schlüssel (beginnt mit AIza…) — er hat ein kostenloses Kontingent.';
+
+  @override
+  String get aiErrBadKey => 'Der Schlüssel wurde abgelehnt. Prüfen Sie überflüssige Leerzeichen oder Anführungszeichen und erstellen Sie sonst einen neuen Schlüssel.';
+
+  @override
+  String get aiErrRateLimit => 'Der Anbieter ist gerade überlastet. Das liegt nicht an der App — versuchen Sie es gleich noch einmal.';
+
+  @override
+  String get aiErrNoModel => 'Dieses Modell ist für dieses Konto nicht verfügbar. Wählen Sie unter \'Erweitert — Modell direkt wählen\' ein anderes.';
+
+  @override
+  String get aiErrNetwork => 'Keine Internetverbindung. Prüfen Sie die Verbindung und versuchen Sie es erneut.';
+
+  @override
   String get multiSelectStart => 'Mehrere Notizen löschen';
 
   @override
