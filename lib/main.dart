@@ -6188,6 +6188,19 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
                 //
                 // 여기서 지우지는 않는다. 시트를 닫고 목록으로 돌려보낼
                 // 뿐이다. 무엇이 지워지는지 눈으로 보고 고르게 해야 한다.
+                //
+                // 그래서 **빨강이 아니라 하늘색이다.**
+                //
+                // 2026-08-17 소유자 지시로 바꿨는데, 바꾸고 나니 처음부터
+                // 이게 맞았다. 빨강은 이 앱에서 '되돌릴 수 없는 일'을 뜻하는
+                // 색이고 그래서 아껴 써야 힘이 남는다. 이 단추가 하는 일은
+                // 고르기 상태로 들어가는 것뿐이다 — 아무것도 지우지 않고,
+                // 누른 뒤에 마음이 바뀌면 '삭제완료'로 그냥 나오면 된다.
+                //
+                // 위험하지 않은 것을 빨갛게 칠하면 두 가지를 잃는다. 진짜
+                // 위험한 자리(목록의 '선택 삭제', 밀어서 삭제)의 빨강이
+                // 흔해져서 안 무서워지고, 이 단추는 쓸데없이 무서워져서
+                // 손이 안 간다. 빨강은 여기서 아껴 저기서 쓴다.
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -6198,24 +6211,19 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
                   child: Text(l.multiSelectStart,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, color: c.danger)),
+                      style: TextStyle(fontSize: 13, color: c.accent)),
                 ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () {
-                    s.sortMode = 'updated';
-                    s.filterSource = '';
-                    s.filterTag = '';
-                    s.filterFolder = '';
-                    _save();
-                  },
-                  child: Text(l.filterReset,
-                      style: const TextStyle(fontSize: 13)),
-                ),
+                // '초기화'는 뺐다(2026-08-17 소유자 지시).
+                //
+                // 빼고 나서 왜 필요 없었는지가 보인다 — 이 시트의 모든 갈래에
+                // 이미 '전체' 칩이 하나씩 있다. 출처를 풀려면 출처의 '전체',
+                // 태그를 풀려면 태그의 '전체'를 누르면 된다. 정렬도 세 개
+                // 가운데 하나라 언제든 '최근 수정순'으로 돌아간다.
+                //
+                // 즉 '초기화'는 없는 일을 하는 단추가 아니라 **이미 있는 길을
+                // 한 번 더 낸 단추**였다. 그런 단추는 편의가 아니라 짐이다.
+                // 화면에 놓인 것이 하나 늘 때마다 사람은 그것이 무엇인지
+                // 한 번 더 읽어야 하고, 여기서는 그 값을 못 한다.
               ]),
               section(l.sortLabel, [
                 chip(l.sortUpdated, s.sortMode == 'updated', () {
