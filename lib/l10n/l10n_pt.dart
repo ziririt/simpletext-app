@@ -467,6 +467,9 @@ class L10nPt extends L10n {
   String get filterReset => 'Redefinir';
 
   @override
+  String get toggleListTooltip => 'Ocultar ou mostrar a lista';
+
+  @override
   String get aiDetecting => 'Verificando a qual provedor esta chave pertence…';
 
   @override

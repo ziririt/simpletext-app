@@ -468,6 +468,9 @@ class L10nFr extends L10n {
   String get filterReset => 'Réinitialiser';
 
   @override
+  String get toggleListTooltip => 'Masquer ou afficher la liste';
+
+  @override
   String get aiDetecting => 'Recherche du fournisseur auquel appartient cette clé…';
 
   @override

@@ -467,6 +467,9 @@ class L10nEn extends L10n {
   String get filterReset => 'Reset';
 
   @override
+  String get toggleListTooltip => 'Hide or show the list';
+
+  @override
   String get aiDetecting => 'Checking which provider this key belongs to…';
 
   @override

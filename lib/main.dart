@@ -1868,6 +1868,21 @@ class SplitShell extends StatefulWidget {
   /// 목록 칸의 폭. 애플 메모·메일과 비슷한 값이다.
   static const double kListWidth = 320;
 
+  /// 글 칸이 넘지 않을 폭의 아래 한계.
+  ///
+  /// 2026-08-17 소유자 지시 — "가로 모드에서는 편집 화면이 너무 풀사이즈로
+  /// 넓어지지 않게 세로 보기 해상도 만큼의 width를 할 수 있을까? 가운데
+  /// 정렬로."
+  ///
+  /// 기준을 화면의 **짧은 변**으로 잡았다. 그 값이 곧 그 기기를 세로로
+  /// 들었을 때의 폭이라, 기기마다 숫자를 외울 필요가 없다. 아이패드
+  /// 12.9는 1024, 11인치는 834다. 가로로 눕히든 목록을 접든 글이 읽던
+  /// 폭 그대로 남는다.
+  ///
+  /// 다만 맥에서는 창을 납작하게 만들면 짧은 변이 창 높이가 되어 글 칸이
+  /// 지나치게 좁아진다. 그래서 아래 한계를 둔다.
+  static const double kMinReadWidth = 720;
+
   static SplitShellState? of(BuildContext c) =>
       c.findAncestorStateOfType<SplitShellState>();
 
@@ -1878,6 +1893,21 @@ class SplitShell extends StatefulWidget {
 class SplitShellState extends State<SplitShell> {
   String? _openId;
   bool _autoTidy = false;
+
+  /// 왼쪽 목록을 펴 두었는가.
+  ///
+  /// 2026-08-17 소유자 지시 — "메모 리스트가 좌측에 계속 보이게 되어있는데,
+  /// 이걸 안보이게 접을 수 있게 해줘. 토글."
+  ///
+  /// 기본은 펴 둔 상태다. 넓은 화면에서 두 칸으로 나눈 까닭이 그것이기
+  /// 때문이다. 접는 것은 '글에만 집중하겠다'는 뜻이라 사용자가 그때그때
+  /// 정한다. 앱을 껐다 켜면 다시 펴진다 — 접힌 채로 다시 열면 목록이
+  /// 사라진 것처럼 보이고, 그건 고장으로 읽힌다.
+  bool _listOpen = true;
+
+  bool get listOpen => _listOpen;
+
+  void toggleList() => setState(() => _listOpen = !_listOpen);
 
   /// 지금 오른쪽 칸에 열려 있는 메모. 목록이 그것을 표시하려고 본다.
   String? get openId => _openId;
@@ -1916,10 +1946,30 @@ class SplitShellState extends State<SplitShell> {
           const TopBannerBar(),
           Expanded(
             child: Row(children: [
-              const SizedBox(
-                  width: SplitShell.kListWidth,
-                  child: HomeScreen(embedded: true)),
-              VerticalDivider(width: 1, thickness: 1, color: c.line),
+              // 접을 때 폭만 0으로 줄인다. 목록을 트리에서 빼 버리면 스크롤
+              // 위치와 고른 상태가 사라져서, 다시 펴면 맨 위로 돌아가 있다.
+              // 잠깐 감춘 것과 지운 것은 다르다.
+              //
+              // 안쪽은 OverflowBox로 320을 그대로 물려 준다. 폭이 줄어드는
+              // 동안 목록까지 같이 찌그러지면 글자가 겹쳐 보인다 — 접히는
+              // 것이 아니라 망가지는 것으로 읽힌다.
+              ClipRect(
+                child: AnimatedContainer(
+                  duration: MediaQuery.of(context).disableAnimations
+                      ? Duration.zero
+                      : const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  width: _listOpen ? SplitShell.kListWidth : 0,
+                  child: OverflowBox(
+                    alignment: Alignment.centerLeft,
+                    minWidth: SplitShell.kListWidth,
+                    maxWidth: SplitShell.kListWidth,
+                    child: const HomeScreen(embedded: true),
+                  ),
+                ),
+              ),
+              if (_listOpen)
+                VerticalDivider(width: 1, thickness: 1, color: c.line),
               Expanded(
                 child: !alive
                     ? Center(
@@ -1933,7 +1983,20 @@ class SplitShellState extends State<SplitShell> {
                           ),
                         ),
                       )
-                    : AnimatedSwitcher(
+                    : Center(
+                        // 글 칸을 화면 폭만큼 늘리지 않는다. 한 줄이 길어질수록
+                        // 눈이 다음 줄 첫머리를 찾기 어려워진다 — 읽기가 힘든
+                        // 것은 글자 크기가 아니라 줄 길이인 경우가 많다.
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: () {
+                              final s = MediaQuery.sizeOf(context).shortestSide;
+                              return s < SplitShell.kMinReadWidth
+                                  ? SplitShell.kMinReadWidth
+                                  : s;
+                            }(),
+                          ),
+                          child: AnimatedSwitcher(
                         // 오른쪽 칸이 바뀔 때 뚝 끊기지 않게 아주 짧게 겹친다.
                         // 180ms는 '봤다'와 '기다렸다' 사이의 값이다 — 더 길면
                         // 목록을 훑을 때 답답해진다.
@@ -1945,11 +2008,13 @@ class SplitShellState extends State<SplitShell> {
                             : const Duration(milliseconds: 180),
                         switchInCurve: Curves.easeOutCubic,
                         switchOutCurve: Curves.easeInCubic,
-                        child: EditorScreen(
-                          key: ValueKey(id),
-                          noteId: id,
-                          autoTidy: _autoTidy,
-                          embedded: true,
+                          child: EditorScreen(
+                            key: ValueKey(id),
+                            noteId: id,
+                            autoTidy: _autoTidy,
+                            embedded: true,
+                          ),
+                        ),
                         ),
                       ),
               ),
@@ -1971,7 +2036,46 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+/// 아이폰·아이패드에서 맨 위 시계 자리를 한 번 두드리면 맨 위로 올린다.
+///
+/// 2026-08-17 소유자 지시 — "맨 위의 기기 시계 부분을 원터치를 하면 맨 위로
+/// 스크롤이 올라가게 해줘."
+///
+/// 이건 우리가 손가락을 받는 것이 아니다. 상태막대는 앱이 아니라 iOS의
+/// 것이라 터치가 우리에게 오지 않는다. 대신 iOS가 "누가 상태막대를
+/// 두드렸다"고 알려 주고(flutter/system 채널), 플러터가 그것을 등록된
+/// 감시자들에게 handleStatusBarTap 으로 나눠 준다. 우리는 그 소식을 받아
+/// 스크롤만 올리면 된다.
+///
+/// 그래서 **안드로이드에는 이 소식이 오지 않는다.** 안드로이드의 상태
+/// 표시줄은 내려서 알림을 보는 곳이지 두드리는 곳이 아니라서, 운영체제가
+/// 아예 그런 사건을 만들지 않는다. 없는 사건을 흉내 내려면 화면 맨 위에
+/// 투명한 판을 덮어야 하는데, 그러면 알림 내리기를 우리가 가로채게 된다.
+/// 남의 동작을 뺏는 편의는 편의가 아니다.
+mixin _ScrollTopOnStatusBarTap<T extends StatefulWidget> on State<T>
+    implements WidgetsBindingObserver {
+  /// 맨 위로 올릴 스크롤. 아직 붙지 않았으면 null 을 돌려주면 된다.
+  ScrollController? get topScroller;
+
+  void _bindStatusBarTap() => WidgetsBinding.instance.addObserver(this);
+  void _unbindStatusBarTap() => WidgetsBinding.instance.removeObserver(this);
+
+  @override
+  void handleStatusBarTap() {
+    final c = topScroller;
+    if (c == null || !c.hasClients || c.offset <= 0) return;
+    c.animateTo(0,
+        duration: const Duration(milliseconds: 260), curve: Curves.easeOutCubic);
+  }
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver, _ScrollTopOnStatusBarTap {
+  /// 목록은 컨트롤러를 따로 두지 않고 기본 스크롤을 쓴다. 그 임자를 여기서
+  /// 빌려 온다.
+  @override
+  ScrollController? get topScroller => PrimaryScrollController.maybeOf(context);
+
   final store = Store.instance;
   String query = '';
 
@@ -1998,6 +2102,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _bindStatusBarTap();
     store.addListener(_onChange);
     _life = AppLifecycleListener(onResume: ICloudSync.instance.onResume);
     // 아이클라우드는 메모를 다 읽은 **뒤에** 켠다. 먼저 켜면 아직 비어 있는
@@ -2015,6 +2120,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _unbindStatusBarTap();
     _life.dispose();
     ICloudSync.instance.dispose();
     store.removeListener(_onChange);
@@ -3162,7 +3268,13 @@ class EditorScreen extends StatefulWidget {
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
-class _EditorScreenState extends State<EditorScreen> {
+class _EditorScreenState extends State<EditorScreen>
+    with WidgetsBindingObserver, _ScrollTopOnStatusBarTap {
+  /// 본문은 스스로 구르지 않고 바깥 스크롤을 쓴다(아래 _bodyScroll 주석).
+  /// 맨 위로 올릴 것도 그것이다.
+  @override
+  ScrollController? get topScroller => _bodyScroll;
+
   final store = Store.instance;
   late Note note;
   late TextEditingController titleCtl;
@@ -3671,6 +3783,7 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
+    _bindStatusBarTap();
     final idx = store.notes.indexWhere((n) => n.id == widget.noteId);
     if (idx < 0) {
       _found = false;
@@ -3698,6 +3811,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   void dispose() {
+    _unbindStatusBarTap();
     _tagTimer?.cancel();
     bodyCtl.removeListener(_onSelectionChanged);
     _bodyScroll.dispose();
@@ -4890,6 +5004,20 @@ class _EditorScreenState extends State<EditorScreen> {
         appBar: AppBar(
           backgroundColor: paperBg,
           automaticallyImplyLeading: !widget.embedded,
+          // 넓은 화면에서만 나오는 목록 접기 단추.
+          //
+          // 자리를 여기로 잡은 이유: 접었을 때 다시 펼 수 있는 곳은 남아
+          // 있는 칸뿐이다. 목록 쪽에 두면 접는 순간 같이 사라진다.
+          // 애플의 사이드바 단추도 같은 자리에 있다.
+          leading: widget.embedded && SplitShell.of(context) != null
+              ? IconButton(
+                  tooltip: l.toggleListTooltip,
+                  icon: Icon(SplitShell.of(context)!.listOpen
+                      ? Icons.menu_open
+                      : Icons.menu),
+                  onPressed: () => SplitShell.of(context)!.toggleList(),
+                )
+              : null,
           title: const SizedBox.shrink(),
           actions: [
             if (_editing)

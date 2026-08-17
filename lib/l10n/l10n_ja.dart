@@ -466,6 +466,9 @@ class L10nJa extends L10n {
   String get filterReset => 'リセット';
 
   @override
+  String get toggleListTooltip => '一覧を隠す / 表示';
+
+  @override
   String get aiDetecting => 'どの提供元のキーか確認しています…';
 
   @override

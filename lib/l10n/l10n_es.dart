@@ -467,6 +467,9 @@ class L10nEs extends L10n {
   String get filterReset => 'Restablecer';
 
   @override
+  String get toggleListTooltip => 'Ocultar o mostrar la lista';
+
+  @override
   String get aiDetecting => 'Comprobando a qué proveedor pertenece esta clave…';
 
   @override

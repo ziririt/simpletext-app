@@ -466,6 +466,9 @@ class L10nKo extends L10n {
   String get filterReset => '초기화';
 
   @override
+  String get toggleListTooltip => '목록 접기 / 펴기';
+
+  @override
   String get aiDetecting => '어느 회사 키인지 확인하고 있습니다…';
 
   @override

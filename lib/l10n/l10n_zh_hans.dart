@@ -466,6 +466,9 @@ class L10nZhHans extends L10n {
   String get filterReset => '重置';
 
   @override
+  String get toggleListTooltip => '隐藏或显示列表';
+
+  @override
   String get aiDetecting => '正在确认这是哪家服务商的密钥…';
 
   @override

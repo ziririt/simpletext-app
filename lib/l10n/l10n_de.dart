@@ -468,6 +468,9 @@ class L10nDe extends L10n {
   String get filterReset => 'Zurücksetzen';
 
   @override
+  String get toggleListTooltip => 'Liste aus- oder einblenden';
+
+  @override
   String get aiDetecting => 'Es wird geprüft, zu welchem Anbieter dieser Schlüssel gehört…';
 
   @override
