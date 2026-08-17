@@ -404,14 +404,31 @@ class InlineAdBlock extends StatefulWidget {
 }
 
 class _InlineAdBlockState extends State<InlineAdBlock> {
-  static const double _w = 300;
-  static const double _h = 250;
+  /// 불러오기 전에 잡아 두는 높이. 실제 높이는 광고가 온 뒤에 물어서
+  /// 바꾼다(_adH).
+  static const double _fallbackH = 250;
 
-  /// 아래 레이어에서 드러나는 느낌을 내는 폭. 화면 밑에서 올라오는 동안
-  /// 광고가 본문보다 이만큼 늦게 따라온다.
-  static const double _lag = 48;
+  /// 광고에게 허락하는 최대 높이. 화면 높이의 이만큼까지 준다.
+  ///
+  /// 2026-08-17 소유자 물음 — "풀 페이지 광고는 없어서 그런가? 광고 단가가
+  /// 훨씬 높을 것 같은데."
+  ///
+  /// 반은 맞다. 전에는 우리가 300×250이라고 **못 박아** 요청하고 있었다.
+  /// 그러면 구글은 그 크기의 소재만 보낸다. 인라인 적응형(inline adaptive)은
+  /// 크기를 못 박지 않고 "이만큼까지 되니 있는 것 중 제일 좋은 걸 달라"고
+  /// 묻는 방식이다. 그러면 300×600(하프페이지) 같은 큰 판이 들어올 수
+  /// 있고, 그쪽이 단가가 훨씬 높다.
+  ///
+  /// 0.8로 두는 이유: 1.0을 주면 화면을 통째로 덮는 소재가 올 수 있는데,
+  /// 그건 스크롤 도중에 나타나는 자리에 놓기엔 위험하다. 사용자가 무엇을
+  /// 보고 있었는지 잃어버리고, 애플·구글 둘 다 '글과 구별되지 않는 전면
+  /// 광고'를 싫어한다. 화면의 8할이면 충분히 크고, 위아래로 우리 화면이
+  /// 남아 있어 '광고 안에 갇혔다'는 느낌이 안 든다.
+  static const double _maxHFrac = 0.8;
 
   BannerAd? _ad;
+  double _adH = _fallbackH;
+  double _adW = 300;
   bool _loaded = false;
   bool _creating = false;
   ScrollPosition? _pos;
@@ -434,16 +451,38 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     if (mounted) setState(() {});
   }
 
-  void _create() {
+  void _create(double width, double maxHeight) {
     if (_creating || _ad != null) return;
     _creating = true;
+    // 크기를 못 박지 않고 '이만큼까지 되니 제일 좋은 걸 달라'고 묻는다.
+    // 300×250만 요청하던 것을 이렇게 바꾸면 300×600(하프페이지)처럼
+    // 단가가 높은 판이 들어올 수 있다.
+    final size = AdSize.getInlineAdaptiveBannerAdSize(
+        width.truncate(), maxHeight.truncate());
     final ad = BannerAd(
       adUnitId: bannerUnitId,
-      size: AdSize.mediumRectangle,
+      size: size,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: (_) {
-          if (mounted) setState(() => _loaded = true);
+        onAdLoaded: (loaded) async {
+          // 인라인 적응형은 **온 뒤에야 실제 크기를 안다.** 물어보지 않고
+          // 요청한 값으로 자리를 잡으면, 작은 소재가 왔을 때 아래가 텅 빈
+          // 회색 칸으로 남는다(어제 편집 화면에서 본 그 회색 네모가 이것과
+          // 같은 종류의 실수였다).
+          AdSize? real;
+          try {
+            real = await (loaded as BannerAd).getPlatformAdSize();
+          } catch (_) {
+            real = null;
+          }
+          if (!mounted) return;
+          setState(() {
+            if (real != null && real.height > 0) {
+              _adH = real.height.toDouble();
+              _adW = real.width.toDouble();
+            }
+            _loaded = true;
+          });
         },
         onAdFailedToLoad: (ad, err) {
           ad.dispose();
@@ -463,10 +502,15 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
 
   /// 지금 얼마나 늦게 따라와야 하는가.
   ///
-  /// 슬롯의 위쪽이 화면 아래 끝에 막 닿았을 때 가장 많이 뒤처지고(=_lag),
-  /// 슬롯이 화면 안에 다 들어오면 0이 된다. 스크롤이 없는 화면이거나 셈에
-  /// 필요한 것이 아직 없으면 0이다 — 움직임은 있으면 좋은 것이지 없으면
-  /// 안 되는 것이 아니다.
+  /// 슬롯의 위쪽이 화면 아래 끝에 막 닿았을 때 가장 많이 뒤처지고, 슬롯이
+  /// 화면 안에 다 들어오면 0이 된다. 스크롤이 없는 화면이거나 셈에 필요한
+  /// 것이 아직 없으면 0이다 — 움직임은 있으면 좋은 것이지 없으면 안 되는
+  /// 것이 아니다.
+  ///
+  /// 2026-08-17 — 뒤처지는 폭을 48픽셀 고정에서 **광고 높이의 절반**으로
+  /// 바꿨다. 48은 너무 작아서 소유자 눈에 '그냥 붙어 있는 네모'로 보였다.
+  /// 절반이면 광고가 아래 레이어에 깔려 있다가 위 종이가 걷히면서 드러나는
+  /// 것처럼 보인다.
   double _shift() {
     final p = _pos;
     if (p == null || !p.hasPixels || !p.hasViewportDimension) return 0;
@@ -480,7 +524,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       // 슬롯의 위가 화면 아래 끝에 닿는 스크롤 값.
       final enter = reveal - p.viewportDimension;
       final t = ((p.pixels - enter) / p.viewportDimension).clamp(0.0, 1.0);
-      return (1 - t) * _lag;
+      return (1 - t) * _adH * 0.5;
     } catch (_) {
       // 붙어 있지 않은 렌더 객체에 물으면 던진다. 광고 하나 때문에 화면이
       // 죽는 일은 없어야 한다.
@@ -504,14 +548,15 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
-    _create();
+    final media = MediaQuery.of(context);
+    _create(media.size.width, media.size.height * _maxHFrac);
     if (_ad == null || !_loaded) return const SizedBox.shrink();
 
     final c = context.c;
     final l = L10n.of(context);
     final ad = SizedBox(
-      width: _w,
-      height: _h,
+      width: _adW,
+      height: _adH,
       child: ClipRect(child: AdWidget(ad: _ad!)),
     );
     // 2026-08-17 소유자 신고 — "본문과 광고 사이에 단절된 느낌을 줘. 지금은
@@ -553,7 +598,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
           const SizedBox(height: 12),
           ClipRect(
             child: SizedBox(
-              height: _h,
+              height: _adH,
               width: double.infinity,
               child: _pos == null
                   ? Center(child: ad)
