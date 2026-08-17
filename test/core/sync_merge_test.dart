@@ -229,4 +229,61 @@ void main() {
       expect(r.notes.length, 2);
     });
   });
+
+  /// 2026-08-18 소유자 신고에서 나온 묶음이다.
+  ///
+  ///     "기본 샘플 메모가 계속 빌드 회수만큼 생긴다."
+  ///
+  /// 시드 메모의 번호가 만들 때마다 달라서, 새로 깔 때마다 아이클라우드에
+  /// 있던 예전 시드와 방금 만든 시드가 다른 메모가 되어 둘 다 남았다.
+  ///
+  /// 번호를 붙박이(seed-1)로 바꾸고 시각을 아주 옛날로 못 박아 고쳤다.
+  /// 아래는 그 고침이 지켜야 하는 성질이다. 하나라도 깨지면 시드가 다시
+  /// 늘거나, 지운 것이 되살아나거나, 사람이 고친 글이 덮인다.
+  group('시드 메모 (붙박이 번호 + 옛 시각)', () {
+    // 시드는 언제나 지는 쪽에 서야 하므로 시각을 작게 준다.
+    const seedAt = 100;
+
+    test('두 기기가 각각 시드를 만들어도 하나가 된다', () {
+      final r = run(
+        local: const [_N('seed-1', seedAt, '시드')],
+        remote: const [_N('seed-1', seedAt, '시드')],
+      );
+      expect(r.notes.length, 1);
+      expect(r.notes.first.id, 'seed-1');
+    });
+
+    test('시드를 지웠으면 새로 깐 기기의 시드가 되살아나지 않는다', () {
+      // 새로 깐 기기(local)가 방금 시드를 만들었다. 다른 기기는 그것을
+      // 지운 적이 있다.
+      final r = run(
+        local: const [_N('seed-1', seedAt, '시드')],
+        remoteTombs: const [
+          {'id': 'seed-1', 'deletedAt': 500}
+        ],
+      );
+      expect(r.notes, isEmpty);
+      expect(r.removed, 1);
+    });
+
+    test('사람이 고친 시드를 새로 깐 기기의 시드가 덮지 않는다', () {
+      final r = run(
+        local: const [_N('seed-1', seedAt, '시드')],
+        remote: const [_N('seed-1', 900, '내가 고친 시드')],
+      );
+      expect(r.notes.length, 1);
+      expect(r.notes.first.text, '내가 고친 시드');
+    });
+
+    test('옛 번호는 붙박이 번호와 다른 메모로 본다 (앱이 이사시켜야 한다)', () {
+      // 고장이 아니라 확인이다. 번호가 다르면 다른 메모라는 것이 합치기의
+      // 규칙이고, 그래서 옛 번호는 앱 쪽에서 옮겨야 한다(Store.foldOldSeeds).
+      // 여기서 접어 주기를 기대하면 안 된다.
+      final r = run(
+        local: const [_N('seed-1', seedAt, '시드')],
+        remote: const [_N('seed-1755400000000', 700, '시드')],
+      );
+      expect(r.notes.length, 2);
+    });
+  });
 }

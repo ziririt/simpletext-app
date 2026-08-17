@@ -1159,6 +1159,12 @@ class Store extends ChangeNotifier {
           deletedAtOf: (e) => (e['deletedAt'] ?? 0) as int,
           nowMs: DateTime.now().millisecondsSinceEpoch,
         );
+        // 옛 판이 쌓아 둔 시드들을 여기서 한 번 접는다. 아이클라우드가
+        // 켜지기 전이어야 한다 — 접기 전에 올라가면 옛 번호가 그대로 다시
+        // 퍼진다.
+        if (foldOldSeeds(notes, tombstones)) {
+          await persist();
+        }
       } else {
         notes = [_seedNote()];
       }
@@ -1349,20 +1355,90 @@ class Store extends ChangeNotifier {
     return o;
   }
 
+  /// 시드 메모의 붙박이 번호.
+  ///
+  /// 2026-08-18 소유자 신고 — "기본 샘플 메모가 계속 빌드 회수만큼 생긴다."
+  ///
+  /// 예전에는 'seed-<지금시각>'이었다. 그러니 새로 깔 때마다 번호가 달라졌고,
+  /// 합치는 규칙은 번호로 같은 메모인지 보므로 아이클라우드에 있던 예전
+  /// 시드와 방금 만든 시드가 **다른 메모**가 되어 둘 다 남았다.
+  ///
+  /// 개발자만 겪는 일이 아니다. 아이폰에서 쓰던 사람이 아이패드에 깔면
+  /// 똑같이 둘이 된다. 하필 첫인상 자리다.
+  static const String kSeedId = 'seed-1';
+
+  /// 시드 메모의 붙박이 시각.
+  ///
+  /// 번호만 고정하면 새 함정이 생긴다.
+  ///
+  ///   · 아이폰에서 시드를 고쳐 뒀는데 아이패드에 새로 깔면, 아이패드가
+  ///     방금 만든 시드가 더 최신이라 **사람이 고친 내용을 덮는다.**
+  ///   · 시드를 지웠는데 새로 깔면, 방금 만든 시드가 툼스톤보다 최신이라
+  ///     **지운 것이 되살아난다.**
+  ///
+  /// 시각을 아주 옛날로 박으면 둘 다 막힌다. 합치는 규칙은 '늦게 고친 쪽이
+  /// 이긴다'와 '지운 시각이 고친 시각보다 늦으면 삭제가 이긴다'이므로,
+  /// 시드는 언제나 지는 쪽에 선다. 사람이 손댄 것과 지운 것이 항상 이긴다.
+  ///
+  /// 날짜 줄에 2026년 1월 1일이 보이는 것은 감수한다. 시드는 앱과 함께 온
+  /// 것이지 사용자가 그날 쓴 글이 아니므로 오히려 정직한 표기다.
+  static final int kSeedStamp = DateTime.utc(2026, 1, 1).millisecondsSinceEpoch;
+
   /// 시드 메모 — 위젯 트리 밖이라 L10n.system()으로 시스템 로케일을 따른다
   static Note _seedNote() {
     final l = L10n.system();
-    final now = DateTime.now().millisecondsSinceEpoch;
     return Note(
-      id: 'seed-$now',
+      id: kSeedId,
       title: l.seedTitle,
       body: l.seedBody,
       originalBody: l.seedBody,
       pinned: true,
       tags: [l.seedTag],
-      createdAt: now,
-      updatedAt: now,
+      createdAt: kSeedStamp,
+      updatedAt: kSeedStamp,
     );
+  }
+
+  /// 옛 판이 만들어 둔 'seed-<시각>'들을 seed-1 하나로 접는다.
+  ///
+  /// 이미 여러 개 쌓인 기기가 있다. 번호만 고쳐 놓고 두면 그 기기들은
+  /// 영원히 그대로다 — 고쳤다고 말할 수 없다.
+  ///
+  /// 가장 최근에 손댄 것 하나를 골라 seed-1 로 옮기고, 나머지 번호는
+  /// 툼스톤으로 남긴다. 툼스톤이라 다른 기기에서도 같이 사라진다.
+  ///
+  /// **손댄 것을 고르는 이유**: 사용자가 시드 위에 뭔가 적어 뒀을 수 있다.
+  /// 그걸 버리고 깨끗한 쪽을 남기면 조용한 데이터 손실이 된다.
+  static bool foldOldSeeds(
+      List<Note> notes, List<Map<String, dynamic>> tombstones) {
+    final olds = notes.where((n) => n.id.startsWith('seed-') && n.id != kSeedId)
+        .toList();
+    if (olds.isEmpty) return false;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final hasNew = notes.any((n) => n.id == kSeedId);
+
+    // 이미 seed-1 이 있으면 옛것들은 전부 접는다. 없으면 그중 하나를
+    // 승격시킨다 — 가장 최근에 손댄 것.
+    olds.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final keep = hasNew ? null : olds.first;
+    final drop = hasNew ? olds : olds.skip(1).toList();
+
+    if (keep != null) {
+      final moved = keep.toJson();
+      moved['id'] = kSeedId;
+      final at = notes.indexOf(keep);
+      notes[at] = Note.fromJson(moved);
+    }
+    for (final n in olds) {
+      // 옛 번호는 전부 지운 것으로 남긴다. 승격시킨 것의 옛 번호도
+      // 포함이다 — 다른 기기에 그 번호로 남아 있기 때문이다.
+      tombstones.add({'id': n.id, 'deletedAt': now});
+    }
+    for (final n in drop) {
+      notes.remove(n);
+    }
+    return true;
   }
 }
 
