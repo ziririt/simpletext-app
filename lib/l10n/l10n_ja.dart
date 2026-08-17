@@ -466,6 +466,24 @@ class L10nJa extends L10n {
   String get filterReset => 'リセット';
 
   @override
+  String get multiSelectStart => '選んでまとめて削除';
+
+  @override
+  String get selectAllTooltip => 'すべて選択 / 解除';
+
+  @override
+  String get deleteSelected => '選択を削除';
+
+  @override
+  String get deleteSelectedDone => '完了';
+
+  @override
+  String get deleteSelectedConfirm => '選択したメモを削除しますか？';
+
+  @override
+  String deleteSelectedBody(int n) => 'メモ $n件をゴミ箱に移します。30日以内なら元に戻せます。';
+
+  @override
   String get trashTitle => 'ゴミ箱';
 
   @override

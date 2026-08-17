@@ -468,6 +468,26 @@ class L10nFr extends L10n {
   String get filterReset => 'Réinitialiser';
 
   @override
+  String get multiSelectStart => 'Supprimer plusieurs notes';
+
+  @override
+  String get selectAllTooltip => 'Tout sélectionner / désélectionner';
+
+  @override
+  String get deleteSelected => 'Supprimer la sélection';
+
+  @override
+  String get deleteSelectedDone => 'Terminé';
+
+  @override
+  String get deleteSelectedConfirm => 'Supprimer les notes sélectionnées ?';
+
+  @override
+  String deleteSelectedBody(int n) => n == 1
+          ? '1 note ira à la corbeille. Vous pourrez la restaurer sous 30 jours.'
+          : '$n notes iront à la corbeille. Vous pourrez les restaurer sous 30 jours.';
+
+  @override
   String get trashTitle => 'Corbeille';
 
   @override

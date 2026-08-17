@@ -467,6 +467,26 @@ class L10nEn extends L10n {
   String get filterReset => 'Reset';
 
   @override
+  String get multiSelectStart => 'Delete several notes';
+
+  @override
+  String get selectAllTooltip => 'Select all / none';
+
+  @override
+  String get deleteSelected => 'Delete selected';
+
+  @override
+  String get deleteSelectedDone => 'Done';
+
+  @override
+  String get deleteSelectedConfirm => 'Delete the selected notes?';
+
+  @override
+  String deleteSelectedBody(int n) => n == 1
+          ? '1 note will move to the Trash. You can restore it within 30 days.'
+          : '$n notes will move to the Trash. You can restore them within 30 days.';
+
+  @override
   String get trashTitle => 'Trash';
 
   @override

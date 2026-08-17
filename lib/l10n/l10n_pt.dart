@@ -467,6 +467,26 @@ class L10nPt extends L10n {
   String get filterReset => 'Redefinir';
 
   @override
+  String get multiSelectStart => 'Excluir várias notas';
+
+  @override
+  String get selectAllTooltip => 'Selecionar tudo / nada';
+
+  @override
+  String get deleteSelected => 'Excluir selecionadas';
+
+  @override
+  String get deleteSelectedDone => 'Concluído';
+
+  @override
+  String get deleteSelectedConfirm => 'Excluir as notas selecionadas?';
+
+  @override
+  String deleteSelectedBody(int n) => n == 1
+          ? '1 nota irá para a lixeira. Você pode restaurá-la em 30 dias.'
+          : '$n notas irão para a lixeira. Você pode restaurá-las em 30 dias.';
+
+  @override
   String get trashTitle => 'Lixeira';
 
   @override

@@ -1267,6 +1267,36 @@ class Store extends ChangeNotifier {
     persist();
   }
 
+  /// 여러 개를 한 번에 지운다.
+  ///
+  /// deleteNote를 스무 번 부르지 않는 이유가 셋 있다.
+  ///
+  ///   1. 그 함수는 한 건마다 persist()를 부른다. 스무 개면 디스크에 스무
+  ///      번 쓴다. 느린 것보다 나쁜 것은, 쓰는 도중에 앱이 죽으면 **절반만
+  ///      지워진 상태**가 남는다는 것이다.
+  ///   2. 한 건마다 목록이 다시 그려진다. 화면이 스무 번 덜컥거린다.
+  ///   3. 되살릴 때 순서가 무너진다. 한 건씩 맨 앞에 꽂으면 마지막에 지운
+  ///      것이 휴지통 맨 위로 온다 — 사용자가 고른 차례와 거꾸로다.
+  ///
+  /// 그래서 모아서 한 번에 옮기고, 한 번만 쓴다.
+  void deleteNotes(Iterable<String> ids) {
+    final set = ids.toSet();
+    if (set.isEmpty) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    // 목록에 보이던 차례 그대로 휴지통 맨 위에 얹는다.
+    final batch = notes
+        .where((n) => set.contains(n.id))
+        .map((n) => {'note': n.toJson(), 'deletedAt': now})
+        .toList();
+    if (batch.isEmpty) return;
+    trash.insertAll(0, batch);
+    notes.removeWhere((n) => set.contains(n.id));
+    for (final id in set) {
+      tombstones.add({'id': id, 'deletedAt': now});
+    }
+    persist();
+  }
+
   /// 휴지통에서 되살린다.
   ///
   /// updatedAt을 '지금'으로 올리고 이 기기의 툼스톤을 지우는 게 핵심이다.
@@ -1945,6 +1975,22 @@ class _HomeScreenState extends State<HomeScreen> {
   final store = Store.instance;
   String query = '';
 
+  /// 여러 개를 골라 한 번에 지우는 중인가.
+  ///
+  /// 2026-08-17 소유자 지시 — "'정렬과 필터'에서 '선택 메모 한번에 삭제'
+  /// 버튼을 누르면 메모 좌측에 체크박스가 생겨서 한번에 멀티로 선택할 수
+  /// 있어. 고정 메모까지 포함해서."
+  ///
+  /// 왜 목록에 상시로 체크박스를 두지 않는가: 평소에 이 앱에서 하는 일은
+  /// 고르는 것이 아니라 **읽고 여는 것**이다. 체크박스를 늘 띄워 두면 매번
+  /// 안 쓰는 칸이 글자를 오른쪽으로 밀어낸다. 정리하는 순간에만 나타났다
+  /// 사라지는 것이 맞다.
+  bool _picking = false;
+
+  /// 고른 메모의 id. 화면에서 사라진 것(필터가 바뀐 것)은 지울 때 셈에서
+  /// 뺀다 — **안 보이는 것이 지워지는 일**만은 없어야 한다.
+  final Set<String> _picked = <String>{};
+
   /// 앱이 다시 앞으로 나올 때 아이클라우드를 한 번 훑기 위한 것.
   /// 다른 기기에서 고친 메모는 대개 이 순간에 들어온다.
   late final AppLifecycleListener _life;
@@ -2190,6 +2236,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final pinned = filtered.where((n) => n.pinned).toList()..sort(order);
     final rest = filtered.where((n) => !n.pinned).toList()..sort(order);
 
+    // 지금 화면에 보이는 전부. '전체 선택'과 '선택 삭제'가 다루는 범위가
+    // 이것이고, 고정된 메모도 여기 들어간다(소유자 지시).
+    //
+    // 검색어나 필터가 걸려 있으면 걸러진 뒤의 것만이다. 화면에 안 보이는
+    // 메모가 '전체 선택'에 딸려 들어가면 그건 전체 선택이 아니라 함정이다.
+    final visible = <Note>[...pinned, ...rest];
+
     return Scaffold(
       body: !store.loaded
           ? const Center(child: CircularProgressIndicator())
@@ -2211,7 +2264,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (folderNames(store.notes.map((n) => n.folder), s.folders)
                     .isNotEmpty)
                   _folderBar(l, s),
-                if (pinned.isEmpty && rest.isEmpty)
+                // 고르는 중에는 빈 화면 안내를 띄우지 않는다. 그 안내가
+                // 남은 자리를 다 먹어서 '삭제완료'가 화면 밖으로 밀려나면
+                // 빠져나올 길이 없어진다.
+                if (pinned.isEmpty && rest.isEmpty && !_picking)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(child: Text(l.emptyList, textAlign: TextAlign.center)),
@@ -2226,8 +2282,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   _groupCard(pinned.skip(5).toList()),
                 ] else if (pinned.isNotEmpty)
                   _groupCard(pinned),
-                if (rest.isNotEmpty)
-                  _groupLabel(l.notesLabel, trailing: _sortFilterBtn(l, s)),
+                // 고르는 중이면 메모가 하나도 안 남아도 이 줄은 남긴다.
+                // 여기에 '삭제완료'가 달려 있어서, 이 줄이 사라지면 고르기
+                // 상태에 갇힌다.
+                if (rest.isNotEmpty || _picking)
+                  _groupLabel(l.notesLabel,
+                      leading: _picking ? _pickAllBtn(l, visible) : null,
+                      trailing: _picking
+                          ? _pickActions(l, visible)
+                          : _sortFilterBtn(l, s)),
                 // 광고를 어디에 놓는가 — 목록 길이에 따라 갈린다.
                 //
                 // 2026-08-17 소유자 지시: "목록이 긴 경우에 누가 맨 아래까지
@@ -2369,7 +2432,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// 2026-08-17 소유자 지시로 정렬·필터가 '메모' 소제목 옆에 붙었다.
   /// 자기가 다루는 것 바로 위에 놓이면 무엇을 거르는 단추인지 자리만으로
   /// 알 수 있다.
-  Widget _groupLabel(String label, {Widget? trailing}) => SliverToBoxAdapter(
+  Widget _groupLabel(String label, {Widget? leading, Widget? trailing}) =>
+      SliverToBoxAdapter(
         child: Padding(
           // 애플 메모의 '고정된 메모' 헤더 실측: 글자높이 52px, 좌측 135px(45pt).
           // 제목 46px=17pt 비율로 환산하면 19.2pt → 애플 .title3(20pt) 굵게.
@@ -2378,11 +2442,18 @@ class _HomeScreenState extends State<HomeScreen> {
           // 단추가 붙는 쪽은 위아래 여백을 줄인다. 단추가 이미 자기 여백을
           // 가지고 있어서 그대로 두면 그 줄만 뚱뚱해 보인다.
           padding: EdgeInsets.fromLTRB(
-              kListRowInset + 16, trailing == null ? 18 : 10, 8,
+              // 왼쪽에 단추가 붙으면 들여쓰기를 뗀다. 단추는 자기 여백을
+              // 이미 갖고 있어서, 그대로 두면 이 줄만 오른쪽으로 밀린다.
+              leading == null ? kListRowInset + 16 : 8,
+              trailing == null ? 18 : 10,
+              8,
               trailing == null ? 8 : 0),
           child: Row(children: [
+            if (leading != null) leading,
             Expanded(
               child: Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style:
                       const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
             ),
@@ -2457,15 +2528,136 @@ class _HomeScreenState extends State<HomeScreen> {
                 : context.c.sub),
         tooltip: l.sortFilterTooltip,
         onPressed: () async {
-          await showModalBottomSheet<void>(
+          final r = await showModalBottomSheet<String>(
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
             builder: (_) => const SortFilterSheet(),
           );
-          if (mounted) setState(() {});
+          if (!mounted) return;
+          // 시트가 'pick'을 들고 닫히면 여러 개 고르기로 들어간다.
+          // 시트 안에서 바로 켜지 않고 여기까지 값을 들고 오는 이유:
+          // 고르기 상태는 목록 화면의 것이지 시트의 것이 아니다.
+          if (r == 'pick') {
+            _startPicking();
+          } else {
+            setState(() {});
+          }
         },
       );
+
+  /// '메모' 소제목 왼쪽의 전체 선택. 누를 때마다 전체 선택 ↔ 전체 해제.
+  ///
+  /// 아이콘 하나로 두 가지 뜻을 나타내는 것이라, 지금 어느 쪽인지 **모양이
+  /// 곧 말해 줘야** 한다. 다 골라져 있으면 꽉 찬 동그라미에 하늘색, 아니면
+  /// 빈 동그라미에 회색이다. 글자로 '전체 선택/해제'라고 쓰지 않는 이유는
+  /// 자리도 자리지만, 아홉 개 언어에서 그 두 낱말의 길이가 제각각이라
+  /// 어느 언어에서는 이 줄이 무너지기 때문이다.
+  Widget _pickAllBtn(L10n l, List<Note> visible) {
+    final all =
+        visible.isNotEmpty && visible.every((n) => _picked.contains(n.id));
+    return IconButton(
+      visualDensity: VisualDensity.compact,
+      icon: Icon(all ? Icons.check_circle : Icons.radio_button_unchecked,
+          color: all ? context.c.accent : context.c.sub),
+      tooltip: l.selectAllTooltip,
+      onPressed: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          if (all) {
+            _picked.clear();
+          } else {
+            _picked
+              ..clear()
+              ..addAll(visible.map((n) => n.id));
+          }
+        });
+      },
+    );
+  }
+
+  /// '메모' 소제목 오른쪽의 [선택 삭제] [삭제완료].
+  ///
+  /// '선택 삭제'는 고른 것이 없으면 눌리지 않는다. 눌러 놓고 "0개를
+  /// 지울까요?"를 묻는 것은 사람을 두 번 일하게 만드는 짓이다.
+  ///
+  /// '삭제완료'는 지운 뒤에만이 아니라 **고르기를 켠 순간부터** 있다.
+  /// 잘못 눌러 들어왔는데 나갈 문이 없으면 그건 기능이 아니라 덫이다.
+  Widget _pickActions(L10n l, List<Note> visible) {
+    final n = visible.where((x) => _picked.contains(x.id)).length;
+    final c = context.c;
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        onPressed: n == 0 ? null : () => _deletePicked(l, visible),
+        child: Text(
+          n == 0 ? l.deleteSelected : '${l.deleteSelected} $n',
+          style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: n == 0 ? c.sub : c.danger),
+        ),
+      ),
+      TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        onPressed: _endPicking,
+        child: Text(l.deleteSelectedDone,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      ),
+    ]);
+  }
+
+  void _startPicking() {
+    setState(() {
+      _picking = true;
+      _picked.clear();
+    });
+  }
+
+  void _endPicking() {
+    setState(() {
+      _picking = false;
+      _picked.clear();
+    });
+  }
+
+  void _togglePick(Note n) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (!_picked.remove(n.id)) _picked.add(n.id);
+    });
+  }
+
+  /// 고른 것을 한 번에 휴지통으로.
+  ///
+  /// [visible]과 교집합을 내는 것이 핵심이다. 고르는 도중에 검색어를 치면
+  /// 화면에서 사라진 메모가 생기는데, 그것까지 지우면 사용자는 **자기가
+  /// 지운 줄도 모르는 메모**를 잃는다. 지금 눈에 보이는 것만 지운다.
+  Future<void> _deletePicked(L10n l, List<Note> visible) async {
+    final ids = visible
+        .where((n) => _picked.contains(n.id))
+        .map((n) => n.id)
+        .toList();
+    if (ids.isEmpty) return;
+    final ok = await confirmDialog(
+      context,
+      title: l.deleteSelectedConfirm,
+      body: l.deleteSelectedBody(ids.length),
+      okLabel: l.delete,
+      destructive: true,
+    );
+    if (!ok || !mounted) return;
+    store.deleteNotes(ids);
+    setState(() => _picked.clear());
+  }
 
   Widget _groupCard(List<Note> group) => SliverToBoxAdapter(
         child: Padding(
@@ -2806,6 +2998,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final splash = c.accent.withValues(alpha: 0.18);
     return Dismissible(
       key: ValueKey('dis-${n.id}'),
+      // 고르는 중에는 밀기를 끈다. 체크 자리를 누르려다 손이 옆으로
+      // 미끄러지면, 고르려던 메모가 그 자리에서 지워진다.
+      direction:
+          _picking ? DismissDirection.none : DismissDirection.horizontal,
       background: Container(
         color: context.c.pin,
         alignment: Alignment.centerLeft,
@@ -2854,20 +3050,33 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Material(
         // 고른 줄은 아예 칠한다. 반투명을 그대로 얹지 않고 미리 섞어
         // 두는 이유: 이 위에 물결이 또 얹히면 두 겹이 겹쳐 탁해진다.
-        color: selected
+        // 고른 줄도 열린 줄과 같은 칠을 쓴다. 체크 표시 하나로는 스무 줄
+        // 가운데 무엇이 골라졌는지 훑어보기 어렵다 — 줄 전체가 물들어야
+        // 한눈에 센다.
+        color: (selected || (_picking && _picked.contains(n.id)))
             ? Color.alphaBlend(c.accent.withValues(alpha: 0.16), c.panel)
             : c.panel,
         child: InkWell(
-          onTap: () => openNote(context, n.id),
+          onTap: () {
+            if (_picking) {
+              _togglePick(n);
+            } else {
+              openNote(context, n.id);
+            }
+          },
           // 2026-08-17 소유자 요청 — "애플 메모장처럼 메모 리스트에서 메모
           // 하나를 오래 롱 프레스 누르면 메모의 일부를 보여주고, 할 수 있는
           // 기능들을 할 수 있게 해줘."
-          onLongPress: () {
-            // 손끝에 한 번 걸리는 느낌. 길게 누른 것이 먹혔다는 신호를
-            // 화면보다 먼저 준다.
-            HapticFeedback.mediumImpact();
-            _peek(n);
-          },
+          // 고르는 중에는 길게 누르기도 끈다. 미리보기 판이 떠 버리면
+          // 고르던 흐름이 끊긴다.
+          onLongPress: _picking
+              ? null
+              : () {
+                  // 손끝에 한 번 걸리는 느낌. 길게 누른 것이 먹혔다는
+                  // 신호를 화면보다 먼저 준다.
+                  HapticFeedback.mediumImpact();
+                  _peek(n);
+                },
           hoverColor: hover,
           focusColor: hover,
           highlightColor: press,
@@ -2878,6 +3087,17 @@ class _HomeScreenState extends State<HomeScreen> {
               kListRowInset, isDesktopPlatform ? 5 : 10, 16, isDesktopPlatform ? 5 : 10),
             child: Row(
               children: [
+                if (_picking)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Icon(
+                      _picked.contains(n.id)
+                          ? Icons.check_circle
+                          : Icons.circle_outlined,
+                      size: 22,
+                      color: _picked.contains(n.id) ? c.accent : c.sub,
+                    ),
+                  ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -5953,10 +6173,39 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
               Row(children: [
                 Expanded(
                   child: Text(l.sortFilterTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w800)),
                 ),
+                // 2026-08-17 소유자 지시 — '초기화' 왼쪽에 붙는다.
+                //
+                // 왜 하필 여기인가: 목록을 정리하겠다고 마음먹은 사람이
+                // 제일 먼저 여는 곳이 이 시트다. 필터로 범위를 좁히고
+                // (예: 태그 하나만 남기고) 곧바로 그 범위를 통째로 지우는
+                // 흐름이 자연스럽다. 목록 화면 어딘가에 상시로 두면
+                // 평소에 안 쓰는 단추가 늘 자리를 먹는다.
+                //
+                // 여기서 지우지는 않는다. 시트를 닫고 목록으로 돌려보낼
+                // 뿐이다. 무엇이 지워지는지 눈으로 보고 고르게 해야 한다.
                 TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () => Navigator.pop(context, 'pick'),
+                  child: Text(l.multiSelectStart,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, color: c.danger)),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   onPressed: () {
                     s.sortMode = 'updated';
                     s.filterSource = '';
@@ -5964,7 +6213,8 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
                     s.filterFolder = '';
                     _save();
                   },
-                  child: Text(l.filterReset),
+                  child: Text(l.filterReset,
+                      style: const TextStyle(fontSize: 13)),
                 ),
               ]),
               section(l.sortLabel, [

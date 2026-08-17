@@ -294,6 +294,25 @@ abstract class L10n {
   String get filterTagLabel;
   String get filterAll;
   String get filterReset;
+
+  // ---------------- 여러 개 골라 지우기 (2026-08-17) ----------------
+  /// 정렬·필터 시트에서 고르기 상태로 들어가는 단추.
+  String get multiSelectStart;
+
+  /// '메모' 소제목 왼쪽 전체 선택 단추의 풍선말.
+  String get selectAllTooltip;
+
+  String get deleteSelected;
+
+  /// 고르기를 끝내고 보통 목록으로 돌아가는 단추.
+  String get deleteSelectedDone;
+
+  String get deleteSelectedConfirm;
+
+  /// 몇 개가 어디로 가는지. 지우기 전에 알려 준다 — 지운 뒤에 알려 주는
+  /// 것은 위로일 뿐이고, 지우기 전에 알려 주는 것이 안전장치다.
+  String deleteSelectedBody(int n);
+
   String get trashTitle;
   String get trashSubtitle;
   String get trashEmpty;
@@ -643,6 +662,11 @@ abstract class L10n {
         'filterTagLabel': filterTagLabel,
         'filterAll': filterAll,
         'filterReset': filterReset,
+        'multiSelectStart': multiSelectStart,
+        'selectAllTooltip': selectAllTooltip,
+        'deleteSelected': deleteSelected,
+        'deleteSelectedDone': deleteSelectedDone,
+        'deleteSelectedConfirm': deleteSelectedConfirm,
         'trashTitle': trashTitle,
         'trashSubtitle': trashSubtitle,
         'trashEmpty': trashEmpty,

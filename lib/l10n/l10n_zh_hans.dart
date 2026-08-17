@@ -466,6 +466,24 @@ class L10nZhHans extends L10n {
   String get filterReset => '重置';
 
   @override
+  String get multiSelectStart => '选择多条删除';
+
+  @override
+  String get selectAllTooltip => '全选 / 取消全选';
+
+  @override
+  String get deleteSelected => '删除所选';
+
+  @override
+  String get deleteSelectedDone => '完成';
+
+  @override
+  String get deleteSelectedConfirm => '确定删除所选备忘录吗？';
+
+  @override
+  String deleteSelectedBody(int n) => '将有 $n 条备忘录移入回收站，30 天内可以恢复。';
+
+  @override
   String get trashTitle => '废纸篓';
 
   @override

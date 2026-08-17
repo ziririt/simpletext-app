@@ -467,6 +467,26 @@ class L10nEs extends L10n {
   String get filterReset => 'Restablecer';
 
   @override
+  String get multiSelectStart => 'Eliminar varias notas';
+
+  @override
+  String get selectAllTooltip => 'Seleccionar todo / nada';
+
+  @override
+  String get deleteSelected => 'Eliminar selección';
+
+  @override
+  String get deleteSelectedDone => 'Listo';
+
+  @override
+  String get deleteSelectedConfirm => '¿Eliminar las notas seleccionadas?';
+
+  @override
+  String deleteSelectedBody(int n) => n == 1
+          ? '1 nota irá a la papelera. Puedes restaurarla en 30 días.'
+          : '$n notas irán a la papelera. Puedes restaurarlas en 30 días.';
+
+  @override
   String get trashTitle => 'Papelera';
 
   @override

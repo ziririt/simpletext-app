@@ -466,6 +466,24 @@ class L10nKo extends L10n {
   String get filterReset => '초기화';
 
   @override
+  String get multiSelectStart => '선택 메모 한번에 삭제';
+
+  @override
+  String get selectAllTooltip => '전체 선택 / 해제';
+
+  @override
+  String get deleteSelected => '선택 삭제';
+
+  @override
+  String get deleteSelectedDone => '삭제완료';
+
+  @override
+  String get deleteSelectedConfirm => '선택한 메모를 정말로 삭제할까요?';
+
+  @override
+  String deleteSelectedBody(int n) => '메모 $n개가 휴지통으로 갑니다. 30일 안에는 되살릴 수 있습니다.';
+
+  @override
   String get trashTitle => '휴지통';
 
   @override

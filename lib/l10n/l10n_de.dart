@@ -468,6 +468,26 @@ class L10nDe extends L10n {
   String get filterReset => 'Zurücksetzen';
 
   @override
+  String get multiSelectStart => 'Mehrere Notizen löschen';
+
+  @override
+  String get selectAllTooltip => 'Alle aus- / abwählen';
+
+  @override
+  String get deleteSelected => 'Auswahl löschen';
+
+  @override
+  String get deleteSelectedDone => 'Fertig';
+
+  @override
+  String get deleteSelectedConfirm => 'Ausgewählte Notizen löschen?';
+
+  @override
+  String deleteSelectedBody(int n) => n == 1
+          ? '1 Notiz wandert in den Papierkorb. Wiederherstellung innerhalb von 30 Tagen möglich.'
+          : '$n Notizen wandern in den Papierkorb. Wiederherstellung innerhalb von 30 Tagen möglich.';
+
+  @override
   String get trashTitle => 'Papierkorb';
 
   @override
