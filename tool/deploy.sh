@@ -12,9 +12,10 @@
 #   기기에 못 올린다). 반드시 서명 포함으로 빌드할 것.
 #
 # 사용법:
-#   bash tool/deploy.sh          # 아이폰 + 아이패드 + 맥 전부
+#   bash tool/deploy.sh          # 아이폰 + 아이패드 + 안드로이드 + 맥 전부
 #   bash tool/deploy.sh iphone
 #   bash tool/deploy.sh ipad
+#   bash tool/deploy.sh android
 #   bash tool/deploy.sh mac
 set -u
 export PATH="$HOME/development/flutter/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
@@ -71,6 +72,39 @@ install_to() { # $1=udid $2=이름
 
 [ "$WHAT" = "all" ] || [ "$WHAT" = "iphone" ] && install_to "$IPHONE" iphone
 [ "$WHAT" = "all" ] || [ "$WHAT" = "ipad" ] && install_to "$IPAD" ipad
+
+# ── 안드로이드 ─────────────────────────────────────────────────────────
+# 2026-08-17에 들어왔다. 그전까지 안드로이드는 이 파일에 없어서, 판을 낼
+# 때마다 따로 스크립트를 만들어 넣고 있었다. 따로 만든 스크립트는 기기를
+# 빠뜨린다 — 그날 아이폰이 그렇게 다섯 판 뒤처졌다. 네 기기를 한 파일에
+# 두는 것이 이 대목의 목적이다.
+#
+# 기기 고르기는 tool/android_target.sh 가 한다(무선 우선, 없으면 케이블).
+if [ "$WHAT" = "all" ] || [ "$WHAT" = "android" ]; then
+  ADB="${ADB:-$HOME/Library/Android/sdk/platform-tools/adb}"
+  [ -x "$ADB" ] || ADB="$(command -v adb)"
+  T=$(bash tool/android_target.sh 2>/dev/null)
+  if [ -z "${T:-}" ]; then
+    log "안드로이드 기기를 못 찾았다 — 건너뛴다"
+  elif ! flutter build apk --release > /tmp/dep_apk.log 2>&1; then
+    log "APK 빌드 실패 — /tmp/dep_apk.log 확인"; tail -20 /tmp/dep_apk.log
+  else
+    "$ADB" -s "$T" install -r build/app/outputs/flutter-apk/app-release.apk \
+      > /tmp/dep_and.log 2>&1
+    if grep -qi success /tmp/dep_and.log; then
+      "$ADB" -s "$T" shell monkey -p com.ziririt.simpletext \
+        -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+      sleep 5
+      # 아이폰·아이패드와 같은 규칙 — 기기에게 되묻는다.
+      AV=$("$ADB" -s "$T" shell dumpsys package com.ziririt.simpletext 2>/dev/null |
+           awk -F= '/versionName/{print $2; exit}' | tr -d '\r')
+      AP=$("$ADB" -s "$T" shell pidof com.ziririt.simpletext 2>/dev/null | tr -d '\r')
+      log "안드로이드 확인: 기기가 ${AV:-?} 라고 답했다 (pid ${AP:-안 떴음})"
+    else
+      log "안드로이드 설치 실패:"; tail -4 /tmp/dep_and.log
+    fi
+  fi
+fi
 
 if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
   log "맥 빌드…"

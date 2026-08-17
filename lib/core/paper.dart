@@ -24,6 +24,24 @@ const String kRulingLine = 'line'; // 가로줄만
 const String kRulingGrid = 'grid'; // 정사각 모눈(칸 = 줄높이)
 const String kRulingManuscript = 'manuscript'; // 원고지(칸 = 한글 한 글자)
 
+/// 이 줄 모양이 가로줄을 긋는가.
+///
+/// 2026-08-17 소유자 신고: "종이/크라프트/월넛/하늘은 모눈종이 배경이
+/// 아닌데, 샘플에서는 모눈종이로 나왔다."
+///
+/// 원인은 판정이 **화가가 아니라 부르는 쪽에** 있었던 것이다. 편집 화면은
+/// 부르기 전에 ruling != none 을 확인했지만, 설정의 견본 칩은 그 확인 없이
+/// 같은 화가를 불렀다. 화가에는 none 갈래가 없어서 가로줄을 긋고 세로줄까지
+/// 그어 모눈을 만들었다.
+///
+/// 부르는 쪽이 기억해야 하는 규칙은 언젠가 잊힌다. 그래서 판정을 종이
+/// 정의 바로 옆으로 옮겼다 — 종이가 늘어날 때 같이 보이는 자리다.
+bool drawsHorizontal(String ruling) => ruling != kRulingNone;
+
+/// 세로줄까지 긋는가. 모눈과 원고지 둘뿐이다.
+bool drawsVertical(String ruling) =>
+    ruling == kRulingGrid || ruling == kRulingManuscript;
+
 class Paper {
   final String id;
 

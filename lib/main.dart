@@ -4380,8 +4380,6 @@ class _EditorScreenState extends State<EditorScreen> {
     final cmdCtl = TextEditingController();
     List<String> applied = [];
     List<String> unknown = [];
-    String? aiResult;
-    String aiGuard = '';
     bool aiBusy = false;
     // 2026-08-14 소유자 지적: 애플식 알림창(AlertDialog.adaptive)은 폭이 좁고
     // 버튼이 가장자리까지 꽉 차 답답하다. 이 창은 '알림'이 아니라 입력+결과를
@@ -4521,10 +4519,16 @@ class _EditorScreenState extends State<EditorScreen> {
                         child: Text(l.appliedPrefix(a),
                             style: TextStyle(color: context.c.accent, fontSize: 13, fontWeight: FontWeight.w600)),
                       ),
-                    for (final u in unknown)
+                    // 한 줄로 합쳐 보여 준다.
+                    //
+                    // 규칙 엔진은 지시문을 문장 단위로 쪼개는데, 쪼갠 조각마다
+                    // "해석 불가"를 한 줄씩 찍고 있었다. 지시 하나를 넣었는데
+                    // 실패가 셋으로 보이니, 사용자에게는 세 배로 고장 난
+                    // 것처럼 읽힌다. 못 알아들은 것은 하나다 — 그 지시.
+                    if (unknown.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(l.unknownPrefix(u),
+                        child: Text(l.unknownPrefix(unknown.join(' ')),
                             style: TextStyle(color: context.c.warnInk, fontSize: 12.5)),
                       ),
                     if (unknown.isNotEmpty && store.settings.aiKey.isEmpty)
@@ -4533,80 +4537,9 @@ class _EditorScreenState extends State<EditorScreen> {
                         child: Text(l.aiKeyPromo,
                             style: TextStyle(fontSize: 12, color: context.c.sub)),
                       ),
-                    if (unknown.isNotEmpty && store.settings.aiKey.isNotEmpty && aiResult == null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: FilledButton(
-                          onPressed: aiBusy
-                              ? null
-                              : () async {
-                                  setD(() => aiBusy = true);
-                                  try {
-                                    var out = (await _aiEditCall(unknown.join('. '), bodyCtl.text)).trim();
-                                    out = out
-                                        .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
-                                        .replaceFirst(RegExp(r'\n?```$'), '');
-                                    if (out.isEmpty) throw Exception(l.aiEmptyResponse);
-                                    setD(() {
-                                      aiResult = out;
-                                      aiGuard = numberGuard(bodyCtl.text, out);
-                                      aiBusy = false;
-                                    });
-                                  } catch (e) {
-                                    setD(() => aiBusy = false);
-                                    if (!mounted) return;
-                                    // 짧게 지나가는 알림에는 처방을 띄운다.
-                                    // 영어 예외 문자열을 2초 보여 주는 것은
-                                    // 아무것도 안 보여 주는 것과 같다.
-                                    final ll = L10n.of(context);
-                                    final fix = aiRemedy(ll, '$e');
-                                    _toast(context,
-                                        fix.isNotEmpty ? fix : ll.aiCallFailed('$e'));
-                                  }
-                                },
-                          child: Text(aiBusy ? l.aiBusyLabel : l.aiRunUnknown),
-                        ),
-                      ),
-                    if (aiResult != null) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        constraints: const BoxConstraints(maxHeight: 220),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                            color: context.c.codeBg,
-                            border: Border.all(color: context.c.codeLine),
-                            borderRadius: BorderRadius.circular(10)),
-                        child: SingleChildScrollView(
-                            child: Text(aiResult!, style: const TextStyle(fontSize: 13.5, height: 1.5))),
-                      ),
-                      if (aiGuard.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(aiGuard,
-                              style: TextStyle(color: context.c.warnInk, fontSize: 12.5)),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: FilledButton(
-                          onPressed: () async {
-                            note.history.add(bodyCtl.text);
-                            note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
-                            if (note.history.length > 30) {
-                              note.history.removeAt(0);
-                              if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
-                            }
-                            bodyCtl.text = aiResult!;
-                            await _save();
-                            if (ctx.mounted) Navigator.pop(ctx);
-                            if (mounted) {
-                              setState(() {});
-                              _toast(context, L10n.of(context).aiAppliedToast);
-                            }
-                          },
-                          child: Text(l.aiApplyResult),
-                        ),
-                      ),
-                    ],
+                    // 여기 있던 단추 둘('해석 불가 명령을 AI로 실행',
+                    // 'AI 결과 적용')과 결과 미리보기 상자를 걷어냈다.
+                    // 아래 하나뿐인 단추가 그 일을 다 한다.
                   ],
                 ),
               ),
@@ -4614,45 +4547,127 @@ class _EditorScreenState extends State<EditorScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.close)),
               const SizedBox(width: 8),
+              // ── 단추 하나가 전부 한다 ────────────────────────────────
+              //
+              // 2026-08-17 소유자 지적: "적용 버튼이 너무 많다. 한번에
+              // 되어야하지, 뭐가 저렇게 복잡하냐?"
+              //
+              // 옳다. 규칙 엔진이 먼저 보고 못 알아들은 것만 AI로 넘긴다는
+              // 것은 **우리 사정**이다. 값을 아끼려고 그렇게 짜 놓고는, 그
+              // 절약의 대가를 사용자에게 단추 세 개로 청구하고 있었다.
+              // 순서는 그대로 두되 물어보지 않는다 — 규칙으로 안 되면 곧장
+              // AI로 가고, 결과는 바로 적용한다.
+              //
+              // 미리보기를 없앤 것이 마음에 걸릴 수 있으나, 고치기 전 글은
+              // 이미 버전기록에 넣고 있다. 되돌리기 한 번이면 돌아온다.
+              // 되돌릴 수 있는 일을 미리 확인받는 것은 안전이 아니라 절차다.
               FilledButton(
                 style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12)),
-                onPressed: () async {
-                  final r = applyWizard(
-                      command: cmdCtl.text, settings: store.settings, body: bodyCtl.text);
-                  if (r.bodyChanged) {
-                    note.history.add(bodyCtl.text);
-                    note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
-                    if (note.history.length > 30) {
-                      note.history.removeAt(0);
-                      if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
-                    }
-                    bodyCtl.text = r.body;
-                  }
-                  await store.persistSettings();
-                  await _save();
-                  if (mounted) setState(() {});
-                  // 다 해석됐으면 창을 닫는다. 창이 그대로 남아 있으면 "적용이 된 건가?"
-                  // 하고 헷갈린다(2026-08-14 소유자 지적). 못 알아들은 지시가 있을
-                  // 때만 남겨서 무엇이 안 됐는지 보여 준다.
-                  if (r.unknown.isEmpty) {
-                    if (ctx.mounted) Navigator.pop(ctx);
-                    if (mounted) {
-                      _toast(
-                          context,
-                          r.applied.isEmpty
-                              ? L10n.of(context).wizardNothingToDo
-                              : L10n.of(context).wizardAppliedToast(r.applied.length));
-                    }
-                    return;
-                  }
-                  setD(() {
-                    applied = r.applied;
-                    unknown = r.unknown;
-                    aiResult = null;
-                  });
-                },
-                child: Text(l.interpretApply),
+                onPressed: aiBusy
+                    ? null
+                    : () async {
+                        final before = bodyCtl.text;
+                        final r = applyWizard(
+                            command: cmdCtl.text, settings: store.settings, body: before);
+                        var text = r.bodyChanged ? r.body : before;
+                        await store.persistSettings();
+
+                        var usedAi = false;
+                        var guard = '';
+                        if (r.unknown.isNotEmpty &&
+                            store.settings.aiKey.trim().isNotEmpty) {
+                          setD(() {
+                            aiBusy = true;
+                            applied = r.applied;
+                            unknown = r.unknown;
+                          });
+                          try {
+                            // **원래 지시문을 그대로 보낸다.**
+                            //
+                            // 여기가 "한번에 안되고 다시 한번 해야 된다"의
+                            // 진짜 원인이었다. 그동안 AI에게 넘긴 것은
+                            // 규칙 엔진이 문장 단위로 쪼개 놓은 조각들을
+                            // 마침표로 이어 붙인 것이었다. 그래서
+                            //
+                            //   "문서 맨 위나 맨 아래의 ai답변 시간인.
+                            //    날짜와 시간 표시를 모두 삭제해.
+                            //    (예시 : 2026-08-14(금) 08:16)"
+                            //
+                            // 처럼 첫 조각이 목적어를 잃은 채 끊긴 문장이
+                            // 갔다. 사람도 못 알아들을 말을 보내 놓고
+                            // 모델이 못 알아들었다고 할 수는 없다.
+                            var out = (await _aiEditCall(
+                                    cmdCtl.text.trim(), text))
+                                .trim();
+                            out = out
+                                .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
+                                .replaceFirst(RegExp(r'\n?```$'), '');
+                            if (out.isEmpty) throw Exception(l.aiEmptyResponse);
+                            guard = numberGuard(text, out);
+                            text = out;
+                            usedAi = true;
+                          } catch (e) {
+                            setD(() => aiBusy = false);
+                            if (!mounted) return;
+                            // 짧게 지나가는 알림에는 처방을 띄운다. 영어 예외
+                            // 문자열을 2초 보여 주는 것은 아무것도 안 보여
+                            // 주는 것과 같다.
+                            final ll = L10n.of(context);
+                            final fix = aiRemedy(ll, '$e');
+                            _toast(context,
+                                fix.isNotEmpty ? fix : ll.aiCallFailed('$e'));
+                            return;
+                          }
+                        }
+
+                        if (text != before) {
+                          note.history.add(before);
+                          note.historyAt
+                              .add(DateTime.now().millisecondsSinceEpoch);
+                          if (note.history.length > 30) {
+                            note.history.removeAt(0);
+                            if (note.historyAt.isNotEmpty) {
+                              note.historyAt.removeAt(0);
+                            }
+                          }
+                          bodyCtl.text = text;
+                        }
+                        await _save();
+                        if (mounted) setState(() {});
+
+                        // 창을 남기는 경우는 하나뿐이다 — 규칙이 못 알아들었고
+                        // AI 키도 없어서 더 해 볼 것이 없을 때. 그때는 무엇이
+                        // 안 됐는지 보여 줘야 한다. 그 밖에는 닫는다. 창이
+                        // 남아 있으면 "적용이 된 건가?" 하고 헷갈린다
+                        // (2026-08-14 소유자 지적).
+                        if (r.unknown.isNotEmpty && !usedAi) {
+                          setD(() {
+                            applied = r.applied;
+                            unknown = r.unknown;
+                            aiBusy = false;
+                          });
+                          return;
+                        }
+
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (!mounted) return;
+                        final ll = L10n.of(context);
+                        if (guard.isNotEmpty) {
+                          // 숫자가 달라졌다. 이건 그냥 지나가면 안 된다 —
+                          // 이 앱으로 다루는 글에는 수익률과 종가가 들어 있다.
+                          _toast(context, guard);
+                        } else if (usedAi) {
+                          _toast(context, ll.aiAppliedToast);
+                        } else {
+                          _toast(
+                              context,
+                              r.applied.isEmpty
+                                  ? ll.wizardNothingToDo
+                                  : ll.wizardAppliedToast(r.applied.length));
+                        }
+                      },
+                child: Text(aiBusy ? l.aiBusyLabel : l.interpretApply),
               ),
             ],
           );
@@ -6317,6 +6332,10 @@ class _PaperPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // 줄 없는 종이는 아무것도 그리지 않는다. 이 한 줄이 없어서 세피아·
+    // 종이·크라프트·월넛·하늘의 견본이 전부 모눈으로 나왔다(2026-08-17).
+    if (!drawsHorizontal(ruling)) return;
+
     final p = Paint()
       ..color = color
       ..strokeWidth = 1
@@ -6333,7 +6352,7 @@ class _PaperPainter extends CustomPainter {
       canvas.drawLine(Offset(0, yy), Offset(size.width, yy), p);
     }
 
-    if (ruling == kRulingLine) return;
+    if (!drawsVertical(ruling)) return;
 
     // 모눈은 줄 높이와 같은 정사각이라 어느 글꼴에서도 맞는다.
     // 원고지는 한글 한 글자 폭으로 잰 칸이다.
