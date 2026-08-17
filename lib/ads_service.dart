@@ -523,8 +523,15 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       final reveal = vp.getOffsetToReveal(box, 0.0).offset;
       // 슬롯의 위가 화면 아래 끝에 닿는 스크롤 값.
       final enter = reveal - p.viewportDimension;
-      final t = ((p.pixels - enter) / p.viewportDimension).clamp(0.0, 1.0);
-      return (1 - t) * _adH * 0.5;
+      // 재는 자를 '화면 한 판'에서 '광고 자기 키'로 바꿨다.
+      //
+      // 전에는 화면 높이만큼 굴러야 0이 됐다. 그러면 광고가 화면에 다
+      // 들어온 뒤에도 한참 어긋나 있어서, 멈춰 서서 보는 자리에 **잘린
+      // 광고**가 남는다. 이제 슬롯이 화면 안에 다 들어오는 순간 정확히
+      // 0이 된다 — 움직임은 들어오는 동안에만 일어나고, 멈추면 제자리다.
+      final travel = _adH <= 0 ? 1.0 : _adH;
+      final t = ((p.pixels - enter) / travel).clamp(0.0, 1.0);
+      return (1 - t) * _adH * 0.6;
     } catch (_) {
       // 붙어 있지 않은 렌더 객체에 물으면 던진다. 광고 하나 때문에 화면이
       // 죽는 일은 없어야 한다.

@@ -2217,14 +2217,50 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Center(child: Text(l.emptyList, textAlign: TextAlign.center)),
                   ),
                 if (pinned.isNotEmpty) _groupLabel(l.pinnedLabel),
-                if (pinned.isNotEmpty) _groupCard(pinned),
+                // 고정 목록도 같은 규칙이다(2026-08-17 소유자 지시).
+                // 고정을 스무 개씩 해 두는 사람에게는 고정 목록이 곧
+                // '그 사람의 목록'이라, 거기를 안 지나면 아무 데도 안 지난다.
+                if (pinned.length >= 10) ...[
+                  _groupCard(pinned.take(5).toList()),
+                  const SliverToBoxAdapter(child: InlineAdBlock(gapAbove: 20)),
+                  _groupCard(pinned.skip(5).toList()),
+                ] else if (pinned.isNotEmpty)
+                  _groupCard(pinned),
                 if (rest.isNotEmpty)
                   _groupLabel(l.notesLabel, trailing: _sortFilterBtn(l, s)),
-                if (rest.isNotEmpty) _groupCard(rest),
-                // 목록 맨 아래의 큰 광고. 끝까지 내려간 사람만 본다.
-                // 목록에서 두 줄쯤 떨어뜨린다 — 바짝 붙으면 광고가
-                // '목록의 다음 항목'처럼 보인다(2026-08-17 소유자 신고).
-                const SliverToBoxAdapter(child: InlineAdBlock(gapAbove: 120)),
+                // 광고를 어디에 놓는가 — 목록 길이에 따라 갈린다.
+                //
+                // 2026-08-17 소유자 지시: "목록이 긴 경우에 누가 맨 아래까지
+                // 스크롤을 하겠어? 그럼 한 번도 목록에 배너를 보여주기
+                // 힘들겠지."
+                //
+                // 맞는 말이고, 이건 광고 수익의 문제만이 아니다. **아무도
+                // 안 보는 자리에 놓는 것은 광고를 안 놓은 것과 같으면서
+                // 코드만 늘어난다.** 놓을 거면 보이는 자리에 놓아야 한다.
+                //
+                //   메모가 열 개 미만 — 맨 아래. 한 화면에서 몇 번만
+                //     굴리면 끝까지 닿는다.
+                //   메모가 열 개 이상 — 다섯째와 여섯째 사이. 목록을
+                //     훑는 사람은 반드시 그 자리를 지난다.
+                //
+                // 고정된 메모는 셈에 안 넣는다. 그건 늘 맨 위에 붙어 있는
+                // 몇 개라 '목록이 길다'의 근거가 못 된다.
+                if (rest.length >= 10) ...[
+                  _groupCard(rest.take(5).toList()),
+                  // 카드와 카드 사이. 광고 판이 스스로 자르는 선과 다른
+                  // 바탕색을 갖고 있어 여백은 조금이면 된다.
+                  const SliverToBoxAdapter(child: InlineAdBlock(gapAbove: 20)),
+                  _groupCard(rest.skip(5).toList()),
+                ] else ...[
+                  if (rest.isNotEmpty) _groupCard(rest),
+                  // 맨 아래 광고는 **중간에 하나도 안 넣었을 때만** 놓는다.
+                  // 한 화면에 큰 광고 둘은 앱이 아니라 광고판이다.
+                  // 목록에서 두 줄쯤 떨어뜨린다 — 바짝 붙으면 광고가
+                  // '목록의 다음 항목'처럼 보인다.
+                  if (pinned.length < 10)
+                    const SliverToBoxAdapter(
+                        child: InlineAdBlock(gapAbove: 120)),
+                ],
                 // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
                 // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
                 const SliverToBoxAdapter(child: SizedBox(height: 176)),
