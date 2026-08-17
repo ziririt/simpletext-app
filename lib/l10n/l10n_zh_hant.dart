@@ -816,6 +816,15 @@ class L10nZhHant extends L10n {
   @override
   String get syncScroll => '同步捲動';
   @override
+  String get pasteTipTitle => '不再每次詢問貼上';
+  @override
+  String get pasteTipSub => '一次關掉 iPhone 每次貼上都跳出的詢問';
+  @override
+  String get pasteTipBody =>
+      'iPhone 在 App 每次讀取剪貼簿時都會請求許可。這個 App 從貼上開始，所以那個詢問會頻繁出現。\n\n改一次就不會再問了。\n\n1. 點下面的「打開設定」\n2. 點「從其他 App 貼上」\n3. 選「允許」\n\n即使允許，這個 App 也只在您點貼上的那一刻讀取剪貼簿，不會私自查看。';
+  @override
+  String get pasteTipLater => '稍後';
+  @override
   String get adClose => '關閉廣告';
   @override
   String get noteDuplicate => '複製';

@@ -816,6 +816,15 @@ class L10nKo extends L10n {
   @override
   String get syncScroll => '동시 스크롤';
   @override
+  String get pasteTipTitle => '붙여넣을 때마다 묻지 않게';
+  @override
+  String get pasteTipSub => '아이폰이 붙여넣기마다 묻는 것을 한 번에 없앱니다';
+  @override
+  String get pasteTipBody =>
+      '아이폰은 앱이 클립보드를 읽을 때마다 한 번씩 허락을 받습니다. 이 앱은 붙여넣기에서 시작하는 앱이라 그 물음이 유난히 자주 뜹니다.\n\n한 번만 바꾸면 다시 묻지 않습니다.\n\n1. 아래 \'설정 열기\'를 누릅니다\n2. \'다른 앱에서 붙여넣기\'를 누릅니다\n3. \'허용\'을 고릅니다\n\n허용해도 이 앱은 회원님이 붙여넣기 단추를 누른 그 순간에만 클립보드를 읽습니다. 몰래 들여다보지 않습니다.';
+  @override
+  String get pasteTipLater => '나중에';
+  @override
   String get adClose => '광고 닫기';
   @override
   String get noteDuplicate => '복제';

@@ -818,6 +818,15 @@ class L10nEn extends L10n {
   @override
   String get syncScroll => 'Scroll together';
   @override
+  String get pasteTipTitle => 'Stop the paste prompt';
+  @override
+  String get pasteTipSub => 'Turn off the alert iPhone shows on every paste';
+  @override
+  String get pasteTipBody =>
+      'iPhone asks for permission each time an app reads the clipboard. This app starts with a paste, so you see that alert a lot.\n\nChange it once and it never asks again.\n\n1. Tap \'Open Settings\' below\n2. Tap \'Paste from Other Apps\'\n3. Choose \'Allow\'\n\nEven when allowed, this app reads the clipboard only at the moment you tap Paste. It never looks on its own.';
+  @override
+  String get pasteTipLater => 'Later';
+  @override
   String get adClose => 'Close ads';
   @override
   String get noteDuplicate => 'Duplicate';

@@ -818,6 +818,15 @@ class L10nEs extends L10n {
   @override
   String get syncScroll => 'Desplazar a la vez';
   @override
+  String get pasteTipTitle => 'Que no pregunte al pegar';
+  @override
+  String get pasteTipSub => 'Quita de una vez el aviso que el iPhone muestra en cada pegado';
+  @override
+  String get pasteTipBody =>
+      'El iPhone pide permiso cada vez que una app lee el portapapeles. Esta app empieza por pegar, así que ese aviso sale muy a menudo.\n\nCámbialo una vez y no vuelve a preguntar.\n\n1. Pulsa \'Abrir Ajustes\' abajo\n2. Pulsa \'Pegar desde otras apps\'\n3. Elige \'Permitir\'\n\nAun permitido, esta app lee el portapapeles solo en el momento en que pulsas Pegar. Nunca mira por su cuenta.';
+  @override
+  String get pasteTipLater => 'Más tarde';
+  @override
   String get adClose => 'Cerrar anuncios';
   @override
   String get noteDuplicate => 'Duplicar';

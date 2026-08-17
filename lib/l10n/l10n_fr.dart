@@ -819,6 +819,15 @@ class L10nFr extends L10n {
   @override
   String get syncScroll => 'Défilement synchronisé';
   @override
+  String get pasteTipTitle => 'Ne plus demander à chaque collage';
+  @override
+  String get pasteTipSub => 'Supprimez d\'un coup l\'alerte que l\'iPhone affiche à chaque collage';
+  @override
+  String get pasteTipBody =>
+      'L\'iPhone demande la permission chaque fois qu\'une app lit le presse-papiers. Cette app commence par un collage, donc cette alerte revient souvent.\n\nChangez-le une fois et il ne demandera plus.\n\n1. Touchez \'Ouvrir Réglages\' ci-dessous\n2. Touchez ‘Coller depuis d’autres apps’\n3. Choisissez \'Autoriser\'\n\nMême autorisée, cette app ne lit le presse-papiers qu\'au moment où vous touchez Coller. Elle ne regarde jamais d\'elle-même.';
+  @override
+  String get pasteTipLater => 'Plus tard';
+  @override
   String get adClose => 'Fermer les pubs';
   @override
   String get noteDuplicate => 'Dupliquer';

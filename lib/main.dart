@@ -874,6 +874,15 @@ class AppSettings {
   /// 미리보기를 좋아하는 사람을 위해 설정은 남긴다.
   bool previewBeforeApply = false;
 
+  /// 붙여넣기 물음 안내를 이미 보여 줬는가.
+  ///
+  /// 2026-08-17 소유자 신고 — "매번 붙여넣기할 때마다 물어보니 귀찮다.
+  /// 사람들이 몰라서 못하니까, 쉽게 알려줘."
+  ///
+  /// 한 번만 보여 준다. 두 번째부터는 잔소리다. 다시 보고 싶으면
+  /// 설정에 늘 있다.
+  bool pasteTipDone = false;
+
   /// 본문 글자 크기. 쓰던 메모앱과 눈으로 맞출 수 있게 설정에서 고른다
   /// (2026-08-14 — 고정값을 바꿔 가며 맞추려니 매번 설치 왕복이 생겼다).
   double bodyFontSize = MonoTextController.defaultBodyFontSize;
@@ -986,6 +995,7 @@ class AppSettings {
         'removeCitations': removeCitations,
         'monoEditor': monoEditor,
         'previewBeforeApply': previewBeforeApply,
+        'pasteTipDone': pasteTipDone,
         'bodyFontSize': bodyFontSize,
         'aiKey': aiKey,
         'aiProvider': aiProvider,
@@ -1047,6 +1057,7 @@ class AppSettings {
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
     s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
     s.previewBeforeApply = (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
+    s.pasteTipDone = (j['pasteTipDone'] ?? s.pasteTipDone) as bool;
     // 2026-08-17 — 기본값을 껐다. 기본값만 바꾸면 이미 쓰던 기기는 저장된
     // true를 그대로 읽어 와서 아무것도 안 바뀐다(2026-08-14에 따옴표
     // 규칙에서 똑같은 일을 겪었다). 그래서 판(rev)이 2보다 낮은 저장본에
@@ -1330,6 +1341,97 @@ void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+}
+
+/// 아이폰이 붙여넣을 때마다 묻는 것을 없애는 길 안내.
+///
+/// 2026-08-17 소유자 신고 — "매번 붙여넣기할 때마다 물어보니 귀찮다.
+/// 이거 한번 같이 안내해주면 좋겠다. 사람들이 몰라서 못하니까, 쉽게
+/// 알려줘."
+///
+/// iOS 16부터 앱이 클립보드를 읽을 때마다 시스템이 허락을 묻는다. 대부분의
+/// 앱은 붙여넣기가 가끔 하는 일이라 견딜 만한데, **이 앱은 붙여넣기에서
+/// 시작한다.** 그러니 그 물음이 이 앱에서는 유난히 자주 뜨고, 자주 뜨는
+/// 만큼 자주 거슬린다.
+///
+/// 그런데 이 물음을 없애는 스위치는 아이폰 설정 안쪽에 있고, 그런 것이
+/// 있다는 사실 자체를 아는 사람이 드물다. **몰라서 못 하는 것은 우리
+/// 잘못이다** — 우리가 만든 앱 때문에 뜨는 물음이니 길도 우리가 안내한다.
+///
+/// 앱이 대신 눌러 줄 수는 없다. 애플이 그 값을 앱에서 읽지도 쓰지도 못하게
+/// 막아 뒀고, 그건 옳다 — 클립보드에는 남의 비밀번호가 들어 있을 수 있다.
+/// 우리가 할 수 있는 일은 설정 앱의 우리 자리까지 데려다 놓고, 무엇을
+/// 누르면 되는지 세 줄로 적어 두는 것뿐이다.
+Future<void> showPasteTip(BuildContext context) async {
+  final l = L10n.of(context);
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheet) => SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          color: sheet.c.panel,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(children: [
+                Icon(Icons.content_paste_go, size: 22, color: sheet.c.accent),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(l.pasteTipTitle,
+                      style: const TextStyle(
+                          fontSize: 19, fontWeight: FontWeight.w800)),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              Text(l.pasteTipBody,
+                  style: TextStyle(
+                      fontSize: 15, height: 1.55, color: sheet.c.guideInk)),
+              const SizedBox(height: 18),
+              FilledButton(
+                onPressed: () async {
+                  final ok = await ICloudSync.instance.openSettings();
+                  if (!sheet.mounted) return;
+                  Navigator.pop(sheet);
+                  // 열리지 않았으면 아무 일도 안 일어난 것처럼 보인다.
+                  // 그 침묵이 제일 나쁘다(2026-08-16에 같은 자리를 겪었다).
+                  if (!ok) _toast(context, L10n.of(context).syncOpenManual);
+                },
+                child: Text(l.syncOpenSettings,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: () => Navigator.pop(sheet),
+                child: Text(l.pasteTipLater),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// 처음 붙여넣은 그 자리에서 딱 한 번 안내한다.
+///
+/// 때를 여기로 잡은 이유: 방금 시스템 물음을 겪은 직후다. '아까 그것'이
+/// 무엇이었는지 설명할 필요가 없다. 하루 뒤 설정에서 만나면 무슨 소린지
+/// 모른다.
+Future<void> maybeShowPasteTip(BuildContext context) async {
+  if (defaultTargetPlatform != TargetPlatform.iOS) return;
+  final s = Store.instance.settings;
+  if (s.pasteTipDone) return;
+  s.pasteTipDone = true;
+  await Store.instance.persistSettings();
+  if (!context.mounted) return;
+  await showPasteTip(context);
 }
 
 /// 예/아니오를 묻는 확인 창 — 앱 전체가 이 한 벌을 쓴다.
@@ -1998,6 +2100,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) _toast(context, L10n.of(context).clipboardEmpty);
       return;
     }
+    // 시스템 물음을 방금 겪은 자리다. 여기서 딱 한 번 길을 알려 준다.
+    if (mounted) await maybeShowPasteTip(context);
     // 1단은 클립보드에 딸려 온 주소다. 거기 chatgpt.com이 있으면 추측이
     // 아니라 사실이라 '(추정)'을 안 붙인다.
     final fromUrl = sourceFromUrl(await ClipboardSource.read());
@@ -6986,6 +7090,22 @@ class _SettingsScreenState extends State<SettingsScreen>
                 if (mounted) setState(() {});
               },
             ),
+            // 붙여넣기 물음 안내. 처음 붙여넣을 때 한 번 저절로 뜨지만,
+            // 그때 '나중에'를 눌렀거나 다른 기기에서 다시 필요할 수 있으니
+            // 늘 찾을 수 있는 자리에도 둔다. 아이폰에서만 뜻이 있다.
+            if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+              _sep(),
+              ListTile(
+                leading: Icon(Icons.content_paste_go, color: context.c.sub),
+                title: Text(l.pasteTipTitle,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
+                subtitle: Text(l.pasteTipSub,
+                    style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+                trailing: const Icon(Icons.chevron_right, size: 20),
+                onTap: () => showPasteTip(context),
+              ),
+            ],
           ]),
           _secHeader(l.settingsSecWhen),
           _card([

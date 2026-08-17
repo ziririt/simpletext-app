@@ -818,6 +818,15 @@ class L10nPt extends L10n {
   @override
   String get syncScroll => 'Rolar junto';
   @override
+  String get pasteTipTitle => 'Que não pergunte ao colar';
+  @override
+  String get pasteTipSub => 'Tire de uma vez o aviso que o iPhone mostra a cada colagem';
+  @override
+  String get pasteTipBody =>
+      'O iPhone pede permissão sempre que um app lê a área de transferência. Este app começa por colar, então esse aviso aparece muito.\n\nMude uma vez e ele não pergunta mais.\n\n1. Toque em \'Abrir Ajustes\' abaixo\n2. Toque em \'Colar de Outros Apps\'\n3. Escolha \'Permitir\'\n\nMesmo permitido, este app lê a área de transferência apenas no momento em que você toca em Colar. Nunca olha por conta própria.';
+  @override
+  String get pasteTipLater => 'Mais tarde';
+  @override
   String get adClose => 'Fechar anúncios';
   @override
   String get noteDuplicate => 'Duplicar';

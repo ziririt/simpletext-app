@@ -816,6 +816,15 @@ class L10nJa extends L10n {
   @override
   String get syncScroll => '同時スクロール';
   @override
+  String get pasteTipTitle => '貼り付けのたびに聞かれないように';
+  @override
+  String get pasteTipSub => 'iPhoneが貼り付けごとに出す確認を一度で消します';
+  @override
+  String get pasteTipBody =>
+      'iPhoneはアプリがクリップボードを読むたびに許可を求めます。このアプリは貼り付けから始まるので、その確認がとても頻繁に出ます。\n\n一度変えれば二度と聞かれません。\n\n1. 下の「設定を開く」を押します\n2. 「ほかのAppからペースト」を押します\n3. 「許可」を選びます\n\n許可しても、このアプリはあなたが貼り付けを押したその瞬間だけクリップボードを読みます。勝手に覗くことはありません。';
+  @override
+  String get pasteTipLater => 'あとで';
+  @override
   String get adClose => '広告を閉じる';
   @override
   String get noteDuplicate => '複製';

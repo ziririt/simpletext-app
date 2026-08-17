@@ -424,6 +424,15 @@ abstract class L10n {
   /// 미리보기 두 칸을 같이 굴릴 것인가.
   String get syncScroll;
 
+  /// 아이폰의 '다른 앱에서 붙여넣기' 물음을 없애는 길 안내.
+  ///
+  /// 소유자 신고(2026-08-17): "매번 붙여넣기할 때마다 물어보니 귀찮다.
+  /// 사람들이 몰라서 못하니까, 쉽게 알려줘."
+  String get pasteTipTitle;
+  String get pasteTipSub;
+  String get pasteTipBody;
+  String get pasteTipLater;
+
   String get adClose;
 
   /// 목록에서 길게 눌렀을 때 나오는 '복제'.
@@ -752,6 +761,10 @@ abstract class L10n {
         'menuTidyPreview': menuTidyPreview,
         'dividerTip': dividerTip,
         'syncScroll': syncScroll,
+        'pasteTipTitle': pasteTipTitle,
+        'pasteTipSub': pasteTipSub,
+        'pasteTipBody': pasteTipBody,
+        'pasteTipLater': pasteTipLater,
         'adClose': adClose,
         'noteDuplicate': noteDuplicate,
         'noteDuplicated': noteDuplicated,

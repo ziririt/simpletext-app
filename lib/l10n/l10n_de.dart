@@ -819,6 +819,15 @@ class L10nDe extends L10n {
   @override
   String get syncScroll => 'Gemeinsam scrollen';
   @override
+  String get pasteTipTitle => 'Nicht bei jedem Einfügen fragen';
+  @override
+  String get pasteTipSub => 'Schalte die Rückfrage aus, die das iPhone bei jedem Einfügen zeigt';
+  @override
+  String get pasteTipBody =>
+      'Das iPhone fragt jedes Mal nach, wenn eine App die Zwischenablage liest. Diese App beginnt mit dem Einfügen, deshalb kommt die Frage sehr oft.\n\nEinmal ändern, dann fragt es nie wieder.\n\n1. Tippe unten auf \'Einstellungen öffnen\'\n2. Tippe auf \'Aus anderen Apps einsetzen\'\n3. Wähle \'Erlauben\'\n\nAuch mit Erlaubnis liest diese App die Zwischenablage nur in dem Moment, in dem du auf Einfügen tippst. Sie schaut nie von selbst nach.';
+  @override
+  String get pasteTipLater => 'Später';
+  @override
   String get adClose => 'Werbung schließen';
   @override
   String get noteDuplicate => 'Duplizieren';

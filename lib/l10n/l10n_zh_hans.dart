@@ -816,6 +816,15 @@ class L10nZhHans extends L10n {
   @override
   String get syncScroll => '同步滚动';
   @override
+  String get pasteTipTitle => '不再每次询问粘贴';
+  @override
+  String get pasteTipSub => '一次关掉 iPhone 每次粘贴都弹出的询问';
+  @override
+  String get pasteTipBody =>
+      'iPhone 在应用每次读取剪贴板时都会请求许可。这个应用从粘贴开始，所以那个询问会频繁出现。\n\n改一次就不会再问了。\n\n1. 点下面的“打开设置”\n2. 点“从其他 App 粘贴”\n3. 选“允许”\n\n即使允许，这个应用也只在您点粘贴的那一刻读取剪贴板，不会私自查看。';
+  @override
+  String get pasteTipLater => '以后再说';
+  @override
   String get adClose => '关闭广告';
   @override
   String get noteDuplicate => '复制';
