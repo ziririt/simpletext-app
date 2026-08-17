@@ -34,15 +34,38 @@ if [ "$WHAT" = "all" ] || [ "$WHAT" = "iphone" ] || [ "$WHAT" = "ipad" ]; then
   log "iOS 빌드 완료"
 fi
 
+# 설치하고, **기기에 되물어서** 실제로 몇 판이 올라갔는지 찍는다.
+#
+# 2026-08-17 사고: 아이폰만 다섯 판 뒤처진 채로 "배포 완료" 보고가 나갔다.
+# 스크립트가 "설치 명령이 오류를 안 냈다"를 "설치됐다"로 옮겨 적고 있었기
+# 때문이다. 둘은 다른 말이다. 이제 마지막에 기기가 스스로 말한 판 번호를
+# 찍는다 — 그 줄이 없으면 그 기기는 배포된 것이 아니다.
+#
+# 무선 설치는 첫 시도에 자주 실패한다(아이패드에서 NWError 60 을 여러 번
+# 봤다). 한 번 실패했다고 멈추면 그날 그 기기만 옛 판으로 남는다. 세 번
+# 두드린다.
 install_to() { # $1=udid $2=이름
-  log "$2 설치 중…"
-  if flutter install --release -d "$1" > "/tmp/dep_$2.log" 2>&1; then
-    if grep -q "Install failed" "/tmp/dep_$2.log"; then
-      log "$2 설치 실패:"; tail -6 "/tmp/dep_$2.log"; return 1
+  local i ok=0
+  for i in 1 2 3; do
+    log "$2 설치 중… (시도 $i)"
+    if flutter install --release -d "$1" > "/tmp/dep_$2.log" 2>&1 &&
+       ! grep -q "Install failed" "/tmp/dep_$2.log"; then
+      ok=1; break
     fi
-    log "$2 설치 완료"
+    tail -3 "/tmp/dep_$2.log"
+    sleep 7
+  done
+  [ "$ok" = 1 ] || { log "$2 설치 실패 — 세 번 다 안 됐다"; return 1; }
+
+  # 여기가 이 함수의 존재 이유다. 명령이 아니라 기기에게 묻는다.
+  local V
+  V=$(xcrun devicectl device info apps --device "$1" \
+        --bundle-id com.ziririt.simpletext 2>/dev/null |
+      awk '/com.ziririt.simpletext/{print $(NF-1)"."$NF}')
+  if [ -n "$V" ]; then
+    log "$2 확인: 기기가 $V 라고 답했다"
   else
-    log "$2 설치 실패:"; tail -6 "/tmp/dep_$2.log"; return 1
+    log "$2 설치는 됐다는데 기기에 되물으니 답이 없다 — 눈으로 확인할 것"
   fi
 }
 
@@ -55,7 +78,14 @@ if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
     pkill -f "Products/Release/Skyblue Note.app" >/dev/null 2>&1
     sleep 1
     open ~/development/simpletext_app/build/macos/Build/Products/Release/Skyblue Note.app
-    log "맥 재실행 완료"
+    # 'open' 은 열리지 않아도 조용하다. 이 한 줄이 없어서 몇 주 동안
+    # "맥 재실행 완료"가 거짓말을 했다(2026-08-16). 살아 있는지 본다.
+    sleep 4
+    if pgrep -f "Products/Release/Skyblue Note.app" >/dev/null 2>&1; then
+      log "맥 재실행 완료 (pid $(pgrep -f 'Products/Release/Skyblue Note.app' | head -1))"
+    else
+      log "맥 앱이 안 떴다 — 번들 이름이나 경로를 확인할 것"
+    fi
   else
     log "맥 빌드 실패 — /tmp/dep_mac.log 확인"; tail -20 /tmp/dep_mac.log
   fi
