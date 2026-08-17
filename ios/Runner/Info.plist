@@ -71,8 +71,14 @@
 			<string>Text</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<!-- 2026-08-18 — Alternate 에서 Default 로 올렸다.
+			     Alternate 는 "다룰 줄은 압니다" 쪽이고, Default 는 "이
+			     종류를 다루는 것이 제 일입니다" 쪽이다. 이 앱은 글을
+			     읽고 고치는 앱이니 뒤가 맞다. Owner 는 그 형식을 우리가
+			     정의했을 때만 쓰는 것이라 여기에는 안 맞는다.
+			     파일 앱의 '항상 이 앱으로 열기' 목록에서 위로 온다. -->
 			<key>LSHandlerRank</key>
-			<string>Alternate</string>
+			<string>Default</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>public.plain-text</string>

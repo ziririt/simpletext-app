@@ -467,6 +467,9 @@ class L10nEn extends L10n {
   String get filterReset => 'Reset';
 
   @override
+  String get selectWord => 'Select';
+
+  @override
   String get tagAiNeedKey => 'Enter an API key in Settings to use AI auto-tagging.';
 
   @override

@@ -466,6 +466,9 @@ class L10nJa extends L10n {
   String get filterReset => 'リセット';
 
   @override
+  String get selectWord => '選択';
+
+  @override
   String get tagAiNeedKey => '設定でAPIキーを入力すると、AI自動タグ付けが使えます。';
 
   @override

@@ -468,6 +468,9 @@ class L10nFr extends L10n {
   String get filterReset => 'Réinitialiser';
 
   @override
+  String get selectWord => 'Sélectionner';
+
+  @override
   String get tagAiNeedKey => 'Saisissez une clé API dans les Réglages pour utiliser le marquage automatique par IA.';
 
   @override

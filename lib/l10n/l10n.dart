@@ -300,6 +300,9 @@ abstract class L10n {
   /// 어느 회사 키인지 서버에 물어보는 동안.
   /// 넓은 화면에서 왼쪽 목록을 접었다 폈다 하는 단추.
   /// AI 자동 태그를 눌렀는데 키가 없을 때.
+  /// 편집 메뉴의 '선택' — 커서가 놓인 낱말 하나만 잡는다.
+  String get selectWord;
+
   String get tagAiNeedKey;
 
   String get toggleListTooltip;
@@ -687,6 +690,7 @@ abstract class L10n {
         'filterTagLabel': filterTagLabel,
         'filterAll': filterAll,
         'filterReset': filterReset,
+        'selectWord': selectWord,
         'tagAiNeedKey': tagAiNeedKey,
         'toggleListTooltip': toggleListTooltip,
         'aiDetecting': aiDetecting,

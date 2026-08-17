@@ -466,6 +466,9 @@ class L10nZhHant extends L10n {
   String get filterReset => '重設';
 
   @override
+  String get selectWord => '選取';
+
+  @override
   String get tagAiNeedKey => '在設定中輸入 API 金鑰後即可使用 AI 自動標籤。';
 
   @override

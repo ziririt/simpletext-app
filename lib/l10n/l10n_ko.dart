@@ -466,6 +466,9 @@ class L10nKo extends L10n {
   String get filterReset => '초기화';
 
   @override
+  String get selectWord => '선택';
+
+  @override
   String get tagAiNeedKey => '설정에서 API 키를 입력하면 AI 자동 태깅이 가능합니다.';
 
   @override

@@ -3650,14 +3650,18 @@ class _EditorScreenState extends State<EditorScreen>
     _reshowToolbar();
   }
 
-  Future<void> _reshowToolbar() async {
-    // 스크롤이 멎기를 기다린다. 프레임 하나로는 모자랄 때가 있어 조금 준다.
-    // 위에서 맨 위로 올리는 동안(180ms)에 불러 버리면 메뉴가 다시 밀린다.
-    await Future<void>.delayed(Duration(
-        milliseconds: kScrollTopOnSelectAll ? 260 : 140));
-    if (!mounted) return;
+  /// 본문 칸(TextField) 속의 진짜 글 편집기를 찾아 준다.
+  ///
+  /// TextField 는 껍데기다. 커서·선택·편집 메뉴를 실제로 쥐고 있는 것은 그
+  /// 안쪽의 EditableText 이고, 그 손잡이(State)는 밖으로 나오지 않는다.
+  /// 그래서 위젯 나무를 한 겹씩 내려가며 찾는다.
+  ///
+  /// 곱게 생긴 방법은 아니다. 다만 이 앱은 편집 메뉴를 두 자리에서 손대야
+  /// 한다(전체 선택 뒤 다시 띄우기, 한 번 두드리면 띄우기). 같은 걸음을
+  /// 두 벌 적어 두면 한쪽만 고치는 날이 반드시 온다.
+  EditableTextState? _editableState() {
     final ctx = _bodyKey.currentContext;
-    if (ctx == null) return;
+    if (ctx == null) return null;
     EditableTextState? found;
     void visit(Element e) {
       if (found != null) return;
@@ -3668,7 +3672,40 @@ class _EditorScreenState extends State<EditorScreen>
       e.visitChildren(visit);
     }
     ctx.visitChildElements(visit);
-    final st = found;
+    return found;
+  }
+
+  /// 손가락이 닿은 그 한 번에 편집 메뉴를 띄운다.
+  ///
+  /// 2026-08-18 소유자 지시 — "아무데나 터치를 하면 (…) 한번만에 안 나온다.
+  /// 몇번 터치를 해야 나온다. 한번에 나오게 해달라."
+  ///
+  /// 애플의 기본 규칙은 '한 번은 커서를 놓는 일, 그 커서를 다시 눌러야
+  /// 메뉴'다. 규칙 자체는 이유가 있다 — 글을 고치다 자리를 옮길 때마다
+  /// 메뉴가 따라 뜨면 성가시기 때문이다.
+  ///
+  /// 그런데 이 앱에서 본문을 두드리는 까닭은 대개 '붙여넣기'다. AI 답변을
+  /// 받아 와 넣는 것이 이 앱의 첫 일이니, 그 한 걸음을 줄이는 쪽이 맞다.
+  ///
+  /// **되돌리려면 kMenuOnFirstTap 을 false 로.** 다른 곳은 손대지 않았다.
+  void _menuOnTap() {
+    if (!kMenuOnFirstTap) return;
+    // 커서가 자리를 잡은 다음에 띄운다. 같은 프레임에 부르면 방금 놓인
+    // 커서 자리를 아직 아무도 모른다.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      if (!mounted) return;
+      _editableState()?.showToolbar();
+    });
+  }
+
+  Future<void> _reshowToolbar() async {
+    // 스크롤이 멎기를 기다린다. 프레임 하나로는 모자랄 때가 있어 조금 준다.
+    // 위에서 맨 위로 올리는 동안(180ms)에 불러 버리면 메뉴가 다시 밀린다.
+    await Future<void>.delayed(Duration(
+        milliseconds: kScrollTopOnSelectAll ? 260 : 140));
+    if (!mounted) return;
+    final st = _editableState();
     if (st == null) return;
     if (st.textEditingValue.selection.isCollapsed) return;
 
@@ -3964,6 +4001,18 @@ static const bool kScrollTopOnSelectAll = true;
 /// 서두에는 인사말과 도입이 들어 있어서, 정작 그 글이 무엇에 관한 것인지는
 /// 그 아래에 있다. 3000자로 넓혔다 — 이 함수는 기기 안에서 도는 정규식
 /// 몇 개라 세 배로 늘어도 사람이 느낄 만한 값이 아니다.
+/// 본문을 한 번 두드리면 편집 메뉴를 띄울 것인가.
+///
+/// 애플 기본은 '두 번'이다 — 한 번은 커서를 놓는 일이고, 그 커서를 다시
+/// 눌러야 메뉴가 뜬다. 규칙 자체에는 이유가 있다. 글을 고치다 자리를
+/// 옮길 때마다 메뉴가 따라 뜨면 성가시기 때문이다.
+///
+/// 그런데 이 앱에서 본문을 두드리는 까닭은 대개 **붙여넣기**다. AI 답변을
+/// 받아 와 넣는 것이 이 앱의 첫 일이니, 그 한 걸음을 줄이는 쪽이 맞다.
+///
+/// 성가시면 false 로 바꾸면 애플 기본으로 돌아간다. 다른 곳은 손대지 않았다.
+static const bool kMenuOnFirstTap = true;
+
 static const int kTagScanChars = 3000;
 
   bool _tagAiBusy = false;
@@ -5634,6 +5683,69 @@ static const int kTagScanChars = 3000;
                       // 계산해 정해 뒀다.
                       color: paperInk),
                   onChanged: _onBodyChanged,
+                  onTap: _menuOnTap,
+                  // ── 편집 메뉴를 우리가 그린다 ──────────────────────
+                  //
+                  // 2026-08-18 소유자 지시 — "'붙여넣기 / 선택 / 전체선택 >'이
+                  // 나오게 하고, '텍스트 스캔'은 '>'을 누르면 나오게 해줘."
+                  //
+                  // 그동안 이 자리에는 **iOS 가 통째로 그리는 메뉴**가 떴다.
+                  // 요즘 플러터는 iOS 16 이상이면 시스템 메뉴를 쓰는 것이
+                  // 기본값이고, 시스템 메뉴는 우리가 순서를 정할 수 없다.
+                  // '텍스트 스캔'이 거기 섞여 있던 것도 그래서다 — 그건
+                  // 우리가 넣은 것이 아니라 운영체제가 넣은 것이다.
+                  //
+                  // 순서를 정하려면 메뉴를 우리가 그려야 하고, 우리가 그리면
+                  // **'텍스트 스캔'은 못 가져온다.** 카메라로 글자를 읽어
+                  // 오는 그 기능은 운영체제 안에만 있고 밖으로 나오지 않는다.
+                  // 소유자가 그것을 '>' 뒤로 밀라고 한 뜻은 '거의 안 쓴다'
+                  // 이므로, 잃는 쪽을 택했다.
+                  //
+                  // 버튼이 넘치면 플러터가 알아서 '>'로 접는다. 그러니
+                  // 우리가 할 일은 **중요한 것을 앞에 놓는 것**뿐이다.
+                  contextMenuBuilder: (ctx, ets) {
+                    final ll = L10n.of(ctx);
+                    ContextMenuButtonItem? paste;
+                    ContextMenuButtonItem? selectAll;
+                    final rest = <ContextMenuButtonItem>[];
+                    for (final b in ets.contextMenuButtonItems) {
+                      switch (b.type) {
+                        case ContextMenuButtonType.paste:
+                          paste = b;
+                        case ContextMenuButtonType.selectAll:
+                          selectAll = b;
+                        default:
+                          rest.add(b);
+                      }
+                    }
+                    final items = <ContextMenuButtonItem>[];
+                    if (paste != null) items.add(paste);
+                    // '선택' — 커서가 놓인 낱말 하나만 잡는다.
+                    //
+                    // 전체 선택과 손으로 끌기 사이가 비어 있었다. 한 낱말을
+                    // 고치려는데 고를 방법이 '전부' 아니면 '손으로 정확히
+                    // 끌기'뿐이면, 작은 화면에서는 후자가 거의 안 된다.
+                    if (ets.textEditingValue.selection.isCollapsed &&
+                        ets.textEditingValue.text.isNotEmpty) {
+                      items.add(ContextMenuButtonItem(
+                        label: ll.selectWord,
+                        onPressed: () {
+                          ets.renderEditable
+                              .selectWord(cause: SelectionChangedCause.toolbar);
+                          // 잡아 놓고 메뉴가 사라지면 다음에 뭘 할지 모른다.
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ets.showToolbar();
+                          });
+                        },
+                      ));
+                    }
+                    if (selectAll != null) items.add(selectAll);
+                    items.addAll(rest);
+                    return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: ets.contextMenuAnchors,
+                      buttonItems: items,
+                    );
+                  },
                             ),
                           ),
                           // 글 끝 아래의 빈칸.

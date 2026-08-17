@@ -467,6 +467,9 @@ class L10nEs extends L10n {
   String get filterReset => 'Restablecer';
 
   @override
+  String get selectWord => 'Seleccionar';
+
+  @override
   String get tagAiNeedKey => 'Introduce una clave API en Ajustes para usar el etiquetado automático con IA.';
 
   @override
