@@ -4011,7 +4011,7 @@ static const bool kScrollTopOnSelectAll = true;
 /// 받아 와 넣는 것이 이 앱의 첫 일이니, 그 한 걸음을 줄이는 쪽이 맞다.
 ///
 /// 성가시면 false 로 바꾸면 애플 기본으로 돌아간다. 다른 곳은 손대지 않았다.
-static const bool kMenuOnFirstTap = true;
+static const bool kMenuOnFirstTap = false;
 
 static const int kTagScanChars = 3000;
 

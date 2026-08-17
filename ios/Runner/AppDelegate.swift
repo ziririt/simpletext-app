@@ -66,7 +66,16 @@ import UIKit
 /// 것은 바로 밀어 준다. **두 길이 다르므로 둘 다 있어야 한다** — 하나만
 /// 있으면 "처음엔 되는데 두 번째부터 안 된다"가 된다.
 enum ShareBridge {
-  private static var pending: String?
+  /// 확장과 앱이 함께 쓰는 창고. 둘은 서로 다른 프로세스라 변수로는
+  /// 아무것도 못 넘긴다. 애플이 열어 준 유일한 공용 자리가 이것이다.
+  static let appGroup = "group.com.ziririt.simpletext"
+
+  /// 아직 다트에게 못 넘긴 것들.
+  ///
+  /// 하나만 담는 칸이었다가 목록으로 바꿨다(2026-08-18). 앱을 안 켠 채로
+  /// 여러 번 보낼 수 있는데, 칸이 하나면 나중 것이 앞엣것을 덮어써서
+  /// 조용히 사라진다. 사라진 줄도 모르는 것이 제일 나쁘다.
+  private static var pending: [String] = []
   private static var channel: FlutterMethodChannel?
 
   static func register(messenger: FlutterBinaryMessenger) {
@@ -74,10 +83,18 @@ enum ShareBridge {
     ch.setMethodCallHandler { call, result in
       switch call.method {
       case "take":
-        result(pending)
-        // 준 것은 서랍에서 지운다 — 안 그러면 앱을 다시 켤 때마다 같은
-        // 글이 또 들어온다.
-        pending = nil
+        // 다트가 물어보는 김에 창고도 한 번 비운다. 앱이 꺼져 있을 때
+        // 공유로 들어온 것이 여기서 합류한다.
+        pending.append(contentsOf: drainInbox())
+        if pending.isEmpty {
+          result(nil)
+        } else {
+          let first = pending.removeFirst()
+          result(first)
+          // 남은 것은 밀어 준다. 다트는 take 를 부르기 전에 이미 듣는
+          // 자리를 만들어 두므로(_wireShare), 지금은 받을 사람이 있다.
+          flush()
+        }
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -87,14 +104,12 @@ enum ShareBridge {
 
   /// 다트가 아직 없을 때 쓰는 길. **밀지 않고 서랍에만 넣는다.**
   ///
-  /// 2026-08-18 — 앱이 꺼져 있다가 파일 때문에 켜지는 경우가 이 길이다.
-  /// 그때는 통신선(channel)이 이미 만들어져 있을 수 있는데도 저쪽 끝에서
-  /// 받을 사람(다트의 listen)이 아직 없다. 그 상태로 밀면 소식이 허공에
-  /// 흩어지고, 사용자에게는 '아무 일도 안 일어남'으로 보인다.
+  /// 통신선이 이미 만들어져 있어도 저쪽 끝에서 받을 사람이 아직 없을 수
+  /// 있다. 선이 있다는 것과 받는 사람이 있다는 것은 다른 말이다.
   @discardableResult
   static func stash(url: URL) -> Bool {
     guard let t = readText(url: url) else { return false }
-    pending = t
+    pending.append(t)
     return true
   }
 
@@ -102,12 +117,57 @@ enum ShareBridge {
   @discardableResult
   static func take(url: URL) -> Bool {
     guard let t = readText(url: url) else { return false }
-    if let ch = channel {
-      ch.invokeMethod("received", arguments: t)
+    if channel != nil {
+      pending.append(t)
+      flush()
     } else {
-      pending = t
+      pending.append(t)
     }
     return true
+  }
+
+  /// 앱이 켜지는 중에 창고를 서랍으로 옮겨만 둔다.
+  static func stashInbox() {
+    pending.append(contentsOf: drainInbox())
+  }
+
+  /// 앱이 앞으로 나왔을 때 창고를 비우고 바로 밀어 준다.
+  static func pushInbox() {
+    pending.append(contentsOf: drainInbox())
+    flush()
+  }
+
+  private static func flush() {
+    guard let ch = channel else { return }
+    let items = pending
+    pending = []
+    for t in items {
+      ch.invokeMethod("received", arguments: t)
+    }
+  }
+
+  /// 공유 확장이 놓고 간 것을 가져오고 **지운다.**
+  ///
+  /// 지우는 것이 핵심이다. 안 지우면 앱을 켤 때마다 같은 글이 또 들어와
+  /// 메모가 계속 늘어난다.
+  private static func drainInbox() -> [String] {
+    let fm = FileManager.default
+    guard let root = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+    else { return [] }
+    let box = root.appendingPathComponent("ShareInbox", isDirectory: true)
+    guard let names = try? fm.contentsOfDirectory(atPath: box.path) else { return [] }
+    var out: [String] = []
+    // 이름 앞에 시각이 붙어 있다. 보낸 차례대로 들어가야 목록에서 순서가
+    // 뒤집히지 않는다.
+    for name in names.sorted() {
+      let f = box.appendingPathComponent(name)
+      if let t = try? String(contentsOf: f, encoding: .utf8),
+         !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        out.append(t)
+      }
+      try? fm.removeItem(at: f)
+    }
+    return out
   }
 
   /// 파일을 열어 글자로 읽는다. 못 읽으면 nil.
