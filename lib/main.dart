@@ -3027,6 +3027,10 @@ class _EditorScreenState extends State<EditorScreen> {
   /// 생기게 하는 선이다. 규칙은 core/usage_gate.dart(테스트로 고정).
   Future<bool> _blockedByLimit({required bool wizard}) async {
     final s = store.settings;
+    // 2026-08-17 — 첫 판은 완전 무료다. 한도도, 프리미엄 안내도 없다.
+    // 화면만 숨기고 한도를 남기면 빠져나갈 길이 없는 벽이 된다.
+    if (!kPaidTierLive) return false;
+
     final now = DateTime.now();
     // canUse가 아니라 canUseNow다 — canUse는 한도만 보므로 체험 중인
     // 사람을 그대로 막아 버린다. 2026-08-16에 체험을 넣으면서 갈아탔다.
@@ -5474,6 +5478,31 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
   }
 }
 
+/// 유료 등급이 살아 있는가.
+///
+/// 2026-08-17 소유자 결정 — **첫 판은 완전 무료로 낸다.**
+///
+/// 가격이 적힌 화면을 남겨 두면 애플이 두 눈으로 본다. 2.1(되지 않는
+/// 기능이 있는 앱)과 3.1.1(디지털 상품 가격을 보여 주면서 애플 결제를
+/// 안 쓰는 앱). 둘 다 "고쳐서 다시 내라"로 끝난다.
+///
+/// 그런데 **화면만 숨기고 하루 한도를 남기면 더 나쁘다.** 사용자는
+/// 빠져나갈 길이 없는 벽을 만나고, 안내문은 없는 프리미엄을 가리킨다.
+/// 그래서 한도까지 같이 끈다. 첫 판은 광고만 두고 전부 열어 둔다.
+///
+/// 지우지 않고 끄는 이유: 지웠다가 다시 쓰면 그 사이에 규칙이 어긋나고,
+/// 어긋난 것은 결제가 걸린 자리에서 제일 아프다. StoreKit을 붙이는 날
+/// 이 값 하나만 true로 되돌리면 전부 살아난다.
+///
+/// const가 아니라 final인 이유: const로 두면 분석기가 아래 코드를 전부
+/// '죽은 코드'로 보고 경고한다. 죽은 게 아니라 **잠깐 꺼 둔 것**이다.
+// ignore: prefer_const_declarations
+final bool kPaidTierLive = false;
+
+/// 프리미엄 안내 화면.
+///
+/// 2026-08-17 — 지금은 **아무 데서도 부르지 않는다**([kPaidTierLive]).
+/// StoreKit이 붙는 날 다시 연결한다.
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
 
@@ -6118,6 +6147,10 @@ class _SettingsScreenState extends State<SettingsScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
           // 2026-08-16 소유자 요청 — 설정 맨 위에 프리미엄(결제) 유도 배너.
+          //
+          // 2026-08-17 — 첫 판은 완전 무료라 이 배너를 끈다. 가격이 적힌
+          // 화면으로 가는 문이 하나라도 열려 있으면 애플이 3.1.1로 본다.
+          if (kPaidTierLive)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
             child: Material(
