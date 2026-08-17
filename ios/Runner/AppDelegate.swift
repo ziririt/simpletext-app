@@ -85,28 +85,46 @@ enum ShareBridge {
     channel = ch
   }
 
+  /// 다트가 아직 없을 때 쓰는 길. **밀지 않고 서랍에만 넣는다.**
+  ///
+  /// 2026-08-18 — 앱이 꺼져 있다가 파일 때문에 켜지는 경우가 이 길이다.
+  /// 그때는 통신선(channel)이 이미 만들어져 있을 수 있는데도 저쪽 끝에서
+  /// 받을 사람(다트의 listen)이 아직 없다. 그 상태로 밀면 소식이 허공에
+  /// 흩어지고, 사용자에게는 '아무 일도 안 일어남'으로 보인다.
+  @discardableResult
+  static func stash(url: URL) -> Bool {
+    guard let t = readText(url: url) else { return false }
+    pending = t
+    return true
+  }
+
   /// 파일에서 글을 읽어 서랍에 넣거나 바로 민다. 우리가 못 읽으면 false.
   @discardableResult
   static func take(url: URL) -> Bool {
-    // 다른 앱의 영역에 있는 파일이라 잠깐 문을 열어 달라고 해야 한다.
-    // 열었으면 반드시 닫는다 — 안 닫으면 시스템 자원이 샌다.
-    let scoped = url.startAccessingSecurityScopedResource()
-    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-
-    guard let data = try? Data(contentsOf: url) else { return false }
-    // UTF-8이 아닌 파일도 있다. 흔한 것부터 차례로 시도한다.
-    var text = String(data: data, encoding: .utf8)
-    if text == nil { text = String(data: data, encoding: .utf16) }
-    if text == nil { text = String(data: data, encoding: .isoLatin1) }
-    guard let t = text, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    else { return false }
-
+    guard let t = readText(url: url) else { return false }
     if let ch = channel {
       ch.invokeMethod("received", arguments: t)
     } else {
       pending = t
     }
     return true
+  }
+
+  /// 파일을 열어 글자로 읽는다. 못 읽으면 nil.
+  private static func readText(url: URL) -> String? {
+    // 다른 앱의 영역에 있는 파일이라 잠깐 문을 열어 달라고 해야 한다.
+    // 열었으면 반드시 닫는다 — 안 닫으면 시스템 자원이 샌다.
+    let scoped = url.startAccessingSecurityScopedResource()
+    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+
+    guard let data = try? Data(contentsOf: url) else { return nil }
+    // UTF-8이 아닌 파일도 있다. 흔한 것부터 차례로 시도한다.
+    var text = String(data: data, encoding: .utf8)
+    if text == nil { text = String(data: data, encoding: .utf16) }
+    if text == nil { text = String(data: data, encoding: .isoLatin1) }
+    guard let t = text, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    else { return nil }
+    return t
   }
 }
 
