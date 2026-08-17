@@ -815,6 +815,8 @@ class L10nFr extends L10n {
   @override
   String get menuTidyPreview => 'Aperçu du nettoyage';
   @override
+  String get dividerTip => 'Séparateur';
+  @override
   String get adClose => 'Fermer les pubs';
   @override
   String get noteDuplicate => 'Dupliquer';

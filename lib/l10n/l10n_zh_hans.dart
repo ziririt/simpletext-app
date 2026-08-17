@@ -812,6 +812,8 @@ class L10nZhHans extends L10n {
   @override
   String get menuTidyPreview => '整理预览';
   @override
+  String get dividerTip => '分隔线';
+  @override
   String get adClose => '关闭广告';
   @override
   String get noteDuplicate => '复制';

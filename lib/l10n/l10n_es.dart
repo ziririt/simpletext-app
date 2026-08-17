@@ -814,6 +814,8 @@ class L10nEs extends L10n {
   @override
   String get menuTidyPreview => 'Vista previa de la limpieza';
   @override
+  String get dividerTip => 'Separador';
+  @override
   String get adClose => 'Cerrar anuncios';
   @override
   String get noteDuplicate => 'Duplicar';

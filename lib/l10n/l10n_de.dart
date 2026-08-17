@@ -815,6 +815,8 @@ class L10nDe extends L10n {
   @override
   String get menuTidyPreview => 'Bereinigung ansehen';
   @override
+  String get dividerTip => 'Trennlinie';
+  @override
   String get adClose => 'Werbung schließen';
   @override
   String get noteDuplicate => 'Duplizieren';

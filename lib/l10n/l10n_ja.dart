@@ -812,6 +812,8 @@ class L10nJa extends L10n {
   @override
   String get menuTidyPreview => '整理をプレビュー';
   @override
+  String get dividerTip => '区切り線';
+  @override
   String get adClose => '広告を閉じる';
   @override
   String get noteDuplicate => '複製';

@@ -2849,6 +2849,37 @@ class _EditorScreenState extends State<EditorScreen> {
     _toast(context, L10n.of(context).sourceDetected(g.name));
   }
 
+  /// 글 사이에 구분선 한 줄.
+  ///
+  /// 2026-08-17 소유자 요청 — "편집 툴바 기능에 '구분선'을 추가해줘."
+  ///
+  /// 마크다운의 `---`가 아니라 진짜 선을 긋는다. 이 앱이 만드는 것은
+  /// **사람이 그대로 읽는 글**이다. 카톡이나 메일에 붙였을 때 `---`는
+  /// 하이픈 세 개로 보이고 이것은 선으로 보인다.
+  ///
+  /// 정리 엔진은 이 줄도 구분선으로 알아본다(같은 정규식에 걸린다).
+  /// 그래서 설정의 '구분선' 항목을 그대로 따르고, 글 맨 위나 맨 아래에
+  /// 홀로 남으면 정리할 때 걷힌다 — 내용이 없는 자리이기 때문이다.
+  static const String kDividerLine = '──────────';
+
+  void _insertDivider() {
+    final t = bodyCtl.text;
+    final sel = bodyCtl.selection;
+    final at = sel.isValid ? sel.end : t.length;
+    final before = t.substring(0, at);
+    final after = t.substring(at);
+    // 줄 한가운데에서 눌러도 구분선은 제 줄을 갖는다. 글자 사이에 선이
+    // 끼어드는 것은 아무도 원하지 않는다.
+    final head = (before.isEmpty || before.endsWith('\n')) ? '' : '\n';
+    final tail = after.startsWith('\n') ? '\n' : '\n\n';
+    final ins = '$head$kDividerLine$tail';
+    bodyCtl.value = TextEditingValue(
+      text: before + ins + after,
+      selection: TextSelection.collapsed(offset: at + ins.length),
+    );
+    _save();
+  }
+
   void _makeList(String kind) {
     final t = bodyCtl.text;
     final sel = bodyCtl.selection;
@@ -3129,13 +3160,28 @@ class _EditorScreenState extends State<EditorScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 4),
               children: [
-                // 2026-08-17 소유자 지시로 열여섯 개에서 일곱 개로 줄였다.
-                // 괄호와 따옴표는 자판에 이미 있고, 커서 화살표는 화면을 한
-                // 번 누르는 것이 언제나 빠르다. 남긴 것은 실제로 손이 가는 것들.
+                // 2026-08-17 소유자 지시로 다시 한 번 정리했다.
+                //
+                // 낱글자를 넣던 단추 둘('·' '-')을 없앴다. 이것이 이번 판의
+                // 고장을 낳은 자리다 — '·'가 두 뜻으로 쓰이고 있었다.
+                // 하나는 '가운뎃점 한 글자 넣기', 다른 하나는 '이 줄들을 점
+                // 목록으로 바꾸기'. 겉모습이 같으니 어느 쪽이 눌린 건지
+                // 사람이 알 수가 없었고, 소유자는 "'·'는 -와 같은 결과가
+                // 나온다"고 신고했다.
+                //
+                // 이제 '·'와 '-'는 **목록 단추 하나씩**이다. 낱글자는 자판에
+                // 이미 있다. 순서는 소유자가 고른 대로 1. → · → -.
                 _kbBtn(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
                 _kbBtn(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
-                _kbBtn(glyph: '·', onTap: () => _insertText('· ')),
-                _kbBtn(glyph: '-', onTap: () => _insertText('- ')),
+                Container(
+                    width: 1,
+                    height: 26,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    color: context.c.toolbarLine),
+                _kbBtn(
+                    icon: Icons.horizontal_rule,
+                    tip: l.dividerTip,
+                    onTap: _insertDivider),
                 Container(
                     width: 1,
                     height: 26,
@@ -3145,17 +3191,17 @@ class _EditorScreenState extends State<EditorScreen> {
                 // 있는 순간이라 여기가 제자리다. 아래 기능 막대는 글을 다
                 // 쓰고 나서 누르는 것들이라 결이 다르다.
                 _kbBtn(
-                    glyph: '•',
-                    tip: l.listBulletAction,
-                    onTap: () => _makeList('bullet')),
-                _kbBtn(
-                    glyph: '–',
-                    tip: l.listDashAction,
-                    onTap: () => _makeList('dash')),
-                _kbBtn(
                     glyph: '1.',
                     tip: l.listNumberAction,
                     onTap: () => _makeList('number')),
+                _kbBtn(
+                    glyph: '·',
+                    tip: l.listBulletAction,
+                    onTap: () => _makeList('bullet')),
+                _kbBtn(
+                    glyph: '-',
+                    tip: l.listDashAction,
+                    onTap: () => _makeList('dash')),
                 _kbBtn(
                     icon: Icons.format_indent_increase,
                     tip: l.indentTip,

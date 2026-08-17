@@ -812,6 +812,8 @@ class L10nKo extends L10n {
   @override
   String get menuTidyPreview => '정리 미리보기';
   @override
+  String get dividerTip => '구분선';
+  @override
   String get adClose => '광고 닫기';
   @override
   String get noteDuplicate => '복제';

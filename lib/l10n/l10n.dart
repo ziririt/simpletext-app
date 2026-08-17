@@ -418,6 +418,9 @@ abstract class L10n {
   /// 편집 메뉴 맨 위 — 정리 결과를 먼저 보고 적용할지 고른다.
   String get menuTidyPreview;
 
+  /// 편집 툴바의 구분선 단추.
+  String get dividerTip;
+
   String get adClose;
 
   /// 목록에서 길게 눌렀을 때 나오는 '복제'.
@@ -744,6 +747,7 @@ abstract class L10n {
         'aiSectionDesc': aiSectionDesc,
         'aiKeyHint': aiKeyHint,
         'menuTidyPreview': menuTidyPreview,
+        'dividerTip': dividerTip,
         'adClose': adClose,
         'noteDuplicate': noteDuplicate,
         'noteDuplicated': noteDuplicated,

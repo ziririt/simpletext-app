@@ -814,6 +814,8 @@ class L10nPt extends L10n {
   @override
   String get menuTidyPreview => 'Prévia da organização';
   @override
+  String get dividerTip => 'Separador';
+  @override
   String get adClose => 'Fechar anúncios';
   @override
   String get noteDuplicate => 'Duplicar';
