@@ -360,7 +360,7 @@ class L10nFr extends L10n {
   @override
   String get originalLabel => 'Original';
   @override
-  String get apply => 'Appliquer';
+  String get apply => 'Appliquer le nettoyage';
 
   @override
   String get presetAiName =>

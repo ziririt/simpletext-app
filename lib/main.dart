@@ -3815,7 +3815,8 @@ class _EditorScreenState extends State<EditorScreen> {
                 builder: (_) => PreviewScreen(
                     presetName: l.presetName(preset.id, preset.name),
                     before: note.body,
-                    result: r)),
+                    result: r,
+                    manual: forcePreview)),
           )
         : true;
     if (apply == true) {
@@ -4997,7 +4998,22 @@ class _EditorScreenState extends State<EditorScreen> {
                   LayoutBuilder(builder: (_, box) {
                     // 빈칸은 화면의 절반. 마지막 줄을 화면 한가운데까지
                     // 끌어올릴 수 있는 양이다.
-                    final blank = box.maxHeight * 0.5;
+                    // 2026-08-17 소유자 신고 — "본문과 광고의 간격이 너무
+                    // 멀다. 이래서는 누가 광고를 보겠나. 본문은 아래 여백으로
+                    // 2줄 정도 남기고 광고가 오게 해."
+                    //
+                    // 이 빈칸은 원래 '마지막 줄을 화면 한가운데까지 끌어올릴
+                    // 자리'로 둔 것이다(화면의 절반). 그 뜻은 여전히 맞다.
+                    // 다만 **광고가 아래에 붙으면 광고 자체가 그 자리를
+                    // 준다.** 250픽셀짜리 네모가 이미 굴릴 거리를 만든다.
+                    // 그러니 광고가 뜰 판에서는 빈칸을 두 줄로 줄인다.
+                    //
+                    // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
+                    // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
+                    final lineH = store.settings.bodyFontSize *
+                        MonoTextController.bodyHeight;
+                    final blank =
+                        inlineAdLikely() ? lineH * 2 : box.maxHeight * 0.5;
                     // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
                     // [머리 + 본문 + 빈칸]이 정확히 한 화면이라 스크롤이 안
                     // 생긴다. 한 줄짜리 메모에서 화면이 덜컹거리면 더
@@ -5157,7 +5173,27 @@ class PreviewScreen extends StatefulWidget {
   final String presetName;
   final String before;
   final TidyResult result;
-  const PreviewScreen({super.key, required this.presetName, required this.before, required this.result});
+
+  /// 메뉴에서 '정리 미리보기'를 눌러 온 것인가.
+  ///
+  /// 2026-08-17 소유자 지적 — "메뉴에 새로 추가된 미리보기 화면에서 '앞으로
+  /// 미리보기 생략'은 없애줘. 미리보기 화면인데, '미리보기 생략'한다는 것은
+  /// 모순이다."
+  ///
+  /// 맞다. 그 체크는 **설정을 켜 둬서 매번 이 화면을 거치는 사람**에게 주는
+  /// 탈출구다. 방금 손으로 '미리보기'를 골라 들어온 사람에게 "앞으로는
+  /// 보지 마세요"라고 묻는 것은, 문을 열고 들어온 사람에게 문을 잠그겠냐고
+  /// 묻는 격이다. 게다가 그 체크를 켜면 설정이 꺼지는데, 이 사람은 애초에
+  /// 설정을 켠 적이 없다. 자기가 안 켠 것이 꺼진다.
+  final bool manual;
+
+  const PreviewScreen({
+    super.key,
+    required this.presetName,
+    required this.before,
+    required this.result,
+    this.manual = false,
+  });
 
   @override
   State<PreviewScreen> createState() => _PreviewScreenState();
@@ -5272,24 +5308,13 @@ class _PreviewScreenState extends State<PreviewScreen> {
       appBar: AppBar(title: Text(l.previewTitle(presetName))),
       body: Column(
         children: [
-          // 무엇이 얼마나 바뀌었는지 한 줄. 화면을 반씩 나눠 쓰는 자리라
-          // 여기는 최대한 얇아야 한다.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                  color: c.infoBg, borderRadius: BorderRadius.circular(10)),
-              child: Text(result.summary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      color: c.accent,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12.5)),
-            ),
-          ),
+          // 여기 '마커 51개 제거 · 제목 5개 정리' 같은 줄이 있었다.
+          // 2026-08-17에 뺐다 — 몇 개를 지웠는지는 우리가 열심히 했다는
+          // 증거지 사용자가 알고 싶은 것이 아니다. 이 화면은 글이 어떻게
+          // 바뀌었는지를 두 칸으로 보여 주려고 만든 것이고, 그 위에 숫자
+          // 줄이 앉으면 화면의 목적과 싸운다.
+          //
+          // 경고는 남긴다. 그건 자랑이 아니라 '이건 좀 봐 달라'는 말이다.
           for (final w in result.warnings)
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
@@ -5386,6 +5411,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 버튼 바로 위 — 여기서 켜면 다음부터 이 화면을 건너뛴다.
+              // 손으로 미리보기를 골라 들어온 자리에서는 안 보인다.
+              if (!widget.manual)
               InkWell(
                 onTap: () => setState(() => _skipNext = !_skipNext),
                 borderRadius: BorderRadius.circular(8),

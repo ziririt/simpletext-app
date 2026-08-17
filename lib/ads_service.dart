@@ -514,30 +514,42 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       height: _h,
       child: ClipRect(child: AdWidget(ad: _ad!)),
     );
-    return Container(
+    // 2026-08-17 소유자 신고 — "본문과 광고 사이에 단절된 느낌을 줘. 지금은
+    // 본문에 광고가 들어갈 것 같은 오해를 줄 듯."
+    //
+    // 옳은 지적이고, 이건 취향이 아니라 정직함의 문제다. 광고가 글의 일부로
+    // 보이면 그건 광고를 숨긴 것이다. 애플·구글 둘 다 그것으로 반려한다.
+    //
+    // 그래서 세 가지를 한꺼번에 쓴다. 하나만으로는 약하다.
+    //   1) 가로로 꽉 찬 선 — '글은 여기서 끝'
+    //   2) 다른 바탕색 — 종이(글 자리)가 아니라 화면 바탕
+    //   3) 가운데 놓인 '후원' 이름표 — 무엇이 오는지 말로도 밝힌다
+    //
+    // 이름표를 왼쪽 구석이 아니라 가운데 둔 것도 이유가 있다. 왼쪽 구석의
+    // 작은 글씨는 '본문의 각주'처럼 읽히고, 가운데의 글씨는 '여기서 갈린다'로
+    // 읽힌다.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 이 빈 자리는 광고 판 **밖**이다. 그래야 위쪽 바탕(목록·종이) 색을
+        // 그대로 이어받아, 자르는 선이 광고 판의 첫 줄이 된다.
+        if (widget.gapAbove > 0) SizedBox(height: widget.gapAbove),
+        Container(
       width: double.infinity,
-      color: c.bg,
-      padding: const EdgeInsets.only(top: 18, bottom: 24),
+      decoration: BoxDecoration(
+        color: c.bg,
+        border: Border(top: BorderSide(color: c.line)),
+      ),
+      padding: const EdgeInsets.only(top: 14, bottom: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.gapAbove > 0) SizedBox(height: widget.gapAbove),
-          // 이름표. 광고 위에 가는 실선을 좌우로 뻗어 '여기서부터는 우리
-          // 글이 아니다'를 눈으로 먼저 알린다.
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Text(l.adSponsored,
-                    style: TextStyle(
-                        fontSize: 11,
-                        letterSpacing: 0.6,
-                        color: c.sub)),
-                const SizedBox(width: 10),
-                Expanded(child: Divider(height: 1, color: c.line)),
-              ],
-            ),
-          ),
+          Text(l.adSponsored,
+              style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 1.4,
+                  fontWeight: FontWeight.w600,
+                  color: c.sub)),
           const SizedBox(height: 12),
           ClipRect(
             child: SizedBox(
@@ -557,6 +569,23 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
           ),
         ],
       ),
+        ),
+      ],
     );
   }
 }
+
+/// 이 화면에 큰 광고가 뜰 만한가.
+///
+/// 편집 화면이 '글 끝 빈칸'을 얼마나 둘지 정할 때 쓴다. 광고가 있으면
+/// 광고 자체가 굴릴 자리를 주므로 빈칸은 두 줄이면 되고, 없으면 예전대로
+/// 화면 절반을 둬야 한다(마지막 줄을 화면 한가운데까지 끌어올릴 자리).
+///
+/// 확실히 뜬다는 보장은 아니다 — 불러오기가 실패할 수도 있다. 다만 그건
+/// 드물고, 틀렸을 때의 값이 '빈칸이 두 줄뿐'이라 크지 않다.
+bool inlineAdLikely() =>
+    adsSupported &&
+    bannerVisible(
+        now: DateTime.now(),
+        adFreeDate: Store.instance.settings.adFreeDate) &&
+    AdsService.instance.ready.value;

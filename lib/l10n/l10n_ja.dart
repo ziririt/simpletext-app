@@ -358,7 +358,7 @@ class L10nJa extends L10n {
   @override
   String get originalLabel => '原文';
   @override
-  String get apply => '適用';
+  String get apply => '整理をすぐ適用';
 
   @override
   String get presetAiName =>

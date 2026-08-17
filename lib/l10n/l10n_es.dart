@@ -359,7 +359,7 @@ class L10nEs extends L10n {
   @override
   String get originalLabel => 'Original';
   @override
-  String get apply => 'Aplicar';
+  String get apply => 'Aplicar la limpieza';
 
   @override
   String get presetAiName =>

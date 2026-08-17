@@ -359,7 +359,7 @@ class L10nPt extends L10n {
   @override
   String get originalLabel => 'Original';
   @override
-  String get apply => 'Aplicar';
+  String get apply => 'Aplicar a organização';
 
   @override
   String get presetAiName =>

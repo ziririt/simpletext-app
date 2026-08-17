@@ -358,7 +358,7 @@ class L10nZhHans extends L10n {
   @override
   String get originalLabel => '原文';
   @override
-  String get apply => '应用';
+  String get apply => '立即应用整理';
 
   @override
   String get presetAiName =>

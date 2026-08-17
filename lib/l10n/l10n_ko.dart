@@ -358,7 +358,7 @@ class L10nKo extends L10n {
   @override
   String get originalLabel => '원본';
   @override
-  String get apply => '적용';
+  String get apply => '정리 바로적용';
 
   @override
   String get presetAiName =>
