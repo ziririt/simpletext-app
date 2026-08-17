@@ -523,17 +523,29 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     ad.load();
   }
 
-  /// 지금 얼마나 늦게 따라와야 하는가.
+  /// 광고가 제자리에 머무는 거리. 슬롯은 광고보다 이만큼 높다.
   ///
-  /// 슬롯의 위쪽이 화면 아래 끝에 막 닿았을 때 가장 많이 뒤처지고, 슬롯이
-  /// 화면 안에 다 들어오면 0이 된다. 스크롤이 없는 화면이거나 셈에 필요한
-  /// 것이 아직 없으면 0이다 — 움직임은 있으면 좋은 것이지 없으면 안 되는
-  /// 것이 아니다.
+  /// 2026-08-17 소유자 신고 — "슬라이딩되면서 페이지 아래에 페이지가 있는
+  /// 느낌이 안 나고 그냥 중간에 큰 배너 이미지가 나오는 느낌이다."
   ///
-  /// 2026-08-17 — 뒤처지는 폭을 48픽셀 고정에서 **광고 높이의 절반**으로
-  /// 바꿨다. 48은 너무 작아서 소유자 눈에 '그냥 붙어 있는 네모'로 보였다.
-  /// 절반이면 광고가 아래 레이어에 깔려 있다가 위 종이가 걷히면서 드러나는
-  /// 것처럼 보인다.
+  /// 소유자가 보내 준 영상(kr.beincrypto.com)을 프레임으로 뜯어 봤다. 거기서
+  /// 광고는 **한 픽셀도 안 움직인다.** 화면에 붙박여 있고, 글이 그 위를
+  /// 미끄러져 지나간다. 그래서 '아래에 다른 페이지가 깔려 있다'로 읽힌다.
+  ///
+  /// 우리도 같은 것을 만들되 방식이 달라야 한다. 웹처럼 광고를 글 **밑에**
+  /// 깔 수는 없다 — 애드몹은 앱 화면이 광고를 가리는 것을 금지한다(가려진
+  /// 광고는 누를 수 없고, 누를 수 없는 광고는 노출만 세는 셈이라 계정
+  /// 정지 사유다). 그래서 광고를 가리지 않으면서 같은 느낌을 낸다.
+  ///
+  /// 슬롯을 광고보다 높게 잡고, 그 안에서 광고를 **화면 가운데에 붙잡아
+  /// 둔다.** 목록은 계속 흐르는데 광고만 멎어 있으니, 눈에는 광고가 아래
+  /// 층에 붙어 있는 것으로 보인다. 머무는 거리가 이 값이다.
+  double get _travel => _adH * 0.9;
+
+  /// 슬롯 안에서 광고를 얼마나 내려 그릴 것인가.
+  ///
+  /// 0이면 슬롯 맨 위. 목록을 굴리면 이 값이 커지면서 광고가 화면의 같은
+  /// 자리에 남는다. 다 쓰면(_travel) 다시 목록과 같이 흘러간다.
   double _shift() {
     final p = _pos;
     if (p == null || !p.hasPixels || !p.hasViewportDimension) return 0;
@@ -542,19 +554,12 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       if (box == null || !box.hasSize || !box.attached) return 0;
       final vp = RenderAbstractViewport.maybeOf(box);
       if (vp == null) return 0;
-      // 슬롯의 위가 화면 위에 닿는 스크롤 값.
+      // 슬롯의 위가 화면 위에 닿는 스크롤 값 → 지금 슬롯 위쪽의 화면 안 위치.
       final reveal = vp.getOffsetToReveal(box, 0.0).offset;
-      // 슬롯의 위가 화면 아래 끝에 닿는 스크롤 값.
-      final enter = reveal - p.viewportDimension;
-      // 재는 자를 '화면 한 판'에서 '광고 자기 키'로 바꿨다.
-      //
-      // 전에는 화면 높이만큼 굴러야 0이 됐다. 그러면 광고가 화면에 다
-      // 들어온 뒤에도 한참 어긋나 있어서, 멈춰 서서 보는 자리에 **잘린
-      // 광고**가 남는다. 이제 슬롯이 화면 안에 다 들어오는 순간 정확히
-      // 0이 된다 — 움직임은 들어오는 동안에만 일어나고, 멈추면 제자리다.
-      final travel = _adH <= 0 ? 1.0 : _adH;
-      final t = ((p.pixels - enter) / travel).clamp(0.0, 1.0);
-      return (1 - t) * _adH * 0.6;
+      final slotTop = reveal - p.pixels;
+      // 광고를 붙잡아 둘 화면 안 자리. 가운데가 가장 오래 눈에 남는다.
+      final pin = (p.viewportDimension - _adH) / 2;
+      return (pin - slotTop).clamp(0.0, _travel);
     } catch (_) {
       // 붙어 있지 않은 렌더 객체에 물으면 던진다. 광고 하나 때문에 화면이
       // 죽는 일은 없어야 한다.
@@ -658,7 +663,10 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
           const SizedBox(height: 12),
           ClipRect(
             child: SizedBox(
-              height: _adH,
+              // 슬롯은 광고보다 _travel만큼 높다. 그 여윳돈으로 광고를
+              // 화면 한자리에 붙잡아 둔다. 스크롤이 없는 화면(맥·짧은
+              // 목록)에서는 붙잡을 것도 없으니 광고 키 그대로다.
+              height: _pos == null ? _adH : _adH + _travel,
               width: double.infinity,
               child: _pos == null
                   ? Center(child: ad)
@@ -668,7 +676,8 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
                         offset: Offset(0, _shift()),
                         child: child,
                       ),
-                      child: Center(child: ad),
+                      child: Align(
+                          alignment: Alignment.topCenter, child: ad),
                     ),
             ),
           ),

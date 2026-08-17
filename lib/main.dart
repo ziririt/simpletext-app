@@ -2525,6 +2525,14 @@ class _HomeScreenState extends State<HomeScreen> {
         : (preview.split('\n').firstWhere((x) => x.trim().isNotEmpty,
             orElse: () => l.untitled));
 
+    // 아이콘은 앱의 하늘색을 쓴다. 소유자: "내 컬러 정체성이 스카이블루이니
+    // 블루계통 컬러를 써줘."
+    //
+    // 다만 **삭제만 빨강으로 남긴다.** 소유자가 본보기로 보내 준 애플 메모의
+    // 같은 화면에서도 삭제 하나만 빨갛다. 되돌릴 수 있는 일과 없는 일을 같은
+    // 색으로 두면 손이 눈보다 먼저 움직인다. 색이 곧 잠깐 멈추게 하는 장치다.
+    // (원하시면 이 하나도 파랑으로 바꾼다 — 다만 그러면 이 줄만 위험하다는
+    // 신호가 사라진다.)
     Widget row(IconData icon, String label, VoidCallback onTap,
             {bool danger = false}) =>
         InkWell(
@@ -2539,7 +2547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w500,
                         color: danger ? c.danger : null)),
               ),
-              Icon(icon, size: 20, color: danger ? c.danger : c.sub),
+              Icon(icon, size: 20, color: danger ? c.danger : c.accent),
             ]),
           ),
         );
@@ -2552,7 +2560,22 @@ class _HomeScreenState extends State<HomeScreen> {
       transitionDuration: const Duration(milliseconds: 220),
       pageBuilder: (ctx, __, ___) {
         final media = MediaQuery.of(ctx);
-        return SafeArea(
+        // Material로 감싸는 것이 **꼭 필요하다.**
+        //
+        // 2026-08-17 소유자 신고 — "롱 프레스하면 뜨는 것인데 노란색 밑줄이
+        // 쳐지네. 그리고 빨간색 폰트."
+        //
+        // 그건 우리가 고른 색이 아니라 플러터가 켜 주는 **경고등**이다.
+        // Text가 Material 안에 없으면 물려받을 글자 모양이 없고, 그때
+        // 플러터는 '이건 잘못 놓인 글자다'라고 알리려고 빨간 글씨에 노란
+        // 이중 밑줄을 그어 준다. 일부러 흉하게 만들어 눈에 띄게 한 것이다.
+        //
+        // showGeneralDialog는 showDialog와 달리 Material을 **안 씌워 준다.**
+        // 그 차이를 모르고 썼다. 화면을 눈으로 보지 않고 코드만 보고 넘긴
+        // 자국이 또 하나 나왔다.
+        return Material(
+          type: MaterialType.transparency,
+          child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -2625,6 +2648,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+          ),
           ),
         );
       },
