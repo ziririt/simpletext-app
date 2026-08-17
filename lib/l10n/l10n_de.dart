@@ -817,6 +817,8 @@ class L10nDe extends L10n {
   @override
   String get dividerTip => 'Trennlinie';
   @override
+  String get syncScroll => 'Gemeinsam scrollen';
+  @override
   String get adClose => 'Werbung schließen';
   @override
   String get noteDuplicate => 'Duplizieren';

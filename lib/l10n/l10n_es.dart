@@ -816,6 +816,8 @@ class L10nEs extends L10n {
   @override
   String get dividerTip => 'Separador';
   @override
+  String get syncScroll => 'Desplazar a la vez';
+  @override
   String get adClose => 'Cerrar anuncios';
   @override
   String get noteDuplicate => 'Duplicar';

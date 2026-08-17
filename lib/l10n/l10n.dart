@@ -421,6 +421,9 @@ abstract class L10n {
   /// 편집 툴바의 구분선 단추.
   String get dividerTip;
 
+  /// 미리보기 두 칸을 같이 굴릴 것인가.
+  String get syncScroll;
+
   String get adClose;
 
   /// 목록에서 길게 눌렀을 때 나오는 '복제'.
@@ -748,6 +751,7 @@ abstract class L10n {
         'aiKeyHint': aiKeyHint,
         'menuTidyPreview': menuTidyPreview,
         'dividerTip': dividerTip,
+        'syncScroll': syncScroll,
         'adClose': adClose,
         'noteDuplicate': noteDuplicate,
         'noteDuplicated': noteDuplicated,

@@ -816,6 +816,8 @@ class L10nEn extends L10n {
   @override
   String get dividerTip => 'Divider';
   @override
+  String get syncScroll => 'Scroll together';
+  @override
   String get adClose => 'Close ads';
   @override
   String get noteDuplicate => 'Duplicate';

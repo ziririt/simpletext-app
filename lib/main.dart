@@ -5061,57 +5061,216 @@ class _PreviewScreenState extends State<PreviewScreen> {
   final store = Store.instance;
   bool _skipNext = false;
 
+  /// 두 칸을 같이 굴릴 것인가. 켠 채로 시작한다.
+  ///
+  /// 2026-08-17 소유자 지시 — "위는 원본, 아래는 정리된 것으로 해서, 하나를
+  /// 스크롤하면 2개가 같이 스크롤되서 이 부분이 어떻게 바뀌는지 볼 수 있게
+  /// 해줘. 프로팅된 '동시 스크롤' 옵션 체크가 기본."
+  ///
+  /// 전에는 결과 전문을 다 보여 주고 그 아래에 원본 전문을 붙였다. 화면
+  /// 하나에 둘 다 안 들어가니 **비교가 아니라 기억력 시험**이었다. 위를
+  /// 읽고 한참 내려가 아래에서 그 자리를 다시 찾아야 했다.
+  bool _sync = true;
+
+  final ScrollController _origCtl = ScrollController();
+  final ScrollController _tidyCtl = ScrollController();
+
+  /// 서로가 서로를 밀어 무한히 도는 것을 막는 빗장.
+  bool _busy = false;
+
   String get presetName => widget.presetName;
   String get before => widget.before;
   TidyResult get result => widget.result;
 
   @override
+  void initState() {
+    super.initState();
+    _origCtl.addListener(() => _mirror(_origCtl, _tidyCtl));
+    _tidyCtl.addListener(() => _mirror(_tidyCtl, _origCtl));
+  }
+
+  @override
+  void dispose() {
+    _origCtl.dispose();
+    _tidyCtl.dispose();
+    super.dispose();
+  }
+
+  /// 한쪽이 움직이면 다른 쪽을 **같은 비율**로 옮긴다.
+  ///
+  /// 픽셀을 그대로 맞추지 않는 이유가 있다. 정리한 글은 원본보다 짧다 —
+  /// 그게 이 앱이 하는 일이다. 픽셀로 맞추면 짧은 쪽이 먼저 바닥에
+  /// 닿아 버려서, 원본을 절반쯤 내려갔을 때 결과는 이미 끝에 붙어 있다.
+  /// 비율로 맞추면 '원본의 여기쯤'과 '결과의 여기쯤'이 늘 마주 본다.
+  void _mirror(ScrollController from, ScrollController to) {
+    if (!_sync || _busy) return;
+    if (!from.hasClients || !to.hasClients) return;
+    final fMax = from.position.maxScrollExtent;
+    final tMax = to.position.maxScrollExtent;
+    if (tMax <= 0) return;
+    final ratio = fMax <= 0 ? 0.0 : (from.offset / fMax).clamp(0.0, 1.0);
+    final target = ratio * tMax;
+    // 반 픽셀 문턱. 없으면 반올림 오차만으로 둘이 서로를 계속 민다.
+    if ((to.offset - target).abs() < 0.5) return;
+    _busy = true;
+    to.jumpTo(target);
+    _busy = false;
+  }
+
+  Widget _pane(String label, String text, ScrollController ctl,
+      {required bool tidied}) {
+    final c = context.c;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+          child: Row(children: [
+            // 정리된 쪽에만 색을 준다. 둘 다 회색이면 어느 쪽이 결과인지
+            // 이름표를 읽어야 안다.
+            Icon(tidied ? CupertinoIcons.wand_stars : Icons.description_outlined,
+                size: 14, color: tidied ? c.accent : c.sub),
+            const SizedBox(width: 6),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: tidied ? c.accent : c.sub)),
+          ]),
+        ),
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+            decoration: BoxDecoration(
+                color: c.codeBg,
+                border: Border.all(color: tidied ? c.accent : c.codeLine),
+                borderRadius: BorderRadius.circular(10)),
+            clipBehavior: Clip.antiAlias,
+            child: SingleChildScrollView(
+              controller: ctl,
+              padding: const EdgeInsets.all(12),
+              child: SelectableText(text,
+                  style: const TextStyle(fontSize: 14, height: 1.6)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
+    final c = context.c;
     return Scaffold(
       appBar: AppBar(title: Text(l.previewTitle(presetName))),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: context.c.infoBg, borderRadius: BorderRadius.circular(10)),
-            child: Text(result.summary,
-                style: TextStyle(color: context.c.accent, fontWeight: FontWeight.w700, fontSize: 13)),
+          // 무엇이 얼마나 바뀌었는지 한 줄. 화면을 반씩 나눠 쓰는 자리라
+          // 여기는 최대한 얇아야 한다.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                  color: c.infoBg, borderRadius: BorderRadius.circular(10)),
+              child: Text(result.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: c.accent,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5)),
+            ),
           ),
           for (final w in result.warnings)
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: context.c.warnBg, borderRadius: BorderRadius.circular(10)),
-              child: Text(l.warningPrefix(w),
-                  style: TextStyle(color: context.c.warnInk, fontSize: 12.5, fontWeight: FontWeight.w600)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                    color: c.warnBg, borderRadius: BorderRadius.circular(10)),
+                child: Text(l.warningPrefix(w),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: c.warnInk,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+              ),
             ),
-          const SizedBox(height: 14),
-          Text(l.tidyResultLabel,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.c.sub)),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                color: context.c.codeBg,
-                border: Border.all(color: context.c.codeLine),
-                borderRadius: BorderRadius.circular(10)),
-            child: SelectableText(result.text, style: const TextStyle(fontSize: 14, height: 1.6)),
+          Expanded(
+            child: LayoutBuilder(builder: (_, box) {
+              // 2026-08-17 소유자 지시 — "아이패드 가로모드는 위 아래로
+              // 하지 말고, 좌/우로 해줘. 좌는 원본, 우는 정리 결과로."
+              //
+              // 잣대를 '아이패드인가'가 아니라 '가로가 넓은가'로 둔다.
+              // 아이패드를 세워 들면 위아래가 맞고, 아이폰을 눕히면 좌우가
+              // 맞다. 기기 이름으로 가르면 그 둘을 다 놓친다. 720은 두 칸에
+              // 각각 글줄 하나가 온전히 들어가는 폭이다.
+              final wide = box.maxWidth >= 720 && box.maxWidth > box.maxHeight;
+              // 원본이 먼저다 — 넓으면 왼쪽, 좁으면 위. 어느 쪽이든 읽는
+              // 방향과 시간의 방향이 같다.
+              final first =
+                  _pane(l.originalLabel, before, _origCtl, tidied: false);
+              final second =
+                  _pane(l.tidyResultLabel, result.text, _tidyCtl, tidied: true);
+              return Stack(children: [
+              if (wide)
+                Row(children: [
+                  Expanded(child: first),
+                  Expanded(child: second),
+                ])
+              else
+                Column(children: [
+                  Expanded(child: first),
+                  Expanded(child: second),
+                ]),
+              // 떠 있는 '동시 스크롤'. 두 칸 위에 얹혀 있어야 무엇에 대한
+              // 스위치인지 자리만으로 안다.
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Material(
+                    color: c.panel,
+                    elevation: 3,
+                    shadowColor: Colors.black26,
+                    borderRadius: BorderRadius.circular(22),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(22),
+                      onTap: () {
+                        setState(() => _sync = !_sync);
+                        // 다시 켠 순간 두 칸이 어긋나 있으면 켠 보람이 없다.
+                        if (_sync) _mirror(_origCtl, _tidyCtl);
+                      },
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(6, 2, 16, 2),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Checkbox.adaptive(
+                            value: _sync,
+                            onChanged: (v) {
+                              setState(() => _sync = v ?? false);
+                              if (_sync) _mirror(_origCtl, _tidyCtl);
+                            },
+                          ),
+                          Text(l.syncScroll,
+                              style: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w600)),
+                        ]),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              ]);
+            }),
           ),
-          const SizedBox(height: 14),
-          Text(l.originalLabel,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.c.sub)),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                color: context.c.codeBg,
-                border: Border.all(color: context.c.codeLine),
-                borderRadius: BorderRadius.circular(10)),
-            child: SelectableText(before, style: const TextStyle(fontSize: 14, height: 1.6)),
-          ),
-          const SizedBox(height: 80),
+          const SizedBox(height: 8),
         ],
       ),
       bottomNavigationBar: SafeArea(

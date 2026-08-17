@@ -814,6 +814,8 @@ class L10nZhHans extends L10n {
   @override
   String get dividerTip => '分隔线';
   @override
+  String get syncScroll => '同步滚动';
+  @override
   String get adClose => '关闭广告';
   @override
   String get noteDuplicate => '复制';

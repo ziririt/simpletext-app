@@ -817,6 +817,8 @@ class L10nFr extends L10n {
   @override
   String get dividerTip => 'Séparateur';
   @override
+  String get syncScroll => 'Défilement synchronisé';
+  @override
   String get adClose => 'Fermer les pubs';
   @override
   String get noteDuplicate => 'Dupliquer';

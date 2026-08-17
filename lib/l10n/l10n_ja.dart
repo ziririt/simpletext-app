@@ -814,6 +814,8 @@ class L10nJa extends L10n {
   @override
   String get dividerTip => '区切り線';
   @override
+  String get syncScroll => '同時スクロール';
+  @override
   String get adClose => '広告を閉じる';
   @override
   String get noteDuplicate => '複製';
