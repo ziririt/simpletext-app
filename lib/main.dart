@@ -3897,6 +3897,16 @@ class _EditorScreenState extends State<EditorScreen>
       '3~5개를 쉼표로만 구분해 한 줄로 출력한다. 번호·설명·따옴표·해시(#)·코드펜스는 붙이지 않는다. '
       '입력 언어를 그대로 유지한다.';
 
+/// 태그를 뽑을 때 훑는 본문 길이.
+///
+/// 2026-08-17 소유자 지적 — "자동 태그. 제목만 분석하냐?"
+///
+/// 제목만 보지는 않았다. 다만 1200자만 봤고, 긴 글에서 1200자는 서두다.
+/// 서두에는 인사말과 도입이 들어 있어서, 정작 그 글이 무엇에 관한 것인지는
+/// 그 아래에 있다. 3000자로 넓혔다 — 이 함수는 기기 안에서 도는 정규식
+/// 몇 개라 세 배로 늘어도 사람이 느낄 만한 값이 아니다.
+static const int kTagScanChars = 3000;
+
   bool _tagAiBusy = false;
 
   /// 제목과 본문 앞부분에서 태그를 뽑아 넣는다.
@@ -3907,7 +3917,9 @@ class _EditorScreenState extends State<EditorScreen>
   Future<void> _autoTags() async {
     final l = L10n.of(context);
     setState(() => _tagAiBusy = true);
-    final head = note.body.length > 1200 ? note.body.substring(0, 1200) : note.body;
+    final head = note.body.length > kTagScanChars
+        ? note.body.substring(0, kTagScanChars)
+        : note.body;
     var got = <String>[];
     var byAi = false;
     try {
@@ -3973,7 +3985,9 @@ class _EditorScreenState extends State<EditorScreen>
     _tagTimer?.cancel();
     _tagTimer = Timer(const Duration(milliseconds: 1500), () async {
       if (!mounted || !note.tagsAuto) return;
-      final head = note.body.length > 1200 ? note.body.substring(0, 1200) : note.body;
+      final head = note.body.length > kTagScanChars
+        ? note.body.substring(0, kTagScanChars)
+        : note.body;
       // 기기 안에서만 뽑는다. 배경에서 AI를 부르면 사용자 요금이 샌다.
       final got = suggestTags(note.title, head, max: 3);
       if (got.isEmpty) return;
