@@ -129,4 +129,33 @@ void main() {
   test('한 줄짜리 글에 그냥 커서만 있어도 된다', () {
     expect(listify('안녕', kind: kListBullet), '· 안녕');
   });
+
+  group('구분점 목록은 언제나 점이다 (2026-08-17 소유자 신고)', () {
+    // 신고: "'·'는 -와 같은 결과가 나온다. 점 불릿이 안 나오고 말이다."
+    // 원인은 정리 설정의 글머리 기호(기본값 '-')를 그대로 빌려 쓴 것.
+    test("설정이 '-'라도 대시가 아니라 점이 나온다", () {
+      expect(dotBullet('-'), '·');
+      expect(listify('가', kind: kListBullet, bullet: dotBullet('-')), '· 가');
+    });
+
+    test("설정이 'keep'이면 줄머리에 'keep'이 적히던 자리", () {
+      expect(dotBullet('keep'), '·');
+      expect(listify('가', kind: kListBullet, bullet: dotBullet('keep')), '· 가');
+    });
+
+    test('점의 모양은 설정을 따른다', () {
+      expect(dotBullet('•'), '•');
+      expect(dotBullet('◦'), '◦');
+      expect(dotBullet('·'), '·');
+    });
+
+    test('구분점 목록과 대시 목록은 서로 다른 것을 만든다', () {
+      const t = '가\n나';
+      final dot = listify(t, kind: kListBullet, bullet: dotBullet('-'));
+      final dash = listify(t, kind: kListDash);
+      expect(dot, isNot(dash));
+      expect(dot, '· 가\n· 나');
+      expect(dash, '- 가\n- 나');
+    });
+  });
 }

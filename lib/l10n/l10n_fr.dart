@@ -51,12 +51,23 @@ class L10nFr extends L10n {
   String get seedTag => 'Mode d\'emploi';
   @override
   String get seedBody => [
-        'Comment utiliser Skyblue Note',
+        'Bien sûr ! 🙂 Voici tout ce que vous avez demandé, présenté ci-dessous.',
         '',
-        '1. Copiez une réponse de ChatGPT ou Claude, puis touchez « Coller et nettoyer ».',
-        '2. Les astérisques, les dièses et les formules de politesse disparaissent d\'un coup.',
-        '3. Pour les notes avec tableaux, le bouton « Tableau » les copie pour les tableurs (TSV).',
-        '4. Chaque nettoyage peut être annulé d\'un seul geste.',
+        '---',
+        '',
+        '## Comment utiliser Skyblue Note',
+        '',
+        '**1. Coller et nettoyer** — copiez une réponse de ChatGPT ou Claude, puis touchez « Coller et nettoyer ».',
+        '* Les astérisques (**), les dièses (##), les emojis 🎉 et les formules de politesse partent **d’un coup**.',
+        '* Les tableaux cassés sont réparés en même temps.',
+        '',
+        '### 2. Travailler avec les tableaux',
+        '',
+        '> Pour les notes avec tableaux, le bouton « Tableau » les copie pour les tableurs (TSV).',
+        '',
+        '**3. Annuler** — chaque nettoyage peut être [annulé](https://example.com/undo) d’un seul geste. ✅',
+        '',
+        '---',
         '',
         'Ci-dessous, un tableau volontairement cassé. Touchez « Nettoyer » pour voir la réparation.',
         '',
@@ -401,7 +412,7 @@ class L10nFr extends L10n {
   String get syncStateOff => 'Activez iCloud Drive dans les réglages de l\'appareil';
 
   @override
-  String get syncStateSyncing => 'Synchronisation…';
+  String get syncStateSyncing => 'Connexion à iCloud… cela prend de quelques secondes à une minute';
 
   @override
   String get aiKeyNotSynced => 'Vos notes sont synchronisées sur tous vos appareils via iCloud. Pas votre clé API — saisissez-la sur chaque appareil.';
@@ -532,7 +543,7 @@ class L10nFr extends L10n {
 
   @override
   String get importAppend =>
-      'Ajouter un fichier';
+      'Charger un fichier et l\'ajouter au texte';
 
   @override
   String get importNone =>
@@ -598,7 +609,7 @@ class L10nFr extends L10n {
   String get selClear => 'Effacer la sélection';
 
   @override
-  String get paperTitle => 'Papier de l\'éditeur';
+  String get paperTitle => 'Fond de l\'éditeur';
 
   @override
   String get paperSub => 'Fond et lignes en un ensemble. L\'interligne suit la taille du texte.';
@@ -802,7 +813,15 @@ class L10nFr extends L10n {
   @override
   String get aiKeyHint => 'Clé API (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get menuTidyPreview => 'Aperçu du nettoyage';
+  @override
   String get adClose => 'Fermer les pubs';
+  @override
+  String get noteDuplicate => 'Dupliquer';
+  @override
+  String get noteDuplicated => 'Dupliquée';
+  @override
+  String get adSponsored => 'Sponsorisé';
   @override
   String get sponsorTitle => 'Une publicité finance la prochaine mise à jour';
   @override

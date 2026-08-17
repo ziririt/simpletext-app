@@ -51,12 +51,23 @@ class L10nEn extends L10n {
   String get seedTag => 'How to use';
   @override
   String get seedBody => [
-        'How to use Skyblue Note',
+        'Sure! 🙂 Here is everything you asked for, laid out below.',
         '',
-        '1. Copy an answer from ChatGPT or Claude, then tap "Paste & Tidy".',
-        '2. The asterisks, the hash marks and the throat-clearing intros come out in one go.',
-        '3. For notes with tables, the "Table" button copies them for spreadsheets (TSV).',
-        '4. Every tidy-up can be reverted with a single Undo.',
+        '---',
+        '',
+        '## How to use Skyblue Note',
+        '',
+        '**1. Paste & Tidy** — copy an answer from ChatGPT or Claude, then tap "Paste & Tidy".',
+        '* Asterisks (**), hash marks (##), emoji 🎉 and throat-clearing intros come off **in one go**.',
+        '* Broken tables get repaired at the same time.',
+        '',
+        '### 2. Working with tables',
+        '',
+        '> For notes with tables, the "Table" button copies them for spreadsheets (TSV).',
+        '',
+        '**3. Undo** — every tidy-up can be [reverted](https://example.com/undo) with a single Undo. ✅',
+        '',
+        '---',
         '',
         'Below is a deliberately broken table. Tap "Tidy" to see it repaired.',
         '',
@@ -400,7 +411,7 @@ class L10nEn extends L10n {
   String get syncStateOff => 'Turn on iCloud Drive in your device settings';
 
   @override
-  String get syncStateSyncing => 'Syncing…';
+  String get syncStateSyncing => 'Connecting to iCloud… this takes a few seconds to a minute';
 
   @override
   String get aiKeyNotSynced => 'Your notes sync to all your devices through iCloud. Your API key does not — enter it separately on each device.';
@@ -531,7 +542,7 @@ class L10nEn extends L10n {
 
   @override
   String get importAppend =>
-      'Append a file';
+      'Load a file and append it';
 
   @override
   String get importNone =>
@@ -597,7 +608,7 @@ class L10nEn extends L10n {
   String get selClear => 'Clear selection';
 
   @override
-  String get paperTitle => 'Editor paper';
+  String get paperTitle => 'Editor background';
 
   @override
   String get paperSub => 'Background and ruling as a set. Line spacing follows your text size automatically.';
@@ -801,7 +812,15 @@ class L10nEn extends L10n {
   @override
   String get aiKeyHint => 'API key (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get menuTidyPreview => 'Preview the tidy';
+  @override
   String get adClose => 'Close ads';
+  @override
+  String get noteDuplicate => 'Duplicate';
+  @override
+  String get noteDuplicated => 'Duplicated';
+  @override
+  String get adSponsored => 'Sponsored';
   @override
   String get sponsorTitle => 'One ad funds the next update';
   @override

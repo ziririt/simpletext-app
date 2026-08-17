@@ -51,12 +51,23 @@ class L10nZhHant extends L10n {
   String get seedTag => '使用方式';
   @override
   String get seedBody => [
-        'Skyblue Note 使用方式',
+        '當然可以！🙂 您要的內容整理如下。',
         '',
-        '1. 複製 ChatGPT 或 Claude 的回答，然後點「貼上並整理」。',
-        '2. 星號、井號和多餘的客套話會被一次清掉。',
-        '3. 含表格的備忘錄可用「表格」按鈕複製為試算表格式(TSV)。',
-        '4. 每次整理都能用一次復原來還原。',
+        '---',
+        '',
+        '## Skyblue Note 使用方式',
+        '',
+        '**1. 貼上並整理** — 複製 ChatGPT 或 Claude 的回答，然後點「貼上並整理」。',
+        '* 星號(**)、井號(##)、表情 🎉 和多餘的客套話會**一次**清掉。',
+        '* 弄壞的表格也會同時修復。',
+        '',
+        '### 2. 處理表格',
+        '',
+        '> 含表格的備忘錄可用「表格」按鈕複製為試算表格式(TSV)。',
+        '',
+        '**3. 復原** — 每次整理都能用一次[復原](https://example.com/undo)還原。✅',
+        '',
+        '---',
         '',
         '下面是一張故意弄壞的表格。點「整理」看看修復效果。',
         '',
@@ -399,7 +410,7 @@ class L10nZhHant extends L10n {
   String get syncStateOff => '請在裝置設定中開啟 iCloud 雲碟';
 
   @override
-  String get syncStateSyncing => '同步中…';
+  String get syncStateSyncing => '正在連接 iCloud… 需要幾秒到幾十秒';
 
   @override
   String get aiKeyNotSynced => '備忘會透過 iCloud 同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
@@ -530,7 +541,7 @@ class L10nZhHant extends L10n {
 
   @override
   String get importAppend =>
-      '附加檔案內容';
+      '載入檔案並附加到內文';
 
   @override
   String get importNone =>
@@ -596,7 +607,7 @@ class L10nZhHant extends L10n {
   String get selClear => '取消選取';
 
   @override
-  String get paperTitle => '編輯頁紙張';
+  String get paperTitle => '編輯頁背景';
 
   @override
   String get paperSub => '背景與格線成套選擇。行距自動跟隨字級。';
@@ -799,7 +810,15 @@ class L10nZhHant extends L10n {
   @override
   String get aiKeyHint => 'API 金鑰（Gemini · Claude · ChatGPT · Grok）';
   @override
+  String get menuTidyPreview => '整理預覽';
+  @override
   String get adClose => '關閉廣告';
+  @override
+  String get noteDuplicate => '複製';
+  @override
+  String get noteDuplicated => '已複製';
+  @override
+  String get adSponsored => '贊助';
   @override
   String get sponsorTitle => '一則廣告，成就下一次更新';
   @override

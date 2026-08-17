@@ -51,12 +51,23 @@ class L10nJa extends L10n {
   String get seedTag => '使い方';
   @override
   String get seedBody => [
-        'Skyblue Note の使い方',
+        'もちろんです！🙂 ご依頼の内容を以下にまとめました。',
         '',
-        '1. ChatGPTやClaudeの回答をコピーして、「貼り付けて整理」を押します。',
-        '2. アスタリスクや見出し記号、余計な前置きが一度に取れます。',
-        '3. 表があるメモは「表」ボタンでスプレッドシート用(TSV)にコピーできます。',
-        '4. どの整理もひとつの「元に戻す」で復元できます。',
+        '---',
+        '',
+        '## Skyblue Note の使い方',
+        '',
+        '**1. 貼り付けて整理** — ChatGPTやClaudeの回答をコピーして「貼り付けて整理」を押します。',
+        '* アスタリスク(**)、見出し記号(##)、絵文字 🎉、余計な前置きが**一度に**取れます。',
+        '* 崩れた表も同時に復元されます。',
+        '',
+        '### 2. 表の扱い',
+        '',
+        '> 表があるメモは「表」ボタンでスプレッドシート用(TSV)にコピーできます。',
+        '',
+        '**3. 元に戻す** — どの整理も[元に戻す](https://example.com/undo)ひとつで復元できます。✅',
+        '',
+        '---',
         '',
         '下はわざと崩した表です。「整理」を押して復元を確かめてみてください。',
         '',
@@ -399,7 +410,7 @@ class L10nJa extends L10n {
   String get syncStateOff => '端末の設定で iCloud Drive をオンにしてください';
 
   @override
-  String get syncStateSyncing => '同期中…';
+  String get syncStateSyncing => 'iCloud に接続中… 数秒から数十秒かかります';
 
   @override
   String get aiKeyNotSynced => 'メモは iCloud で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
@@ -530,7 +541,7 @@ class L10nJa extends L10n {
 
   @override
   String get importAppend =>
-      'ファイルを追記';
+      'ファイルを読み込んで本文に追記';
 
   @override
   String get importNone =>
@@ -596,7 +607,7 @@ class L10nJa extends L10n {
   String get selClear => '選択解除';
 
   @override
-  String get paperTitle => '編集画面の紙';
+  String get paperTitle => '編集画面の背景';
 
   @override
   String get paperSub => '背景と罫線をセットで選びます。行間は文字サイズに自動で合います。';
@@ -799,7 +810,15 @@ class L10nJa extends L10n {
   @override
   String get aiKeyHint => 'APIキー (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get menuTidyPreview => '整理をプレビュー';
+  @override
   String get adClose => '広告を閉じる';
+  @override
+  String get noteDuplicate => '複製';
+  @override
+  String get noteDuplicated => '複製しました';
+  @override
+  String get adSponsored => 'スポンサー';
   @override
   String get sponsorTitle => '広告1本が次のアップデートを作ります';
   @override

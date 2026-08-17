@@ -28,6 +28,9 @@ import 'dart:io' show Platform;
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+// material.dart는 rendering.dart를 다시 내보내지 않는다. InlineAdBlock이
+// 뷰포트에 자기 자리를 물으려면 이것이 필요하다(2026-08-17 analyze가 잡음).
+import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'core/ad_gate.dart';
@@ -355,6 +358,189 @@ class _SponsorSheetState extends State<SponsorSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 본문 끝·목록 끝에 놓이는 큰 사각 광고(300×250, 미디엄 렉탱글).
+///
+/// 2026-08-17 소유자 지시 — "리스트 맨 하단과 편집화면의 본문 맨 아래에
+/// 전면 광고를 넣어줘. 스크롤하면 아래 레이어에 나오는 광고처럼 해줘."
+///
+/// 꼭대기 배너와 성격이 둘 다르다.
+///   1) 자리 — 배너는 늘 보이는 곳에 있고 이것은 끝까지 내려가야 나온다.
+///      글을 쓰는 동안에는 눈에 들어오지 않는다. 그래서 타자를 방해하지
+///      않는다는 소유자 지시와 어긋나지 않는다.
+///   2) 움직임 — 화면 밑에서 올라오는 동안 본문보다 조금 늦게 따라온다.
+///      아래 레이어에 깔려 있던 것이 드러나는 것처럼 보인다. 지금은
+///      48픽셀이다. 더 주면 '광고가 따로 논다'로 보이고, 안 주면 그냥
+///      붙어 있는 네모다.
+///
+/// 광고 단위는 배너와 같은 것을 쓴다. 애드몹의 배너 단위는 크기를 요청할
+/// 때 정하므로 사각 광고를 따로 발급받을 필요가 없다.
+///
+/// '후원' 이름표를 위에 붙인다. 광고를 광고라고 밝히지 않는 것은 속임수이고,
+/// 애플·구글 둘 다 그것으로 반려한다.
+class InlineAdBlock extends StatefulWidget {
+  const InlineAdBlock({super.key});
+
+  @override
+  State<InlineAdBlock> createState() => _InlineAdBlockState();
+}
+
+class _InlineAdBlockState extends State<InlineAdBlock> {
+  static const double _w = 300;
+  static const double _h = 250;
+
+  /// 아래 레이어에서 드러나는 느낌을 내는 폭. 화면 밑에서 올라오는 동안
+  /// 광고가 본문보다 이만큼 늦게 따라온다.
+  static const double _lag = 48;
+
+  BannerAd? _ad;
+  bool _loaded = false;
+  bool _creating = false;
+  ScrollPosition? _pos;
+
+  @override
+  void initState() {
+    super.initState();
+    Store.instance.addListener(_refresh);
+    AdsService.instance.ready.addListener(_refresh);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final p = Scrollable.maybeOf(context)?.position;
+    if (p != _pos) _pos = p;
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  void _create() {
+    if (_creating || _ad != null) return;
+    _creating = true;
+    final ad = BannerAd(
+      adUnitId: bannerUnitId,
+      size: AdSize.mediumRectangle,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          if (mounted) setState(() => _loaded = true);
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+          if (mounted) {
+            setState(() {
+              _ad = null;
+              _loaded = false;
+              _creating = false; // 다음 rebuild 때 재시도
+            });
+          }
+        },
+      ),
+    );
+    _ad = ad;
+    ad.load();
+  }
+
+  /// 지금 얼마나 늦게 따라와야 하는가.
+  ///
+  /// 슬롯의 위쪽이 화면 아래 끝에 막 닿았을 때 가장 많이 뒤처지고(=_lag),
+  /// 슬롯이 화면 안에 다 들어오면 0이 된다. 스크롤이 없는 화면이거나 셈에
+  /// 필요한 것이 아직 없으면 0이다 — 움직임은 있으면 좋은 것이지 없으면
+  /// 안 되는 것이 아니다.
+  double _shift() {
+    final p = _pos;
+    if (p == null || !p.hasPixels || !p.hasViewportDimension) return 0;
+    try {
+      final box = context.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize || !box.attached) return 0;
+      final vp = RenderAbstractViewport.maybeOf(box);
+      if (vp == null) return 0;
+      // 슬롯의 위가 화면 위에 닿는 스크롤 값.
+      final reveal = vp.getOffsetToReveal(box, 0.0).offset;
+      // 슬롯의 위가 화면 아래 끝에 닿는 스크롤 값.
+      final enter = reveal - p.viewportDimension;
+      final t = ((p.pixels - enter) / p.viewportDimension).clamp(0.0, 1.0);
+      return (1 - t) * _lag;
+    } catch (_) {
+      // 붙어 있지 않은 렌더 객체에 물으면 던진다. 광고 하나 때문에 화면이
+      // 죽는 일은 없어야 한다.
+      return 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    Store.instance.removeListener(_refresh);
+    AdsService.instance.ready.removeListener(_refresh);
+    _ad?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!adsSupported) return const SizedBox.shrink();
+    final s = Store.instance.settings;
+    if (!bannerVisible(now: DateTime.now(), adFreeDate: s.adFreeDate)) {
+      return const SizedBox.shrink();
+    }
+    if (!AdsService.instance.ready.value) return const SizedBox.shrink();
+    _create();
+    if (_ad == null || !_loaded) return const SizedBox.shrink();
+
+    final c = context.c;
+    final l = L10n.of(context);
+    final ad = SizedBox(
+      width: _w,
+      height: _h,
+      child: ClipRect(child: AdWidget(ad: _ad!)),
+    );
+    return Container(
+      width: double.infinity,
+      color: c.bg,
+      padding: const EdgeInsets.only(top: 18, bottom: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 이름표. 광고 위에 가는 실선을 좌우로 뻗어 '여기서부터는 우리
+          // 글이 아니다'를 눈으로 먼저 알린다.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Text(l.adSponsored,
+                    style: TextStyle(
+                        fontSize: 11,
+                        letterSpacing: 0.6,
+                        color: c.sub)),
+                const SizedBox(width: 10),
+                Expanded(child: Divider(height: 1, color: c.line)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRect(
+            child: SizedBox(
+              height: _h,
+              width: double.infinity,
+              child: _pos == null
+                  ? Center(child: ad)
+                  : AnimatedBuilder(
+                      animation: _pos!,
+                      builder: (_, child) => Transform.translate(
+                        offset: Offset(0, _shift()),
+                        child: child,
+                      ),
+                      child: Center(child: ad),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

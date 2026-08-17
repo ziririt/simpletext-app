@@ -103,9 +103,14 @@ const List<Paper> kPapers = [
     ruling: kRulingGrid,
   ),
 
-  // 2026-08-17 소유자 요청으로 다섯 벌 추가. 색은 눈으로 고르지 않았다 —
-  // 라이트·다크 양쪽에서 글자 명암비 9.5:1 이상(기준 4.5:1), 줄은
-  // 1.17~1.36. 파이썬으로 먼저 재고 넣었다.
+  // 2026-08-17 소유자 요청으로 네 벌 추가. 색은 눈으로 고르지 않았다 —
+  // 이 넷은 '줄 없는 색 종이'다. 줄이 필요한 사람은 위의 몰스킨·원고지·모눈을
+  // 고른다. 처음엔 크라프트와 하늘에도 줄을 넣었는데, 소유자가 바로
+  // 짚었다 — 색을 고르러 온 자리에 줄이 섞여 있으면 무엇을 고르는
+  // 자리인지 흐려진다. ('나이트'는 다크 모드와 같은 것이라 뺐다.)
+  //
+  // 색은 라이트·다크 양쪽에서 글자 명암비 9.5:1 이상이다(기준 4.5:1).
+  // 파이썬으로 먼저 재고 넣었다.
 
   // 종이. 화면 같지 않은 가장 무난한 바탕. 줄이 없어 어떤 글에도 맞는다.
   Paper(
@@ -115,13 +120,12 @@ const List<Paper> kPapers = [
     ruling: kRulingNone,
   ),
 
-  // 크라프트. 세피아보다 진하고 노란기가 덜하다. 세피아가 '읽는 종이'라면
-  // 이쪽은 '쓰는 종이'라 줄을 넣었다.
+  // 크라프트. 세피아보다 진하고 노란기가 덜하다.
   Paper(
     id: 'kraft',
     bg: 0xFFEFE3CE, ink: 0xFF3A2F1E, rule: 0xFFDCCBAE,
     bgDark: 0xFF1E1B16, inkDark: 0xFFE4D9C4, ruleDark: 0xFF332E25,
-    ruling: kRulingLine,
+    ruling: kRulingNone,
   ),
 
   // 월넛. **라이트 모드에서도 어두운 바탕**이다. 낮에도 어두운 화면으로
@@ -134,21 +138,12 @@ const List<Paper> kPapers = [
     ruling: kRulingNone,
   ),
 
-  // 나이트. 거의 검정. 밤에 눈이 제일 편한 쪽이고, OLED 화면에서는
-  // 전력도 덜 쓴다.
-  Paper(
-    id: 'night',
-    bg: 0xFF101114, ink: 0xFFE9EAEC, rule: 0xFF24262B,
-    bgDark: 0xFF0B0C0E, inkDark: 0xFFE9EAEC, ruleDark: 0xFF1E2024,
-    ruling: kRulingNone,
-  ),
-
   // 하늘. 앱의 주조색과 같은 계열이라 화면 전체가 한 벌로 보인다.
   Paper(
     id: 'sky',
     bg: 0xFFEAF2F8, ink: 0xFF1F2A33, rule: 0xFFD3E2EE,
     bgDark: 0xFF131A20, inkDark: 0xFFDDE8F0, ruleDark: 0xFF223039,
-    ruling: kRulingLine,
+    ruling: kRulingNone,
   ),
 ];
 

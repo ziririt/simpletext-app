@@ -51,12 +51,23 @@ class L10nKo extends L10n {
   String get seedTag => '사용법';
   @override
   String get seedBody => [
-        'Skyblue Note 사용법',
+        '안녕하세요! 🙂 요청하신 내용을 아래와 같이 정리해 드리겠습니다.',
         '',
-        '1. ChatGPT나 클로드 답변을 복사한 뒤, "붙여넣고 정리"를 누르세요.',
-        '2. 별표와 우물 정 기호, 군더더기 인사말이 한 번에 걷힙니다.',
-        '3. 표가 있는 메모는 "표" 버튼으로 스프레드시트용(TSV) 복사가 가능합니다.',
-        '4. 모든 정리는 되돌리기 한 번으로 복구됩니다.',
+        '---',
+        '',
+        '## Skyblue Note 사용법',
+        '',
+        '**1. 붙여넣고 정리** — ChatGPT나 클로드 답변을 복사한 뒤 "붙여넣고 정리"를 누르세요.',
+        '* 별표(**), 우물 정(##), 이모지 🎉, 군더더기 인사말이 **한 번에** 걷힙니다.',
+        '* 깨진 표도 같이 복구됩니다.',
+        '',
+        '### 2. 표 다루기',
+        '',
+        '> 표가 있는 메모는 "표" 버튼으로 스프레드시트용(TSV) 복사가 됩니다.',
+        '',
+        '**3. 되돌리기** — 모든 정리는 [되돌리기](https://example.com/undo) 한 번으로 복구됩니다. ✅',
+        '',
+        '---',
         '',
         '아래는 일부러 깨뜨린 표입니다. "정리"를 눌러 복구를 확인해 보세요.',
         '',
@@ -399,7 +410,7 @@ class L10nKo extends L10n {
   String get syncStateOff => '기기 설정에서 iCloud Drive를 켜 주세요';
 
   @override
-  String get syncStateSyncing => '맞추는 중…';
+  String get syncStateSyncing => 'iCloud 연동 중… 몇 초에서 몇십 초 걸립니다';
 
   @override
   String get aiKeyNotSynced => '메모는 iCloud로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
@@ -530,7 +541,7 @@ class L10nKo extends L10n {
 
   @override
   String get importAppend =>
-      '파일 이어 붙이기';
+      '파일 불러와 본문 이어 붙이기';
 
   @override
   String get importNone =>
@@ -596,7 +607,7 @@ class L10nKo extends L10n {
   String get selClear => '선택 해제';
 
   @override
-  String get paperTitle => '편집 화면 종이';
+  String get paperTitle => '편집 화면 배경';
 
   @override
   String get paperSub => '배경과 줄을 한 벌로 고릅니다. 줄 간격은 글자 크기에 맞춰 자동으로 맞습니다.';
@@ -799,7 +810,15 @@ class L10nKo extends L10n {
   @override
   String get aiKeyHint => 'API 키 (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get menuTidyPreview => '정리 미리보기';
+  @override
   String get adClose => '광고 닫기';
+  @override
+  String get noteDuplicate => '복제';
+  @override
+  String get noteDuplicated => '복제했습니다';
+  @override
+  String get adSponsored => '후원';
   @override
   String get sponsorTitle => '광고 한 편이 다음 업데이트를 만듭니다';
   @override

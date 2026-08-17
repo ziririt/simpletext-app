@@ -51,12 +51,23 @@ class L10nPt extends L10n {
   String get seedTag => 'Como usar';
   @override
   String get seedBody => [
-        'Como usar o Skyblue Note',
+        'Claro! 🙂 Aqui está tudo o que você pediu, organizado abaixo.',
         '',
-        '1. Copie uma resposta do ChatGPT ou do Claude e toque em "Colar e organizar".',
-        '2. Os asteriscos, as cerquilhas e as introduções cerimoniosas somem de uma vez.',
-        '3. Em notas com tabelas, o botão "Tabela" copia para planilhas (TSV).',
-        '4. Toda organização pode ser revertida com um único Desfazer.',
+        '---',
+        '',
+        '## Como usar o Skyblue Note',
+        '',
+        '**1. Colar e organizar** — copie uma resposta do ChatGPT ou do Claude e toque em "Colar e organizar".',
+        '* Os asteriscos (**), as cerquilhas (##), os emojis 🎉 e as introduções somem **de uma vez**.',
+        '* As tabelas quebradas são reparadas ao mesmo tempo.',
+        '',
+        '### 2. Trabalhando com tabelas',
+        '',
+        '> Em notas com tabelas, o botão "Tabela" copia para planilhas (TSV).',
+        '',
+        '**3. Desfazer** — toda organização pode ser [revertida](https://example.com/undo) com um único Desfazer. ✅',
+        '',
+        '---',
         '',
         'Abaixo há uma tabela quebrada de propósito. Toque em "Organizar" para ver o reparo.',
         '',
@@ -400,7 +411,7 @@ class L10nPt extends L10n {
   String get syncStateOff => 'Ative o iCloud Drive nos ajustes do dispositivo';
 
   @override
-  String get syncStateSyncing => 'Sincronizando…';
+  String get syncStateSyncing => 'Conectando ao iCloud… leva de alguns segundos a um minuto';
 
   @override
   String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus dispositivos pelo iCloud. Sua chave de API não: informe-a em cada dispositivo.';
@@ -531,7 +542,7 @@ class L10nPt extends L10n {
 
   @override
   String get importAppend =>
-      'Anexar um arquivo';
+      'Carregar um arquivo e anexar ao texto';
 
   @override
   String get importNone =>
@@ -597,7 +608,7 @@ class L10nPt extends L10n {
   String get selClear => 'Limpar seleção';
 
   @override
-  String get paperTitle => 'Papel do editor';
+  String get paperTitle => 'Fundo do editor';
 
   @override
   String get paperSub => 'Fundo e pauta em conjunto. O entrelinhas acompanha o tamanho da letra.';
@@ -801,7 +812,15 @@ class L10nPt extends L10n {
   @override
   String get aiKeyHint => 'Chave de API (Gemini · Claude · ChatGPT · Grok)';
   @override
+  String get menuTidyPreview => 'Prévia da organização';
+  @override
   String get adClose => 'Fechar anúncios';
+  @override
+  String get noteDuplicate => 'Duplicar';
+  @override
+  String get noteDuplicated => 'Duplicada';
+  @override
+  String get adSponsored => 'Patrocinado';
   @override
   String get sponsorTitle => 'Um anúncio financia a próxima atualização';
   @override

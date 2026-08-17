@@ -415,7 +415,18 @@ abstract class L10n {
   String get aiSectionTitle;
   String get aiSectionDesc;
   String get aiKeyHint;
+  /// 편집 메뉴 맨 위 — 정리 결과를 먼저 보고 적용할지 고른다.
+  String get menuTidyPreview;
+
   String get adClose;
+
+  /// 목록에서 길게 눌렀을 때 나오는 '복제'.
+  String get noteDuplicate;
+  String get noteDuplicated;
+
+  /// 본문 사이에 놓이는 큰 광고 위에 붙는 이름표. 광고를 광고라고
+  /// 밝히지 않으면 그건 속임수다 — 그리고 애플·구글 둘 다 반려한다.
+  String get adSponsored;
   String get sponsorTitle;
   String get sponsorBody;
   String get sponsorWatch;
@@ -732,7 +743,11 @@ abstract class L10n {
         'aiSectionTitle': aiSectionTitle,
         'aiSectionDesc': aiSectionDesc,
         'aiKeyHint': aiKeyHint,
+        'menuTidyPreview': menuTidyPreview,
         'adClose': adClose,
+        'noteDuplicate': noteDuplicate,
+        'noteDuplicated': noteDuplicated,
+        'adSponsored': adSponsored,
         'sponsorTitle': sponsorTitle,
         'sponsorBody': sponsorBody,
         'sponsorWatch': sponsorWatch,
