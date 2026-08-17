@@ -837,7 +837,8 @@ class L10nEn extends L10n {
   @override
   String get sponsorTitle => 'One ad funds the next update';
   @override
-  String get sponsorBody => 'Your support keeps the updates coming. Watch one full-screen ad a day to use the app banner-free for the day — or go Premium and the ads are gone for good.';
+  String get sponsorBody =>
+      'Better features and steady updates need your support. Watch one ad to the end and this app shows no ads for the rest of today.';
   @override
   String get sponsorWatch => 'Watch an ad to support';
   @override

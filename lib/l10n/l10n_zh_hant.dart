@@ -835,7 +835,8 @@ class L10nZhHant extends L10n {
   @override
   String get sponsorTitle => '一則廣告，成就下一次更新';
   @override
-  String get sponsorBody => '您的支持讓更新不斷。每天觀看一則全螢幕廣告，當天即可無橫幅使用；升級進階版，廣告將永久消失。';
+  String get sponsorBody =>
+      '更好的功能和持續的更新需要您的支持。完整看完一支廣告，今天這個 App 就不再顯示廣告。';
   @override
   String get sponsorWatch => '看廣告支持我們';
   @override

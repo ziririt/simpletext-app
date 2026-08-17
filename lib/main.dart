@@ -3255,6 +3255,64 @@ class _EditorScreenState extends State<EditorScreen> {
   final GlobalKey _headKey = GlobalKey();
   double _headH = 0;
 
+  /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
+  final GlobalKey _bodyKey = GlobalKey();
+
+  /// 직전 선택 범위. '방금 무엇이 바뀌었나'를 알려면 이전 값이 있어야 한다.
+  TextSelection _lastSel = const TextSelection.collapsed(offset: -1);
+
+  /// '전체 선택' 뒤에 편집 메뉴(오려두기·복사하기·붙여넣기)가 저절로 안
+  /// 뜨던 것.
+  ///
+  /// 2026-08-17 소유자 신고 — "본문에서 '전체선택'을 하면 바로 이어서
+  /// '오려두기, 복사하기, 붙여넣기' 이런 툴팁이 나와야 하는데, 자동으로
+  /// 안 나오고 한 번 더 터치해야 나오네."
+  ///
+  /// 까닭은 우리가 만든 구조에 있다. 이 앱의 본문 칸은 **스스로 구르지
+  /// 않는다** — 글 끝에서 반 화면 더 내려가기를 만들려고 스크롤의 임자를
+  /// 바깥으로 옮겼기 때문이다(그 자리 주석 참고). 그런데 전체 선택은 잡힌
+  /// 자리를 화면에 보이게 하려고 그 바깥 스크롤을 움직이고, 그 움직임이
+  /// 방금 뜨려던 편집 메뉴를 밀어낸다.
+  ///
+  /// 그러니 이건 시스템의 변덕이 아니라 우리 선택의 대가다. 스크롤이 멎은
+  /// 뒤에 메뉴를 다시 불러 갚는다.
+  ///
+  /// **전체 선택일 때만** 부른다. 손가락으로 범위를 끄는 중에 부르면 끄는
+  /// 내내 메뉴가 깜빡인다.
+  void _onSelectionChanged() {
+    final sel = bodyCtl.selection;
+    if (sel == _lastSel) return;
+    final wasCollapsed = _lastSel.isCollapsed;
+    _lastSel = sel;
+    if (!wasCollapsed || sel.isCollapsed) return;
+    final t = bodyCtl.text;
+    if (t.isEmpty || sel.start != 0 || sel.end != t.length) return;
+    _reshowToolbar();
+  }
+
+  Future<void> _reshowToolbar() async {
+    // 스크롤이 멎기를 기다린다. 프레임 하나로는 모자랄 때가 있어 조금 준다.
+    await Future<void>.delayed(const Duration(milliseconds: 140));
+    if (!mounted) return;
+    final ctx = _bodyKey.currentContext;
+    if (ctx == null) return;
+    EditableTextState? found;
+    void visit(Element e) {
+      if (found != null) return;
+      if (e is StatefulElement && e.state is EditableTextState) {
+        found = e.state as EditableTextState;
+        return;
+      }
+      e.visitChildren(visit);
+    }
+    ctx.visitChildElements(visit);
+    final st = found;
+    if (st == null) return;
+    if (st.textEditingValue.selection.isCollapsed) return;
+    // 이미 떠 있으면 false를 돌려주고 아무 일도 안 한다 — 깜빡이지 않는다.
+    st.showToolbar();
+  }
+
   void _measureHead() {
     if (!mounted) return;
     final box = _headKey.currentContext?.findRenderObject() as RenderBox?;
@@ -3386,6 +3444,9 @@ class _EditorScreenState extends State<EditorScreen> {
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
     }
+    // 선택 범위가 바뀌는 것을 지켜본다. 글자가 바뀔 때(onChanged)와는
+    // 다른 일이라 컨트롤러에 직접 붙는다.
+    bodyCtl.addListener(_onSelectionChanged);
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
     }
@@ -3394,6 +3455,7 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void dispose() {
     _tagTimer?.cancel();
+    bodyCtl.removeListener(_onSelectionChanged);
     _bodyScroll.dispose();
     unawaited(store.flush());
     titleCtl.dispose();
@@ -5074,6 +5136,7 @@ class _EditorScreenState extends State<EditorScreen> {
                           ConstrainedBox(
                             constraints: BoxConstraints(minHeight: minBody),
                             child: TextField(
+                  key: _bodyKey,
                   controller: bodyCtl,
                   focusNode: _bodyFocus,
                   // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.

@@ -838,7 +838,8 @@ class L10nFr extends L10n {
   @override
   String get sponsorTitle => 'Une publicité finance la prochaine mise à jour';
   @override
-  String get sponsorBody => "Votre soutien fait vivre les mises à jour. Regardez une publicité plein écran par jour pour utiliser l'app sans bannière ce jour-là — ou passez à Premium et les publicités disparaissent pour de bon.";
+  String get sponsorBody =>
+      'De meilleures fonctions et des mises à jour régulières ont besoin de votre soutien. Regardez une publicité jusqu\'au bout et l\'app n\'affichera plus de publicité aujourd\'hui.';
   @override
   String get sponsorWatch => 'Regarder une pub pour soutenir';
   @override

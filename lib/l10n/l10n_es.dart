@@ -837,7 +837,8 @@ class L10nEs extends L10n {
   @override
   String get sponsorTitle => 'Un anuncio financia la próxima actualización';
   @override
-  String get sponsorBody => 'Tu apoyo mantiene vivas las actualizaciones. Mira un anuncio de pantalla completa al día y usa la app sin banner ese día; con Premium, los anuncios desaparecen para siempre.';
+  String get sponsorBody =>
+      'Las mejores funciones y las actualizaciones constantes necesitan tu apoyo. Mira un anuncio hasta el final y hoy la app no mostrará más anuncios.';
   @override
   String get sponsorWatch => 'Ver un anuncio para apoyar';
   @override

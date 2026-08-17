@@ -837,7 +837,8 @@ class L10nPt extends L10n {
   @override
   String get sponsorTitle => 'Um anúncio financia a próxima atualização';
   @override
-  String get sponsorBody => 'Seu apoio mantém as atualizações vivas. Assista a um anúncio de tela cheia por dia e use o app sem banner naquele dia; com o Premium, os anúncios somem para sempre.';
+  String get sponsorBody =>
+      'Recursos melhores e atualizações constantes precisam do seu apoio. Assista a um anúncio até o fim e hoje o app não mostrará mais anúncios.';
   @override
   String get sponsorWatch => 'Assistir a um anúncio para apoiar';
   @override

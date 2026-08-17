@@ -835,7 +835,8 @@ class L10nJa extends L10n {
   @override
   String get sponsorTitle => '広告1本が次のアップデートを作ります';
   @override
-  String get sponsorBody => '応援が次のアップデートを支えます。全画面広告を1日1本ご覧いただくと、その日はバナーなしで。プレミアムなら広告は永久になくなります。';
+  String get sponsorBody =>
+      'より良い機能と継続的な更新には応援が必要です。広告を最後までご覧いただくと、今日一日はこのアプリに広告が出ません。';
   @override
   String get sponsorWatch => '広告を見て応援する';
   @override

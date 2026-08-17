@@ -835,7 +835,8 @@ class L10nKo extends L10n {
   @override
   String get sponsorTitle => '광고 한 편이 다음 업데이트를 만듭니다';
   @override
-  String get sponsorBody => '더 나은 기능과 꾸준한 업데이트를 만드는 데 응원이 필요합니다. 전면 광고를 하루 한 편 보시면 오늘 하루는 위쪽 배너 없이, 프리미엄을 이용하시면 광고 없이 영원히 쓰실 수 있습니다.';
+  String get sponsorBody =>
+      '더 나은 기능과 꾸준한 업데이트를 만드는 데 응원이 필요합니다. 광고 한 편을 끝까지 보시면 오늘 하루는 이 앱에 광고가 나오지 않습니다.';
   @override
   String get sponsorWatch => '광고 보고 후원하기';
   @override

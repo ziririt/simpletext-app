@@ -36,7 +36,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/ad_gate.dart';
 import 'main.dart' show AppColorsX;
 import 'l10n/l10n.dart';
-import 'main.dart' show Store, PremiumScreen;
+import 'main.dart' show Store, PremiumScreen, kPaidTierLive;
 
 const bool kRealAds = bool.fromEnvironment('REAL_ADS');
 
@@ -345,16 +345,27 @@ class _SponsorSheetState extends State<SponsorSheet> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(l.sponsorSkip),
               ),
-              // 결제 유도(소유자 요청) — 광고가 싫으면 프리미엄이 답이다.
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const PremiumScreen()));
-                },
-                child: Text(l.sponsorGoPremium,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-              ),
+              // 결제 유도 — 광고가 싫으면 프리미엄이 답이다.
+              //
+              // 다만 **첫 판에서는 안 보인다.** 소유자 결정으로 이번 판은
+              // 완전 무료라 결제가 안 붙어 있고, 없는 결제로 가는 문을
+              // 열어 두면 애플 심사 2.1(되지 않는 기능)·3.1.1(애플 결제를
+              // 안 쓰는 가격 표시)에 걸린다.
+              //
+              // 2026-08-17에 이 자리를 뒤늦게 찾았다. kPaidTierLive로 프리미엄
+              // 화면을 껐다고 했는데, 여기 한 군데가 남아 있었다. 스위치를
+              // 만들었으면 그 스위치가 닿아야 할 자리를 **전부** 찾아야
+              // 한다는 것을 다시 배운다.
+              if (kPaidTierLive)
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const PremiumScreen()));
+                  },
+                  child: Text(l.sponsorGoPremium,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                ),
             ],
           ),
         ),
@@ -460,6 +471,15 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     if (mounted) setState(() {});
   }
 
+  void _openSponsorSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: false,
+      builder: (_) => const SponsorSheet(),
+    );
+  }
+
   List<AdSize> _ladder(double screenHeight) =>
       screenHeight >= _tallEnough ? _big : _small;
 
@@ -563,10 +583,41 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
 
     final c = context.c;
     final l = L10n.of(context);
+    // 2026-08-17 소유자 지시 — "모든 배너에는 다 x 닫기를 보여주고, '닫기'를
+    // 하면 전면 광고 및 후원, 프리미엄 안내해줘."
+    //
+    // 꼭대기 배너에는 있었는데 이 큰 광고에는 없었다. 같은 광고인데 하나는
+    // 끌 수 있고 하나는 못 끄면, 사람은 못 끄는 쪽을 '지울 수 없는 것'으로
+    // 여긴다. 그건 광고를 더 미워하게 만들 뿐이다.
+    //
+    // 누른다고 그냥 사라지지는 않는다. 후원 안내가 열리고, 거기서 전면 광고
+    // 한 편을 보면 **그날 하루 광고가 전부 사라진다.** 끄고 싶은 마음과 우리가
+    // 받아야 할 몫을 맞바꾸는 자리다.
     final ad = SizedBox(
       width: _adW,
       height: _adH,
-      child: ClipRect(child: AdWidget(ad: _ad!)),
+      child: Stack(children: [
+        Positioned.fill(child: ClipRect(child: AdWidget(ad: _ad!))),
+        Positioned(
+          top: 2,
+          right: 2,
+          child: Tooltip(
+            message: l.adClose,
+            child: Material(
+              color: Colors.black38,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _openSponsorSheet,
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close, size: 14, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ]),
     );
     // 2026-08-17 소유자 신고 — "본문과 광고 사이에 단절된 느낌을 줘. 지금은
     // 본문에 광고가 들어갈 것 같은 오해를 줄 듯."
