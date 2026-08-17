@@ -52,9 +52,9 @@ install_to() { # $1=udid $2=이름
 if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
   log "맥 빌드…"
   if flutter build macos --release > /tmp/dep_mac.log 2>&1; then
-    pkill -f "Products/Release/simpletext.app" >/dev/null 2>&1
+    pkill -f "Products/Release/Skyblue Note.app" >/dev/null 2>&1
     sleep 1
-    open ~/development/simpletext_app/build/macos/Build/Products/Release/simpletext.app
+    open ~/development/simpletext_app/build/macos/Build/Products/Release/Skyblue Note.app
     log "맥 재실행 완료"
   else
     log "맥 빌드 실패 — /tmp/dep_mac.log 확인"; tail -20 /tmp/dep_mac.log
