@@ -13,7 +13,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simpletext/core/paper.dart' show contrastRatio;
-import 'package:simpletext/main.dart' show AppC;
+import 'package:simpletext/main.dart'
+    show AppC, kAccentFill, kOnAccentFill;
 
 int _v(Color c) => c.toARGB32();
 
@@ -81,15 +82,22 @@ void main() {
     // 머티리얼3가 씨앗에서 자동으로 만든 색을 쓰고 있었다는 것이고,
     // 고침은 우리 강조색을 직접 못 박는 것이었다. 그 위의 글자가
     // 읽히는지를 여기서 지킨다.
-    test('라이트 — 하늘 바탕에 흰 글자', () {
-      expect(contrastRatio(0xFFFFFFFF, _v(AppC.light.accent)),
+    // 2026-08-18 — 라이트도 다크와 같은 값으로 맞췄다. 소유자: "아이폰의
+    // 버튼 색은 무겁고 답답하고 칙칙한 딥블루 컬러다."
+    //
+    // 예전에는 라이트가 진한 하늘 + 흰 글자였다. 읽히기는 했지만 '채운
+    // 단추는 밝은 바탕에 진한 글자여야 맑다'를 다크에만 적용하고 라이트에는
+    // 안 옮긴 상태였다.
+    test('라이트·다크 모두 — 밝은 하늘 바탕에 진한 남색 글자', () {
+      expect(contrastRatio(_v(kOnAccentFill), _v(kAccentFill)),
           greaterThanOrEqualTo(4.5));
     });
 
-    test('다크 — 밝은 하늘 바탕에 진한 남색 글자', () {
-      // 어두운 바탕에 밝은 글자로 만들면 아무리 색을 골라도 가라앉는다.
-      // 다크에서는 반드시 뒤집어야 맑아 보인다.
-      expect(contrastRatio(0xFF08205A, _v(AppC.dark.accent)),
+    // 글자용 강조색은 반대 요구를 받는다 — 밝은 바탕 **위에** 놓이므로
+    // 진해야 한다. 그래서 채우는 색과 갈라 뒀고, 여기서 그 둘이 다시
+    // 하나로 합쳐지지 않게 지킨다.
+    test('글자용 강조색은 밝은 바탕에서 읽힌다', () {
+      expect(contrastRatio(_v(AppC.light.accent), _v(AppC.light.bg)),
           greaterThanOrEqualTo(4.5));
     });
   });

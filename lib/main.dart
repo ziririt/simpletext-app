@@ -109,6 +109,30 @@ const _accent = Color(0xFF0070BE);
 /// 소유자가 신고한 그림이 정확히 그것이었다.
 /// 명암비 #08205A on #4FC3F7 = 7.7:1
 const _onAccentDark = Color(0xFF08205A);
+
+/// 채운 단추의 바탕과 그 위의 글자. **라이트·다크가 같다.**
+///
+/// 2026-08-18 소유자 신고 — "맥앱과 안드로이드앱의 이 버튼 색은 하늘색에
+/// 가까운데, 아이폰의 버튼 색은 무겁고 답답하고 칙칙한 딥블루 컬러다."
+///
+/// 기기 차이가 아니었다. 맥과 안드로이드는 다크였고 그 아이폰은 라이트였다.
+///
+/// 2026-08-16에 다크에서 이미 배운 것을 라이트에는 안 옮겼던 것이다 —
+/// "채운 버튼은 밝은 하늘 바탕에 진한 글자여야 맑아 보인다." 라이트에서
+/// 우리는 진한 하늘(#0070BE)에 흰 글자를 얹고 있었고, 그게 정확히 '가라앉은'
+/// 쪽이다. 한쪽에서 배운 것을 다른 쪽에 안 옮기면 배운 게 아니다.
+///
+/// 그래서 **채우는 색과 글자로 쓰는 색을 가른다.**
+///   _accent(#0070BE)  밝은 바탕 위의 글자·아이콘. 진해야 읽힌다.
+///   kAccentFill       채운 단추의 바탕. 밝아야 산뜻하다.
+/// 하나로 쓰려니 한쪽이 반드시 손해를 봤다. 두 자리의 요구가 반대다.
+///
+/// 글자 명암비는 오히려 좋아졌다 — 흰 글자 5.2:1 에서 진한 남색 7.7:1 로.
+/// 대신 단추 테두리와 바탕의 대비는 낮다(#4FC3F7 대 #EFF6FB = 1.8:1).
+/// 채운 단추는 그림자와 글자로 이미 또렷하고, 이건 소유자가 눈으로 고른
+/// 값이다 — 읽히는 쪽을 지켰으면 나머지는 취향의 자리다.
+const Color kAccentFill = Color(0xFF4FC3F7);
+const Color kOnAccentFill = _onAccentDark;
 // 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
 const _sky = Color(0xFF3FB2F0);
 
@@ -616,13 +640,8 @@ class SimpleTextApp extends StatelessWidget {
   ];
 
   static ThemeData _theme(Brightness b, AppC c) {
-    final isDark = b == Brightness.dark;
-    // 하늘색 위에 얹는 글자 색.
-    //
-    // 라이트에서는 진한 하늘 바탕에 흰 글자(5.2:1), 다크에서는 밝은 하늘
-    // 바탕에 진한 남색 글자(7.7:1)다. 다크에서 뒤집는 것이 핵심이다 —
-    // 어두운 바탕에 밝은 글자로 버튼을 만들면 아무리 색을 골라도 가라앉는다.
-    final onAccent = isDark ? _onAccentDark : Colors.white;
+    // 채운 단추는 라이트든 다크든 **밝은 하늘 바탕에 진한 남색 글자**다
+    // (kAccentFill / kOnAccentFill). 2026-08-18에 라이트도 그쪽으로 맞췄다.
 
     // **여기가 소유자 신고의 진짜 원인이었다.**
     //
@@ -635,12 +654,12 @@ class SimpleTextApp extends StatelessWidget {
     // fromSeed를 아예 안 쓰지는 않는다 — 여기서 안 덮은 자리(비활성 색,
     // 그림자 톤 등)를 채워 주는 값은 여전히 쓸모가 있다.
     final scheme = ColorScheme.fromSeed(seedColor: _sky, brightness: b).copyWith(
-      primary: c.accent,
-      onPrimary: onAccent,
+      primary: kAccentFill,
+      onPrimary: kOnAccentFill,
       primaryContainer: c.tagBg,
       onPrimaryContainer: c.tagInk,
-      secondary: c.accent,
-      onSecondary: onAccent,
+      secondary: kAccentFill,
+      onSecondary: kOnAccentFill,
       secondaryContainer: c.tagBg,
       onSecondaryContainer: c.tagInk,
       // 떠 있는 판에 머티리얼이 섞어 넣는 물빛. 이걸 하늘색으로 두면
@@ -663,9 +682,9 @@ class SimpleTextApp extends StatelessWidget {
       // 떠 있는 둥근 버튼. 기본값은 primaryContainer(연한 판)라서
       // 다크에서 '칙칙한 남색 판에 옅은 글자'가 됐다 — 신고된 그림이다.
       // 채운 하늘색으로 못 박는다.
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: c.accent,
-        foregroundColor: onAccent,
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: kAccentFill,
+        foregroundColor: kOnAccentFill,
         elevation: 3,
       ),
       // 돌아가는 표시, 스위치, 슬라이더가 전부 primary를 따라간다.
@@ -673,8 +692,8 @@ class SimpleTextApp extends StatelessWidget {
       // 체크 표시도 하늘색으로. 기본값은 자동 색표라 또 가라앉는다.
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith(
-            (st) => st.contains(WidgetState.selected) ? c.accent : null),
-        checkColor: WidgetStateProperty.all(onAccent),
+            (st) => st.contains(WidgetState.selected) ? kAccentFill : null),
+        checkColor: WidgetStateProperty.all(kOnAccentFill),
       ),
       // 글자만 있는 버튼과 테두리 버튼도 같은 하늘색으로.
       textButtonTheme: TextButtonThemeData(
@@ -2733,18 +2752,15 @@ class _HomeScreenState extends State<HomeScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: on ? context.c.accent : context.c.field,
+                // 라이트·다크가 같은 값이라 밝기를 따질 일이 없어졌다.
+                color: on ? kAccentFill : context.c.field,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(label,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: on
-                          ? (Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF08205A)
-                              : Colors.white)
-                          : context.c.sub)),
+                      color: on ? kOnAccentFill : context.c.sub)),
             ),
           ),
         );
@@ -5553,9 +5569,9 @@ static const int kTagScanChars = 3000;
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 8, 12, 8),
               child: Material(
-                color: context.c.accent,
+                color: kAccentFill,
                 elevation: 3,
-                shadowColor: context.c.accent,
+                shadowColor: kAccentFill,
                 shape: const CircleBorder(),
                 child: InkWell(
                   customBorder: const CircleBorder(),
@@ -5571,7 +5587,8 @@ static const int kTagScanChars = 3000;
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(7),
-                    child: Icon(CupertinoIcons.square_pencil, size: 19, color: Colors.white),
+                    child: Icon(CupertinoIcons.square_pencil,
+                        size: 19, color: kOnAccentFill),
                   ),
                 ),
               ),
@@ -6648,9 +6665,9 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
               tap();
             },
             showCheckmark: false,
-            selectedColor: c.accent,
+            selectedColor: kAccentFill,
             labelStyle: TextStyle(
-                color: on ? Colors.white : c.guideInk,
+                color: on ? kOnAccentFill : c.guideInk,
                 fontWeight: on ? FontWeight.w700 : FontWeight.w500),
           ),
         );
