@@ -3698,54 +3698,6 @@ class _EditorScreenState extends State<EditorScreen>
   /// 6분의 1은 "되돌리기"가 들어가기에 좁아서 글자가 두 줄로 깨졌다(실제 화면에서 확인).
   /// 아이콘을 위에 두고 글자를 작게 내리면 아이폰 도구 막대의 일반적인 모양이 되고,
   /// 글자가 짧아져 깨지지도 않는다. 그래도 넘칠 때를 대비해 한 줄로 줄여 맞춘다.
-  Widget _barBtn(IconData icon, String label, VoidCallback? onTap,
-      {bool primary = false, VoidCallback? onLongPress}) {
-    final on = onTap != null;
-    // 2026-08-19 — 여기 원래 `primary ? c.accent : c.accent` 라고 적혀
-    // 있었다. 참과 거짓이 같은 값이다. 누군가(나다) 주된 것과 그렇지 않은
-    // 것을 가르려다 값을 안 갈랐고, 그대로 굳었다.
-    //
-    // 다섯 칸이 전부 하늘색이면 무엇이 주된 것인지 알 수 없다. 이 화면에서
-    // 사람이 실제로 매번 누르는 것은 '정리' 하나다. 나머지 넷은 그 문서가
-    // 표를 가졌을 때, 키를 넣었을 때, 바꿀 것이 있을 때만 쓴다.
-    //
-    // 그래서 주된 것만 하늘색으로 두고 나머지는 잉크색으로 내린다.
-    final color = !on
-        ? context.c.sub.withValues(alpha: 0.5)
-        : (primary ? context.c.accent : context.c.guideInk);
-    return Expanded(
-      child: TextButton(
-        onPressed: onTap,
-        onLongPress: onLongPress,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-          minimumSize: const Size(0, 52),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 21, color: color),
-            const SizedBox(height: 3),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                maxLines: 1,
-                softWrap: false,
-                style: TextStyle(
-                  fontSize: 11,
-                  height: 1.1,
-                  color: color,
-                  fontWeight: primary ? FontWeight.w700 : FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// 소프트 키보드가 없는 판인가.
   ///
   /// dart:io의 Platform 대신 defaultTargetPlatform을 쓴다. 테스트에서
@@ -5424,22 +5376,16 @@ static const int kTagScanChars = 3000;
             // 하는 버튼이 한 화면에 둘 있으면 사용자는 둘이 다른 일인가
             // 의심한다 — 이 앱은 '정리'와 '자동 정리'가 따로 있어서 같은
             // 신고를 이미 한 번 받았다.
-            IconButton(
-              icon: Icon(_showMeta ? Icons.sell : Icons.sell_outlined),
-              tooltip: l.metaTooltip,
-              onPressed: () => setState(() => _showMeta = !_showMeta),
-            ),
-            IconButton(
-              icon: Icon(note.pinned ? Icons.push_pin : Icons.push_pin_outlined),
-              tooltip: note.pinned ? l.unpinTooltip : l.pinTooltip,
-              onPressed: () async {
-                note.pinned = !note.pinned;
-                // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다. 이런 데만 준다.
-                HapticFeedback.selectionClick();
-                await store.persist();
-                setState(() {});
-              },
-            ),
+            // 2026-08-19 — 태그와 핀을 메뉴로 내렸다.
+            //
+            // 둘 다 이 화면에 오래 머물 자격이 없었다. 태그는 글을 다 쓴
+            // 뒤 한 번, 핀은 몇 달에 한 번 누른다. 그런데 매번 여는 화면의
+            // 맨 위에 늘 앉아 있었다.
+            //
+            // 무엇을 위에 둘지는 '얼마나 중요한가'가 아니라 '얼마나 자주
+            // 누르는가'로 정한다. 중요한 것을 위에 두면 만든 사람이 중요하게
+            // 여기는 것이 올라오고, 자주 누르는 것을 위에 두면 쓰는 사람이
+            // 자주 하는 일이 올라온다.
             // 2026-08-16 소유자 요청 — 애플 메모장처럼 '...' 메뉴.
             // 이 메모에 대한 설정이 앞으로 여기에 쌓인다. 지금은 삭제 하나.
             PopupMenuButton<String>(
@@ -5466,6 +5412,34 @@ static const int kTagScanChars = 3000;
                           SettingsScreen(anchor: a.isEmpty ? null : a),
                     ),
                   );
+                  if (mounted) setState(() {});
+                  return;
+                }
+                if (v == 'wizard') {
+                  _showWizardDialog();
+                  return;
+                }
+                if (v == 'tables') {
+                  _showTables();
+                  return;
+                }
+                if (v == 'replace') {
+                  _showReplaceDialog();
+                  return;
+                }
+                if (v == 'copy') {
+                  _showCopyMenu();
+                  return;
+                }
+                if (v == 'meta') {
+                  setState(() => _showMeta = !_showMeta);
+                  return;
+                }
+                if (v == 'pin') {
+                  note.pinned = !note.pinned;
+                  // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다. 이런 데만 준다.
+                  HapticFeedback.selectionClick();
+                  await store.persist();
                   if (mounted) setState(() {});
                   return;
                 }
@@ -5540,7 +5514,37 @@ static const int kTagScanChars = 3000;
                             style: TextStyle(fontSize: 14, color: ctx.c.sub)),
                       ),
                     );
+                // 2026-08-19 — 아래 막대에 있던 넷과 위에 있던 둘이
+                // 여기로 들어왔다. 메뉴로 옮긴 것을 아무도 못 찾는 일이
+                // 없도록 아이콘과 이름을 그대로 가져왔다 — 손가락은
+                // 자리를 기억하지만 눈은 모양을 기억한다.
+                PopupMenuItem<String> act(
+                        String v, IconData ic, String label) =>
+                    PopupMenuItem<String>(
+                      value: v,
+                      child: Row(children: [
+                        Icon(ic, size: 19, color: ctx.c.guideInk),
+                        const SizedBox(width: 10),
+                        Text(label),
+                      ]),
+                    );
+
                 return [
+                  // --- 이 글에 대고 하는 일 ---
+                  act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
+                  act('tables', CupertinoIcons.table, lm.tableAction),
+                  act('replace', CupertinoIcons.search, lm.replaceAction),
+                  act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
+                  const PopupMenuDivider(),
+                  act(
+                      'meta',
+                      _showMeta ? Icons.sell : Icons.sell_outlined,
+                      lm.metaTooltip),
+                  act(
+                      'pin',
+                      note.pinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      note.pinned ? lm.unpinTooltip : lm.pinTooltip),
+                  const PopupMenuDivider(),
                   // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
                   // 맨 위는 '정리 미리보기'다(2026-08-17 소유자 지시).
                   // 이 앱에서 가장 많이 누르는 단추가 '정리'이고, 그
@@ -5645,36 +5649,6 @@ static const int kTagScanChars = 3000;
                   jump('ai', lm.menuAiKey),
                 ];
               },
-            ),
-            // 새 노트 — 이 메모와 무관한 지시라서 일부러 '떠 있는' 동그란
-            // 버튼으로 다르게 생겼다(소유자: 직관적으로 구분, 둥둥 뜨는 느낌).
-            // 납작한 아이콘들 사이에서 유일하게 색이 차 있고 그림자가 있다.
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 8, 12, 8),
-              child: Material(
-                color: kAccentFill,
-                elevation: 3,
-                shadowColor: kAccentFill,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () async {
-                    await _save();
-                    final fresh = Note.fresh(body: '');
-                    store.notes.insert(0, fresh);
-                    await store.persist();
-                    if (!mounted) return;
-                    // 두 칸 화면에서는 오른쪽 칸만 바뀌면 된다.
-                    // pushReplacement는 밀어 넣을 화면이 있을 때만 뜻이 있다.
-                    await openNote(context, fresh.id);
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(7),
-                    child: Icon(CupertinoIcons.square_pencil,
-                        size: 19, color: kOnAccentFill),
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -5826,7 +5800,18 @@ static const int kTagScanChars = 3000;
               ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                // 2026-08-19 소유자 — "편집화면 본문의 폭도 여백미가 너무
+                // 없는 거 아닐까? bear 정도가 딱 좋은 것 같다."
+                //
+                // 16이었다. 글자가 화면 가장자리에 거의 닿는다. 종이에
+                // 인쇄된 글은 그렇게 놓이지 않는다 — 여백은 남는 자리가
+                // 아니라 글을 붙잡아 주는 자리다.
+                //
+                // 넓은 화면에서 더 주는 이유: 글 칸의 폭은 이미 묶어 뒀지만
+                // (SplitShell.readWidth), 그 안에서도 글이 상자에 꽉 차
+                // 있으면 갇혀 보인다.
+                padding: EdgeInsets.symmetric(
+                    horizontal: (_isDesktop || widget.embedded) ? 32 : 22),
                 // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
                 // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
                 // 칸이 납작하게 접힌다.
@@ -6093,33 +6078,53 @@ static const int kTagScanChars = 3000;
           child: SafeArea(
             child: (_bodyFocus.hasFocus && !_isDesktop)
                 ? _accessoryBar()
-                : Glass(
-                    hairlineTop: true,
-                    child: Row(
-                    children: [
-                      // 2026-08-16 소유자 지적 — '정리'와 '자동 정리'가 따로
-                      // 있어서 뭐가 다른지 알 수 없었다. 이름 문제가 아니라
-                      // 구조 문제였다: 같은 기능에 문이 둘이었다.
-                      //
-                      // 문을 하나로 합쳤다. 누르면 기본 정리가 **바로** 돈다.
-                      // 다른 방식이 필요하면 길게 누르거나 '...' 메뉴에서
-                      // 고른다. 흔한 경우(대부분)는 한 번 누르면 끝난다.
-                      _barBtn(CupertinoIcons.wand_stars, l.tidyAction,
-                          () => _runTidyWithPreset(buildPresets().first),
-                          primary: true, onLongPress: _showPresetSheet),
-                      _barBtn(CupertinoIcons.sparkles, l.wizardAction, _showWizardDialog),
-                      _barBtn(CupertinoIcons.table, l.tableAction, _showTables),
-                      _barBtn(CupertinoIcons.search, l.replaceAction, _showReplaceDialog),
-                      _barBtn(CupertinoIcons.doc_on_doc, l.copyAction, _showCopyMenu),
-                      // 2026-08-17 — 여기 있던 '되돌리기'를 뺐다.
-                      // 하루에 스무 번 누르는 버튼들 옆에, 한 번 누르면 한
-                      // 시간이 사라지는 버튼이 같은 크기 같은 모양으로 있었다.
-                      // 손가락은 자리를 기억하지 뜻을 기억하지 않는다.
-                      // '...' 메뉴로 옮겼다(_revertToOriginal).
-                    ],
-                  )),
+                // 2026-08-19 — 다섯 칸 막대를 걷어냈다. 이제 아래에 남는
+                // 것은 글자를 칠 때 뜨는 보조 막대뿐이다.
+                : const SizedBox.shrink(),
           ),
         ),
+        // 떠 있는 단추 둘. 목록 화면과 같은 문법이다 — 작은 것이 위,
+        // 주된 것이 아래. 화면마다 문법이 다르면 그건 두 앱이다.
+        //
+        // 글자를 치는 동안에는 감춘다. 키보드 위에 보조 막대가 뜨는데
+        // 그 위에 단추가 또 겹치면 손가락 갈 곳이 없다.
+        floatingActionButton: (_bodyFocus.hasFocus && !_isDesktop)
+            ? null
+            : Column(mainAxisSize: MainAxisSize.min, children: [
+                // 새 노트 — 이 메모와 무관한 일이라 주된 단추와 다르게
+                // 생겼다. 흰 원에 옅은 그림자. '떠 있는 것은 흰 동그라미'가
+                // 이 앱이 앞으로 쓸 규칙이다.
+                FloatingActionButton.small(
+                  heroTag: 'ed-new',
+                  tooltip: l.newNoteTooltip,
+                  backgroundColor: context.c.panel,
+                  foregroundColor: context.c.guideInk,
+                  elevation: 2,
+                  onPressed: () async {
+                    await _save();
+                    final fresh = Note.fresh(body: '');
+                    store.notes.insert(0, fresh);
+                    await store.persist();
+                    if (!mounted) return;
+                    await openNote(context, fresh.id);
+                  },
+                  child: const Icon(CupertinoIcons.square_pencil, size: 19),
+                ),
+                const SizedBox(height: 10),
+                // 정리 — 이 화면의 존재 이유. 길게 누르면 다른 방식을
+                // 고를 수 있다(2026-08-16에 문을 하나로 합치면서 만든 길).
+                GestureDetector(
+                  onLongPress: _showPresetSheet,
+                  child: FloatingActionButton.extended(
+                    heroTag: 'ed-tidy',
+                    tooltip: l.tidyAction,
+                    onPressed: () => _runTidyWithPreset(buildPresets().first),
+                    icon: const Icon(CupertinoIcons.wand_stars),
+                    label: Text(l.tidyAction,
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ]),
       ),
             ),
           ]),
