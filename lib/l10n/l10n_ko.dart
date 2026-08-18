@@ -477,6 +477,13 @@ class L10nKo extends L10n {
   String get aiKeyNotSynced => '메모는 iCloud로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
 
   @override
+  String get autoTagTitle => '태그 자동으로 붙이기';
+
+  @override
+  String get autoTagSub =>
+      '글을 고치고 잠시 두면 AI가 태그를 다시 뽑습니다. 태그를 직접 만진 노트는 건드리지 않습니다';
+
+  @override
   String get syncStateSignedOut => '눌러서 방법 보기';
 
   @override

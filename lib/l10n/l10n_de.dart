@@ -479,6 +479,13 @@ class L10nDe extends L10n {
   String get aiKeyNotSynced => 'Ihre Notizen werden über iCloud auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
 
   @override
+  String get autoTagTitle => 'Automatisch verschlagworten';
+
+  @override
+  String get autoTagSub =>
+      'Nach einer Pause beim Bearbeiten holt die KI die Schlagwörter neu. Notizen, deren Schlagwörter Sie selbst bearbeitet haben, bleiben unberührt';
+
+  @override
   String get syncStateSignedOut => 'Tippen, um zu sehen wie';
 
   @override

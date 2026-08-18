@@ -478,6 +478,13 @@ class L10nEn extends L10n {
   String get aiKeyNotSynced => 'Your notes sync to all your devices through iCloud. Your API key does not — enter it separately on each device.';
 
   @override
+  String get autoTagTitle => 'Tag notes automatically';
+
+  @override
+  String get autoTagSub =>
+      'After you edit and pause, AI refreshes the tags. Notes whose tags you edited yourself are left alone';
+
+  @override
   String get syncStateSignedOut => 'Tap to see how';
 
   @override

@@ -478,6 +478,13 @@ class L10nPt extends L10n {
   String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus dispositivos pelo iCloud. Sua chave de API não: informe-a em cada dispositivo.';
 
   @override
+  String get autoTagTitle => 'Marcar automaticamente';
+
+  @override
+  String get autoTagSub =>
+      'Ao pausar depois de editar, a IA extrai as etiquetas de novo. Notas cujas etiquetas você editou ficam intactas';
+
+  @override
   String get syncStateSignedOut => 'Toque para ver como';
 
   @override

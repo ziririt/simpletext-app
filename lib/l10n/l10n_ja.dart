@@ -477,6 +477,13 @@ class L10nJa extends L10n {
   String get aiKeyNotSynced => 'メモは iCloud で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
 
   @override
+  String get autoTagTitle => 'タグを自動で付ける';
+
+  @override
+  String get autoTagSub =>
+      '編集して少し置くとAIがタグを付け直します。自分でタグを触ったノートには手を出しません';
+
+  @override
   String get syncStateSignedOut => 'タップして方法を見る';
 
   @override

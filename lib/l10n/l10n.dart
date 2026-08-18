@@ -312,6 +312,10 @@ abstract class L10n {
   String get syncStateOff;
   String get syncStateSyncing;
   String get aiKeyNotSynced;
+
+  /// 조용한 자동 태그 (2026-08-18).
+  String get autoTagTitle;
+  String get autoTagSub;
   String get syncStateSignedOut;
   String get syncHelpTitle;
   String get syncHelpSteps;
@@ -724,6 +728,8 @@ abstract class L10n {
         'syncStateOff': syncStateOff,
         'syncStateSyncing': syncStateSyncing,
         'aiKeyNotSynced': aiKeyNotSynced,
+        'autoTagTitle': autoTagTitle,
+        'autoTagSub': autoTagSub,
         'syncStateSignedOut': syncStateSignedOut,
         'syncHelpTitle': syncHelpTitle,
         'syncHelpSteps': syncHelpSteps,

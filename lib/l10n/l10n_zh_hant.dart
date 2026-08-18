@@ -477,6 +477,13 @@ class L10nZhHant extends L10n {
   String get aiKeyNotSynced => '備忘會透過 iCloud 同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
 
   @override
+  String get autoTagTitle => '自動加入標籤';
+
+  @override
+  String get autoTagSub =>
+      '編輯後稍作停頓，AI 會重新擷取標籤。你手動改過標籤的筆記不會被更動';
+
+  @override
   String get syncStateSignedOut => '點按查看方法';
 
   @override

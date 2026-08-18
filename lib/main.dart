@@ -31,6 +31,7 @@ import 'core/key_vault.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
 import 'core/mono_controller.dart';
+import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
 import 'core/mru.dart';
 import 'core/paper.dart';
@@ -842,6 +843,12 @@ class Note {
   /// 폴더는 "어디에 두었나"다. 태그는 여럿, 폴더는 하나.
   String folder;
 
+  /// 마지막으로 태그를 뽑았을 때의 본문 길이. -1이면 한 번도 안 뽑았다.
+  ///
+  /// 2026-08-18. 기기마다 따로 세면 아이폰에서 뽑고 맥에서 또 뽑는다.
+  /// 노트에 붙여 두면 동기화를 타고 같이 다닌다.
+  int taggedLen;
+
   /// 우리가 모르는 칸.
   ///
   /// 2026-08-18. 새 판 앱이 넣은 칸을 옛 판 앱이 지우지 않게, 읽을 때
@@ -867,6 +874,7 @@ class Note {
     this.titleAuto = true,
     this.tagsAuto = true,
     this.folder = '',
+    this.taggedLen = -1,
     Map<String, dynamic>? extra,
   })  : extra = extra ?? const <String, dynamic>{},
         tags = tags ?? [],
@@ -891,7 +899,7 @@ class Note {
   static const Set<String> knownKeys = {
     'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
     'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
-    'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder',
+    'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder', 'taggedLen',
   };
 
   Map<String, dynamic> toJson() => {
@@ -916,6 +924,7 @@ class Note {
         'titleAuto': titleAuto,
         'tagsAuto': tagsAuto,
         'folder': folder,
+        'taggedLen': taggedLen,
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -940,6 +949,7 @@ class Note {
         tagsAuto: (j['tagsAuto'] ??
             (((j['tags'] ?? const []) as List).isEmpty)) as bool,
         folder: normalizeFolder((j['folder'] ?? '') as String),
+        taggedLen: (j['taggedLen'] ?? -1) as int,
         extra: {
           for (final e in j.entries)
             if (!knownKeys.contains(e.key)) e.key: e.value,
@@ -1055,6 +1065,13 @@ class AppSettings {
   int rulesStamp = 0;
   String rulesSig = '';
 
+  /// 글을 고친 뒤 조용히 태그를 다시 뽑을 것인가 (2026-08-18).
+  ///
+  /// 켜져 있어도 AI 키가 없으면 아무 일도 안 한다. 끄는 스위치를 두는
+  /// 까닭은 이것이 **남의 API 요금을 쓰는 일**이기 때문이다. 돈이 나가는
+  /// 일에는 반드시 끄는 길이 있어야 한다.
+  bool autoTagAi = true;
+
   /// 넓은 화면에서 왼쪽 목록 칸의 폭 (2026-08-18 소유자 지시).
   ///
   /// 동기화하지 않는다. 창 크기는 기기마다 다르고, 27인치에서 정한 폭이
@@ -1167,6 +1184,7 @@ class AppSettings {
         'rulesStamp': rulesStamp,
         'rulesSig': rulesSig,
         'listWidth': listWidth,
+        'autoTagAi': autoTagAi,
         'sortMode': sortMode,
         'filterSource': filterSource,
         'filterTag': filterTag,
@@ -1245,6 +1263,7 @@ class AppSettings {
     s.rulesStamp = (j['rulesStamp'] ?? s.rulesStamp) as int;
     s.rulesSig = (j['rulesSig'] ?? s.rulesSig) as String;
     s.listWidth = ((j['listWidth'] ?? s.listWidth) as num).toDouble();
+    s.autoTagAi = (j['autoTagAi'] ?? s.autoTagAi) as bool;
     s.sortMode = (j['sortMode'] ?? s.sortMode) as String;
     s.filterSource = (j['filterSource'] ?? s.filterSource) as String;
     s.filterTag = (j['filterTag'] ?? s.filterTag) as String;
@@ -4427,6 +4446,11 @@ class _EditorScreenState extends State<EditorScreen>
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
     }
+    // 본문에서 손을 떼면 기다리지 않고 바로 본다. 붙여넣고 곧장 나가는
+    // 사람은 6초를 안 채운다 — 그 사람이야말로 태그가 제일 필요하다.
+    _bodyFocus.addListener(() {
+      if (!_bodyFocus.hasFocus) unawaited(_autoTagQuietly());
+    });
     // 선택 범위가 바뀌는 것을 지켜본다. 글자가 바뀔 때(onChanged)와는
     // 다른 일이라 컨트롤러에 직접 붙는다.
     bodyCtl.addListener(_onSelectionChanged);
@@ -4582,6 +4606,7 @@ static const int kTagScanChars = 3000;
   /// 그래서 뽑개를 통째로 AI로 옮겼다. 키가 없으면 **이유를 말하고 아무
   /// 것도 하지 않는다.** 어설픈 답을 조용히 내놓는 것보다 낫다.
   Future<void> _autoTags() async {
+    _tagTimer?.cancel();
     final l = L10n.of(context);
     if (store.settings.aiKey.trim().isEmpty) {
       _toast(context, l.tagAiNeedKey);
@@ -4625,7 +4650,81 @@ static const int kTagScanChars = 3000;
   /// 태그를 다시 뽑기 위한 타이머. 글자마다 뽑으면 낭비다.
   Timer? _tagTimer;
 
+  /// 이 화면에서 본문이 실제로 바뀌었는가.
+  ///
+  /// 열어 보기만 한 노트에는 손을 안 댄다. 이것이 없으면 목록을 훑는
+  /// 동안 열리는 노트마다 회사를 부른다.
+  bool _bodyTouched = false;
+
+  /// 조용한 태그 뽑기가 도는 중.
+  bool _autoTagRunning = false;
+
+  /// 글을 고치고 조용해지면 태그를 다시 뽑는다.
+  ///
+  /// 2026-08-18 소유자 지시로 되살렸다. 걷어냈던 판과 다른 점은 **부르기
+  /// 전에 여섯 가지를 본다**는 것이다(core/auto_tag_gate.dart, 시험 13개).
+  /// 그중 가장 중요한 것은 '사람이 태그를 만졌으면 영영 손 뗀다'이다.
+  ///
+  /// 알리지 않는다. 조사에서 반복해 확인된 것 — 제안 알림은 명시적 이탈
+  /// 사유다. 그냥 태그가 붙어 있는 상태가 되어 있을 뿐이다.
+  void _scheduleAutoTag() {
+    _tagTimer?.cancel();
+    _tagTimer = Timer(const Duration(seconds: 6), _autoTagQuietly);
+  }
+
+  Future<void> _autoTagQuietly() async {
+    if (!mounted || _autoTagRunning || _tagAiBusy) return;
+    final s = store.settings;
+    if (!shouldAutoTag(
+      hasKey: s.aiKey.trim().isNotEmpty,
+      enabled: s.autoTagAi,
+      tagsAuto: note.tagsAuto,
+      bodyLen: note.body.length,
+      taggedLen: note.taggedLen,
+      tagCount: note.tags.length,
+      bodyChanged: _bodyTouched,
+    )) {
+      return;
+    }
+    _autoTagRunning = true;
+    // 길이는 **부르기 전에** 적는다. 부르는 동안 사람이 계속 치고 있으면
+    // 끝난 뒤의 길이는 이미 다른 글의 길이다.
+    final len = note.body.length;
+    final head = note.body.length > kTagScanChars
+        ? note.body.substring(0, kTagScanChars)
+        : note.body;
+    var got = <String>[];
+    try {
+      final out = await _aiEditCall(
+        '이 글의 태그를 뽑아라.',
+        '[제목]\n${note.title}\n\n[본문 앞부분]\n$head',
+        system: _tagSys,
+      );
+      got = out
+          .split(RegExp(r'[,\n]'))
+          .map((x) => x.trim().replaceFirst(RegExp(r'^#+'), '').trim())
+          .where((x) => x.isNotEmpty && x.length <= 24)
+          .take(5)
+          .toList();
+    } catch (_) {
+      // 조용히 물러난다. 사용자가 시킨 일이 아니라서, 실패를 알리면
+      // 그건 '내가 안 시킨 일이 실패했다'는 알림이 된다.
+      _autoTagRunning = false;
+      return;
+    }
+    _autoTagRunning = false;
+    if (!mounted || got.isEmpty) return;
+    // 부르는 사이에 사람이 태그를 만졌으면 그 뜻을 이긴다.
+    if (!note.tagsAuto) return;
+    note.taggedLen = len;
+    await _commitTags(got.join(','), clear: false);
+  }
+
   Future<void> _save() async {
+    if (note.body != bodyCtl.text) {
+      _bodyTouched = true;
+      _scheduleAutoTag();
+    }
     note.body = bodyCtl.text;
 
     // 제목은 손대기 전까지 본문을 따라간다(소유자 제안 2026-08-16).
@@ -8909,6 +9008,11 @@ class _SettingsScreenState extends State<SettingsScreen>
               ]),
             ),
           _card([
+            // 2026-08-18 소유자 지시 — 글을 고치고 조용해지면 태그를
+            // 다시 뽑는다. 남의 API 요금을 쓰는 일이라 끄는 길을 둔다.
+            _switchRow(l.autoTagTitle, l.autoTagSub, s.autoTagAi,
+                (v) => s.autoTagAi = v),
+            _sep(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
               child: Column(

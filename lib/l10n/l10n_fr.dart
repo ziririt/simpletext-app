@@ -479,6 +479,13 @@ class L10nFr extends L10n {
   String get aiKeyNotSynced => 'Vos notes sont synchronisées sur tous vos appareils via iCloud. Pas votre clé API — saisissez-la sur chaque appareil.';
 
   @override
+  String get autoTagTitle => 'Étiqueter automatiquement';
+
+  @override
+  String get autoTagSub =>
+      'Après une pause, l’IA réextrait les étiquettes. Les notes dont vous avez modifié les étiquettes restent intactes';
+
+  @override
   String get syncStateSignedOut => 'Touchez pour voir comment';
 
   @override
