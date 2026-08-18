@@ -451,6 +451,13 @@ class L10nZhHant extends L10n {
       '每台裝置各自：字級、行距、背景、外觀、排序';
 
   @override
+  String get syncScopePlatform =>
+      '目前自動同步僅在 Apple 裝置（iPhone、iPad、Mac）之間進行。Android 與 Windows 請使用選單中的匯出備份與匯入';
+
+  @override
+  String get typographyTitle => '字體與行距';
+
+  @override
   String get syncScopeNever =>
       'AI API 金鑰不會上傳到 iCloud，需要在每台裝置分別輸入';
 

@@ -8160,6 +8160,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           line(l.syncScopeShared),
           line(l.syncScopeDevice),
           line(l.syncScopeNever),
+          line(l.syncScopePlatform),
         ],
       ),
     );
@@ -8278,77 +8279,6 @@ class _SettingsScreenState extends State<SettingsScreen>
       ),
     );
   }
-
-  Widget _fontSizeBlock(L10n l, AppSettings s) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(l.bodyFontSizeTitle,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-                ),
-                Text('${s.bodyFontSize.round()}',
-                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
-              ],
-            ),
-            Slider.adaptive(
-              value: s.bodyFontSize,
-              min: MonoTextController.minBodyFontSize,
-              max: MonoTextController.maxBodyFontSize,
-              divisions: (MonoTextController.maxBodyFontSize -
-                      MonoTextController.minBodyFontSize)
-                  .round(),
-              onChanged: (v) => setState(() => s.bodyFontSize = v),
-              onChangeEnd: (_) => store.persistSettings(),
-            ),
-            // 2026-08-18 소유자 지시 — "'본문 글자 크기'와 더불어서 '본문
-            // 줄 간격(행 간격)' 설정도 될까?"
-            //
-            // 견본은 아래 하나를 같이 쓴다. 둘을 따로 두면 사람이 두 군데를
-            // 번갈아 보며 맞춰야 하는데, 글자 크기와 줄 간격은 원래 **같이
-            // 보고 정하는 것**이다. 하나를 키우면 다른 하나가 좁아 보인다.
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(l.bodyLineHeightTitle,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 17)),
-                ),
-                Text(s.bodyLineHeight.toStringAsFixed(1),
-                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
-              ],
-            ),
-            Slider.adaptive(
-              value: s.bodyLineHeight,
-              min: MonoTextController.minBodyHeight,
-              max: MonoTextController.maxBodyHeight,
-              // 0.1씩. 그보다 잘게 나누면 손가락으로는 같은 자리이고,
-              // 숫자만 흔들려서 고른 값을 다시 못 찾는다.
-              divisions: ((MonoTextController.maxBodyHeight -
-                          MonoTextController.minBodyHeight) *
-                      10)
-                  .round(),
-              onChanged: (v) => setState(() => s.bodyLineHeight = v),
-              onChangeEnd: (_) => store.persistSettings(),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: context.c.codeBg,
-                  border: Border.all(color: context.c.codeLine),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Text(l.bodyFontSizeSample,
-                  style: TextStyle(
-                      fontSize: s.bodyFontSize, height: s.bodyLineHeight)),
-            ),
-          ],
-        ),
-      );
 
   @override
   Widget build(BuildContext context) {
@@ -8579,16 +8509,41 @@ class _SettingsScreenState extends State<SettingsScreen>
               ('dark', l.themeDark),
             ], (v) => s.themeMode = v),
             _sep(),
+            // 2026-08-18 — 설정 두 뎁스, 둘째.
+            //
+            // 글자 크기와 줄 간격은 미닫이 둘에 견본 상자 하나, 세 조각이다.
+            // 오늘 글자 크기를 안 바꿀 사람도 그 세 조각을 지나쳐야 다음
+            // 항목에 닿았다.
+            //
+            // 지금 값을 오른쪽에 적어 둔다 — 들어가 보지 않고도 몇이고
+            // 얼마인지 알 수 있으면, 안 들어가도 되는 날이 생긴다. 그게
+            // 뎁스를 하나 더 두면서 잃는 것을 되갚는 유일한 방법이다.
             KeyedSubtree(
-                key: _anchors['fontsize'], child: _fontSizeBlock(l, s)),
+              key: _anchors['fontsize'],
+              child: ListTile(
+                leading: Icon(Icons.text_fields, color: context.c.sub),
+                title: Text(l.typographyTitle,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(
+                      '${s.bodyFontSize.round()}pt · '
+                      '${s.bodyLineHeight.toStringAsFixed(1)}',
+                      style: TextStyle(fontSize: 15, color: context.c.sub)),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: context.c.sub),
+                ]),
+                onTap: () async {
+                  await Navigator.push<void>(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const TypographyScreen()));
+                  if (mounted) setState(() {});
+                },
+              ),
+            ),
             _sep(),
             KeyedSubtree(key: _anchors['paper'], child: _paperBlock(l, s)),
-            _sep(),
-            KeyedSubtree(
-              key: _anchors['mono'],
-              child: _switchRow(l.monoEditorTitle, l.monoEditorSub, s.monoEditor,
-                  (v) => s.monoEditor = v),
-            ),
           ]),
           KeyedSubtree(
               key: _anchors['lock'], child: _secHeader(l.lockSectionTitle)),
@@ -9004,6 +8959,150 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
+}
+
+/// 글자와 줄 간격 — 설정에서 한 뎁스 들어온 곳.
+///
+/// 2026-08-18 소유자 지시로 설정 첫 화면에서 내려왔다. 까닭은 부르는
+/// 쪽(설정 화면)에 적어 뒀다.
+///
+/// 등폭 스위치를 여기로 같이 데려왔다. '표와 코드를 등폭으로'는 결국
+/// **글자를 어떻게 그릴 것인가**에 대한 답이라, 글자 크기·줄 간격과
+/// 한 방에 있는 것이 맞다. 설정 첫 화면에서 저 셋이 따로 앉아 있었던
+/// 것은 그냥 만든 차례대로 쌓인 것이었다.
+class TypographyScreen extends StatefulWidget {
+  const TypographyScreen({super.key});
+
+  @override
+  State<TypographyScreen> createState() => _TypographyScreenState();
+}
+
+class _TypographyScreenState extends State<TypographyScreen> {
+  final store = Store.instance;
+
+  Widget _block(L10n l, AppSettings s) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(l.bodyFontSizeTitle,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+                ),
+                Text('${s.bodyFontSize.round()}',
+                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+              ],
+            ),
+            Slider.adaptive(
+              value: s.bodyFontSize,
+              min: MonoTextController.minBodyFontSize,
+              max: MonoTextController.maxBodyFontSize,
+              divisions: (MonoTextController.maxBodyFontSize -
+                      MonoTextController.minBodyFontSize)
+                  .round(),
+              onChanged: (v) => setState(() => s.bodyFontSize = v),
+              onChangeEnd: (_) => store.persistSettings(),
+            ),
+            // 2026-08-18 소유자 지시 — "'본문 글자 크기'와 더불어서 '본문
+            // 줄 간격(행 간격)' 설정도 될까?"
+            //
+            // 견본은 아래 하나를 같이 쓴다. 둘을 따로 두면 사람이 두 군데를
+            // 번갈아 보며 맞춰야 하는데, 글자 크기와 줄 간격은 원래 **같이
+            // 보고 정하는 것**이다. 하나를 키우면 다른 하나가 좁아 보인다.
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(l.bodyLineHeightTitle,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 17)),
+                ),
+                Text(s.bodyLineHeight.toStringAsFixed(1),
+                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+              ],
+            ),
+            Slider.adaptive(
+              value: s.bodyLineHeight,
+              min: MonoTextController.minBodyHeight,
+              max: MonoTextController.maxBodyHeight,
+              // 0.1씩. 그보다 잘게 나누면 손가락으로는 같은 자리이고,
+              // 숫자만 흔들려서 고른 값을 다시 못 찾는다.
+              divisions: ((MonoTextController.maxBodyHeight -
+                          MonoTextController.minBodyHeight) *
+                      10)
+                  .round(),
+              onChanged: (v) => setState(() => s.bodyLineHeight = v),
+              onChangeEnd: (_) => store.persistSettings(),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: context.c.codeBg,
+                  border: Border.all(color: context.c.codeLine),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Text(l.bodyFontSizeSample,
+                  style: TextStyle(
+                      fontSize: s.bodyFontSize, height: s.bodyLineHeight)),
+            ),
+          ],
+        ),
+      );
+
+  Widget _card(List<Widget> children) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Material(
+            color: context.c.panel,
+            child: Column(children: children),
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final s = store.settings;
+    return Scaffold(
+      appBar: AppBar(title: Text(l.typographyTitle)),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
+          child: ListView(
+            padding: const EdgeInsets.only(top: 14, bottom: 40),
+            children: [
+              _card([_block(l, s)]),
+              const SizedBox(height: 14),
+              _card([
+                SwitchListTile.adaptive(
+                  title: Text(l.monoEditorTitle,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 17)),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(l.monoEditorSub,
+                        style: TextStyle(
+                            fontSize: 15,
+                            height: 1.35,
+                            color: context.c.guideInk)),
+                  ),
+                  value: s.monoEditor,
+                  onChanged: (v) {
+                    s.monoEditor = v;
+                    store.persistSettings();
+                    setState(() {});
+                  },
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// 자동 바꾸기 규칙 — 설정에서 한 뎁스 들어온 곳.

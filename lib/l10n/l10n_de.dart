@@ -453,6 +453,13 @@ class L10nDe extends L10n {
       'Pro Gerät: Textgröße, Zeilenabstand, Papier, Erscheinungsbild, Sortierung';
 
   @override
+  String get syncScopePlatform =>
+      'Die automatische Synchronisierung funktioniert derzeit nur zwischen Apple-Geräten (iPhone, iPad, Mac). Unter Android und Windows nutzen Sie Backup exportieren und Importieren im Menü';
+
+  @override
+  String get typographyTitle => 'Text & Zeilenabstand';
+
+  @override
   String get syncScopeNever =>
       'Der KI-API-Schlüssel wird nicht in iCloud gesichert und muss auf jedem Gerät eingegeben werden';
 

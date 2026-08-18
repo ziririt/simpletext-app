@@ -451,6 +451,13 @@ class L10nJa extends L10n {
       '端末ごと: 文字サイズ、行間、背景、外観、並び順';
 
   @override
+  String get syncScopePlatform =>
+      '現在、自動同期はApple製デバイス（iPhone・iPad・Mac）の間だけです。AndroidとWindowsではメニューのバックアップ書き出しと読み込みをお使いください';
+
+  @override
+  String get typographyTitle => '文字と行間';
+
+  @override
   String get syncScopeNever =>
       'AI の API キーは iCloud に保存されないため、端末ごとに入力が必要です';
 

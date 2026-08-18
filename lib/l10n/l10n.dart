@@ -295,6 +295,16 @@ abstract class L10n {
   String get syncScopeShared;
   String get syncScopeDevice;
   String get syncScopeNever;
+
+  /// 지금 자동 동기화가 어디까지 닿는가 (2026-08-18).
+  ///
+  /// 안 써 놓으면 나중에 환불 요구로 돌아온다. 애플 기기만 쓰는 사람은
+  /// 평생 못 볼 줄이지만, 안드로이드 태블릿을 새로 산 사람은 이 줄이
+  /// 없으면 '고장'이라고 읽는다.
+  String get syncScopePlatform;
+
+  /// 설정에서 한 뎁스 들어가는 글자 설정 (2026-08-18).
+  String get typographyTitle;
   String get syncStateOn;
   String get syncStateOff;
   String get syncStateSyncing;
@@ -704,6 +714,8 @@ abstract class L10n {
         'syncScopeShared': syncScopeShared,
         'syncScopeDevice': syncScopeDevice,
         'syncScopeNever': syncScopeNever,
+        'syncScopePlatform': syncScopePlatform,
+        'typographyTitle': typographyTitle,
         'syncStateOn': syncStateOn,
         'syncStateOff': syncStateOff,
         'syncStateSyncing': syncStateSyncing,

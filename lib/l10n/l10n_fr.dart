@@ -453,6 +453,13 @@ class L10nFr extends L10n {
       'Par appareil : taille du texte, interligne, papier, apparence, tri';
 
   @override
+  String get syncScopePlatform =>
+      "Pour l'instant, la synchronisation automatique ne fonctionne qu'entre appareils Apple (iPhone, iPad, Mac). Sur Android et Windows, utilisez Exporter la sauvegarde et Importer depuis le menu";
+
+  @override
+  String get typographyTitle => 'Texte et interligne';
+
+  @override
   String get syncScopeNever =>
       'La clé d’API IA n’est pas envoyée vers iCloud, saisissez-la donc sur chaque appareil';
 

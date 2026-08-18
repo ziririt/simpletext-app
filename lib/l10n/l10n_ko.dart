@@ -451,6 +451,13 @@ class L10nKo extends L10n {
       '기기마다 따로 : 글자 크기, 줄 간격, 배경, 화면 모드, 정렬 기준';
 
   @override
+  String get syncScopePlatform =>
+      '지금 자동 동기화는 애플 기기(아이폰·아이패드·맥)끼리만 됩니다. 안드로이드·윈도우는 메뉴의 백업 내보내기와 불러오기를 쓰세요';
+
+  @override
+  String get typographyTitle => '글자와 줄 간격';
+
+  @override
   String get syncScopeNever =>
       'AI API KEY는 iCloud에 올라가지 않으니, 기기마다 입력해야 합니다';
 

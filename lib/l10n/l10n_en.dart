@@ -452,6 +452,13 @@ class L10nEn extends L10n {
       'Per device: text size, line spacing, paper, appearance, sort order';
 
   @override
+  String get syncScopePlatform =>
+      'Automatic sync currently works between Apple devices only (iPhone, iPad, Mac). On Android and Windows, use Export backup and Import from the menu';
+
+  @override
+  String get typographyTitle => 'Text & spacing';
+
+  @override
   String get syncScopeNever =>
       'Your AI API key is not uploaded to iCloud, so enter it on each device';
 

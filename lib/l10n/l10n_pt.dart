@@ -452,6 +452,13 @@ class L10nPt extends L10n {
       'Por dispositivo: tamanho do texto, espaçamento, papel, aparência, ordenação';
 
   @override
+  String get syncScopePlatform =>
+      'Por enquanto, a sincronização automática funciona apenas entre dispositivos Apple (iPhone, iPad, Mac). No Android e no Windows, use Exportar backup e Importar no menu';
+
+  @override
+  String get typographyTitle => 'Texto e espaçamento';
+
+  @override
   String get syncScopeNever =>
       'A chave de API de IA não é enviada ao iCloud, portanto digite-a em cada dispositivo';
 

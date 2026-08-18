@@ -452,6 +452,13 @@ class L10nEs extends L10n {
       'Por dispositivo: tamaño de texto, interlineado, papel, apariencia, orden';
 
   @override
+  String get syncScopePlatform =>
+      'Por ahora la sincronización automática solo funciona entre dispositivos Apple (iPhone, iPad, Mac). En Android y Windows, usa Exportar copia de seguridad e Importar desde el menú';
+
+  @override
+  String get typographyTitle => 'Texto y espaciado';
+
+  @override
   String get syncScopeNever =>
       'La clave de API de IA no se sube a iCloud, así que debe introducirse en cada dispositivo';
 

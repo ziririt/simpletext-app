@@ -451,6 +451,13 @@ class L10nZhHans extends L10n {
       '每台设备单独：字号、行距、背景、外观、排序';
 
   @override
+  String get syncScopePlatform =>
+      '目前自动同步仅在 Apple 设备（iPhone、iPad、Mac）之间进行。Android 与 Windows 请使用菜单中的导出备份与导入';
+
+  @override
+  String get typographyTitle => '字体与行距';
+
+  @override
   String get syncScopeNever =>
       'AI API 密钥不会上传到 iCloud，需要在每台设备上分别输入';
 
