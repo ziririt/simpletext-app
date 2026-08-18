@@ -146,6 +146,20 @@ const _onAccentDark = Color(0xFF08205A);
 /// 값이다 — 읽히는 쪽을 지켰으면 나머지는 취향의 자리다.
 const Color kAccentFill = Color(0xFF4FC3F7);
 const Color kOnAccentFill = _onAccentDark;
+
+/// 보조로 떠 있는 단추의 바탕. 주된 단추보다 한 계단 옅은 하늘.
+///
+/// 2026-08-18 소유자 신고 — "'글쓰기' 버튼 아이콘은 별로 눈에 안 띄어서
+/// 못 찾을 정도임. ... 정리는 하늘색, 글쓰기는 더 연한 연하늘색으로."
+///
+/// 종이색(panel)으로 두었던 것이 화근이었다. 종이 위의 종이는 안 보인다.
+/// 서열은 **색을 빼서**가 아니라 **같은 색을 옅게 해서** 매긴다 — 그래야
+/// 둘 다 단추로 보이면서 어느 쪽이 주된 길인지도 보인다.
+///
+/// kAccentFill 과 마찬가지로 라이트·다크가 같은 값이다. 떠 있는 단추는
+/// 배경 위가 아니라 그림자 위에 있어서, 모드를 따라갈 이유가 없다.
+const Color kAccentSoft = Color(0xFFBFE6FA);
+const Color kOnAccentSoft = Color(0xFF0B3B63);
 // 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
 const _sky = Color(0xFF3FB2F0);
 
@@ -2295,6 +2309,17 @@ class _HomeScreenState extends State<HomeScreen>
   final store = Store.instance;
   String query = '';
 
+  /// 검색칸이 펼쳐져 있는가.
+  ///
+  /// 2026-08-18 소유자 지시 — "검색을 많이 할 것도 아니니. 그냥 검색
+  /// 버튼(돋보기)만 하나 두고 시원하게 하자."
+  ///
+  /// 검색칸을 늘 띄워 두면 머리 60px 중 절반을 '오늘 한 번도 안 쓸 칸'이
+  /// 먹는다. 그 칸이 사라지면 그 자리에 목록의 첫 줄이 올라온다 — 앱을
+  /// 열었을 때 맨 먼저 보이는 것이 도구가 아니라 내 글이 된다.
+  bool _searching = false;
+  final _searchCtl = TextEditingController();
+
   /// 여러 개를 골라 한 번에 지우는 중인가.
   ///
   /// 2026-08-17 소유자 지시 — "'정렬과 필터'에서 '선택 메모 한번에 삭제'
@@ -2336,6 +2361,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    _searchCtl.dispose();
     _unbindStatusBarTap();
     _life.dispose();
     ICloudSync.instance.dispose();
@@ -2594,7 +2620,9 @@ class _HomeScreenState extends State<HomeScreen>
                     hasScrollBody: false,
                     child: Center(child: Text(l.emptyList, textAlign: TextAlign.center)),
                   ),
-                if (pinned.isNotEmpty) _groupLabel(l.pinnedLabel),
+                // 2026-08-18 소유자 지시로 '고정됨' 소제목을 뗐다 —
+                // "핀 아이콘이 보이니, 그게 고정이라고 알아볼거야."
+                // 같은 말을 두 번 하는 화면은 그만큼 좁아진다.
                 // 고정 목록도 같은 규칙이다(2026-08-17 소유자 지시).
                 // 고정을 스무 개씩 해 두는 사람에게는 고정 목록이 곧
                 // '그 사람의 목록'이라, 거기를 안 지나면 아무 데도 안 지난다.
@@ -2650,7 +2678,8 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
                 // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
                 // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
-                const SliverToBoxAdapter(child: SizedBox(height: 176)),
+                // 떠 있는 단추(56)에 위아래 여백을 더한 높이.
+                const SliverToBoxAdapter(child: SizedBox(height: 104)),
               ],
                       ),
                     ),
@@ -2664,52 +2693,79 @@ class _HomeScreenState extends State<HomeScreen>
                         child: SizedBox(
                           height: kHomeHeaderH,
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
-                            child: Row(children: [
-                              Expanded(
-                                  child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: l.searchHint,
-                                  prefixIcon: const Icon(Icons.search, size: 20),
-                                  filled: true,
-                                  fillColor: context.c.field,
-                                  isDense: true,
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (v) => setState(() => query = v),
-                              )),
-                              // 2026-08-17 소유자 지시 — 자리를 바꿨다.
-                              //
-                              // 전에는 [검색] [필터] [메뉴]였는데, 셋 중
-                              // 필터만 성격이 다르다. 검색과 필터는 '지금
-                              // 보이는 목록을 좁히는 일'이고 메뉴는 '앱에
-                              // 대해 하는 일'인데, 필터가 메뉴 옆에 붙어
-                              // 있으니 같은 무리로 보였다.
-                              //
-                              // 필터는 '메모' 소제목 옆으로 내렸다(_groupLabel).
-                              // 자기가 다루는 것 바로 위에 놓이면 무엇을
-                              // 거르는 단추인지 자리만으로 알 수 있다.
-                              //
-                              // 이제 [검색] [메뉴] [설정]이다. 왼쪽에서
-                              // 오른쪽으로 갈수록 '이 목록'에서 '이 앱'으로
-                              // 넓어진다.
-                              _listMenu(l),
-                              IconButton(
-                                icon: const Icon(Icons.settings_outlined),
-                                tooltip: l.menuAppSettings,
-                                onPressed: () async {
-                                  await Navigator.push<void>(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => const SettingsScreen()));
-                                  if (mounted) setState(() {});
-                                },
-                              ),
-                            ]),
+                            padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
+                            child: _searching
+                                ? Row(children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                          CupertinoIcons.chevron_left,
+                                          size: 22),
+                                      tooltip: l.close,
+                                      onPressed: () => setState(() {
+                                        _searching = false;
+                                        _searchCtl.clear();
+                                        query = '';
+                                      }),
+                                    ),
+                                    Expanded(
+                                        child: TextField(
+                                      controller: _searchCtl,
+                                      autofocus: true,
+                                      textInputAction: TextInputAction.search,
+                                      decoration: InputDecoration(
+                                        hintText: l.searchHint,
+                                        filled: true,
+                                        fillColor: context.c.field,
+                                        isDense: true,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 10),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            borderSide: BorderSide.none),
+                                      ),
+                                      onChanged: (v) =>
+                                          setState(() => query = v),
+                                    )),
+                                    const SizedBox(width: 8),
+                                  ])
+                                : Row(children: [
+                                    // 2026-08-18 소유자 지시 — 왼쪽 끝에
+                                    // 삼선, 오른쪽 끝에 톱니, 그 안쪽에
+                                    // 돋보기.
+                                    //
+                                    // 양 끝만 쓰고 가운데를 비운다. 가운데가
+                                    // 비면 그 밑으로 목록이 흘러가는 것이
+                                    // 보이고, 머리가 뚜껑이 아니라 유리로
+                                    // 읽힌다.
+                                    //
+                                    // 오른쪽 둘의 차례는 손에서 먼 순이다.
+                                    // 톱니(한 번 정하고 안 여는 것)가 맨 끝,
+                                    // 돋보기(가끔 쓰는 것)가 그 안쪽.
+                                    _listMenu(l),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(CupertinoIcons.search,
+                                          size: 22),
+                                      tooltip: l.searchHint,
+                                      onPressed: () =>
+                                          setState(() => _searching = true),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(CupertinoIcons.gear_alt,
+                                          size: 23),
+                                      tooltip: l.menuAppSettings,
+                                      onPressed: () async {
+                                        await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const SettingsScreen()));
+                                        if (mounted) setState(() {});
+                                      },
+                                    ),
+                                  ]),
                           ),
                         ),
                       ),
@@ -2718,48 +2774,44 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ]),
             ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // 2026-08-14 소유자 요청: 아이콘만으로는 무슨 버튼인지 알 수 없어
-          // 두 버튼 다 글자를 붙인다.
-          // 2026-08-18 소유자 신고 — "'+ 새 문서 만들기' 버튼이 배경색과
-          // 비슷한 버튼 색이라서 눈에 안 띄네."
-          //
-          // 여기 backgroundColor: panel / foregroundColor: accent 를 박아
-          // 뒀었다. 두 단추 사이에 위아래를 두려던 것인데, 다크에서 panel 은
-          // 목록 카드와 거의 같은 색이라 단추가 배경에 녹아 버렸다.
-          //
-          // 색으로 서열을 매기려다 하나를 안 보이게 만들었다. **안 보이는
-          // 단추는 서열이 낮은 것이 아니라 없는 것이다.** 서열은 자리와
-          // 차례가 이미 말해 주고 있다 — 아래에 있는 것이 손가락에 가깝고,
-          // 그게 이 앱의 주된 길이다.
-          //
-          // 색을 안 박으면 테마의 채운 하늘색을 그대로 받는다(theme 의
-          // floatingActionButtonTheme). 이 앱의 다른 모든 단추와 같은 값이라,
-          // 여기만 따로 기억할 것이 없어진다.
-          FloatingActionButton.extended(
-            heroTag: 'new',
-            tooltip: l.newNoteTooltip,
-            onPressed: () async {
-              final note = Note.fresh();
-              store.notes.insert(0, note);
-              await store.persist();
-              if (!mounted) return;
-              openNote(context, note.id);
-            },
-            icon: const Icon(Icons.add),
-            label: Text(l.newNoteTooltip, style: const TextStyle(fontWeight: FontWeight.w700)),
-          ),
-          const SizedBox(height: 10),
-          FloatingActionButton.extended(
-            heroTag: 'paste',
-            onPressed: _pasteAndTidy,
-            icon: const Icon(Icons.content_paste_go),
-            label: Text(l.pasteAndTidy, style: const TextStyle(fontWeight: FontWeight.w700)),
-          ),
-        ],
+      // 떠 있는 단추 둘 — 2026-08-18 소유자 지시로 글자를 떼고 양쪽
+      // 아래 구석으로 갈랐다. "둘다 아이콘만 버튼에 두고 '정리' 같은
+      // 말은 빼자. '정리' 아이콘은 하단 좌측에, '글쓰기'는 우측 하단에."
+      //
+      // 알약 두 개가 세로로 쌓여 있으면 목록의 오른쪽 아래가 통째로
+      // 막힌다. 양쪽으로 가르면 가운데가 뚫려서 밑의 글이 보이고, 두
+      // 단추가 서로 다른 일이라는 것도 자리만으로 읽힌다.
+      //
+      // 색으로 서열을 매긴다 — 정리는 채운 하늘, 글쓰기는 연한 하늘.
+      // 종이색으로 낮추려던 앞의 시도는 단추를 아예 안 보이게 만들었다.
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            FloatingActionButton(
+              heroTag: 'paste',
+              tooltip: l.pasteAndTidy,
+              onPressed: _pasteAndTidy,
+              child: const Icon(Icons.content_paste_go, size: 25),
+            ),
+            FloatingActionButton(
+              heroTag: 'new',
+              tooltip: l.newNoteTooltip,
+              backgroundColor: kAccentSoft,
+              foregroundColor: kOnAccentSoft,
+              onPressed: () async {
+                final note = Note.fresh();
+                store.notes.insert(0, note);
+                await store.persist();
+                if (!mounted) return;
+                openNote(context, note.id);
+              },
+              child: const Icon(CupertinoIcons.square_pencil, size: 24),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -6083,48 +6135,55 @@ static const int kTagScanChars = 3000;
                 : const SizedBox.shrink(),
           ),
         ),
-        // 떠 있는 단추 둘. 목록 화면과 같은 문법이다 — 작은 것이 위,
-        // 주된 것이 아래. 화면마다 문법이 다르면 그건 두 앱이다.
+        // 떠 있는 단추 둘. 목록 화면과 **똑같은** 문법이다 — 정리가 왼쪽
+        // 채운 하늘, 글쓰기가 오른쪽 연한 하늘. 화면마다 문법이 다르면
+        // 그건 두 앱이다.
+        //
+        // 2026-08-18 소유자 신고 — 한쪽만 글자를 달고 있어서 둘이 같은
+        // 무리로 안 보였고, 종이색 글쓰기 단추는 "못 찾을 정도"였다.
         //
         // 글자를 치는 동안에는 감춘다. 키보드 위에 보조 막대가 뜨는데
         // 그 위에 단추가 또 겹치면 손가락 갈 곳이 없다.
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: (_bodyFocus.hasFocus && !_isDesktop)
             ? null
-            : Column(mainAxisSize: MainAxisSize.min, children: [
-                // 새 노트 — 이 메모와 무관한 일이라 주된 단추와 다르게
-                // 생겼다. 흰 원에 옅은 그림자. '떠 있는 것은 흰 동그라미'가
-                // 이 앱이 앞으로 쓸 규칙이다.
-                FloatingActionButton.small(
-                  heroTag: 'ed-new',
-                  tooltip: l.newNoteTooltip,
-                  backgroundColor: context.c.panel,
-                  foregroundColor: context.c.guideInk,
-                  elevation: 2,
-                  onPressed: () async {
-                    await _save();
-                    final fresh = Note.fresh(body: '');
-                    store.notes.insert(0, fresh);
-                    await store.persist();
-                    if (!mounted) return;
-                    await openNote(context, fresh.id);
-                  },
-                  child: const Icon(CupertinoIcons.square_pencil, size: 19),
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 정리 — 이 화면의 존재 이유. 길게 누르면 다른 방식을
+                    // 고를 수 있다(2026-08-16에 문을 하나로 합치면서 만든 길).
+                    GestureDetector(
+                      onLongPress: _showPresetSheet,
+                      child: FloatingActionButton(
+                        heroTag: 'ed-tidy',
+                        tooltip: l.tidyAction,
+                        onPressed: () =>
+                            _runTidyWithPreset(buildPresets().first),
+                        child:
+                            const Icon(CupertinoIcons.wand_stars, size: 25),
+                      ),
+                    ),
+                    // 새 노트 — 이 메모와 무관한 일이라 한 계단 옅다.
+                    FloatingActionButton(
+                      heroTag: 'ed-new',
+                      tooltip: l.newNoteTooltip,
+                      backgroundColor: kAccentSoft,
+                      foregroundColor: kOnAccentSoft,
+                      onPressed: () async {
+                        await _save();
+                        final fresh = Note.fresh(body: '');
+                        store.notes.insert(0, fresh);
+                        await store.persist();
+                        if (!mounted) return;
+                        await openNote(context, fresh.id);
+                      },
+                      child: const Icon(CupertinoIcons.square_pencil, size: 24),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                // 정리 — 이 화면의 존재 이유. 길게 누르면 다른 방식을
-                // 고를 수 있다(2026-08-16에 문을 하나로 합치면서 만든 길).
-                GestureDetector(
-                  onLongPress: _showPresetSheet,
-                  child: FloatingActionButton.extended(
-                    heroTag: 'ed-tidy',
-                    tooltip: l.tidyAction,
-                    onPressed: () => _runTidyWithPreset(buildPresets().first),
-                    icon: const Icon(CupertinoIcons.wand_stars),
-                    label: Text(l.tidyAction,
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ]),
+              ),
       ),
             ),
           ]),
