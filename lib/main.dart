@@ -988,7 +988,7 @@ class Note {
 /// 사용자 정리 규칙 설정 (웹 프로토타입과 동일 기본값)
 class AppSettings {
   /// 저장된 설정의 판(版). 기본값을 바꿀 때 '한 번만' 갈아엎기 위해 쓴다.
-  static const int settingsRev = 4;
+  static const int settingsRev = 5;
 
   // 2026-08-14 소유자 신고 — **굵게**가 '굵게'로 바뀌어 나온다.
   // 따옴표가 필요 없는 자리에까지 따옴표가 붙어서 붙여넣기 뒤에 손이 간다.
@@ -1264,14 +1264,24 @@ class AppSettings {
     if (((j['rev'] ?? 0) as int) < 3 && s.emphStyle == 'remove') {
       s.emphStyle = 'keep';
     }
-    // 2026-08-18 — 제목도 같은 길로 옮긴다. 까닭은 headingMode 선언에 적었다.
-    // 판을 4로 적는 것은 3이 이미 나갔기 때문이다(갈아엎기는 언제나 '내가
-    // 도입된 판'을 적는다).
-    if (((j['rev'] ?? 0) as int) < 4 && s.headingMode == 'strip') {
-      s.headingMode = 'keep';
-    }
     s.hrMode = (j['hrMode'] ?? s.hrMode) as String;
     s.headingMode = (j['headingMode'] ?? s.headingMode) as String;
+    // 2026-08-18 — 제목도 같은 길로 옮긴다. 까닭은 headingMode 선언에 적었다.
+    //
+    // 처음 쓴 자리가 틀렸다. 갈아엎기를 **저장본을 읽기 전에** 놓았다.
+    // 그 자리에서 s.headingMode 는 아직 갓 만든 기본값 'keep'이라
+    // 'strip'과 견주는 조건이 참이 될 수 없고, 바로 아래 줄이 저장된
+    // 'strip'을 덮어썼다. 갈아엎기가 통째로 헛돌았다 — 소유자 기기에서
+    // 제목의 '#'이 계속 지워지고 있었던 까닭이 이것이다.
+    //
+    // 강조(emphStyle)는 읽기가 맨 위에 있어서 멀쩡히 돌았다. 같은 함수
+    // 안에서 하나는 맞고 하나는 틀렸다. 갈아엎기는 **읽은 뒤에** 둔다.
+    //
+    // 판을 5로 적는 것은 4가 이미 저장돼 나갔기 때문이다(갈아엎기는
+    // 언제나 '내가 도입된 판'을 적는다).
+    if (((j['rev'] ?? 0) as int) < 5 && s.headingMode == 'strip') {
+      s.headingMode = 'keep';
+    }
     s.quoteMode = (j['quoteMode'] ?? s.quoteMode) as String;
     s.headingSymbol = (j['headingSymbol'] ?? s.headingSymbol) as String;
     s.bulletChar = (j['bulletChar'] ?? s.bulletChar) as String;

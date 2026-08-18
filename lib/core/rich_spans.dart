@@ -62,7 +62,7 @@ class RichSpan {
   String toString() => 'RichSpan($start, $end, ${kind.name})';
 }
 
-final RegExp _head = RegExp(r'^(#{1,3})\s');
+final RegExp _head = RegExp(r'^(#{1,6})\s');
 
 /// [text]에서 꾸며 그릴 자리를 앞에서부터 돌려준다.
 List<RichSpan> richSpans(String text) {
@@ -83,6 +83,8 @@ void _one(String line, int base, List<RichSpan> out) {
   final h = _head.firstMatch(line);
   if (h != null) {
     final n = h.group(1)!.length;
+    // 넷 이상은 셋과 같은 크기로 그린다. 화면에서 더 잘게 나눌 만한
+    // 크기 차이가 남지 않는다(h3는 이미 1.08배다).
     out.add(RichSpan(base, base + h.end, RichKind.marker));
     if (h.end < line.length) {
       out.add(RichSpan(base + h.end, base + line.length,

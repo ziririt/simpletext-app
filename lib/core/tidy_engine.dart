@@ -1332,15 +1332,26 @@ List<String> _processTextSegment(
     } else if (o.stripQuotes && (m = RegExp(r'^(\s*)>\s?(.*)$').firstMatch(line)) != null) {
       rep.markers++;
       out.add(m!.group(1)! + _inlineClean(m.group(2)!.replaceFirst(RegExp(r'^(>\s?)+'), ''), o, rep));
-    } else if (o.bulletsToDot && (m = RegExp(r'^(\s*)([-*+–—])\s+(?:\[[ xX]\]\s+)?(.*)$').firstMatch(line)) != null) {
+    } else if (o.bulletsToDot && (m = RegExp(r'^(\s*)([-*+–—])\s+(\[[ xX]\]\s+)?(.*)$').firstMatch(line)) != null) {
       final bc = o.bulletChar;
       final ind = ' ' * o.bulletIndent;
+      // 2026-08-18 — 할 일 네모를 살린다.
+      //
+      // 여기 정규식이 네모를 **버리는 묶음**((?:...))으로 잡고 있었다.
+      // 그래서 정리를 눌르면 '- [ ] 할 일'이 '- 할 일'이 됐다. 네모가
+      // 사라지니 눌러서 켤 것도 없어진다 — 같은 날 만든 기능이 정리
+      // 한 번에 없어지고 있었다.
+      final box = m!.group(3) ?? '';
       if (bc == 'keep') {
-        out.add(ind + m!.group(1)! + m.group(2)! + ' ' + _inlineClean(m.group(3)!, o, rep));
+        out.add(ind + m.group(1)! + m.group(2)! + ' ' + box + _inlineClean(m.group(4)!, o, rep));
       } else {
         // 변환 시 원본 들여쓰기는 버리고 설정 들여쓰기만 적용 (누적 방지)
         rep.markers++;
-        out.add(ind + bc + ' ' + _inlineClean(m!.group(3)!, o, rep));
+        // 네모가 붙어 있으면 글머리표는 '-'로 남긴다. 편집기는 '- [ ]'와
+        // '* [ ]'만 네모로 알아본다(core/rich_spans.dart). 가운뎃점으로
+        // 바꿔 버리면 화면에서 네모가 아니라 글자가 된다.
+        out.add(ind + (box.isEmpty ? bc : '-') + ' ' + box +
+            _inlineClean(m.group(4)!, o, rep));
       }
     } else if ((m = RegExp(r'^(\s*)(\d+)([.)])\s+(.*)$').firstMatch(line)) != null) {
       out.add('${m!.group(1)!}${m.group(2)!}. ${_inlineClean(m.group(4)!, o, rep)}');

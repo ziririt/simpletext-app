@@ -20,8 +20,16 @@ void main() {
       expect(richSpans('### 가').last.kind, RichKind.h3);
     });
 
-    test('####는 제목이 아니다 — 우리는 셋까지만 그린다', () {
-      expect(richSpans('#### 가'), isEmpty);
+    test('####도 제목이다 — 넷째 단계부터는 h3와 같은 크기', () {
+      expect(richSpans('#### 가'), const [
+        RichSpan(0, 5, RichKind.marker),
+        RichSpan(5, 6, RichKind.h3),
+      ]);
+      expect(richSpans('###### 가'), const [
+        RichSpan(0, 7, RichKind.marker),
+        RichSpan(7, 8, RichKind.h3),
+      ]);
+      expect(richSpans('####### 가'), isEmpty);
     });
 
     test('#만 있고 공백이 없으면 제목이 아니다 (해시태그일 수 있다)', () {
