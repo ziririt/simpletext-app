@@ -35,6 +35,7 @@ import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
 import 'core/mru.dart';
 import 'core/paper.dart';
+import 'core/plain_text.dart';
 import 'core/source_detect.dart';
 import 'core/tidy_engine.dart';
 import 'core/trash.dart';
@@ -640,7 +641,29 @@ class SimpleTextApp extends StatelessWidget {
       // 17이 13.6으로 정확히 그 자리에 떨어진다. 화면마다 값을 따로 두면
       // 반드시 한 군데를 빠뜨리므로 한 곳에서 전역으로 줄인다.
       builder: (ctx, child) {
-        Widget w = child!;
+        // 2026-08-18 — Cmd+C(맥·윈도)도 표시를 벗겨 복사한다.
+        //
+        // 여기 두는 까닭: 단축키는 **초점에서 위로** 찾아 올라가는데,
+        // 플러터의 기본 글자 단축키는 WidgetsApp 에 있다. 그보다 아래
+        // 아무 데나 두면 우리 것이 먼저 걸린다. 그리고 여기 한 곳에
+        // 두면 화면이 늘어나도 빠뜨릴 자리가 없다.
+        //
+        // 제목·태그 칸에서 눌러도 해가 없다. 거기에는 벗길 표시가 없어서
+        // 벗기기가 아무 일도 안 한다.
+        Widget w = Shortcuts(
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.keyC, meta: true):
+                PlainCopyIntent(),
+            SingleActivator(LogicalKeyboardKey.keyC, control: true):
+                PlainCopyIntent(),
+          },
+          child: Actions(
+            actions: <Type, Action<Intent>>{
+              PlainCopyIntent: PlainCopyAction(),
+            },
+            child: child!,
+          ),
+        );
         if (isDesktopPlatform) {
           final mq = MediaQuery.of(ctx);
           w = MediaQuery(
@@ -965,7 +988,7 @@ class Note {
 /// 사용자 정리 규칙 설정 (웹 프로토타입과 동일 기본값)
 class AppSettings {
   /// 저장된 설정의 판(版). 기본값을 바꿀 때 '한 번만' 갈아엎기 위해 쓴다.
-  static const int settingsRev = 2;
+  static const int settingsRev = 3;
 
   // 2026-08-14 소유자 신고 — **굵게**가 '굵게'로 바뀌어 나온다.
   // 따옴표가 필요 없는 자리에까지 따옴표가 붙어서 붙여넣기 뒤에 손이 간다.
@@ -975,7 +998,7 @@ class AppSettings {
   // 엔진(TidyOptions)의 기본값은 원래부터 'remove'였다. 따옴표는 여기,
   // 앱 설정의 기본값이 'quoteSingle'이라서 붙던 것이다(effOpts가 엔진
   // 기본값을 덮어쓴다). 그래서 고칠 자리는 엔진이 아니라 여기다.
-  String emphStyle = 'remove';
+  String emphStyle = 'keep';
   String hrMode = 'keep';
   String headingMode = 'strip';
   String headingSymbol = '■';
@@ -1210,6 +1233,17 @@ class AppSettings {
     // 뺏는다). 갈아엎기는 언제나 '내가 도입된 판'을 적어야 한다.
     if (((j['rev'] ?? 0) as int) < 1 && s.emphStyle == 'quoteSingle') {
       s.emphStyle = 'remove';
+    }
+    // 2026-08-18 — 강조 표시를 지우던 것을 '유지'로 바꾼다.
+    //
+    // 08-14에 지우기로 한 진짜 까닭은 '**굵게**'가 "'굵게'"로 바뀌어
+    // 나오는 것이 보기 싫어서였고, **그때는 굵게 보여 줄 방법이 없어서**
+    // 지우는 것이 최선이었다. 이제는 화면에서 굵게 보여 주고 복사할 때
+    // 벗긴다. 지울 이유가 사라졌다.
+    //
+    // 갈아엎기는 언제나 '내가 도입된 판'을 적는다(위 주석 참고).
+    if (((j['rev'] ?? 0) as int) < 3 && s.emphStyle == 'remove') {
+      s.emphStyle = 'keep';
     }
     s.hrMode = (j['hrMode'] ?? s.hrMode) as String;
     s.headingMode = (j['headingMode'] ?? s.headingMode) as String;
@@ -2062,6 +2096,28 @@ const double kHomeHeaderH = 60;
 ///   - 반투명 틴트 + 뒤 배경 블러(18). 콘텐츠가 밑으로 비쳐 흐른다
 ///   - 경계는 1px 실선 대신 아주 옅은 헤어라인
 ///   - 밝은 유리 위에 밝은 유리를 겹치지 말 것 (가독성이 무너진다)
+/// Cmd+C / Ctrl+C — 표시를 벗겨 복사한다.
+class PlainCopyIntent extends Intent {
+  const PlainCopyIntent();
+}
+
+class PlainCopyAction extends Action<PlainCopyIntent> {
+  @override
+  Object? invoke(PlainCopyIntent intent) {
+    // 지금 글자를 치고 있는 칸을 찾는다.
+    final st = FocusManager.instance.primaryFocus?.context
+        ?.findAncestorStateOfType<EditableTextState>();
+    if (st == null) return null;
+    final v = st.textEditingValue;
+    if (!v.selection.isValid || v.selection.isCollapsed) return null;
+    Clipboard.setData(
+        ClipboardData(text: toPlain(v.selection.textInside(v.text))));
+    // 손끝에 한 번. 아무 일도 안 일어난 것처럼 보이면 두 번 누른다.
+    HapticFeedback.selectionClick();
+    return null;
+  }
+}
+
 /// 조금 더 미끄러지는 굴림.
 ///
 /// 2026-08-18 소유자 — "위/아래 스크롤을 할 때, 조금만 더 스르르륵
@@ -5656,8 +5712,25 @@ static const int kTagScanChars = 3000;
         child: ListView(
           shrinkWrap: true,
           children: [
+            // 2026-08-18 — 복사하면 표시가 벗겨진다. 이 앱의 컨셉이다.
+            // 노트에는 마크다운을 담아 두어 굵게 보여 주고, 밖으로 나가는
+            // 순간 맨 글자가 된다.
             ListTile(
               title: Text(L10n.of(ctx).copyAll),
+              subtitle: Text(L10n.of(ctx).copyPlainSub,
+                  style: const TextStyle(fontSize: 12)),
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: toPlain(bodyCtl.text)));
+                Navigator.pop(ctx);
+                _toast(context, L10n.of(context).copiedAll);
+              },
+            ),
+            // 마크다운을 아는 곳(노션·슬랙·깃허브·옵시디언)에 붙일 때는
+            // 표시가 있어야 굵게가 살아난다.
+            ListTile(
+              title: Text(L10n.of(ctx).copyRaw),
+              subtitle: Text(L10n.of(ctx).copyRawSub,
+                  style: const TextStyle(fontSize: 12)),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: bodyCtl.text));
                 Navigator.pop(ctx);
@@ -6352,6 +6425,18 @@ static const int kTagScanChars = 3000;
                     final rest = <ContextMenuButtonItem>[];
                     for (final b in ets.contextMenuButtonItems) {
                       switch (b.type) {
+                        // 2026-08-18 — 고른 글을 복사할 때도 표시를 벗긴다.
+                        case ContextMenuButtonType.copy:
+                          rest.add(ContextMenuButtonItem(
+                            type: ContextMenuButtonType.copy,
+                            onPressed: () {
+                              final v = ets.textEditingValue;
+                              Clipboard.setData(ClipboardData(
+                                  text: toPlain(
+                                      v.selection.textInside(v.text))));
+                              ets.hideToolbar();
+                            },
+                          ));
                         case ContextMenuButtonType.paste:
                           paste = b;
                         case ContextMenuButtonType.selectAll:

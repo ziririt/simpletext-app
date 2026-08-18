@@ -374,6 +374,17 @@ class L10nKo extends L10n {
 
   @override
   String get copyAll => '전체 복사';
+
+  @override
+  String get copyPlainSub =>
+      '#, ** 같은 표시를 빼고 맨 글자로';
+
+  @override
+  String get copyRaw => '마크다운 그대로 복사';
+
+  @override
+  String get copyRawSub =>
+      '노션·슬랙·깃허브처럼 마크다운을 아는 곳에';
   @override
   String get copiedAll => '전체 텍스트를 복사했습니다';
   @override

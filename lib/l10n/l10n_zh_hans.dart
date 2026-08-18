@@ -374,6 +374,17 @@ class L10nZhHans extends L10n {
 
   @override
   String get copyAll => '复制全部';
+
+  @override
+  String get copyPlainSub =>
+      '纯文本 — 去掉 #、** 等符号';
+
+  @override
+  String get copyRaw => '按 Markdown 复制';
+
+  @override
+  String get copyRawSub =>
+      '用于 Notion、Slack、GitHub 等支持 Markdown 的地方';
   @override
   String get copiedAll => '已复制全文';
   @override

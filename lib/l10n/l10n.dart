@@ -229,6 +229,11 @@ abstract class L10n {
 
   // ---------------- 복사 메뉴 ----------------
   String get copyAll;
+
+  /// 복사 시트 (2026-08-18).
+  String get copyPlainSub;
+  String get copyRaw;
+  String get copyRawSub;
   String get copiedAll;
   String get tidyCopy;
   String get tidyCopySub;
@@ -696,6 +701,9 @@ abstract class L10n {
         'savedRuleSuffix': savedRuleSuffix,
         'replaceAllAction': replaceAllAction,
         'copyAll': copyAll,
+        'copyPlainSub': copyPlainSub,
+        'copyRaw': copyRaw,
+        'copyRawSub': copyRawSub,
         'copiedAll': copiedAll,
         'tidyCopy': tidyCopy,
         'tidyCopySub': tidyCopySub,

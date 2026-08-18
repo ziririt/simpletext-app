@@ -376,6 +376,17 @@ class L10nFr extends L10n {
 
   @override
   String get copyAll => 'Tout copier';
+
+  @override
+  String get copyPlainSub =>
+      'Texte brut — sans les marques markdown';
+
+  @override
+  String get copyRaw => 'Copier en markdown';
+
+  @override
+  String get copyRawSub =>
+      'Pour Notion, Slack, GitHub et autres apps qui lisent le markdown';
   @override
   String get copiedAll => 'Texte entier copié';
   @override

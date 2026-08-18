@@ -107,6 +107,20 @@ class MonoTextController extends TextEditingController {
 
     // 구간 경계를 전부 모아 놓고 잘라 나가면, 등폭 구간과 조합 구간이 겹쳐도
     // 어긋나지 않는다.
+    // 커서가 놓인 줄. **그 줄에서만 표시(#, **)를 보여 준다.**
+    //
+    // 2026-08-18 소유자가 정한 컨셉 — 화면에서는 굵게만 보이고 별표는
+    // 안 보인다. 그런데 고치는 줄에서까지 안 보이면 지울 수도 고칠 수도
+    // 없다. 그래서 커서가 간 줄에서만 나타난다. 베어가 하는 그대로다.
+    var caretLineStart = -1;
+    var caretLineEnd = -1;
+    final caret = selection.isValid ? selection.extentOffset : -1;
+    if (caret >= 0 && caret <= text.length) {
+      caretLineStart = caret > 0 ? text.lastIndexOf('\n', caret - 1) + 1 : 0;
+      caretLineEnd = text.indexOf('\n', caret);
+      if (caretLineEnd < 0) caretLineEnd = text.length;
+    }
+
     final cuts = <int>{0, text.length};
     for (final s in spans) {
       cuts.add(s.start.clamp(0, text.length));
@@ -132,7 +146,10 @@ class MonoTextController extends TextEditingController {
       var segStyle = isMono ? monoStyle : base;
       if (!isMono) {
         for (final r in rich) {
-          if (r.start <= a && b <= r.end) segStyle = _dress(segStyle, r.kind);
+          if (r.start <= a && b <= r.end) {
+            segStyle = _dress(segStyle, r.kind,
+                onCaretLine: a >= caretLineStart && a < caretLineEnd);
+          }
         }
       }
       if (isComposing) {
@@ -145,12 +162,15 @@ class MonoTextController extends TextEditingController {
   }
 
   /// 구간 하나에 옷을 입힌다.
-  TextStyle _dress(TextStyle s, RichKind k) {
+  TextStyle _dress(TextStyle s, RichKind k, {required bool onCaretLine}) {
     switch (k) {
       case RichKind.marker:
-        // 지우지 않고 옅게. 편집기라서 글자를 없앨 수 없다(rich_spans.dart 머리말).
-        return s.copyWith(
-            color: (subColor ?? s.color)?.withValues(alpha: 0.45));
+        // 글자를 지우지는 못한다 — 편집기라서 글자 수와 커서 자리가
+        // 어긋나면 안 된다(rich_spans.dart 머리말). 대신 **안 보이게**
+        // 그린다. 커서가 그 줄에 오면 다시 나타난다.
+        return onCaretLine
+            ? s.copyWith(color: (subColor ?? s.color)?.withValues(alpha: 0.45))
+            : s.copyWith(fontSize: 0.01, color: const Color(0x00000000));
       case RichKind.h1:
         return _headStyle(s, h1Scale);
       case RichKind.h2:

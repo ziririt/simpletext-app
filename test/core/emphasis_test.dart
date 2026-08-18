@@ -15,14 +15,35 @@ import 'package:simpletext/main.dart';
 
 void main() {
   group('앱 설정 기본값', () {
-    test('새로 깔면 강조는 따옴표가 아니라 제거다', () {
-      expect(AppSettings().emphStyle, 'remove');
+    // 2026-08-18 — 기본값이 'remove'에서 'keep'으로 바뀌었다.
+    //
+    // 08-14에 지우기로 한 진짜 까닭은 '**굵게**'가 "'굵게'"로 바뀌어
+    // 나오는 것이 보기 싫어서였고, 그때는 굵게 보여 줄 방법이 없어서
+    // 지우는 것이 최선이었다. 이제 편집기가 굵게 그려 주고, 복사할 때
+    // core/plain_text.dart 가 벗긴다. 지울 이유가 사라졌다.
+    test('새로 깔면 강조는 따옴표도 제거도 아니고 그대로 둔다', () {
+      expect(AppSettings().emphStyle, 'keep');
     });
 
     test('판(rev)이 없던 옛 설정의 quoteSingle은 한 번 갈아엎는다', () {
       // 기본값만 바꾸면 이미 쓰던 기기는 저장된 값을 그대로 읽어 와서
       // 아무것도 안 바뀐다. 소유자 기기가 그 상태였다.
+      //
+      // 갈아엎기가 둘 겹친다. rev<1 이 quoteSingle → remove 로 옮기고,
+      // rev<3 이 remove → keep 으로 옮긴다. 옛 기기는 두 번을 한 번에
+      // 지나 keep 에 닿는다.
       final s = AppSettings.fromJson({'emphStyle': 'quoteSingle'});
+      expect(s.emphStyle, 'keep');
+    });
+
+    test('remove 로 두고 쓰던 기기는 한 번만 keep 으로 옮긴다', () {
+      expect(AppSettings.fromJson({'emphStyle': 'remove'}).emphStyle, 'keep');
+    });
+
+    test('옮긴 뒤 사용자가 다시 remove 로 돌려놓으면 그대로 둔다', () {
+      // 이걸 안 지키면 고치는 게 아니라 설정을 뺏는 것이 된다.
+      final s = AppSettings.fromJson(
+          {'rev': AppSettings.settingsRev, 'emphStyle': 'remove'});
       expect(s.emphStyle, 'remove');
     });
 

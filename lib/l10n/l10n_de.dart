@@ -376,6 +376,17 @@ class L10nDe extends L10n {
 
   @override
   String get copyAll => 'Alles kopieren';
+
+  @override
+  String get copyPlainSub =>
+      'Reiner Text — ohne Markdown-Zeichen';
+
+  @override
+  String get copyRaw => 'Als Markdown kopieren';
+
+  @override
+  String get copyRawSub =>
+      'Für Notion, Slack, GitHub und andere Markdown-Apps';
   @override
   String get copiedAll => 'Gesamten Text kopiert';
   @override

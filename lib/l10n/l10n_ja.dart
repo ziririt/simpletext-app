@@ -374,6 +374,17 @@ class L10nJa extends L10n {
 
   @override
   String get copyAll => 'すべてコピー';
+
+  @override
+  String get copyPlainSub =>
+      '#, ** などの記号を外した素のテキスト';
+
+  @override
+  String get copyRaw => 'マークダウンのままコピー';
+
+  @override
+  String get copyRawSub =>
+      'Notion・Slack・GitHub などマークダウンが通る場所へ';
   @override
   String get copiedAll => '全文をコピーしました';
   @override

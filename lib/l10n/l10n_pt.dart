@@ -375,6 +375,17 @@ class L10nPt extends L10n {
 
   @override
   String get copyAll => 'Copiar tudo';
+
+  @override
+  String get copyPlainSub =>
+      'Texto puro — sem marcas de markdown';
+
+  @override
+  String get copyRaw => 'Copiar como markdown';
+
+  @override
+  String get copyRawSub =>
+      'Para Notion, Slack, GitHub e outros apps que leem markdown';
   @override
   String get copiedAll => 'Texto completo copiado';
   @override

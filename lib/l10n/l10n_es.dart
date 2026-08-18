@@ -375,6 +375,17 @@ class L10nEs extends L10n {
 
   @override
   String get copyAll => 'Copiar todo';
+
+  @override
+  String get copyPlainSub =>
+      'Texto sin marcas de markdown';
+
+  @override
+  String get copyRaw => 'Copiar como markdown';
+
+  @override
+  String get copyRawSub =>
+      'Para Notion, Slack, GitHub y otras apps que leen markdown';
   @override
   String get copiedAll => 'Se copió todo el texto';
   @override
