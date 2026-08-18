@@ -32,7 +32,7 @@ const String appVersion = '0.4.0';
 //
 // 앞자리를 올릴 때 이 번호를 1로 되돌리는 습관이 원인이었다. 그 습관을
 // 버린다. 판이 바뀌든 안 바뀌든 여기는 늘 오른다.
-const int appBuild = 62;
+const int appBuild = 63;
 
 /// 화면에 그대로 찍히는 문자열. 소유자 지정 형식(2026-08-12): ver.0.1.1.1 꼴
 /// 앞 세 자리는 pubspec의 version, 마지막 자리는 빌드 번호다.
