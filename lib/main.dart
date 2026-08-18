@@ -165,6 +165,26 @@ const Color kOnAccentSoft = Color(0xFF0B3B63);
 // 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
 const _sky = Color(0xFF3FB2F0);
 
+/// 애플 기기인가 — 아이클라우드가 있는 자리인지를 가르는 기준.
+bool get isApplePlatform =>
+    defaultTargetPlatform == TargetPlatform.iOS ||
+    defaultTargetPlatform == TargetPlatform.macOS;
+
+/// 이 기기가 자기 잠금을 부르는 이름 — 'apple' · 'android' · 'windows'.
+///
+/// 2026-08-19 소유자 신고(안드로이드 폰) — "안드로이드폰에서는 터치아이디
+/// 페이스아이디 용어 나오면 좀 어색한."
+///
+/// 맞는 말이다. 잠금 자체는 local_auth 가 기기에 맞춰 알아서 띄우는데,
+/// 우리가 화면에 적어 둔 **이름만** 애플이었다. 안드로이드에 Face ID 는
+/// 없고 윈도우에 Touch ID 는 없다. 없는 물건 이름을 대면, 쓰는 사람은
+/// 자기 기기가 모자란 줄 안다.
+String get lockVendor => defaultTargetPlatform == TargetPlatform.android
+    ? 'android'
+    : defaultTargetPlatform == TargetPlatform.windows
+        ? 'windows'
+        : 'apple';
+
 /// 데스크톱(맥·윈도우·리눅스)인가 — 글자 크기와 밀도를 가르는 기준.
 bool get isDesktopPlatform =>
     defaultTargetPlatform == TargetPlatform.macOS ||
@@ -2332,7 +2352,9 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                   l.syncBackendNoneSub),
               _sep(),
               _radioRow(s.syncBackend, 'icloud', l.syncBackendIcloud,
-                  l.syncBackendIcloudSub),
+                  l.syncBackendIcloudSub,
+                  enabled: isApplePlatform,
+                  badge: isApplePlatform ? null : l.syncAppleOnly),
               _sep(),
               // 구글 드라이브는 아직 문만 내 두었다. 반쯤 붙은 창고를
               // 고르게 하면 노트가 엉킨다 — 고를 수 없게 잠가 둔다.
@@ -9041,7 +9063,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     final s = store.settings;
     if (want && !await LockService.instance.available()) {
       if (!mounted) return;
-      _toast(context, l.lockUnavailable);
+      _toast(context, l.lockUnavailable(lockVendor));
       return;
     }
     final ok = await LockService.instance
@@ -9449,7 +9471,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(l.lockSub,
+                child: Text(l.lockSub(lockVendor),
                     style: TextStyle(
                         fontSize: 17, height: 1.35, color: context.c.guideInk)),
               ),

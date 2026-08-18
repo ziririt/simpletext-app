@@ -482,7 +482,9 @@ class L10nZhHant extends L10n {
   String get menuAiKey => 'AI API 金鑰';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => '同步';
+  @override
+  String get syncAppleOnly => '僅限 Apple 裝置';
 
   @override
   String get syncScopeTitle =>
@@ -831,7 +833,11 @@ class L10nZhHant extends L10n {
   String get lockTitle => '應用程式鎖';
 
   @override
-  String get lockSub => '使用 Face ID、Touch ID 或裝置密碼開啟 App。';
+  String lockSub(String vendor) => vendor == 'android'
+      ? '使用指紋、臉部辨識或螢幕鎖定開啟 App。'
+      : vendor == 'windows'
+          ? '使用 Windows Hello 或裝置 PIN 開啟 App。'
+          : '使用 Face ID、Touch ID 或裝置密碼開啟 App。';
 
   @override
   String get lockNote => '此鎖定用於防止他人拿到裝置後開啟 App，並不會加密裝置中的檔案本身。';
@@ -855,7 +861,11 @@ class L10nZhHant extends L10n {
   String get lockLocked => '已鎖定';
 
   @override
-  String get lockUnavailable => '此裝置無法使用 Face ID、Touch ID 或裝置密碼。';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? '此裝置無法使用指紋、臉部辨識或螢幕鎖定。'
+      : vendor == 'windows'
+          ? '此裝置無法使用 Windows Hello 或裝置 PIN。'
+          : '此裝置無法使用 Face ID、Touch ID 或裝置密碼。';
 
   @override
   String get lockReasonOpen => '開啟備忘錄需要驗證';

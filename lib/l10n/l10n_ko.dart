@@ -482,7 +482,9 @@ class L10nKo extends L10n {
   String get menuAiKey => 'AI API 키';
 
   @override
-  String get syncTitle => 'iCloud 동기화';
+  String get syncTitle => '동기화';
+  @override
+  String get syncAppleOnly => '애플 기기만';
 
   @override
   String get syncScopeTitle =>
@@ -831,7 +833,11 @@ class L10nKo extends L10n {
   String get lockTitle => '앱 잠금';
 
   @override
-  String get lockSub => 'Face ID·Touch ID나 기기 암호로 앱을 엽니다.';
+  String lockSub(String vendor) => vendor == 'android'
+      ? '지문·얼굴 인식이나 화면 잠금으로 앱을 엽니다.'
+      : vendor == 'windows'
+          ? 'Windows Hello나 기기 암호로 앱을 엽니다.'
+          : 'Face ID·Touch ID나 기기 암호로 앱을 엽니다.';
 
   @override
   String get lockNote => '이 잠금은 남이 내 기기를 집었을 때 화면을 못 열게 하는 것입니다. 기기 안의 파일 자체를 암호로 잠그는 것은 아닙니다.';
@@ -855,7 +861,11 @@ class L10nKo extends L10n {
   String get lockLocked => '잠겨 있습니다';
 
   @override
-  String get lockUnavailable => '이 기기에서는 Face ID·Touch ID나 기기 암호를 쓸 수 없습니다.';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? '이 기기에서는 지문·얼굴 인식이나 화면 잠금을 쓸 수 없습니다.'
+      : vendor == 'windows'
+          ? '이 기기에서는 Windows Hello나 기기 암호를 쓸 수 없습니다.'
+          : '이 기기에서는 Face ID·Touch ID나 기기 암호를 쓸 수 없습니다.';
 
   @override
   String get lockReasonOpen => '메모를 열려면 확인이 필요합니다';

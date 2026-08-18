@@ -482,7 +482,9 @@ class L10nZhHans extends L10n {
   String get menuAiKey => 'AI API 密钥';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => '同步';
+  @override
+  String get syncAppleOnly => '仅限苹果设备';
 
   @override
   String get syncScopeTitle =>
@@ -831,7 +833,11 @@ class L10nZhHans extends L10n {
   String get lockTitle => '应用锁';
 
   @override
-  String get lockSub => '使用面容 ID、触控 ID 或设备密码打开应用。';
+  String lockSub(String vendor) => vendor == 'android'
+      ? '使用指纹、人脸识别或屏幕锁打开应用。'
+      : vendor == 'windows'
+          ? '使用 Windows Hello 或设备 PIN 打开应用。'
+          : '使用面容 ID、触控 ID 或设备密码打开应用。';
 
   @override
   String get lockNote => '此锁定用于防止他人拿到设备后打开应用，并不会加密设备中的文件本身。';
@@ -855,7 +861,11 @@ class L10nZhHans extends L10n {
   String get lockLocked => '已锁定';
 
   @override
-  String get lockUnavailable => '此设备无法使用面容 ID、触控 ID 或设备密码。';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? '此设备无法使用指纹、人脸识别或屏幕锁。'
+      : vendor == 'windows'
+          ? '此设备无法使用 Windows Hello 或设备 PIN。'
+          : '此设备无法使用面容 ID、触控 ID 或设备密码。';
 
   @override
   String get lockReasonOpen => '打开备忘录需要验证';

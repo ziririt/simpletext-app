@@ -317,6 +317,9 @@ abstract class L10n {
   String get menuAiKey;
   String get syncTitle;
 
+  /// 애플 기기가 아닌 곳에서 아이클라우드 줄에 붙는 딱지.
+  String get syncAppleOnly;
+
   /// 무엇이 함께 가고 무엇이 안 가는지 (2026-08-19)
   String get syncScopeTitle;
   String get syncScopeShared;
@@ -467,7 +470,7 @@ abstract class L10n {
   String get paperFrost;
   String get lockSectionTitle;
   String get lockTitle;
-  String get lockSub;
+  String lockSub(String vendor);
   String get lockNote;
   String get lockDelayTitle;
   String get lockDelayNow;
@@ -475,7 +478,7 @@ abstract class L10n {
   String get lockDelay5m;
   String get lockUnlock;
   String get lockLocked;
-  String get lockUnavailable;
+  String lockUnavailable(String vendor);
   String get lockReasonOpen;
   String get lockReasonOn;
   String get lockReasonOff;
@@ -765,6 +768,7 @@ abstract class L10n {
         'menuAppSettings': menuAppSettings,
         'menuAiKey': menuAiKey,
         'syncTitle': syncTitle,
+        'syncAppleOnly': syncAppleOnly,
         'syncScopeTitle': syncScopeTitle,
         'syncScopeShared': syncScopeShared,
         'syncScopeDevice': syncScopeDevice,
@@ -866,7 +870,6 @@ abstract class L10n {
         'paperFrost': paperFrost,
         'lockSectionTitle': lockSectionTitle,
         'lockTitle': lockTitle,
-        'lockSub': lockSub,
         'lockNote': lockNote,
         'lockDelayTitle': lockDelayTitle,
         'lockDelayNow': lockDelayNow,
@@ -874,7 +877,6 @@ abstract class L10n {
         'lockDelay5m': lockDelay5m,
         'lockUnlock': lockUnlock,
         'lockLocked': lockLocked,
-        'lockUnavailable': lockUnavailable,
         'lockReasonOpen': lockReasonOpen,
         'lockReasonOn': lockReasonOn,
         'lockReasonOff': lockReasonOff,

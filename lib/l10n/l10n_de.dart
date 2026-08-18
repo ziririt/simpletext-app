@@ -484,7 +484,9 @@ class L10nDe extends L10n {
   String get menuAiKey => 'KI-API-Schlüssel';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => 'Synchronisierung';
+  @override
+  String get syncAppleOnly => 'Nur Apple';
 
   @override
   String get syncScopeTitle =>
@@ -835,7 +837,11 @@ class L10nDe extends L10n {
   String get lockTitle => 'App-Sperre';
 
   @override
-  String get lockSub => 'Die App mit Face ID, Touch ID oder dem Gerätecode öffnen.';
+  String lockSub(String vendor) => vendor == 'android'
+      ? 'Die App mit Fingerabdruck, Gesicht oder der Displaysperre öffnen.'
+      : vendor == 'windows'
+          ? 'Die App mit Windows Hello oder der Geräte-PIN öffnen.'
+          : 'Die App mit Face ID, Touch ID oder dem Gerätecode öffnen.';
 
   @override
   String get lockNote => 'Diese Sperre verhindert, dass jemand mit deinem Gerät die App öffnet. Die Dateien auf dem Gerät werden dadurch nicht verschlüsselt.';
@@ -859,7 +865,11 @@ class L10nDe extends L10n {
   String get lockLocked => 'Gesperrt';
 
   @override
-  String get lockUnavailable => 'Face ID, Touch ID und Gerätecode sind auf diesem Gerät nicht verfügbar.';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? 'Fingerabdruck, Gesichtserkennung und Displaysperre sind auf diesem Gerät nicht verfügbar.'
+      : vendor == 'windows'
+          ? 'Windows Hello und Geräte-PIN sind auf diesem Gerät nicht verfügbar.'
+          : 'Face ID, Touch ID und Gerätecode sind auf diesem Gerät nicht verfügbar.';
 
   @override
   String get lockReasonOpen => 'Bestätigen, um die Notizen zu öffnen';

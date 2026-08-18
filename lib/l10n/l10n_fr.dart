@@ -484,7 +484,9 @@ class L10nFr extends L10n {
   String get menuAiKey => 'Clé API IA';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => 'Synchronisation';
+  @override
+  String get syncAppleOnly => 'Apple uniquement';
 
   @override
   String get syncScopeTitle =>
@@ -835,7 +837,11 @@ class L10nFr extends L10n {
   String get lockTitle => 'Verrouillage de l\'app';
 
   @override
-  String get lockSub => 'Ouvrez l\'app avec Face ID, Touch ID ou le code de l\'appareil.';
+  String lockSub(String vendor) => vendor == 'android'
+      ? 'Ouvrez l’app avec votre empreinte, votre visage ou le verrouillage de l’écran.'
+      : vendor == 'windows'
+          ? 'Ouvrez l’app avec Windows Hello ou le code PIN de l’appareil.'
+          : 'Ouvrez l’app avec Face ID, Touch ID ou le code de l’appareil.';
 
   @override
   String get lockNote => 'Ce verrouillage empêche quelqu\'un qui prend votre appareil d\'ouvrir l\'app. Il ne chiffre pas les fichiers stockés sur l\'appareil.';
@@ -859,7 +865,11 @@ class L10nFr extends L10n {
   String get lockLocked => 'Verrouillé';
 
   @override
-  String get lockUnavailable => 'Face ID, Touch ID et le code de l\'appareil ne sont pas disponibles ici.';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? 'L’empreinte, la reconnaissance faciale et le verrouillage de l’écran ne sont pas disponibles ici.'
+      : vendor == 'windows'
+          ? 'Windows Hello et le code PIN de l’appareil ne sont pas disponibles ici.'
+          : 'Face ID, Touch ID et le code de l’appareil ne sont pas disponibles ici.';
 
   @override
   String get lockReasonOpen => 'Vérifiez pour ouvrir vos notes';

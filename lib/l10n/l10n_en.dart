@@ -483,7 +483,9 @@ class L10nEn extends L10n {
   String get menuAiKey => 'AI API key';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => 'Sync';
+  @override
+  String get syncAppleOnly => 'Apple only';
 
   @override
   String get syncScopeTitle =>
@@ -834,7 +836,11 @@ class L10nEn extends L10n {
   String get lockTitle => 'App lock';
 
   @override
-  String get lockSub => 'Open the app with Face ID, Touch ID, or your device passcode.';
+  String lockSub(String vendor) => vendor == 'android'
+      ? 'Open the app with your fingerprint, your face, or the screen lock.'
+      : vendor == 'windows'
+          ? 'Open the app with Windows Hello or your device PIN.'
+          : 'Open the app with Face ID, Touch ID, or your device passcode.';
 
   @override
   String get lockNote => 'This lock keeps someone who picks up your device from opening the app. It does not encrypt the files stored on the device.';
@@ -858,7 +864,11 @@ class L10nEn extends L10n {
   String get lockLocked => 'Locked';
 
   @override
-  String get lockUnavailable => 'Face ID, Touch ID, and device passcode are unavailable on this device.';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? 'Fingerprint, face unlock, and screen lock are unavailable on this device.'
+      : vendor == 'windows'
+          ? 'Windows Hello and device PIN are unavailable on this device.'
+          : 'Face ID, Touch ID, and device passcode are unavailable on this device.';
 
   @override
   String get lockReasonOpen => 'Verify to open your notes';

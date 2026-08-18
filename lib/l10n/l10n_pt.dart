@@ -483,7 +483,9 @@ class L10nPt extends L10n {
   String get menuAiKey => 'Chave de API de IA';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => 'Sincronização';
+  @override
+  String get syncAppleOnly => 'Só Apple';
 
   @override
   String get syncScopeTitle =>
@@ -834,7 +836,11 @@ class L10nPt extends L10n {
   String get lockTitle => 'Bloqueio do app';
 
   @override
-  String get lockSub => 'Abra o app com Face ID, Touch ID ou a senha do dispositivo.';
+  String lockSub(String vendor) => vendor == 'android'
+      ? 'Abra o app com sua digital, seu rosto ou o bloqueio de tela.'
+      : vendor == 'windows'
+          ? 'Abra o app com Windows Hello ou o PIN do dispositivo.'
+          : 'Abra o app com Face ID, Touch ID ou a senha do dispositivo.';
 
   @override
   String get lockNote => 'Este bloqueio impede que alguém que pegue o seu dispositivo abra o app. Ele não criptografa os arquivos guardados no dispositivo.';
@@ -858,7 +864,11 @@ class L10nPt extends L10n {
   String get lockLocked => 'Bloqueado';
 
   @override
-  String get lockUnavailable => 'Face ID, Touch ID e a senha do dispositivo não estão disponíveis neste aparelho.';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? 'Digital, reconhecimento facial e bloqueio de tela não estão disponíveis neste aparelho.'
+      : vendor == 'windows'
+          ? 'Windows Hello e o PIN do dispositivo não estão disponíveis neste aparelho.'
+          : 'Face ID, Touch ID e a senha do dispositivo não estão disponíveis neste aparelho.';
 
   @override
   String get lockReasonOpen => 'Verifique para abrir suas notas';

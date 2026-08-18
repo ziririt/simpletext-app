@@ -482,7 +482,9 @@ class L10nJa extends L10n {
   String get menuAiKey => 'AI APIキー';
 
   @override
-  String get syncTitle => 'iCloud';
+  String get syncTitle => '同期';
+  @override
+  String get syncAppleOnly => 'Apple のみ';
 
   @override
   String get syncScopeTitle =>
@@ -831,7 +833,11 @@ class L10nJa extends L10n {
   String get lockTitle => 'アプリのロック';
 
   @override
-  String get lockSub => 'Face ID・Touch ID、またはデバイスのパスコードでアプリを開きます。';
+  String lockSub(String vendor) => vendor == 'android'
+      ? '指紋・顔認証、または画面ロックでアプリを開きます。'
+      : vendor == 'windows'
+          ? 'Windows Hello またはデバイスの PIN でアプリを開きます。'
+          : 'Face ID・Touch ID、またはデバイスのパスコードでアプリを開きます。';
 
   @override
   String get lockNote => 'このロックは、他人が端末を手にしたときに画面を開けなくするものです。端末内のファイル自体を暗号化するわけではありません。';
@@ -855,7 +861,11 @@ class L10nJa extends L10n {
   String get lockLocked => 'ロック中';
 
   @override
-  String get lockUnavailable => 'この端末では Face ID・Touch ID・パスコードを利用できません。';
+  String lockUnavailable(String vendor) => vendor == 'android'
+      ? 'この端末では指紋・顔認証・画面ロックを利用できません。'
+      : vendor == 'windows'
+          ? 'このデバイスでは Windows Hello・PIN を利用できません。'
+          : 'この端末では Face ID・Touch ID・パスコードを利用できません。';
 
   @override
   String get lockReasonOpen => 'メモを開くには確認が必要です';
