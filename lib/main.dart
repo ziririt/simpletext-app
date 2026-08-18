@@ -1027,6 +1027,13 @@ class AppSettings {
   int rulesStamp = 0;
   String rulesSig = '';
 
+  /// 넓은 화면에서 왼쪽 목록 칸의 폭 (2026-08-18 소유자 지시).
+  ///
+  /// 동기화하지 않는다. 창 크기는 기기마다 다르고, 27인치에서 정한 폭이
+  /// 13인치 노트북으로 건너오면 목록이 화면 절반을 먹는다. 이 값은 이
+  /// 기기의 사정이지 사람의 취향이 아니다.
+  double listWidth = 320;
+
   /// 모양 값(글자 크기·줄 간격·종이·화면 모드·정렬)을 위한 같은 짝.
   ///
   /// 2026-08-18 — 규칙과 따로 센다. 규칙은 모든 기기가 한 파일을 나눠 쓰고,
@@ -1131,6 +1138,7 @@ class AppSettings {
         'trialNoticeShown': trialNoticeShown,
         'rulesStamp': rulesStamp,
         'rulesSig': rulesSig,
+        'listWidth': listWidth,
         'sortMode': sortMode,
         'filterSource': filterSource,
         'filterTag': filterTag,
@@ -1208,6 +1216,7 @@ class AppSettings {
     s.trialNoticeShown = (j['trialNoticeShown'] ?? s.trialNoticeShown) as bool;
     s.rulesStamp = (j['rulesStamp'] ?? s.rulesStamp) as int;
     s.rulesSig = (j['rulesSig'] ?? s.rulesSig) as String;
+    s.listWidth = ((j['listWidth'] ?? s.listWidth) as num).toDouble();
     s.sortMode = (j['sortMode'] ?? s.sortMode) as String;
     s.filterSource = (j['filterSource'] ?? s.filterSource) as String;
     s.filterTag = (j['filterTag'] ?? s.filterTag) as String;
@@ -2117,8 +2126,17 @@ class SplitShell extends StatefulWidget {
   /// 이 폭부터 두 칸으로 나눈다.
   static const double kWideAt = 900;
 
-  /// 목록 칸의 폭. 애플 메모·메일과 비슷한 값이다.
+  /// 목록 칸의 처음 폭. 애플 메모·메일과 비슷한 값이다.
   static const double kListWidth = 320;
+
+  /// 손으로 끌 수 있는 범위.
+  ///
+  /// 아래는 240 — 이보다 좁으면 제목 한 줄이 두 줄로 접혀서 목록이
+  /// 목록으로 안 보인다. 위는 480 — 이보다 넓으면 오른쪽 글 칸이
+  /// 읽기 좋은 폭 아래로 내려간다. 늘릴 수 있게 해 놓고 늘리면
+  /// 망가지게 두는 것은 늘릴 수 있게 한 것이 아니다.
+  static const double kListMin = 240;
+  static const double kListMax = 480;
 
   /// 글 칸이 넘지 않을 폭의 아래 한계.
   ///
@@ -2159,6 +2177,15 @@ class SplitShell extends StatefulWidget {
 }
 
 class SplitShellState extends State<SplitShell> {
+  /// 왼쪽 칸의 폭. 손으로 끌어 바꾼다(2026-08-18 소유자 지시).
+  ///
+  /// 값을 State 가 들고 있고 설정에는 **손을 뗄 때만** 적는다. 끄는 동안
+  /// 매 프레임 저장하면 초당 예순 번 파일을 쓴다.
+  double? _drag;
+  double get _listW =>
+      (_drag ?? Store.instance.settings.listWidth)
+          .clamp(SplitShell.kListMin, SplitShell.kListMax);
+
   String? _openId;
   bool _autoTidy = false;
   bool _showMeta = false;
@@ -2245,17 +2272,42 @@ class SplitShellState extends State<SplitShell> {
                       ? Duration.zero
                       : const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
-                  width: _listOpen ? SplitShell.kListWidth : 0,
+                  width: _listOpen ? _listW : 0,
                   child: OverflowBox(
                     alignment: Alignment.centerLeft,
-                    minWidth: SplitShell.kListWidth,
-                    maxWidth: SplitShell.kListWidth,
+                    minWidth: _listW,
+                    maxWidth: _listW,
                     child: const HomeScreen(embedded: true),
                   ),
                 ),
               ),
+              // 끄는 손잡이. 보이는 것은 선 하나지만 손이 닿는 자리는
+              // 열 배 넓다 — 1픽셀짜리 선을 정확히 집으라고 요구하는 것은
+              // 마우스에게도 무리다. 맥 앱들이 다 이렇게 한다.
               if (_listOpen)
-                VerticalDivider(width: 1, thickness: 1, color: c.line),
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragUpdate: (d) => setState(() {
+                      _drag = (_drag ?? Store.instance.settings.listWidth) +
+                          d.delta.dx;
+                    }),
+                    onHorizontalDragEnd: (_) {
+                      // 손을 뗄 때 한 번만 적는다.
+                      final w = _listW;
+                      Store.instance.settings.listWidth = w;
+                      unawaited(Store.instance.persistSettings());
+                      setState(() => _drag = w);
+                    },
+                    child: SizedBox(
+                      width: 10,
+                      child: Center(
+                        child: Container(width: 1, color: c.line),
+                      ),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: ColoredBox(
                   color: _marginColor(context),
@@ -3433,7 +3485,16 @@ class _HomeScreenState extends State<HomeScreen>
     // 위에서 아래로 굵기와 색이 차례로 옅어진다. 그래서 작아도 또렷하다.
     final roomy = widget.embedded;
     final vPad = roomy ? 11.0 : 12.0;
-    final firstLine = n.body.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
+    // 2026-08-18 소유자 지시 — 넓은 화면 왼쪽 칸에서는 본문 석 줄.
+    //
+    // 첫 줄 하나만 쓰던 것을 빈 줄을 걸러 한 문단으로 이어 붙인다.
+    // 첫 줄만 쓰면 그 줄이 짧을 때(제목처럼 한 마디 적어 둔 경우)
+    // 미리보기가 한 줄로 끝나 버려서, 석 줄을 내주고도 한 줄만 보인다.
+    final firstLine = n.body
+        .split('\n')
+        .map((x) => x.trim())
+        .where((x) => x.isNotEmpty)
+        .join('  ');
 
     // 두 칸 화면에서 지금 오른쪽에 열려 있는 메모인가.
     //
@@ -3581,7 +3642,11 @@ class _HomeScreenState extends State<HomeScreen>
                       if (firstLine.isNotEmpty) ...[
                         const SizedBox(height: 3),
                         Text(firstLine,
-                            maxLines: 2,
+                            // 폰은 둘, 넓은 화면 왼쪽 칸은 셋. 폰에서는
+                            // 목록이 화면 전부라 한 화면에 몇 개가 보이느냐가
+                            // 더 중요하고, 왼쪽 칸에서는 옆에 본문이 이미
+                            // 펼쳐져 있어 '어느 것인지 고르는 일'만 남는다.
+                            maxLines: roomy ? 3 : 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 15,
