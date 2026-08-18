@@ -305,7 +305,7 @@ class AppC extends ThemeExtension<AppC> {
     // 비쳐 보이는 것이 아니라 색이 하나 더 생겼다. 틴트를 바탕과 같은
     // 색으로 두면 유리는 '밝기만 더한 층'이 되고, 그때부터 밑의 것이
     // 색이 아니라 형태로 비친다.
-    glass: Color(0x33EFF6FB),
+    glass: Color(0x42EFF6FB),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: _accent,
@@ -339,7 +339,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0x3315191D),
+    glass: Color(0x4215191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -2043,7 +2043,7 @@ class Glass extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius ?? BorderRadius.zero,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           decoration: BoxDecoration(
             color: c.glass,
@@ -6519,6 +6519,18 @@ class _PreviewScreenState extends State<PreviewScreen> {
 /// 안내와 버튼 자리를 만들고, 누르면 준비 중임을 알린다. 후원 시트와
 /// 설정 상단 배너가 여기로 이끈다.
 /// 휴지통 — 지운 메모를 30일 동안 되돌릴 수 있는 곳.
+/// 넓은 화면에서 내용을 가운데 한정 폭으로 묶는다.
+///
+/// 2026-08-18. 설정 화면이 쓰던 셈을 이름 붙여 뺐다. 앞으로 만드는
+/// 화면은 이걸 부르기만 하면 된다 — 규칙을 옮겨 적는 일이 없어야
+/// 옮겨 적기를 잊는 일도 없어진다.
+Widget narrowBody(BuildContext context, Widget child) => Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
+        child: child,
+      ),
+    );
+
 class TrashScreen extends StatefulWidget {
   const TrashScreen({super.key});
 
@@ -6557,7 +6569,9 @@ class _TrashScreenState extends State<TrashScreen> {
             ),
         ],
       ),
-      body: items.isEmpty
+      body: narrowBody(
+        context,
+        items.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
@@ -6655,6 +6669,7 @@ class _TrashScreenState extends State<TrashScreen> {
                 );
               },
             ),
+      ),
     );
   }
 }
@@ -6693,6 +6708,11 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
   Future<void> _pin(List<String> names) async {
     store.settings.folders = List<String>.from(names);
     await store.persistSettings();
+    // 고친 것을 곧바로 올려 보낸다. 다음에 앱이 앞으로 나올 때까지
+    // 기다리면, 그 사이에 앱을 다시 깔았을 때(개발 중에는 늘 그렇다)
+    // 지운 일이 없던 일이 된다 — 새로 깐 기기는 아이클라우드를 그대로
+    // 받아 오기 때문이다.
+    ICloudSync.instance.scheduleUp();
   }
 
   Future<String?> _ask(String title, String initial, List<String> taken) async {
@@ -6755,7 +6775,9 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
           ),
         ],
       ),
-      body: names.isEmpty
+      body: narrowBody(
+        context,
+        names.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
@@ -6806,10 +6828,14 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
                           onPressed: () async {
                             final name = await _ask(l.folderRename, f, names);
                             if (name == null || name == f) return;
+                            final now =
+                                DateTime.now().millisecondsSinceEpoch;
                             for (final note in store.notes) {
                               if (normalizeFolder(note.folder).toLowerCase() ==
                                   f.toLowerCase()) {
                                 note.folder = name;
+                                // 안 올리면 아이클라우드의 옛 판이 이긴다.
+                                note.updatedAt = now;
                               }
                             }
                             if (s.filterFolder.toLowerCase() ==
@@ -6836,10 +6862,14 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
                                 destructive: true);
                             if (!ok || !mounted) return;
                             // 폴더만 떼고 노트는 그대로 둔다.
+                            final now =
+                                DateTime.now().millisecondsSinceEpoch;
                             for (final note in store.notes) {
                               if (normalizeFolder(note.folder).toLowerCase() ==
                                   f.toLowerCase()) {
                                 note.folder = '';
+                                // 안 올리면 아이클라우드의 옛 판이 이긴다.
+                                note.updatedAt = now;
                               }
                             }
                             if (s.filterFolder.toLowerCase() ==
@@ -6866,6 +6896,7 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
                 ),
               ),
             ]),
+      ),
     );
   }
 }
