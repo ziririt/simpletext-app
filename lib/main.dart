@@ -305,7 +305,7 @@ class AppC extends ThemeExtension<AppC> {
     // 비쳐 보이는 것이 아니라 색이 하나 더 생겼다. 틴트를 바탕과 같은
     // 색으로 두면 유리는 '밝기만 더한 층'이 되고, 그때부터 밑의 것이
     // 색이 아니라 형태로 비친다.
-    glass: Color(0x4DEFF6FB),
+    glass: Color(0x33EFF6FB),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: _accent,
@@ -339,7 +339,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0x4D15191D),
+    glass: Color(0x3315191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -2043,7 +2043,7 @@ class Glass extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius ?? BorderRadius.zero,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
+        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
         child: Container(
           decoration: BoxDecoration(
             color: c.glass,
