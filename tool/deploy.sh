@@ -21,6 +21,28 @@ set -u
 export PATH="$HOME/development/flutter/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 cd ~/development/simpletext_app || exit 1
 
+# 어느 Xcode 로 지을 것인가 — 이름으로 못 박는다.
+#
+# 2026-08-18 — 같은 맥에서 다른 앱 작업이 Xcode 27 베타를 나란히 깔았다.
+# 공존 자체는 문제가 없다. 문제는 xcode-select 가 **맥 전체에 하나뿐인
+# 설정**이라는 것이다. 저쪽에서 기본을 베타로 바꾸면 이 배포도 아무 말 없이
+# 베타 도구로 지어진다.
+#
+# 그렇게 지어진 앱은 겉보기에 멀쩡하다. 새 SDK 로 지으면 화면 가장자리
+# 처리나 시스템 메뉴 같은 것이 조용히 달라지는데, 우리는 코드를 안 건드렸으니
+# 그쪽을 의심하지 않는다 — 원인을 찾기 가장 어려운 종류의 고장이다.
+#
+# 일부러 베타로 지어 볼 때는 밖에서 지정한다.
+#   SKYBLUE_XCODE=/Applications/Xcode-beta.app bash tool/deploy.sh iphone
+# **바꾸는 것과 흘러드는 것은 다르다.**
+XC="${SKYBLUE_XCODE:-/Applications/Xcode.app}"
+if [ -d "$XC/Contents/Developer" ]; then
+  export DEVELOPER_DIR="$XC/Contents/Developer"
+  echo "[Xcode] $XC — $(/usr/bin/xcodebuild -version 2>/dev/null | head -1)"
+else
+  echo "[Xcode] $XC 를 못 찾았다. 맥이 정한 기본을 그대로 쓴다"
+fi
+
 IPHONE=00008140-000C11100113001C   # Ziririt iPhone 16
 IPAD=00008027-001A64441107002E     # 김성동의 iPad pro (12.9 3세대)
 WHAT="${1:-all}"
