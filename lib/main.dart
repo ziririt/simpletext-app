@@ -2643,11 +2643,24 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           // 2026-08-14 소유자 요청: 아이콘만으로는 무슨 버튼인지 알 수 없어
           // 두 버튼 다 글자를 붙인다.
+          // 2026-08-18 소유자 신고 — "'+ 새 문서 만들기' 버튼이 배경색과
+          // 비슷한 버튼 색이라서 눈에 안 띄네."
+          //
+          // 여기 backgroundColor: panel / foregroundColor: accent 를 박아
+          // 뒀었다. 두 단추 사이에 위아래를 두려던 것인데, 다크에서 panel 은
+          // 목록 카드와 거의 같은 색이라 단추가 배경에 녹아 버렸다.
+          //
+          // 색으로 서열을 매기려다 하나를 안 보이게 만들었다. **안 보이는
+          // 단추는 서열이 낮은 것이 아니라 없는 것이다.** 서열은 자리와
+          // 차례가 이미 말해 주고 있다 — 아래에 있는 것이 손가락에 가깝고,
+          // 그게 이 앱의 주된 길이다.
+          //
+          // 색을 안 박으면 테마의 채운 하늘색을 그대로 받는다(theme 의
+          // floatingActionButtonTheme). 이 앱의 다른 모든 단추와 같은 값이라,
+          // 여기만 따로 기억할 것이 없어진다.
           FloatingActionButton.extended(
             heroTag: 'new',
             tooltip: l.newNoteTooltip,
-            backgroundColor: context.c.panel,
-            foregroundColor: context.c.accent,
             onPressed: () async {
               final note = Note.fresh();
               store.notes.insert(0, note);
