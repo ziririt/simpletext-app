@@ -69,6 +69,19 @@ void main() {
   // 형식만 나온다 — 9개 언어로 파는 앱에서 이건 버그다. 자료는 앱에 함께
   // 들어 있어 네트워크를 타지 않는다.
   initializeDateFormatting();
+  // 아래 물리키 줄을 검게(2026-08-18 소유자 지시).
+  //
+  // AppBar 가 있는 화면은 테마의 systemOverlayStyle 이 맡는다. 여기서 한 번
+  // 더 부르는 것은 **AppBar 가 없는 순간**을 위한 것이다 — 앱이 막 떠서
+  // 첫 화면이 그려지기 전, 그리고 전체 화면으로 뜨는 판들.
+  //
+  // 그 짧은 순간에 밝은 회색이 번쩍했다 사라지는 것은 고장으로 보인다.
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.black,
+    systemNavigationBarDividerColor: Colors.black,
+    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarContrastEnforced: false,
+  ));
   // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
   AdsService.instance.boot();
   runApp(const SimpleTextApp());
@@ -678,6 +691,33 @@ class SimpleTextApp extends StatelessWidget {
         foregroundColor: c.accent,
         elevation: 0,
         scrolledUnderElevation: 0.5,
+        // 2026-08-18 소유자 지시 — "안드로이드 기기의 소프트 물리키 컬러가
+        // 밝은 회색인데, 이거 블랙으로."
+        //
+        // 이 값을 여기 두는 까닭: 화면마다 SystemChrome 을 부를 수도 있지만,
+        // AppBar 는 프레임마다 자기 값으로 시스템 막대를 **덮어쓴다.**
+        // 그래서 다른 데서 아무리 정해 놔도 AppBar 가 있는 화면에서는
+        // AppBar 가 이긴다. 이길 쪽에 적는다.
+        //
+        // systemNavigationBarContrastEnforced: false 가 핵심이다. 이게
+        // true(기본값)면 안드로이드가 '글씨가 안 보일까 봐' 제 판단으로
+        // 반투명 판을 하나 더 깔고, 우리가 고른 검정이 그 판에 덮인다.
+        // 우리가 색을 정했다고 말해도 시스템이 안 믿는 상태다.
+        //
+        // 색과 아이콘 밝기를 둘 다 준다. 안드로이드 15부터는 색이
+        // 무시되고 아이콘 밝기만 먹히는데(가장자리까지 그리기 강제),
+        // 그 아래 판에서는 색이 먹힌다. 한 줄로 둘 다 되는 길이 없다.
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness:
+              b == Brightness.dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness:
+              b == Brightness.dark ? Brightness.dark : Brightness.light,
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarDividerColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarContrastEnforced: false,
+        ),
       ),
       // 떠 있는 둥근 버튼. 기본값은 primaryContainer(연한 판)라서
       // 다크에서 '칙칙한 남색 판에 옅은 글자'가 됐다 — 신고된 그림이다.
