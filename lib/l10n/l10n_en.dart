@@ -507,6 +507,47 @@ class L10nEn extends L10n {
   @override
   String get syncScopeNever =>
       'Your AI API key is not uploaded to iCloud, so enter it on each device';
+  @override
+  String get syncWhereTitle =>
+      'Where to keep it';
+  @override
+  String get syncBackendNone =>
+      'Don\'t sync';
+  @override
+  String get syncBackendNoneSub =>
+      'Keep everything on this device only';
+  @override
+  String get syncBackendIcloud =>
+      'iCloud';
+  @override
+  String get syncBackendIcloudSub =>
+      'Between iPhone, iPad and Mac';
+  @override
+  String get syncBackendGdrive =>
+      'Google Drive';
+  @override
+  String get syncBackendGdriveSub =>
+      'Android, Windows and the web too';
+  @override
+  String get syncSoon =>
+      'Coming soon';
+  @override
+  String get syncSectionState =>
+      'Right now';
+  @override
+  String get syncNowAction =>
+      'Sync now';
+  @override
+  String get syncLastNever =>
+      'Not synced yet';
+  @override
+  String get syncTroubleTitle =>
+      'If something goes wrong';
+  @override
+  String get syncTroubleNote =>
+      'Syncing is not a backup. Delete on one device and it goes everywhere. Export a file now and then for the notes that matter.';
+  @override
+  String syncLastAt(String when) => 'Last synced $when';
 
   @override
   String get syncStateOn => 'The same notes on iPhone, iPad and Mac';

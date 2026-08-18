@@ -322,6 +322,20 @@ abstract class L10n {
   String get syncScopeShared;
   String get syncScopeDevice;
   String get syncScopeNever;
+  String get syncWhereTitle;
+  String get syncBackendNone;
+  String get syncBackendNoneSub;
+  String get syncBackendIcloud;
+  String get syncBackendIcloudSub;
+  String get syncBackendGdrive;
+  String get syncBackendGdriveSub;
+  String get syncSoon;
+  String get syncSectionState;
+  String get syncNowAction;
+  String get syncLastNever;
+  String get syncTroubleTitle;
+  String get syncTroubleNote;
+  String syncLastAt(String when);
 
   /// 지금 자동 동기화가 어디까지 닿는가 (2026-08-18).
   ///
@@ -755,6 +769,19 @@ abstract class L10n {
         'syncScopeShared': syncScopeShared,
         'syncScopeDevice': syncScopeDevice,
         'syncScopeNever': syncScopeNever,
+        'syncWhereTitle': syncWhereTitle,
+        'syncBackendNone': syncBackendNone,
+        'syncBackendNoneSub': syncBackendNoneSub,
+        'syncBackendIcloud': syncBackendIcloud,
+        'syncBackendIcloudSub': syncBackendIcloudSub,
+        'syncBackendGdrive': syncBackendGdrive,
+        'syncBackendGdriveSub': syncBackendGdriveSub,
+        'syncSoon': syncSoon,
+        'syncSectionState': syncSectionState,
+        'syncNowAction': syncNowAction,
+        'syncLastNever': syncLastNever,
+        'syncTroubleTitle': syncTroubleTitle,
+        'syncTroubleNote': syncTroubleNote,
         'syncScopePlatform': syncScopePlatform,
         'typographyTitle': typographyTitle,
         'syncStateOn': syncStateOn,

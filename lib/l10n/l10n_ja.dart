@@ -506,6 +506,47 @@ class L10nJa extends L10n {
   @override
   String get syncScopeNever =>
       'AI の API キーは iCloud に保存されないため、端末ごとに入力が必要です';
+  @override
+  String get syncWhereTitle =>
+      'どこに置くか';
+  @override
+  String get syncBackendNone =>
+      '同期しない';
+  @override
+  String get syncBackendNoneSub =>
+      'この端末だけに置きます';
+  @override
+  String get syncBackendIcloud =>
+      'iCloud';
+  @override
+  String get syncBackendIcloudSub =>
+      'iPhone・iPad・Mac のあいだで';
+  @override
+  String get syncBackendGdrive =>
+      'Google Drive';
+  @override
+  String get syncBackendGdriveSub =>
+      'Android・Windows・ウェブまで';
+  @override
+  String get syncSoon =>
+      '準備中';
+  @override
+  String get syncSectionState =>
+      'いまの状態';
+  @override
+  String get syncNowAction =>
+      'いま同期する';
+  @override
+  String get syncLastNever =>
+      'まだ一度も同期していません';
+  @override
+  String get syncTroubleTitle =>
+      '困ったときは';
+  @override
+  String get syncTroubleNote =>
+      '同期はバックアップではありません。片方で消せば全部から消えます。大事なメモは時々ファイルに書き出しておいてください。';
+  @override
+  String syncLastAt(String when) => '最後の同期 $when';
 
   @override
   String get syncStateOn => 'iPhone・iPad・Mac で同じメモを見られます';

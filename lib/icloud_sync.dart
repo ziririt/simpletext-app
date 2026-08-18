@@ -93,6 +93,17 @@ class ICloudSync {
   /// 마지막으로 맞춘 시각(밀리초). 0이면 아직 한 번도 못 맞췄다.
   final ValueNotifier<int> lastSyncMs = ValueNotifier<int>(0);
 
+  /// 사람이 설정에서 '동기화 안 함'을 골랐는가.
+  ///
+  /// 2026-08-19 — 창고 고르기(설정 → 동기화)의 뒷면이다. 여기 **한 곳만**
+  /// 막는다. 올리는 길도 내리는 길도 결국 syncNow() 하나를 지나기 때문에,
+  /// 부르는 자리마다 조건을 흩뿌리면 반드시 한 자리를 빠뜨린다 — 이 앱이
+  /// 오늘만 여섯 번 겪은 그 자리다.
+  ///
+  /// 타이머는 그대로 돌게 둔다. 사람이 다시 켰을 때 30초 안에 저절로
+  /// 따라잡게 하려면 시계를 죽이지 않는 편이 낫다.
+  bool paused = false;
+
   String? _root;
   bool _rootAsked = false;
   bool _signedIn = false;
@@ -193,7 +204,7 @@ class ICloudSync {
   /// 메모를 저장할 때마다 불린다. 저장은 글자 하나마다 일어나므로 곧바로
   /// 올리면 파일을 초당 몇 번씩 쓰게 된다. 3초 쉬었다가 한 번만 올린다.
   void scheduleUp() {
-    if (!supported) return;
+    if (!supported || paused) return;
     _debounce?.cancel();
     _debounce = Timer(const Duration(seconds: 3), () => unawaited(syncNow()));
   }
@@ -233,7 +244,7 @@ class ICloudSync {
   // -------------------------------------------------------------- 본체
 
   Future<void> syncNow() async {
-    if (!supported || _busy) return;
+    if (!supported || paused || _busy) return;
     _busy = true;
     try {
       final root = await _rootPath();

@@ -506,6 +506,47 @@ class L10nKo extends L10n {
   @override
   String get syncScopeNever =>
       'AI API KEY는 iCloud에 올라가지 않으니, 기기마다 입력해야 합니다';
+  @override
+  String get syncWhereTitle =>
+      '어디에 둘까';
+  @override
+  String get syncBackendNone =>
+      '동기화 안 함';
+  @override
+  String get syncBackendNoneSub =>
+      '이 기기에만 둡니다';
+  @override
+  String get syncBackendIcloud =>
+      'iCloud';
+  @override
+  String get syncBackendIcloudSub =>
+      '아이폰·아이패드·맥끼리 오갑니다';
+  @override
+  String get syncBackendGdrive =>
+      'Google Drive';
+  @override
+  String get syncBackendGdriveSub =>
+      '안드로이드·윈도·웹까지 함께';
+  @override
+  String get syncSoon =>
+      '준비 중';
+  @override
+  String get syncSectionState =>
+      '지금 상태';
+  @override
+  String get syncNowAction =>
+      '지금 맞추기';
+  @override
+  String get syncLastNever =>
+      '아직 한 번도 못 맞췄습니다';
+  @override
+  String get syncTroubleTitle =>
+      '문제가 생기면';
+  @override
+  String get syncTroubleNote =>
+      '동기화는 백업이 아닙니다. 한쪽에서 지우면 모든 곳에서 지워집니다. 중요한 노트는 가끔 파일로 뽑아 두십시오.';
+  @override
+  String syncLastAt(String when) => '마지막으로 맞춘 때 · $when';
 
   @override
   String get syncStateOn => '아이폰·아이패드·맥에서 같은 메모를 봅니다';

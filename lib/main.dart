@@ -1118,6 +1118,18 @@ class AppSettings {
   /// 동기화하지 않는다. 창 크기는 기기마다 다르고, 27인치에서 정한 폭이
   /// 13인치 노트북으로 건너오면 목록이 화면 절반을 먹는다. 이 값은 이
   /// 기기의 사정이지 사람의 취향이 아니다.
+  /// 노트를 어디에 둘까 — 'none' · 'icloud' · 'gdrive'.
+  ///
+  /// 2026-08-19 소유자 지시로 들어왔다. 기기마다 따로 고른다(구름에 안
+  /// 올린다). 아이폰은 아이클라우드로, 안드로이드는 구글 드라이브로
+  /// 가는 것이 자연스러운데, 이 값을 구름에 올리면 한쪽이 다른 쪽의
+  /// 선택을 덮어써 **자기 창고를 스스로 끄는** 일이 생긴다.
+  ///
+  /// 기본값을 'icloud'로 두는 데는 까닭이 있다. 이 값이 없던 저장본을
+  /// 읽을 때 'none'이 되어 버리면, 잘 쓰던 사람의 동기화가 앱 한 번
+  /// 올리는 것으로 조용히 꺼진다. 동기화에서 조용한 변화가 제일 나쁘다.
+  String syncBackend = 'icloud';
+
   double listWidth = 320;
 
   /// 모양 값(글자 크기·줄 간격·종이·화면 모드·정렬)을 위한 같은 짝.
@@ -1225,6 +1237,7 @@ class AppSettings {
         'trialNoticeShown': trialNoticeShown,
         'rulesStamp': rulesStamp,
         'rulesSig': rulesSig,
+        'syncBackend': syncBackend,
         'listWidth': listWidth,
         'autoTagAi': autoTagAi,
         'sortMode': sortMode,
@@ -1332,6 +1345,7 @@ class AppSettings {
     s.trialNoticeShown = (j['trialNoticeShown'] ?? s.trialNoticeShown) as bool;
     s.rulesStamp = (j['rulesStamp'] ?? s.rulesStamp) as int;
     s.rulesSig = (j['rulesSig'] ?? s.rulesSig) as String;
+    s.syncBackend = (j['syncBackend'] ?? s.syncBackend) as String;
     s.listWidth = ((j['listWidth'] ?? s.listWidth) as num).toDouble();
     s.autoTagAi = (j['autoTagAi'] ?? s.autoTagAi) as bool;
     s.sortMode = (j['sortMode'] ?? s.sortMode) as String;
@@ -2163,6 +2177,298 @@ class PlainCopyAction extends Action<PlainCopyIntent> {
   }
 }
 
+
+/// 무엇이 오가고 무엇이 안 오가나 — 두 화면이 같은 글을 쓴다.
+///
+/// 설정 화면 안에 있던 _syncScopeBlock 과 같은 내용이다. 같은 말을 두
+/// 군데에 손으로 적어 두면 한쪽만 고치는 날이 반드시 온다.
+Widget _syncScopeBody(BuildContext context, L10n l) {
+  Widget line(String text) => Padding(
+        padding: const EdgeInsets.only(top: 7),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('· ', style: TextStyle(fontSize: 14, color: context.c.sub)),
+          Expanded(
+            child: Text(text,
+                style: TextStyle(
+                    fontSize: 14, height: 1.45, color: context.c.sub)),
+          ),
+        ]),
+      );
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      line(l.syncScopeShared),
+      line(l.syncScopeDevice),
+      line(l.syncScopeNever),
+      line(l.syncScopePlatform),
+    ]),
+  );
+}
+
+/// 동기화 — 두 뎁스.
+///
+/// 2026-08-19 소유자 지시로 만들었다. 네 토막이다.
+///
+///   ① 어디에 둘까   — 창고 고르기
+///   ② 지금 상태     — 켜짐/꺼짐, 마지막으로 맞춘 때, 지금 맞추기
+///   ③ 무엇이 오가나 — 설정 화면에 있던 것을 그대로 옮겨 왔다
+///   ④ 문제가 생기면 — 동기화는 백업이 아니라는 말
+///
+/// ④를 넣은 까닭을 적어 둔다. 사람은 동기화를 백업으로 믿는다. 그런데
+/// 동기화는 정반대다 — 한쪽에서 지우면 **모든 곳에서** 지워진다.
+/// 그 말을 안 해 주면, 잘못 지운 날 우리가 노트를 먹은 것이 된다.
+///
+/// 여기에 '내보내기' 단추를 달지 않은 것은 일부러다. 2026-08-17에 그
+/// 셋(가져오기·내보내기·백업)을 설정에서 빼서 목록의 메뉴로 옮겼다.
+/// 같은 일로 가는 문이 둘이면 사람은 둘이 다른 일인가 의심한다. 그래서
+/// 여기서는 **어디에 있는지만** 말한다.
+class SyncSettingsScreen extends StatefulWidget {
+  const SyncSettingsScreen({super.key});
+
+  @override
+  State<SyncSettingsScreen> createState() => _SyncSettingsScreenState();
+}
+
+class _SyncSettingsScreenState extends State<SyncSettingsScreen>
+    with SettingsRows {
+  /// 라디오 한 줄. 미닫이(_dropRow)를 안 쓰는 까닭은, 창고 고르기는
+  /// **셋을 한눈에 견주는** 일이기 때문이다. 미닫이는 고른 하나만
+  /// 보여 주므로 "다른 데 두면 뭐가 달라지나"에 답하지 못한다.
+  Widget _radioRow(String group, String value, String title, String? sub,
+      {bool enabled = true, String? badge}) {
+    final c = context.c;
+    final on = value == group;
+    return InkWell(
+      onTap: enabled ? () => _pick(value) : null,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(on ? Icons.radio_button_checked : Icons.radio_button_off,
+                size: 21, color: on ? c.accent : c.sub),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Flexible(
+                      child: Text(title,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight:
+                                  on ? FontWeight.w700 : FontWeight.w600,
+                              color: on ? c.accent : c.guideInk)),
+                    ),
+                    if (badge != null) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                            color: c.tagBg,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: c.tagLine)),
+                        child: Text(badge,
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: c.tagInk)),
+                      ),
+                    ],
+                  ]),
+                  if (sub != null) ...[
+                    const SizedBox(height: 3),
+                    Text(sub,
+                        style: TextStyle(
+                            fontSize: 13.5, height: 1.35, color: c.sub)),
+                  ],
+                ],
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pick(String v) async {
+    final s = store.settings;
+    if (s.syncBackend == v) return;
+    setState(() => s.syncBackend = v);
+    ICloudSync.instance.paused = v == 'none';
+    await store.persistSettings();
+    if (v == 'icloud') unawaited(ICloudSync.instance.recheck());
+  }
+
+  String _when(int ms) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ms);
+    return '${DateFormat.yMd().format(d)} ${DateFormat.Hm().format(d)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final s = store.settings;
+    final sync = ICloudSync.instance;
+    final paused = s.syncBackend == 'none';
+    return Scaffold(
+      backgroundColor: context.c.bg,
+      appBar: AppBar(
+        backgroundColor: context.c.bg,
+        title: Text(l.syncTitle,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      ),
+      body: narrowBody(
+        context,
+        ListView(
+          padding: const EdgeInsets.only(top: 6, bottom: 40),
+          children: [
+            // ① 어디에 둘까
+            _secHeader(l.syncWhereTitle),
+            _card([
+              _radioRow(s.syncBackend, 'none', l.syncBackendNone,
+                  l.syncBackendNoneSub),
+              _sep(),
+              _radioRow(s.syncBackend, 'icloud', l.syncBackendIcloud,
+                  l.syncBackendIcloudSub),
+              _sep(),
+              // 구글 드라이브는 아직 문만 내 두었다. 반쯤 붙은 창고를
+              // 고르게 하면 노트가 엉킨다 — 고를 수 없게 잠가 둔다.
+              _radioRow(s.syncBackend, 'gdrive', l.syncBackendGdrive,
+                  l.syncBackendGdriveSub,
+                  enabled: false, badge: l.syncSoon),
+            ]),
+
+            // ② 지금 상태
+            if (!paused) ...[
+              _secHeader(l.syncSectionState),
+              _card([
+                ValueListenableBuilder<SyncState>(
+                  valueListenable: sync.state,
+                  builder: (_, st, __) {
+                    final ok = st == SyncState.ok;
+                    final busy = st == SyncState.running;
+                    final title = ok
+                        ? l.syncOnTitle
+                        : busy
+                            ? l.syncStateSyncing
+                            : st == SyncState.signedOut
+                                ? l.syncSignedOutTitle
+                                : l.syncOffTitle;
+                    final sub = busy
+                        ? null
+                        : ok
+                            ? l.syncStateOn
+                            : st == SyncState.signedOut
+                                ? l.syncStateSignedOut
+                                : l.syncStateOff;
+                    final row = Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+                      child: Row(children: [
+                        Icon(
+                            ok
+                                ? Icons.cloud_done_outlined
+                                : busy
+                                    ? Icons.cloud_sync_outlined
+                                    : Icons.cloud_off_outlined,
+                            size: 22,
+                            color: ok ? context.c.accent : context.c.sub),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(title,
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: ok
+                                          ? context.c.accent
+                                          : context.c.guideInk)),
+                              if (sub != null) ...[
+                                const SizedBox(height: 2),
+                                Text(sub,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        height: 1.35,
+                                        color: context.c.sub)),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (!ok && !busy)
+                          Icon(Icons.chevron_right, color: context.c.sub),
+                      ]),
+                    );
+                    if (ok || busy) return row;
+                    return InkWell(
+                      onTap: () => showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const SyncHelpSheet(),
+                      ),
+                      child: row,
+                    );
+                  },
+                ),
+                _sep(),
+                // 마지막으로 맞춘 때. 이것 하나가 '되고 있나?'라는 물음에
+                // 상태 문구보다 정확히 답한다 — 켜짐이라고 써 있어도 두
+                // 시간 전이 마지막이면 뭔가 잘못된 것이다.
+                ValueListenableBuilder<int>(
+                  valueListenable: sync.lastSyncMs,
+                  builder: (_, ms, __) => Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(
+                            ms == 0 ? l.syncLastNever : l.syncLastAt(_when(ms)),
+                            style: TextStyle(
+                                fontSize: 13.5, color: context.c.sub)),
+                      ),
+                      TextButton(
+                        onPressed: () => unawaited(sync.syncNow()),
+                        child: Text(l.syncNowAction,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700)),
+                      ),
+                    ]),
+                  ),
+                ),
+              ]),
+            ],
+
+            // ③ 무엇이 오가나
+            _secHeader(l.syncScopeTitle),
+            _card([_syncScopeBody(context, l)]),
+
+            // ④ 문제가 생기면
+            _secHeader(l.syncTroubleTitle),
+            _card([
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+                child: Text(l.syncTroubleNote,
+                    style: TextStyle(
+                        fontSize: 14, height: 1.5, color: context.c.guideInk)),
+              ),
+              _sep(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                child: Text('${l.exportBackup} — ${l.exportBackupSub}',
+                    style:
+                        TextStyle(fontSize: 13.5, height: 1.45, color: context.c.sub)),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// 조금 더 미끄러지는 굴림.
 ///
 /// 2026-08-18 소유자 — "위/아래 스크롤을 할 때, 조금만 더 스르르륵
@@ -2631,7 +2937,12 @@ class _HomeScreenState extends State<HomeScreen>
     // 아이클라우드는 메모를 다 읽은 **뒤에** 켠다. 먼저 켜면 아직 비어 있는
     // 목록을 "이 기기에는 메모가 없다"로 읽고, 그 상태로 남의 기기 것과
     // 합친 결과를 기기에 되쓴다 — 메모가 통째로 날아가는 길이다.
-    store.load().then((_) => ICloudSync.instance.boot());
+    store.load().then((_) {
+      // 저장된 창고 고르기를 켜자마자 스위치에 옮긴다. 이걸 빠뜨리면
+      // '동기화 안 함'으로 두고 앱을 껐다 켠 사람의 노트가 다시 오간다.
+      ICloudSync.instance.paused = store.settings.syncBackend == 'none';
+      ICloudSync.instance.boot();
+    });
     // 다른 앱에서 보낸 글 받기(2026-08-17). 목록 화면이 살아 있는 동안
     // 계속 듣는다.
     _wireShare();
@@ -8740,53 +9051,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     await store.persistSettings();
   }
 
-  /// 아이클라우드로 무엇이 건너가고 무엇이 안 건너가는지.
-  ///
-  /// 2026-08-19 소유자 지시 — "동기화되는 설정과 안 되는 설정을 구분해서
-  /// 간략하게 이용자 안내를 해줘."
-  ///
-  /// 2026-08-18에 규칙과 모양을 갈랐다. 까닭은 코드 주석에 길게 적어
-  /// 뒀지만 그건 우리끼리 보는 것이다. 쓰는 사람은 폰에서 글자 크기를
-  /// 키워 놓고 맥에서 안 바뀌면 그냥 **고장으로 읽는다.**
-  ///
-  /// 말해 주지 않은 규칙은 규칙이 아니라 변덕이다. 세 줄이면 된다.
-  ///
-  /// 셋째 줄(AI 키·잠금)이 특히 중요하다. 남의 열쇠를 구름에 안 올린다는
-  /// 것은 우리가 지키는 약속인데, 지키기만 하고 말하지 않으면 지킨 적이
-  /// 없는 것과 같다.
-  Widget _syncScopeBlock(L10n l) {
-    Widget line(String text) => Padding(
-          padding: const EdgeInsets.only(top: 7),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('· ',
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              Expanded(
-                child: Text(text,
-                    style: TextStyle(
-                        fontSize: 14, height: 1.4, color: context.c.guideInk)),
-              ),
-            ],
-          ),
-        );
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l.syncScopeTitle,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-          line(l.syncScopeShared),
-          line(l.syncScopeDevice),
-          line(l.syncScopeNever),
-          line(l.syncScopePlatform),
-        ],
-      ),
-    );
-  }
-
   Widget _paperBlock(L10n l, AppSettings s) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     String nameOf(String id) => switch (id) {
@@ -9028,86 +9292,92 @@ class _SettingsScreenState extends State<SettingsScreen>
           if (ICloudSync.supported) ...[
             _secHeader(l.syncTitle),
             _card([
+              // 2026-08-19 소유자 지시 — "베어는 설정에 '동기화' 부분 따로
+              // 2depth 설정 상세히 하던데, 우리는 이보다 더 상세히 해야
+              // 하는 거 아닐까?"
+              //
+              // 맞다. 그리고 까닭이 베어보다 하나 더 있다. 우리는 창고를
+              // **고르게** 한다. 애플만 쓰던 때는 켜짐/꺼짐이면 됐지만,
+              // 아이클라우드와 구글 드라이브 중에 고르는 순간 사람은
+              // "내 노트가 지금 어디에 있나"를 알아야 한다. 그건 한 줄에
+              // 안 들어간다.
+              //
+              // 그래서 여기는 문패만 둔다. 상태 한 줄과 화살표.
               ValueListenableBuilder<SyncState>(
                 valueListenable: ICloudSync.instance.state,
                 builder: (_, st, __) {
-                  final ok = st == SyncState.ok;
-                  final busy = st == SyncState.running;
-                  // 2026-08-17 소유자 지시 — "'켜짐'과 설명구는 처음부터
-                  // 두 줄로. '켜짐'은 더 주인공스럽게."
-                  //
-                  // 전에는 한 줄에 상태와 설명을 대시로 이어 붙였다. 좁은
-                  // 화면에서 잘렸고, 무엇이 중요한지도 안 보였다. **한 줄에
-                  // 두 가지를 넣으면 둘 다 작아 보인다.**
-                  //
-                  // 설정의 다른 줄들이 전부 '제목 + 그 아래 설명' 모양인데
-                  // 여기만 달랐던 것이기도 하다.
-                  final title = ok
-                      ? l.syncOnTitle
-                      : busy
-                          ? l.syncStateSyncing
-                          : st == SyncState.signedOut
-                              ? l.syncSignedOutTitle
-                              : l.syncOffTitle;
-                  final sub = busy
-                      ? null
+                  final s2 = store.settings;
+                  final paused = s2.syncBackend == 'none';
+                  final ok = !paused && st == SyncState.ok;
+                  final busy = !paused && st == SyncState.running;
+                  final title = paused
+                      ? l.syncBackendNone
                       : ok
-                          ? l.syncStateOn
-                          : st == SyncState.signedOut
-                              ? l.syncStateSignedOut
-                              : l.syncStateOff;
-                  final row = Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-                    child: Row(children: [
-                      Icon(
-                          ok
-                              ? Icons.cloud_done_outlined
-                              : busy
-                                  ? Icons.cloud_sync_outlined
-                                  : Icons.cloud_off_outlined,
-                          size: 22,
-                          color: ok ? context.c.accent : context.c.sub),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(title,
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w700,
-                                    color: ok
-                                        ? context.c.accent
-                                        : context.c.guideInk)),
-                            if (sub != null) ...[
-                              const SizedBox(height: 2),
-                              Text(sub,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      height: 1.35,
-                                      color: context.c.sub)),
-                            ],
-                          ],
-                        ),
-                      ),
-                      if (!ok && !busy)
-                        Icon(Icons.chevron_right, color: context.c.sub),
-                    ]),
-                  );
-                  if (ok || busy) return row;
+                          ? l.syncOnTitle
+                          : busy
+                              ? l.syncStateSyncing
+                              : st == SyncState.signedOut
+                                  ? l.syncSignedOutTitle
+                                  : l.syncOffTitle;
+                  final sub = paused
+                      ? l.syncBackendNoneSub
+                      : busy
+                          ? null
+                          : ok
+                              ? l.syncStateOn
+                              : st == SyncState.signedOut
+                                  ? l.syncStateSignedOut
+                                  : l.syncStateOff;
                   return InkWell(
-                    onTap: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => const SyncHelpSheet(),
+                    onTap: () async {
+                      await Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                              builder: (_) => const SyncSettingsScreen()));
+                      if (mounted) setState(() {});
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+                      child: Row(children: [
+                        Icon(
+                            paused
+                                ? Icons.cloud_off_outlined
+                                : ok
+                                    ? Icons.cloud_done_outlined
+                                    : busy
+                                        ? Icons.cloud_sync_outlined
+                                        : Icons.cloud_off_outlined,
+                            size: 22,
+                            color: ok ? context.c.accent : context.c.sub),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(title,
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: ok
+                                          ? context.c.accent
+                                          : context.c.guideInk)),
+                              if (sub != null) ...[
+                                const SizedBox(height: 2),
+                                Text(sub,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        height: 1.35,
+                                        color: context.c.sub)),
+                              ],
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, color: context.c.sub),
+                      ]),
                     ),
-                    child: row,
                   );
                 },
               ),
-              _sep(),
-              _syncScopeBlock(l),
             ]),
           ],
           KeyedSubtree(

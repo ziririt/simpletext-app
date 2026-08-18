@@ -506,6 +506,47 @@ class L10nZhHant extends L10n {
   @override
   String get syncScopeNever =>
       'AI API 金鑰不會上傳到 iCloud，需要在每台裝置分別輸入';
+  @override
+  String get syncWhereTitle =>
+      '放在哪裡';
+  @override
+  String get syncBackendNone =>
+      '不同步';
+  @override
+  String get syncBackendNoneSub =>
+      '只保存在這台裝置';
+  @override
+  String get syncBackendIcloud =>
+      'iCloud';
+  @override
+  String get syncBackendIcloudSub =>
+      '在 iPhone·iPad·Mac 之間';
+  @override
+  String get syncBackendGdrive =>
+      'Google Drive';
+  @override
+  String get syncBackendGdriveSub =>
+      '還包括 Android·Windows·網頁';
+  @override
+  String get syncSoon =>
+      '準備中';
+  @override
+  String get syncSectionState =>
+      '目前狀態';
+  @override
+  String get syncNowAction =>
+      '立即同步';
+  @override
+  String get syncLastNever =>
+      '還沒有同步過';
+  @override
+  String get syncTroubleTitle =>
+      '出問題時';
+  @override
+  String get syncTroubleNote =>
+      '同步不是備份。在一台裝置上刪掉，別處也會消失。重要的筆記請偶爾匯出成檔案。';
+  @override
+  String syncLastAt(String when) => '上次同步 $when';
 
   @override
   String get syncStateOn => '在 iPhone、iPad 和 Mac 上看到相同的備忘錄';

@@ -508,6 +508,47 @@ class L10nDe extends L10n {
   @override
   String get syncScopeNever =>
       'Der KI-API-Schlüssel wird nicht in iCloud gesichert und muss auf jedem Gerät eingegeben werden';
+  @override
+  String get syncWhereTitle =>
+      'Wo aufbewahren';
+  @override
+  String get syncBackendNone =>
+      'Nicht synchronisieren';
+  @override
+  String get syncBackendNoneSub =>
+      'Nur auf diesem Gerät';
+  @override
+  String get syncBackendIcloud =>
+      'iCloud';
+  @override
+  String get syncBackendIcloudSub =>
+      'Zwischen iPhone, iPad und Mac';
+  @override
+  String get syncBackendGdrive =>
+      'Google Drive';
+  @override
+  String get syncBackendGdriveSub =>
+      'Auch Android, Windows und Web';
+  @override
+  String get syncSoon =>
+      'In Vorbereitung';
+  @override
+  String get syncSectionState =>
+      'Aktueller Stand';
+  @override
+  String get syncNowAction =>
+      'Jetzt abgleichen';
+  @override
+  String get syncLastNever =>
+      'Noch nie abgeglichen';
+  @override
+  String get syncTroubleTitle =>
+      'Wenn etwas schiefgeht';
+  @override
+  String get syncTroubleNote =>
+      'Abgleichen ist kein Backup. Was Sie auf einem Gerät löschen, ist überall weg. Exportieren Sie wichtige Notizen ab und zu als Datei.';
+  @override
+  String syncLastAt(String when) => 'Zuletzt abgeglichen: $when';
 
   @override
   String get syncStateOn => 'Dieselben Notizen auf iPhone, iPad und Mac';
