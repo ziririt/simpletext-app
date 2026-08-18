@@ -3318,10 +3318,18 @@ class _HomeScreenState extends State<HomeScreen>
     // 줄 높이라도 글이 더 빽빽해 보이고, 바로 옆에 본문이 훤히 펼쳐져
     // 있어 대비까지 붙는다. 같은 숫자가 자리에 따라 다르게 읽히는 것이라,
     // 폰과 같은 값을 고집하는 것이 오히려 일관성이 아니다.
+    // 2026-08-19 — 베어를 기준으로 다시 맞췄다. 소유자: "제목 폰트가 너무
+    // 큰 것 같아. 거기서부터 투박함이 느껴져."
+    //
+    // 크기를 줄이는 것만으로는 안 된다. 문제는 굵고 큰 글자를 좁은 줄에
+    // 욱여넣은 것이었다 — 글자가 큰 게 아니라 **글자 둘레에 공기가
+    // 없었다.** 그래서 크기를 한 눈금 내리고 줄 높이를 크게 늘렸다.
+    //
+    // 위계도 다시 세웠다. 크기 차이로 만들지 않고 굵기·색·자리로 만든다.
+    // 제목(16 semibold 잉크) → 미리보기(15 보통 회색) → 날짜(13 회색).
+    // 위에서 아래로 굵기와 색이 차례로 옅어진다. 그래서 작아도 또렷하다.
     final roomy = widget.embedded;
-    final vPad = roomy ? 13.0 : (isDesktopPlatform ? 5.0 : 10.0);
-    final titleLead = roomy ? 1.5 : 1.25; // 1.25 × 1.2
-    final subLead = roomy ? 1.44 : 1.2; // 1.2 × 1.2
+    final vPad = roomy ? 11.0 : 12.0;
     final firstLine = n.body.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
 
     // 두 칸 화면에서 지금 오른쪽에 열려 있는 메모인가.
@@ -3435,10 +3443,11 @@ class _HomeScreenState extends State<HomeScreen>
             // 데스크톱은 애플 메모장처럼 행을 촘촘하게(글자만 줄면 행이 뚱뚱해 보인다).
           padding: EdgeInsets.fromLTRB(kListRowInset, vPad, 16, vPad),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (_picking)
                   Padding(
-                    padding: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.only(right: 10, top: 2),
                     child: Icon(
                       _picked.contains(n.id)
                           ? Icons.check_circle
@@ -3457,31 +3466,34 @@ class _HomeScreenState extends State<HomeScreen>
                             : (firstLine.isNotEmpty ? firstLine : l.untitled),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 17,
+                        style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            height: titleLead),
+                            height: 1.3,
+                            letterSpacing: -0.2),
                       ),
-                      SizedBox(height: roomy ? 3 : 2),
-                      Row(
-                        children: [
-                          Text(_listDate(l, n.updatedAt),
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  height: subLead,
-                                  color: context.c.sub)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(firstLine,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 15,
-                                    height: subLead,
-                                    color: context.c.sub)),
-                          ),
-                        ],
-                      ),
+                      // 미리보기를 두 줄로 편다. 한 줄이면 어차피 잘리는데,
+                      // 잘린 한 줄은 '이 글이 무엇인가'를 거의 못 알려 준다.
+                      // 두 줄이면 대개 첫 문장이 끝까지 보인다.
+                      if (firstLine.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(firstLine,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 15,
+                                height: 1.42,
+                                color: context.c.sub)),
+                      ],
+                      // 날짜는 맨 아래 제 줄에. 미리보기 옆에 붙어 있으면
+                      // 성격이 다른 둘이 같은 크기 같은 색으로 나란히 서서,
+                      // 눈이 어디부터 읽을지 정하지 못한다.
+                      const SizedBox(height: 5),
+                      Text(_listDate(l, n.updatedAt),
+                          style: TextStyle(
+                              fontSize: 13,
+                              height: 1.2,
+                              color: context.c.sub)),
                     ],
                   ),
                 ),
