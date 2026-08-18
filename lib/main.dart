@@ -688,7 +688,17 @@ class SimpleTextApp extends StatelessWidget {
       scaffoldBackgroundColor: c.bg,
       appBarTheme: AppBarTheme(
         backgroundColor: c.bg,
-        foregroundColor: c.accent,
+        // 2026-08-19 — 앱바의 아이콘과 제목을 잉크색으로 내렸다.
+        //
+        // 여기가 하늘색이었기 때문에 뒤로가기·태그·핀·메뉴가 전부 하늘색이
+        // 됐다. 그러면 하늘색이 '눈여겨볼 것'이 아니라 '이 앱의 글자색'이
+        // 된다. 아끼지 않은 색은 신호가 아니라 배경이다.
+        //
+        // 강조색은 이제 세 자리에만 쓴다.
+        //   떠 있는 단추 — 지금 할 일
+        //   지금 고른 것 — 어디에 있는지
+        //   누를 수 있는 글자 — 여기서 뭔가 열린다
+        foregroundColor: c.guideInk,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         // 2026-08-18 소유자 지시 — "안드로이드 기기의 소프트 물리키 컬러가
@@ -3679,9 +3689,18 @@ class _EditorScreenState extends State<EditorScreen>
   Widget _barBtn(IconData icon, String label, VoidCallback? onTap,
       {bool primary = false, VoidCallback? onLongPress}) {
     final on = onTap != null;
+    // 2026-08-19 — 여기 원래 `primary ? c.accent : c.accent` 라고 적혀
+    // 있었다. 참과 거짓이 같은 값이다. 누군가(나다) 주된 것과 그렇지 않은
+    // 것을 가르려다 값을 안 갈랐고, 그대로 굳었다.
+    //
+    // 다섯 칸이 전부 하늘색이면 무엇이 주된 것인지 알 수 없다. 이 화면에서
+    // 사람이 실제로 매번 누르는 것은 '정리' 하나다. 나머지 넷은 그 문서가
+    // 표를 가졌을 때, 키를 넣었을 때, 바꿀 것이 있을 때만 쓴다.
+    //
+    // 그래서 주된 것만 하늘색으로 두고 나머지는 잉크색으로 내린다.
     final color = !on
         ? context.c.sub.withValues(alpha: 0.5)
-        : (primary ? context.c.accent : context.c.accent);
+        : (primary ? context.c.accent : context.c.guideInk);
     return Expanded(
       child: TextButton(
         onPressed: onTap,
