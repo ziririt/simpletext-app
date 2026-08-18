@@ -3653,6 +3653,16 @@ class _HomeScreenState extends State<HomeScreen>
                   HapticFeedback.mediumImpact();
                   _peek(n);
                 },
+          // 2026-08-18 소유자 지시 — 맥·윈도에서 오른쪽 단추.
+          //
+          // 마우스를 쓰는 사람에게 '길게 누르기'는 없는 동작이다. 손가락이
+          // 하는 일에는 손가락의 문이, 마우스가 하는 일에는 마우스의 문이
+          // 있어야 한다 — 같은 방으로 가는 문 둘이다.
+          //
+          // 그래서 여기서도 _peek 을 그대로 부른다. 다른 화면을 띄우면
+          // 두 문이 다른 방으로 가는 것이라, 맥에서 배운 것이 아이폰에서
+          // 안 통하게 된다. 진동은 안 준다 — 마우스에는 손끝이 없다.
+          onSecondaryTap: _picking ? null : () => _peek(n),
           hoverColor: hover,
           focusColor: hover,
           highlightColor: press,
