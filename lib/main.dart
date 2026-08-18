@@ -2906,20 +2906,23 @@ class _HomeScreenState extends State<HomeScreen>
               onPressed: _pasteAndTidy,
               child: const Icon(Icons.content_paste_go, size: 25),
             ),
-            FloatingActionButton(
-              heroTag: 'new',
-              tooltip: l.newNoteTooltip,
-              backgroundColor: kAccentSoft,
-              foregroundColor: kOnAccentSoft,
-              onPressed: () async {
-                final note = Note.fresh();
-                store.notes.insert(0, note);
-                await store.persist();
-                if (!mounted) return;
-                openNote(context, note.id);
-              },
-              child: const Icon(CupertinoIcons.square_pencil, size: 24),
-            ),
+            // 두 칸 화면(맥·윈도·아이패드 가로)에서는 안 그린다.
+            // 오른쪽 편집 칸에 이미 같은 단추가 있다(2026-08-18 소유자 신고).
+            if (!widget.embedded)
+              FloatingActionButton(
+                heroTag: 'new',
+                tooltip: l.newNoteTooltip,
+                backgroundColor: kAccentSoft,
+                foregroundColor: kOnAccentSoft,
+                onPressed: () async {
+                  final note = Note.fresh();
+                  store.notes.insert(0, note);
+                  await store.persist();
+                  if (!mounted) return;
+                  openNote(context, note.id);
+                },
+                child: const Icon(CupertinoIcons.square_pencil, size: 24),
+              ),
           ],
         ),
       ),
