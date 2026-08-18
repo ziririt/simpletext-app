@@ -3122,12 +3122,17 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
         );
+    // 2026-08-18 소유자 지시 — "폴더 위/아래 여백을 살짝 줘야할 것 같아.
+    // 딱 붙어있는 것이 어색."
+    //
+    // 맞다. 이 줄은 위로 머리 단추와, 아래로 첫 노트 카드와 맞닿아 있었다.
+    // 성격이 다른 셋이 이어져 붙어 있으면 하나로 읽힌다.
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 40,
+        height: 56,
         child: ListView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
           children: [
             chip(l.filterAll, s.filterFolder.isEmpty, () {
               setState(() => s.filterFolder = '');
@@ -8064,26 +8069,55 @@ class PremiumScreen extends StatelessWidget {
 mixin SettingsRows<W extends StatefulWidget> on State<W> {
   Store get store => Store.instance;
 
-  Widget _dropRow<T>(String label, String? sub, T value, List<(T, String)> options, ValueChanged<T> onChanged) {
-    return ListTile(
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-      subtitle: sub == null
-          ? null
-          : Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Text(sub,
-                  style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
+  /// 고르는 줄.
+  ///
+  /// 2026-08-18 소유자 지적 — "안내 멘트가 왜 좌측에 있지? 안내 멘트는
+  /// 위에 있고 설정이 그 아래에 있어야 할 것 같아. 이렇게 2단으로 하는 건
+  /// 이상해."
+  ///
+  /// ListTile 을 쓰고 있었다. 그것은 subtitle 을 **제목 아래 왼쪽**에 두고
+  /// trailing 을 오른쪽에 둔다. 안내문구가 한 줄이면 괜찮지만 세 줄이 되면
+  /// 왼쪽에 글 덩어리가 서고 오른쪽에 고르개가 따로 떠서 **두 단짜리 표**로
+  /// 보인다. 눈이 어디부터 읽을지 정하지 못한다.
+  ///
+  /// 이름과 고르개는 한 줄에(그 둘은 짝이다), 안내는 그 아래 통째로 편다.
+  /// 이 화면에서 두 단인 자리는 여기 하나뿐이었다.
+  Widget _dropRow<T>(String label, String? sub, T value,
+      List<(T, String)> options, ValueChanged<T> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 10, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Expanded(
+              child: Text(label,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 17)),
             ),
-      trailing: DropdownButton<T>(
-        value: value,
-        items: options.map((o) => DropdownMenuItem(value: o.$1, child: Text(o.$2))).toList(),
-        onChanged: (v) {
-          if (v != null) {
-            onChanged(v);
-            store.persistSettings();
-            setState(() {});
-          }
-        },
+            DropdownButton<T>(
+              value: value,
+              underline: const SizedBox.shrink(),
+              items: options
+                  .map((o) => DropdownMenuItem(value: o.$1, child: Text(o.$2)))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) {
+                  onChanged(v);
+                  store.persistSettings();
+                  setState(() {});
+                }
+              },
+            ),
+          ]),
+          if (sub != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, right: 6),
+              child: Text(sub,
+                  style: TextStyle(
+                      fontSize: 14, height: 1.4, color: context.c.sub)),
+            ),
+        ],
       ),
     );
   }
@@ -8123,13 +8157,22 @@ mixin SettingsRows<W extends StatefulWidget> on State<W> {
         // 명시적으로 크게 해 달라고 했다 — 관습보다 사용자 지시가 우선이다.
         title: Text(title,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+        // 2026-08-18 소유자 지시 — "설정에서 군데군데 폰트 사이즈 크게
+        // 나오는 부분이 있다. 세련되게 해줘."
+        //
+        // 08-14에 "설정 글자가 너무 작다"는 말을 듣고 안내문구까지 17로
+        // 올렸는데, 그때 커져야 했던 것은 **항목 이름**뿐이었다. 안내문구가
+        // 같은 크기가 되니 무엇이 이름이고 무엇이 설명인지 구별이 사라졌다.
+        // **크기가 같으면 위계가 없다.**
+        //
+        // 이름 17, 설명 14. 애플은 13을 쓰지만 한글은 한 눈금 크게 잡는다.
         subtitle: sub == null
             ? null
             : Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: 3),
                 child: Text(sub,
                     style: TextStyle(
-                        fontSize: 17, height: 1.35, color: context.c.guideInk)),
+                        fontSize: 14, height: 1.4, color: context.c.sub)),
               ),
         value: value,
         onChanged: (v) {
@@ -9322,28 +9365,9 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로
           // 느끼게 하는 여섯 원인 중 하나로 나왔다. 애플 메모 30일, 구글 킵
           // 7일이 관습이라 30일을 따랐다(독자 설계 금지).
-          _secHeader(l.trashTitle),
-          _card([
-            ListTile(
-              leading: Icon(Icons.delete_outline, color: context.c.sub),
-              title: Text(l.trashTitle,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              subtitle: Text(l.trashSubtitle,
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                if (store.trash.isNotEmpty)
-                  Text('${store.trash.length}',
-                      style: TextStyle(fontSize: 16, color: context.c.sub)),
-                const SizedBox(width: 4),
-                Icon(Icons.chevron_right, color: context.c.sub),
-              ]),
-              onTap: () async {
-                await Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const TrashScreen()));
-                if (mounted) setState(() {});
-              },
-            ),
-          ]),
+          // 2026-08-18 소유자 지시로 휴지통을 뺐다 — 목록의 삼선 메뉴에
+          // 이미 있다. 한 가지 일로 가는 문이 둘이면 사용자는 둘이 다른
+          // 것인가 의심한다. 자주 여는 쪽(목록)에 남긴다.
           _secHeader(l.settingsSecInfo),
           _card([
             Padding(

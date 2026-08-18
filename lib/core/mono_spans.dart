@@ -84,8 +84,19 @@ List<MonoSpan> monoSpans(String text) {
   }
 
   // 3) 아직 정리하지 않은 표 — 세로줄이나 탭으로 구분된 줄이 이어질 때.
+  //
+  // 2026-08-18 소유자 신고 — 그록 답변 전체가 등폭으로 그려졌다.
+  // "굳이 새로 라인 맞출 게 없으니 고정폭 폰트 안 써야 한다."
+  //
+  // 까닭: 그록·챗GPT는 목록을 '탭·점·탭'으로 낸다. 탭이 있으니 표로
+  // 읽혔고, 그런 줄이 둘 이상 이어지니 확정됐다. **글머리표로 시작하는
+  // 줄은 표가 아니다** — 칸을 맞출 것이 없다.
+  final bulletLine = RegExp(
+      '^[\\t ]*([\u2022\u00b7\u25aa\u2023\u25e6*+-]|\\d{1,3}[.)])[\\t ]');
   bool looksRaw(String l) =>
-      l.trim().isNotEmpty && (l.contains('|') || l.contains('\t'));
+      l.trim().isNotEmpty &&
+      !bulletLine.hasMatch(l) &&
+      (l.contains('|') || l.contains('\t'));
   var runStart = -1;
   for (var i = 0; i <= lines.length; i++) {
     final hit = i < lines.length && looksRaw(lines[i]);

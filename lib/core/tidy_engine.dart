@@ -5,6 +5,8 @@
 /// =====================================================================
 library tidy_engine;
 
+import 'inbound_text.dart';
+
 class CustomRule {
   final String find;
   final String replace;
@@ -1307,8 +1309,13 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
   final tables = <TableGrid>[];
   final originalLen = raw.length;
 
-  // 01 Line Ending Normalization
-  var text = raw.replaceAll(RegExp(r'\r\n?'), '\n');
+  // 01 들어온 글의 뼈대 바로잡기 (2026-08-18)
+  //
+  // 줄바꿈만 맞추던 자리였다. 그런데 그록·챗GPT는 목록을 '탭·점·탭'으로
+  // 내고 줄바꿈에 U+2028 을 섞어 쓴다. 그 상태로 아래 규칙들이 돌면 탭이
+  // 칸 구분자로 읽혀 목록이 표가 된다 — 소유자가 신고한 '-'와 '• : •'가
+  // 그렇게 생긴 것이다. 까닭은 core/inbound_text.dart 머리말에 적었다.
+  var text = normalizeInbound(raw);
 
   // 02 Literal Newline Detection
   final litN = RegExp(r'\\n').allMatches(text).length;
