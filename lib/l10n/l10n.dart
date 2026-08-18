@@ -482,6 +482,9 @@ abstract class L10n {
   String get keepLabel;
   String get hrTitle;
   String get headingTitle;
+
+  /// 정리 규칙 — 인용문 (2026-08-18).
+  String get quoteTitle;
   String get headingStrip;
   String get headingKeep;
   String get headingPrefix;
@@ -862,6 +865,7 @@ abstract class L10n {
         'keepLabel': keepLabel,
         'hrTitle': hrTitle,
         'headingTitle': headingTitle,
+        'quoteTitle': quoteTitle,
         'headingStrip': headingStrip,
         'headingKeep': headingKeep,
         'headingPrefix': headingPrefix,

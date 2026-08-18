@@ -885,6 +885,9 @@ class L10nZhHans extends L10n {
   String get hrTitle => '分隔线 (---)';
   @override
   String get headingTitle => '标题 (#, ##)';
+
+  @override
+  String get quoteTitle => '引用 (> 文本)';
   @override
   String get headingStrip => '仅保留文本';
   @override

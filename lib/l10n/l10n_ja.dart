@@ -885,6 +885,9 @@ class L10nJa extends L10n {
   String get hrTitle => '区切り線 (---)';
   @override
   String get headingTitle => '見出し (#, ##)';
+
+  @override
+  String get quoteTitle => '引用 (> テキスト)';
   @override
   String get headingStrip => 'テキストのみ残す';
   @override

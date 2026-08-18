@@ -888,6 +888,9 @@ class L10nEs extends L10n {
   String get hrTitle => 'Separadores (---)';
   @override
   String get headingTitle => 'Títulos (#, ##)';
+
+  @override
+  String get quoteTitle => 'Citas (> texto)';
   @override
   String get headingStrip => 'Dejar solo el texto';
   @override

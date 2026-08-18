@@ -1009,6 +1009,16 @@ class AppSettings {
   ///
   /// 이제 화면에서 크게 그리고, 복사할 때 core/plain_text.dart 가 벗긴다.
   String headingMode = 'keep';
+
+  /// 인용문('> ')을 정리가 어떻게 다루나. 'keep' 또는 'strip'.
+  ///
+  /// 2026-08-18. 제목·강조와 같은 가족인데 마지막까지 남아 있었다. 셋을
+  /// 같은 규칙으로 두는 것이 이 앱의 개념이다 — **글에는 표시를 담아 두고,
+  /// 화면에서 뜻으로 보여 주고, 복사할 때 벗긴다.**
+  ///
+  /// 새로 생긴 칸이라 갈아엎기가 필요 없다. 저장된 값이 없으면 이 기본값을
+  /// 쓴다(쓰던 기기도 자동으로 '그대로 두기'가 된다).
+  String quoteMode = 'keep';
   String headingSymbol = '■';
   String bulletChar = '-';
   bool smartDashList = true;
@@ -1177,6 +1187,7 @@ class AppSettings {
         'emphStyle': emphStyle,
         'hrMode': hrMode,
         'headingMode': headingMode,
+        'quoteMode': quoteMode,
         'headingSymbol': headingSymbol,
         'bulletChar': bulletChar,
         'smartDashList': smartDashList,
@@ -1261,6 +1272,7 @@ class AppSettings {
     }
     s.hrMode = (j['hrMode'] ?? s.hrMode) as String;
     s.headingMode = (j['headingMode'] ?? s.headingMode) as String;
+    s.quoteMode = (j['quoteMode'] ?? s.quoteMode) as String;
     s.headingSymbol = (j['headingSymbol'] ?? s.headingSymbol) as String;
     s.bulletChar = (j['bulletChar'] ?? s.bulletChar) as String;
     s.smartDashList = (j['smartDashList'] ?? s.smartDashList) as bool;
@@ -1583,6 +1595,8 @@ class Store extends ChangeNotifier {
       o.headingMode = s.headingMode;
       o.headingSymbol = s.headingSymbol;
     }
+    // 2026-08-18 — 인용문도 사람이 고른다. 제목·강조와 같은 자리다.
+    if (o.stripQuotes) o.stripQuotes = s.quoteMode == 'strip';
     if (o.bulletsToDot) o.bulletChar = s.bulletChar;
     if (o.smartDashList) o.smartDashList = s.smartDashList;
     if (o.smartFillerHeading) o.smartFillerHeading = s.smartFillerHeading;
@@ -8298,6 +8312,13 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
               ('prefix', l.headingPrefix),
               ('bracket', l.headingBracket),
             ], (v) => s.headingMode = v),
+            _sep(),
+            // 2026-08-18 — 제목·강조와 한 줄로 세운다. 셋이 같은 가족인데
+            // 하나만 다르게 두면, 왜 이것만 지워지는지 아무도 모른다.
+            _dropRow(l.quoteTitle, null, s.quoteMode, [
+              ('keep', l.keepLabel),
+              ('strip', l.removeLabel),
+            ], (v) => s.quoteMode = v),
             _sep(),
             _dropRow(l.hrTitle, null, s.hrMode, [
               ('keep', l.keepLabel),

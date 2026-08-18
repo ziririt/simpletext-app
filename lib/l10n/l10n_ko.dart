@@ -885,6 +885,9 @@ class L10nKo extends L10n {
   String get hrTitle => '구분선 (---)';
   @override
   String get headingTitle => '제목 (#, ##)';
+
+  @override
+  String get quoteTitle => '인용문 (> 텍스트)';
   @override
   String get headingStrip => '텍스트만 남기기';
   @override

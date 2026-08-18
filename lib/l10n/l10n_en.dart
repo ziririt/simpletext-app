@@ -888,6 +888,9 @@ class L10nEn extends L10n {
   String get hrTitle => 'Dividers (---)';
   @override
   String get headingTitle => 'Headings (#, ##)';
+
+  @override
+  String get quoteTitle => 'Block quotes (> text)';
   @override
   String get headingStrip => 'Keep text only';
   @override

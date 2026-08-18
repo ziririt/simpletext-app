@@ -889,6 +889,9 @@ class L10nFr extends L10n {
   String get hrTitle => 'Séparateurs (---)';
   @override
   String get headingTitle => 'Titres (#, ##)';
+
+  @override
+  String get quoteTitle => 'Citations (> texte)';
   @override
   String get headingStrip => 'Garder le texte seul';
   @override

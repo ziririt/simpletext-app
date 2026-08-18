@@ -96,6 +96,9 @@ void _one(String line, int base, List<RichSpan> out) {
   if (line.startsWith('> ')) {
     out.add(RichSpan(base, base + 2, RichKind.marker));
     out.add(RichSpan(base + 2, base + line.length, RichKind.quote));
+    // 인용 안에도 굵게가 들어온다. 여기서 안 부르면 인용문만 굵게가
+    // 안 보인다 — 한 군데를 빠뜨리는 그 자리다.
+    _bold(line, base, out, from: 2);
     return;
   }
 

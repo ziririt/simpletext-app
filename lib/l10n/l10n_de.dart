@@ -889,6 +889,9 @@ class L10nDe extends L10n {
   String get hrTitle => 'Trennlinien (---)';
   @override
   String get headingTitle => 'Überschriften (#, ##)';
+
+  @override
+  String get quoteTitle => 'Zitate (> Text)';
   @override
   String get headingStrip => 'Nur Text behalten';
   @override

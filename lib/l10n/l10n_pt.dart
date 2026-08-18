@@ -888,6 +888,9 @@ class L10nPt extends L10n {
   String get hrTitle => 'Divisores (---)';
   @override
   String get headingTitle => 'Títulos (#, ##)';
+
+  @override
+  String get quoteTitle => 'Citações (> texto)';
   @override
   String get headingStrip => 'Deixar só o texto';
   @override
