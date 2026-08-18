@@ -689,7 +689,7 @@ class L10nZhHans extends L10n {
   String get paperManuscript => '稿纸';
 
   @override
-  String get paperGrid => '方格';
+  String get paperFrost => '霜白';
 
   @override
   String get lockSectionTitle => '锁定';

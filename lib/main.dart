@@ -7800,7 +7800,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           'moleskine' => l.paperMoleskine,
           'sepia' => l.paperSepia,
           'manuscript' => l.paperManuscript,
-          'grid' => l.paperGrid,
+          'frost' => l.paperFrost,
           'plain' => l.paperPlain,
           'kraft' => l.paperKraft,
           'walnut' => l.paperWalnut,

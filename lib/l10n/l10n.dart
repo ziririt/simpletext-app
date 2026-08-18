@@ -397,7 +397,7 @@ abstract class L10n {
   String get paperMoleskine;
   String get paperSepia;
   String get paperManuscript;
-  String get paperGrid;
+  String get paperFrost;
   String get lockSectionTitle;
   String get lockTitle;
   String get lockSub;
@@ -761,7 +761,7 @@ abstract class L10n {
         'paperMoleskine': paperMoleskine,
         'paperSepia': paperSepia,
         'paperManuscript': paperManuscript,
-        'paperGrid': paperGrid,
+        'paperFrost': paperFrost,
         'lockSectionTitle': lockSectionTitle,
         'lockTitle': lockTitle,
         'lockSub': lockSub,

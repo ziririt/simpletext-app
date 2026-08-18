@@ -692,7 +692,7 @@ class L10nEn extends L10n {
   String get paperManuscript => 'Manuscript';
 
   @override
-  String get paperGrid => 'Grid';
+  String get paperFrost => 'Frost';
 
   @override
   String get lockSectionTitle => 'Lock';

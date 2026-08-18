@@ -692,7 +692,7 @@ class L10nEs extends L10n {
   String get paperManuscript => 'Manuscrito';
 
   @override
-  String get paperGrid => 'Cuadrícula';
+  String get paperFrost => 'Escarcha';
 
   @override
   String get lockSectionTitle => 'Bloqueo';

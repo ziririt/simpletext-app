@@ -23,12 +23,12 @@ void main() {
       expect(vertical, isEmpty);
     });
 
-    test('가로줄은 몰스킨·모눈 둘뿐이다', () {
+    test('가로줄은 몰스킨·서리 둘뿐이다', () {
       final horizontal = [
         for (final p in kPapers)
           if (drawsHorizontal(p.ruling)) p.id
       ];
-      expect(horizontal, ['moleskine', 'grid']);
+      expect(horizontal, ['moleskine', 'frost']);
     });
 
     // 2026-08-18 소유자 지시로 '원고지'를 뺐다. 목록에서 사라졌다는 것과
@@ -37,15 +37,21 @@ void main() {
       expect(kPapers.any((p) => p.id == 'manuscript'), isFalse);
     });
 
-    test("옛 '원고지' 설정은 모눈으로 간다", () {
-      expect(paperById('manuscript').id, 'grid');
+    test("옛 '원고지' 설정은 서리로 간다", () {
+      expect(paperById('manuscript').id, 'frost');
+    });
+
+    // 2026-08-19에 '모눈'을 '서리'로 고쳐 부르면서 id 도 바꿨다. 이미
+    // 그걸 고른 기기의 설정에는 옛 이름이 적혀 있다.
+    test("옛 '모눈' 설정은 서리로 간다", () {
+      expect(paperById('grid').id, 'frost');
     });
 
     test('보이는 차례', () {
       expect([for (final p in kPapers) p.id], [
         kPaperNone,
         'moleskine',
-        'grid',
+        'frost',
         'plain',
         'sepia',
         'kraft',

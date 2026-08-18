@@ -689,7 +689,7 @@ class L10nKo extends L10n {
   String get paperManuscript => '원고지';
 
   @override
-  String get paperGrid => '모눈';
+  String get paperFrost => '서리';
 
   @override
   String get lockSectionTitle => '잠금';

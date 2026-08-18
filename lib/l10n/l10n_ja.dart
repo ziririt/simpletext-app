@@ -689,7 +689,7 @@ class L10nJa extends L10n {
   String get paperManuscript => '原稿用紙';
 
   @override
-  String get paperGrid => '方眼';
+  String get paperFrost => 'フロスト';
 
   @override
   String get lockSectionTitle => 'ロック';

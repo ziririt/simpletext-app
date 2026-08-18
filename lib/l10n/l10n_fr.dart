@@ -693,7 +693,7 @@ class L10nFr extends L10n {
   String get paperManuscript => 'Manuscrit';
 
   @override
-  String get paperGrid => 'Quadrillé';
+  String get paperFrost => 'Givre';
 
   @override
   String get lockSectionTitle => 'Verrouillage';

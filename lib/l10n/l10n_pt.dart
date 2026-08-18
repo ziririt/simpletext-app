@@ -692,7 +692,7 @@ class L10nPt extends L10n {
   String get paperManuscript => 'Manuscrito';
 
   @override
-  String get paperGrid => 'Quadriculado';
+  String get paperFrost => 'Geada';
 
   @override
   String get lockSectionTitle => 'Bloqueio';
