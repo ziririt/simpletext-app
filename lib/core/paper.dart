@@ -90,17 +90,24 @@ const List<Paper> kPapers = [
   // '인쇄된 선'이 아니라 '종이의 결'처럼 보인다. 그 느낌을 색으로 옮겼다.
   Paper(
     id: 'moleskine',
-    bg: 0xFFF4EFE2, ink: 0xFF2B2620, rule: 0xFFD9D0BC,
-    bgDark: 0xFF191714, inkDark: 0xFFE8E0D0, ruleDark: 0xFF34302A,
+    bg: 0xFFF4EFE2, ink: 0xFF2B2620, rule: 0xFFE8E1D1,
+    bgDark: 0xFF191714, inkDark: 0xFFE8E0D0, ruleDark: 0xFF25221E,
     ruling: kRulingLine,
   ),
 
-  // 모눈. 칸이 줄 높이와 같은 정사각이라 어느 글꼴에서도 정확히 맞는다.
+  // 모눈. 2026-08-18 소유자 지시로 세로줄을 뺐다 — "원고지를 뺐던 이유도
+  // 세로 라인 때문이었어." 세로줄은 글자 사이를 지나가므로 가로줄과 달리
+  // **글줄과 겹치지 않을 자리가 없다.** 가로줄은 글줄 사이로 지나갈 수
+  // 있지만 세로줄은 그럴 수 없다. 종이의 결이 아니라 창살이 된다.
+  //
+  // 줄 색도 바탕 쪽으로 반쯤 당겼다(1.24 → 1.10). 소유자: "선은 좀더
+  // 연하게 느낌만 내야할 듯. 글자보다 더 뒤에 있는 느낌도 확실히
+  // 들어야하니."
   Paper(
     id: 'grid',
-    bg: 0xFFFAFAF7, ink: 0xFF23262B, rule: 0xFFDCE3EC,
-    bgDark: 0xFF15171A, inkDark: 0xFFE4E7EB, ruleDark: 0xFF2A3038,
-    ruling: kRulingGrid,
+    bg: 0xFFFAFAF7, ink: 0xFF23262B, rule: 0xFFECF0F2,
+    bgDark: 0xFF15171A, inkDark: 0xFFE4E7EB, ruleDark: 0xFF1E2228,
+    ruling: kRulingLine,
   ),
 
   // 2026-08-17 소유자 요청으로 네 벌 추가. 색은 눈으로 고르지 않았다 —

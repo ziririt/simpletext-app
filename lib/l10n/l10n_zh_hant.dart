@@ -86,6 +86,9 @@ class L10nZhHant extends L10n {
   String get bodyFontSizeTitle => '內文字級';
 
   @override
+  String get bodyLineHeightTitle => '正文行距';
+
+  @override
   String get bodyFontSizeSample =>
       '遇見一個把腦中紛雜思緒整理得 Simplicity 而 Smart 的工作空間。貼上後點一次「整理」，一切都變得 Clean。';
 

@@ -86,6 +86,9 @@ class L10nEs extends L10n {
   String get bodyFontSizeTitle => 'Tamaño del texto';
 
   @override
+  String get bodyLineHeightTitle => 'Interlineado del cuerpo';
+
+  @override
   String get bodyFontSizeSample =>
       'Descubre un espacio de trabajo Smart que ordena las muchas ideas de tu cabeza con pura Simplicity. Pega el texto, pulsa Limpiar y todo queda Clean.';
 

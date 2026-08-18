@@ -86,6 +86,9 @@ class L10nKo extends L10n {
   String get bodyFontSizeTitle => '본문 글자 크기';
 
   @override
+  String get bodyLineHeightTitle => '본문 줄 간격';
+
+  @override
   String get bodyFontSizeSample =>
       '머릿속의 수많은 생각을 Simplicity하게 깔끔히 정돈해 주는 Smart한 작업 공간을 만나보세요. 붙여넣고 정리 한 번이면 Clean하게 끝납니다.';
 

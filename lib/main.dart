@@ -886,6 +886,7 @@ class AppSettings {
   /// 본문 글자 크기. 쓰던 메모앱과 눈으로 맞출 수 있게 설정에서 고른다
   /// (2026-08-14 — 고정값을 바꿔 가며 맞추려니 매번 설치 왕복이 생겼다).
   double bodyFontSize = MonoTextController.defaultBodyFontSize;
+  double bodyLineHeight = MonoTextController.bodyHeight;
   String aiKey = '';
   // 2026-08-16 소유자 승인 — 모델은 키에서 자동으로 정한다.
   // 키 앞글자로 회사를 판정하고, 그 회사의 모델 목록을 받아 와서 제일 싼
@@ -997,6 +998,7 @@ class AppSettings {
         'previewBeforeApply': previewBeforeApply,
         'pasteTipDone': pasteTipDone,
         'bodyFontSize': bodyFontSize,
+        'bodyLineHeight': bodyLineHeight,
         'aiKey': aiKey,
         'aiProvider': aiProvider,
         'aiModel': aiModel,
@@ -1071,6 +1073,8 @@ class AppSettings {
       s.previewBeforeApply = false;
     }
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
+    s.bodyLineHeight =
+        ((j['bodyLineHeight'] ?? s.bodyLineHeight) as num).toDouble();
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiProvider = (j['aiProvider'] ?? s.aiProvider) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
@@ -5195,6 +5199,7 @@ static const int kTagScanChars = 3000;
     // 설정을 바꾸면 다음 build에서 바로 반영된다(컨트롤러가 매번 이 값을 본다).
     bodyCtl.monoEnabled = store.settings.monoEditor;
     bodyCtl.bodyFontSize = store.settings.bodyFontSize;
+    bodyCtl.lineHeight = store.settings.bodyLineHeight;
 
     // 종이. 고르지 않았으면 paper.id == kPaperNone이고 아래 색은 안 쓴다.
     final paper = paperById(store.settings.paperMode);
@@ -5707,8 +5712,11 @@ static const int kTagScanChars = 3000;
                             painter: _PaperPainter(
                               ruling: paper.ruling,
                               color: Color(paper.ruleOf(darkNow)),
+                              // 줄 간격을 사람이 바꾸면 종이의 줄도 같이
+                              // 움직여야 한다. 이 둘이 어긋나면 화면 아래로
+                              // 갈수록 글자가 줄에서 떠오른다.
                               lineHeight: store.settings.bodyFontSize *
-                                  MonoTextController.bodyHeight,
+                                  store.settings.bodyLineHeight,
                               colWidth: _colWidth(store.settings.bodyFontSize),
                               // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
                               // 죽는다. 그때는 0이 맞다.
@@ -5756,7 +5764,7 @@ static const int kTagScanChars = 3000;
                     // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
                     // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
                     final lineH = store.settings.bodyFontSize *
-                        MonoTextController.bodyHeight;
+                        store.settings.bodyLineHeight;
                     final blank =
                         inlineAdLikely() ? lineH * 2 : box.maxHeight * 0.5;
                     // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
@@ -5830,7 +5838,7 @@ static const int kTagScanChars = 3000;
                   // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
                   style: TextStyle(
                       fontSize: store.settings.bodyFontSize,
-                      height: MonoTextController.bodyHeight,
+                      height: store.settings.bodyLineHeight,
                       // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
                       // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
                       // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
@@ -7779,6 +7787,37 @@ class _SettingsScreenState extends State<SettingsScreen>
               onChanged: (v) => setState(() => s.bodyFontSize = v),
               onChangeEnd: (_) => store.persistSettings(),
             ),
+            // 2026-08-18 소유자 지시 — "'본문 글자 크기'와 더불어서 '본문
+            // 줄 간격(행 간격)' 설정도 될까?"
+            //
+            // 견본은 아래 하나를 같이 쓴다. 둘을 따로 두면 사람이 두 군데를
+            // 번갈아 보며 맞춰야 하는데, 글자 크기와 줄 간격은 원래 **같이
+            // 보고 정하는 것**이다. 하나를 키우면 다른 하나가 좁아 보인다.
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(l.bodyLineHeightTitle,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 17)),
+                ),
+                Text(s.bodyLineHeight.toStringAsFixed(1),
+                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+              ],
+            ),
+            Slider.adaptive(
+              value: s.bodyLineHeight,
+              min: MonoTextController.minBodyHeight,
+              max: MonoTextController.maxBodyHeight,
+              // 0.1씩. 그보다 잘게 나누면 손가락으로는 같은 자리이고,
+              // 숫자만 흔들려서 고른 값을 다시 못 찾는다.
+              divisions: ((MonoTextController.maxBodyHeight -
+                          MonoTextController.minBodyHeight) *
+                      10)
+                  .round(),
+              onChanged: (v) => setState(() => s.bodyLineHeight = v),
+              onChangeEnd: (_) => store.persistSettings(),
+            ),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
@@ -7788,7 +7827,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   borderRadius: BorderRadius.circular(10)),
               child: Text(l.bodyFontSizeSample,
                   style: TextStyle(
-                      fontSize: s.bodyFontSize, height: MonoTextController.bodyHeight)),
+                      fontSize: s.bodyFontSize, height: s.bodyLineHeight)),
             ),
           ],
         ),

@@ -33,6 +33,15 @@ class MonoTextController extends TextEditingController {
   static const double maxBodyFontSize = 24;
   static const double bodyHeight = 1.6;
 
+  /// 줄 간격의 폭. 2026-08-18 소유자 지시 — "'본문 줄 간격(행 간격)' 설정도
+  /// 될까? 기본값이 좋은 사람이 있겠지만, 더 좁게 또는 더 넓게 쓸 사람들이
+  /// 있을테니까."
+  ///
+  /// 1.2 아래로는 한글의 받침과 다음 줄의 윗머리가 닿기 시작하고, 2.2를
+  /// 넘으면 한 화면에 들어오는 줄이 너무 줄어 글이 흩어져 보인다.
+  static const double minBodyHeight = 1.2;
+  static const double maxBodyHeight = 2.2;
+
   /// 화면 build에서 설정값을 넣어 준다.
   double bodyFontSize = defaultBodyFontSize;
 
@@ -41,8 +50,11 @@ class MonoTextController extends TextEditingController {
   static const double _monoRatio = 14.5 / defaultBodyFontSize;
   double get monoFontSize => bodyFontSize * _monoRatio;
 
+  /// 화면 build에서 설정값을 넣어 준다. 안 넣으면 기본값 그대로다.
+  double lineHeight = bodyHeight;
+
   /// 크기가 달라도 **줄 높이는 본문과 같아야** 표 근처에서 줄 간격이 튀지 않는다.
-  double get monoHeight => bodyFontSize * bodyHeight / monoFontSize;
+  double get monoHeight => bodyFontSize * lineHeight / monoFontSize;
 
   @override
   TextSpan buildTextSpan({

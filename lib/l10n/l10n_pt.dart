@@ -86,6 +86,9 @@ class L10nPt extends L10n {
   String get bodyFontSizeTitle => 'Tamanho do texto';
 
   @override
+  String get bodyLineHeightTitle => 'Espaçamento entre linhas';
+
+  @override
   String get bodyFontSizeSample =>
       'Conheça um espaço de trabalho Smart que organiza as muitas ideias da sua cabeça com pura Simplicity. Cole o texto, toque em Limpar e tudo fica Clean.';
 

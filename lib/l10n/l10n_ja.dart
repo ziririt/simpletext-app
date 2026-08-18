@@ -86,6 +86,9 @@ class L10nJa extends L10n {
   String get bodyFontSizeTitle => '本文の文字サイズ';
 
   @override
+  String get bodyLineHeightTitle => '本文の行間';
+
+  @override
   String get bodyFontSizeSample =>
       '頭の中のたくさんの考えを Simplicity に整えてくれる Smart なワークスペース。貼り付けて「整理」を一度押すだけで Clean に片づきます。';
 

@@ -86,6 +86,9 @@ class L10nFr extends L10n {
   String get bodyFontSizeTitle => 'Taille du texte';
 
   @override
+  String get bodyLineHeightTitle => 'Interligne du corps';
+
+  @override
   String get bodyFontSizeSample =>
       'Découvrez un espace de travail Smart qui met de l’ordre dans vos nombreuses idées avec une vraie Simplicity. Collez, appuyez sur Nettoyer, tout devient Clean.';
 

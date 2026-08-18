@@ -12,12 +12,15 @@ import 'package:simpletext/core/paper.dart';
 
 void main() {
   group('종이별 줄 모양', () {
-    test('세로줄은 모눈 하나뿐이다', () {
+    // 2026-08-18 소유자 지시로 모눈에서도 세로줄을 뺐다. 이제 세로줄을
+    // 긋는 종이는 없다. 셈은 남겨 둔다 — 없앤 것은 종이의 성질이지
+    // 그리는 법이 아니고, 언제 다시 필요할지 모른다.
+    test('세로줄을 긋는 종이는 없다', () {
       final vertical = [
         for (final p in kPapers)
           if (drawsVertical(p.ruling)) p.id
       ];
-      expect(vertical, ['grid']);
+      expect(vertical, isEmpty);
     });
 
     test('가로줄은 몰스킨·모눈 둘뿐이다', () {

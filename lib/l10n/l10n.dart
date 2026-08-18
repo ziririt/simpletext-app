@@ -74,6 +74,9 @@ abstract class L10n {
   /// 설정의 본문 글자 크기
   String get bodyFontSizeTitle;
 
+  /// 설정의 본문 줄 간격
+  String get bodyLineHeightTitle;
+
   /// 크기를 눈으로 맞출 때 쓰는 견본 문장
   String get bodyFontSizeSample;
 
@@ -557,6 +560,7 @@ abstract class L10n {
         'seedBody': seedBody,
         'done': done,
         'bodyFontSizeTitle': bodyFontSizeTitle,
+        'bodyLineHeightTitle': bodyLineHeightTitle,
         'bodyFontSizeSample': bodyFontSizeSample,
         'wizardNothingToDo': wizardNothingToDo,
         'skipPreviewCheck': skipPreviewCheck,

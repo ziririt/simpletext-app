@@ -86,6 +86,9 @@ class L10nDe extends L10n {
   String get bodyFontSizeTitle => 'Textgröße';
 
   @override
+  String get bodyLineHeightTitle => 'Zeilenabstand im Text';
+
+  @override
   String get bodyFontSizeSample =>
       'Entdecken Sie einen Smart Arbeitsbereich, der die vielen Gedanken in Ihrem Kopf mit purer Simplicity ordnet. Einfügen, einmal Aufräumen tippen, alles Clean.';
 

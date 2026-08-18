@@ -86,6 +86,9 @@ class L10nEn extends L10n {
   String get bodyFontSizeTitle => 'Body text size';
 
   @override
+  String get bodyLineHeightTitle => 'Body line spacing';
+
+  @override
   String get bodyFontSizeSample =>
       'Meet a Smart workspace that turns the many thoughts in your head into pure Simplicity. Paste it, tap Tidy once, and everything comes out Clean.';
 
