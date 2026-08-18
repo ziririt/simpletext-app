@@ -12,20 +12,70 @@ import 'package:simpletext/core/paper.dart';
 
 void main() {
   group('종이별 줄 모양', () {
-    test('세로줄은 모눈과 원고지 둘뿐이다', () {
+    test('세로줄은 모눈 하나뿐이다', () {
       final vertical = [
         for (final p in kPapers)
           if (drawsVertical(p.ruling)) p.id
       ];
-      expect(vertical, ['manuscript', 'grid']);
+      expect(vertical, ['grid']);
     });
 
-    test('가로줄은 몰스킨·원고지·모눈 셋뿐이다', () {
+    test('가로줄은 몰스킨·모눈 둘뿐이다', () {
       final horizontal = [
         for (final p in kPapers)
           if (drawsHorizontal(p.ruling)) p.id
       ];
-      expect(horizontal, ['moleskine', 'manuscript', 'grid']);
+      expect(horizontal, ['moleskine', 'grid']);
+    });
+
+    // 2026-08-18 소유자 지시로 '원고지'를 뺐다. 목록에서 사라졌다는 것과
+    // 이미 그것을 고른 사람이 안전하다는 것은 다른 이야기라 둘 다 못 박는다.
+    test("'원고지'는 목록에 없다", () {
+      expect(kPapers.any((p) => p.id == 'manuscript'), isFalse);
+    });
+
+    test("옛 '원고지' 설정은 모눈으로 간다", () {
+      expect(paperById('manuscript').id, 'grid');
+    });
+
+    test('보이는 차례', () {
+      expect([for (final p in kPapers) p.id], [
+        kPaperNone,
+        'moleskine',
+        'grid',
+        'plain',
+        'sepia',
+        'kraft',
+        'walnut',
+        'sky',
+      ]);
+    });
+
+    // 여백은 종이와 같은 계열이되 한 톤 약해야 한다. '약하다'를 눈이 아니라
+    // 숫자로 못 박는다 — 밝은 종이는 어두워지고, 어두운 종이는 밝아진다.
+    test('여백은 종이를 중간 쪽으로 당긴 색이다', () {
+      for (final p in kPapers) {
+        if (p.id == kPaperNone) continue;
+        for (final dark in [false, true]) {
+          final bg = p.bgOf(dark);
+          final m = marginTone(bg);
+          final lb = relativeLuminance(bg);
+          final lm = relativeLuminance(m);
+          final reason = '${p.id} dark=$dark';
+          // 눈에 보일 만큼은 다르되, 제 색을 주장할 만큼은 아니다.
+          expect(contrastRatio(bg, m) > 1.02, isTrue, reason: reason);
+          expect(contrastRatio(bg, m) < 1.45, isTrue, reason: reason);
+          // 방향: 종이가 중간(0.216 ≈ 회색 0x80)보다 밝으면 여백은 어둡다.
+          final mid = relativeLuminance(0xFF808080);
+          if (lb > mid) {
+            expect(lm < lb, isTrue, reason: reason);
+          } else if (lb < mid) {
+            expect(lm > lb, isTrue, reason: reason);
+          }
+          // 알파는 건드리지 않는다.
+          expect((m >> 24) & 0xFF, (bg >> 24) & 0xFF, reason: reason);
+        }
+      }
     });
 
     test('색 종이 넷과 세피아는 줄이 없다', () {

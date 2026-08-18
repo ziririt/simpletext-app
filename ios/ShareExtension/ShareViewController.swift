@@ -1,5 +1,4 @@
 import UIKit
-import UniformTypeIdentifiers
 
 /// 다른 앱의 '공유'에서 Skyblue Note 를 골랐을 때 실제로 도는 코드.
 ///
@@ -54,25 +53,40 @@ class ShareViewController: UIViewController {
 
   // MARK: - 글 꺼내기
 
+  /// 받을 수 있는 것들. 순서가 곧 우선순위다.
+  ///
+  /// UTType(iOS 14+) 대신 날문자열을 쓴다. 확장의 최소 버전을 14로 올려서
+  /// 피할 수도 있지만, 그러면 iOS 13 기기에서만 공유 시트에 우리가 안 뜬다.
+  /// **되는 기기와 안 되는 기기가 갈리는 것**은 사용자에게 설명할 수 없는
+  /// 종류의 차이다.
+  ///
+  /// UTType 이 감싸고 있는 것은 결국 이 문자열들이고, 이 값들은 iOS 13에도
+  /// 있으며 앞으로도 안 바뀐다. 감싼 것을 벗기면 버전 문제가 사라진다.
+  private static let kinds = [
+    "public.plain-text",
+    "public.text",
+    "public.url",
+    "public.file-url",
+  ]
+
   /// 공유로 들어오는 것은 한 가지가 아니다. 고른 글자일 수도, 웹 주소일
   /// 수도, 파일일 수도 있다. 셋 다 받는다 — 사용자에게는 다 '이 글'이다.
   private func extractText() async -> String? {
     guard let items = extensionContext?.inputItems as? [NSExtensionItem] else { return nil }
     for item in items {
       for provider in item.attachments ?? [] {
-        if let t = await load(provider, UTType.plainText) { return t }
-        if let t = await load(provider, UTType.text) { return t }
-        if let t = await load(provider, UTType.url) { return t }
-        if let t = await load(provider, UTType.fileURL) { return t }
+        for kind in Self.kinds {
+          if let t = await load(provider, kind) { return t }
+        }
       }
     }
     return nil
   }
 
-  private func load(_ provider: NSItemProvider, _ type: UTType) async -> String? {
-    guard provider.hasItemConformingToTypeIdentifier(type.identifier) else { return nil }
+  private func load(_ provider: NSItemProvider, _ kind: String) async -> String? {
+    guard provider.hasItemConformingToTypeIdentifier(kind) else { return nil }
     return await withCheckedContinuation { cont in
-      provider.loadItem(forTypeIdentifier: type.identifier, options: nil) { data, _ in
+      provider.loadItem(forTypeIdentifier: kind, options: nil) { data, _ in
         cont.resume(returning: Self.toText(data))
       }
     }

@@ -1984,6 +1984,22 @@ class SplitShellState extends State<SplitShell> {
 
   void toggleList() => setState(() => _listOpen = !_listOpen);
 
+  /// 글 칸 양옆 여백에 깔 색.
+  ///
+  /// 종이마다 다르다 — 종이가 바뀌면 여백도 같이 바뀐다. 셈은
+  /// paper.dart 의 marginTone 하나뿐이라, 여백이 종이에서 떨어져 나가
+  /// 따로 노는 일이 생기지 않는다.
+  Color _marginColor(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final p = paperById(Store.instance.settings.paperMode);
+    if (p.id == kPaperNone) {
+      // '기본'은 종이 색이 없다. 그때 글 칸 바탕은 앱 바탕색이므로,
+      // 같은 잣대를 앱 바탕색에 댄다.
+      return Color.lerp(context.c.bg, const Color(0xFF808080), kMarginToneT)!;
+    }
+    return Color(marginTone(p.bgOf(dark)));
+  }
+
   /// 지금 오른쪽 칸에 열려 있는 메모. 목록이 그것을 표시하려고 본다.
   String? get openId => _openId;
 
@@ -2046,7 +2062,9 @@ class SplitShellState extends State<SplitShell> {
               if (_listOpen)
                 VerticalDivider(width: 1, thickness: 1, color: c.line),
               Expanded(
-                child: !alive
+                child: ColoredBox(
+                  color: _marginColor(context),
+                  child: !alive
                     ? Center(
                         child: Padding(
                           padding: const EdgeInsets.all(40),
@@ -2092,6 +2110,7 @@ class SplitShellState extends State<SplitShell> {
                         ),
                         ),
                       ),
+                ),
               ),
             ]),
           ),
@@ -3153,6 +3172,22 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _noteTile(Note n) {
     final l = L10n.of(context);
     final c = context.c;
+
+    // 2026-08-18 소유자 지시 — "좌측 패널에서 메모 리스트 줄간격이 너무
+    // 촘촘하다. 줄간격을 20% 늘려주고, 메모와 메모 간의 간격도 20~30%
+    // 늘려줘. 지금은 너무 촘촘하고 빡빡하고 답답한 느낌이다."
+    //
+    // 폰 목록은 그대로 둔다. 그 행 높이(60.3pt)는 애플 메모를 픽셀로 재서
+    // 맞춘 값이고, 폰에서는 목록이 화면 전부라 그 밀도가 맞다.
+    //
+    // 넓은 화면의 왼쪽 칸은 사정이 다르다. 폭이 320으로 묶여 있어 같은
+    // 줄 높이라도 글이 더 빽빽해 보이고, 바로 옆에 본문이 훤히 펼쳐져
+    // 있어 대비까지 붙는다. 같은 숫자가 자리에 따라 다르게 읽히는 것이라,
+    // 폰과 같은 값을 고집하는 것이 오히려 일관성이 아니다.
+    final roomy = widget.embedded;
+    final vPad = roomy ? 13.0 : (isDesktopPlatform ? 5.0 : 10.0);
+    final titleLead = roomy ? 1.5 : 1.25; // 1.25 × 1.2
+    final subLead = roomy ? 1.44 : 1.2; // 1.2 × 1.2
     final firstLine = n.body.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
 
     // 두 칸 화면에서 지금 오른쪽에 열려 있는 메모인가.
@@ -3264,8 +3299,7 @@ class _HomeScreenState extends State<HomeScreen>
           splashColor: splash,
           child: Padding(
             // 데스크톱은 애플 메모장처럼 행을 촘촘하게(글자만 줄면 행이 뚱뚱해 보인다).
-          padding: EdgeInsets.fromLTRB(
-              kListRowInset, isDesktopPlatform ? 5 : 10, 16, isDesktopPlatform ? 5 : 10),
+          padding: EdgeInsets.fromLTRB(kListRowInset, vPad, 16, vPad),
             child: Row(
               children: [
                 if (_picking)
@@ -3289,20 +3323,28 @@ class _HomeScreenState extends State<HomeScreen>
                             : (firstLine.isNotEmpty ? firstLine : l.untitled),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w600, height: 1.25),
+                        style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            height: titleLead),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: roomy ? 3 : 2),
                       Row(
                         children: [
                           Text(_listDate(l, n.updatedAt),
-                              style: TextStyle(fontSize: 15, height: 1.2, color: context.c.sub)),
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  height: subLead,
+                                  color: context.c.sub)),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(firstLine,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 15, height: 1.2, color: context.c.sub)),
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    height: subLead,
+                                    color: context.c.sub)),
                           ),
                         ],
                       ),

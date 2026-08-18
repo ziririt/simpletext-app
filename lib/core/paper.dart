@@ -95,24 +95,6 @@ const List<Paper> kPapers = [
     ruling: kRulingLine,
   ),
 
-  // 세피아. 오래 읽을 때를 위한 것이라 줄을 넣지 않는다 — 줄은 쓸 때
-  // 도움이 되고 읽을 때는 방해가 된다.
-  Paper(
-    id: 'sepia',
-    bg: 0xFFFBF0DA, ink: 0xFF4A3B28, rule: 0xFFEADCC0,
-    bgDark: 0xFF21201D, inkDark: 0xFFD9CDB8, ruleDark: 0xFF33312C,
-    ruling: kRulingNone,
-  ),
-
-  // 원고지. 칸은 한글 한 글자 폭 × 줄 높이다. 붉은 격자는 실제 원고지의
-  // 색을 옅게 낮춘 것이다(원본 그대로 쓰면 글자보다 격자가 세다).
-  Paper(
-    id: 'manuscript',
-    bg: 0xFFFCFAF5, ink: 0xFF23201C, rule: 0xFFE9BDB2,
-    bgDark: 0xFF15161A, inkDark: 0xFFE6E8EC, ruleDark: 0xFF48332F,
-    ruling: kRulingManuscript,
-  ),
-
   // 모눈. 칸이 줄 높이와 같은 정사각이라 어느 글꼴에서도 정확히 맞는다.
   Paper(
     id: 'grid',
@@ -122,7 +104,7 @@ const List<Paper> kPapers = [
   ),
 
   // 2026-08-17 소유자 요청으로 네 벌 추가. 색은 눈으로 고르지 않았다 —
-  // 이 넷은 '줄 없는 색 종이'다. 줄이 필요한 사람은 위의 몰스킨·원고지·모눈을
+  // 이 넷은 '줄 없는 색 종이'다. 줄이 필요한 사람은 위의 몰스킨·모눈을
   // 고른다. 처음엔 크라프트와 하늘에도 줄을 넣었는데, 소유자가 바로
   // 짚었다 — 색을 고르러 온 자리에 줄이 섞여 있으면 무엇을 고르는
   // 자리인지 흐려진다. ('나이트'는 다크 모드와 같은 것이라 뺐다.)
@@ -135,6 +117,18 @@ const List<Paper> kPapers = [
     id: 'plain',
     bg: 0xFFF2F2F0, ink: 0xFF24262A, rule: 0xFFE0E1E3,
     bgDark: 0xFF17181A, inkDark: 0xFFE6E7EA, ruleDark: 0xFF2B2D30,
+    ruling: kRulingNone,
+  ),
+
+  // 세피아. 2026-08-18 소유자 지시로 '종이' 오른쪽으로 옮겼다. 줄 있는
+  // 종이(몰스킨·모눈)와 줄 없는 색 종이(종이·세피아·크라프트·월넛·하늘)를
+  // 갈라 놓으면 고르는 사람이 한 번에 두 무리를 본다.
+  // 세피아. 오래 읽을 때를 위한 것이라 줄을 넣지 않는다 — 줄은 쓸 때
+  // 도움이 되고 읽을 때는 방해가 된다.
+  Paper(
+    id: 'sepia',
+    bg: 0xFFFBF0DA, ink: 0xFF4A3B28, rule: 0xFFEADCC0,
+    bgDark: 0xFF21201D, inkDark: 0xFFD9CDB8, ruleDark: 0xFF33312C,
     ruling: kRulingNone,
   ),
 
@@ -165,12 +159,22 @@ const List<Paper> kPapers = [
   ),
 ];
 
+/// 없앤 종이가 갈 곳.
+///
+/// 2026-08-18 소유자 지시로 '원고지'를 뺐다. 그런데 이미 그것을 고른
+/// 사람이 있다. 목록에서 없앴다고 그 사람의 설정을 '기본'으로 떨어뜨리면
+/// 어느 날 갑자기 흰 화면이 되고, 그건 우리가 뺀 것이 아니라 고장으로
+/// 읽힌다. 격자라는 성질이 가장 가까운 '모눈'으로 보낸다.
+const Map<String, String> kRetiredPapers = {'manuscript': 'grid'};
+
 /// 모르는 값이 들어오면 '기본'으로 떨어뜨린다.
 ///
 /// 저장된 설정에 옛 이름이 남아 있거나, 다른 기기가 새 종이를 먼저 쓰고
 /// 동기화해 왔을 때 앱이 죽지 않게 하려는 것이다.
-Paper paperById(String id) =>
-    kPapers.firstWhere((p) => p.id == id, orElse: () => kPapers.first);
+Paper paperById(String id) {
+  final key = kRetiredPapers[id] ?? id;
+  return kPapers.firstWhere((p) => p.id == key, orElse: () => kPapers.first);
+}
 
 bool paperOn(String id) => paperById(id).id != kPaperNone;
 
@@ -220,6 +224,40 @@ List<double> columnOffsets({
     x += colWidth;
   }
   return out;
+}
+
+// ------------------------------------------------------------------ 여백
+//
+// 2026-08-18 소유자 지시 — "맥용 앱과 아이패드 앱(가로 모드)에서 편집화면의
+// width는 고정되어있는 것은 좋은데, 그 여백의 배경색이 거슬린다. 편집화면의
+// 배경색 보다 컬러계열은 같은데 톤은 한톤 옅은 컬러면 딱 좋겠다."
+//
+// 지금까지 여백은 앱 바탕색이었다. 종이가 세피아든 월넛이든 여백은 늘
+// 같은 색이라, 글 칸이 '놓인 것'이 아니라 '뚫린 것'처럼 보였다.
+//
+// 한 톤 약하게 만드는 법은 흰색이나 검정을 섞는 것이 아니라 **중간 회색
+// 쪽으로 조금 당기는 것**이다. 흰색을 섞으면 밝은 종이는 여백과 구별이
+// 안 되고, 검정을 섞으면 어두운 종이가 구멍이 된다. 중간 쪽으로 당기면
+// 밝은 종이는 조금 가라앉고 어두운 종이는 조금 떠오른다 — 어느 쪽이든
+// 종이가 여백 위에 '놓인' 것으로 보이고, 계열은 그대로 남는다.
+//
+// 0.10이라는 값: 0.05는 눈에 안 잡히고, 0.20을 넘기면 여백이 제 색을
+// 주장하기 시작한다. 소유자의 말 그대로 "확실히 구분은 하지만, 너무
+// 차이나는 컬러는 아니게"가 이 근처다.
+const double kMarginToneT = 0.10;
+
+/// 여백 색. [argb]는 종이 바탕색.
+int marginTone(int argb, [double t = kMarginToneT]) {
+  int mix(int v) {
+    final out = (v + (0x80 - v) * t).round();
+    return out < 0 ? 0 : (out > 255 ? 255 : out);
+  }
+
+  final a = (argb >> 24) & 0xFF;
+  final r = mix((argb >> 16) & 0xFF);
+  final g = mix((argb >> 8) & 0xFF);
+  final b = mix(argb & 0xFF);
+  return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
 // ---------------------------------------------------------------- 명암비

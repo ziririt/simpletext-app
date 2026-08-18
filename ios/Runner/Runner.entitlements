@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 공유 익스텐션과 함께 쓰는 창고. 확장과 앱은 서로 다른
+	     프로세스라 이것 없이는 아무것도 못 넘긴다. **양쪽에 똑같이
+	     있어야 한다** — 한쪽만 있으면 창고 주소를 물어도 nil 이
+	     돌아오고, 오류 없이 조용히 아무 일도 안 일어난다. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.ziririt.simpletext</string>
+	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
 		<string>iCloud.com.ziririt.simpletext</string>
