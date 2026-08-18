@@ -336,8 +336,31 @@ const String _tsTime =
     r'\s*(?:오전|오후|AM|PM|am|pm)?\s*\d{1,2}\s*[:시]\s*\d{2}(?:\s*[:분]\s*\d{2})?\s*초?\s*(?:AM|PM|am|pm)?';
 const String _tsTz =
     r'(?:\s*[(（]?\s*(?:KST|UTC|GMT|JST|PST|PDT|EST|EDT|CST|CET)\s*[+-]?\d{0,2}(?::\d{2})?\s*[)）]?)?';
-final RegExp _timeHeader = RegExp('^(?:$_tsLabel)?$_tsDate$_tsWd$_tsTime$_tsTz' r'\.?$');
-final RegExp _timeHeaderLabeled = RegExp('^$_tsLabel$_tsDate$_tsWd$_tsTz' r'\.?$');
+/// 시각 뒤에 붙는 짧은 꼬리 — 지명·시간대 이름 같은 것.
+///
+/// 2026-08-18 소유자 신고 — "붙여진 문서 맨 위와 맨 아래에 있는 llm의 답변
+/// 일시. 이걸 다 삭제하는 걸 기본으로 하고 있다고 알고 있는데, 이게
+/// 남아있네."
+///
+/// 확인해 보니 말씀하신 예시 꼴(…15:57 KST)은 이미 지워지고 있었고, 안
+/// 지워지는 것은 이 꼴 하나였다.
+///
+///     2026-08-17(월) 20:28 · 서울
+///
+/// 꼬리를 **짧고 공백 없는 토막**으로 못 박았다. 이 줄은 문서 맨 위·맨
+/// 아래에서만 지우지만, 그래도 제목을 잡아먹으면 안 되기 때문이다.
+///
+///     2026-08-17(월) 20:28 · 테슬라 실적 발표   ← 공백이 있어 안 걸린다
+///
+/// 날짜만 있고 시각이 없는 줄은 원래부터 안 건드린다(아래 _timeHeader에서
+/// 시각이 필수다). 그래서 '2026-08-17 · 테슬라 급등' 같은 제목은 남는다.
+const String _tsTail =
+    r'(?:\s*[·‧•∙|/,–—-]\s*[^\s·‧•∙|/,–—]{1,12}){0,2}';
+
+final RegExp _timeHeader =
+    RegExp('^(?:$_tsLabel)?$_tsDate$_tsWd$_tsTime$_tsTz$_tsTail' r'\.?$');
+final RegExp _timeHeaderLabeled =
+    RegExp('^$_tsLabel$_tsDate$_tsWd$_tsTz$_tsTail' r'\.?$');
 
 bool isTimeHeader(String line) {
   final t = line.trim();

@@ -837,4 +837,51 @@ table = "A | B"
       expect(out(once), once);
     });
   });
+
+  /// 2026-08-18 소유자 지시에서 나온 묶음이다.
+  ///
+  ///     "붙여진 문서 맨 위와 맨 아래에 있는 llm의 답변 일시. 이걸 다
+  ///      삭제하는 걸 기본으로 하고 있다고 알고 있는데, 이게 남아있네."
+  ///
+  /// 넣어 보니 말씀하신 예시 꼴은 이미 지워지고 있었고, 안 지워지는 것은
+  /// 시각 뒤에 지명이 붙은 꼴 하나였다. 아래는 그때 확인한 일곱 가지와
+  /// 새로 막은 꼴, 그리고 **잡아먹으면 안 되는 것들**이다.
+  group('답변 일시 줄 (맨 위·맨 아래)', () {
+    String tidyAi(String raw) => tidy(raw, aiOpts()).text;
+
+    String wrap(String stamp) =>
+        '$stamp\n\n본문 첫 줄입니다.\n두 번째 줄.\n\n$stamp';
+
+    for (final stamp in <String>[
+      '2026-08-17(월) 15:57 KST',
+      '2026-08-17(월) 20:28 · 서울',
+      '2026-08-17(월) 15:57 KST · 서울',
+      '2026-08-17(월) 20:28',
+      '2026-08-17 (월) 15:57 KST',
+      '2026-08-17(월) 오후 3:57',
+      '2026-08-17(Mon) 15:57 KST',
+      '출력: 2026-08-17(월) 15:57',
+    ]) {
+      test('지운다 — $stamp', () {
+        final out = tidyAi(wrap(stamp));
+        expect(out.contains('2026'), isFalse, reason: out);
+        expect(out.contains('본문 첫 줄입니다.'), isTrue);
+      });
+    }
+
+    test('제목은 잡아먹지 않는다 — 꼬리에 공백이 있으면 남긴다', () {
+      const t = '2026-08-17(월) 20:28 · 테슬라 실적 발표';
+      expect(tidyAi('$t\n\n본문.').contains('테슬라 실적 발표'), isTrue);
+    });
+
+    test('시각이 없으면 날짜만으로는 안 지운다', () {
+      const t = '2026-08-17 · 테슬라 급등';
+      expect(tidyAi('$t\n\n본문.').contains('테슬라 급등'), isTrue);
+    });
+
+    test('문서 가운데의 일시는 내용이므로 남긴다', () {
+      final out = tidyAi('첫 줄.\n\n2026-08-17(월) 20:28 · 서울\n\n끝 줄.');
+      expect(out.contains('2026-08-17'), isTrue);
+    });
+  });
 }
