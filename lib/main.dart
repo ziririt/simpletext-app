@@ -2503,7 +2503,8 @@ class _HomeScreenState extends State<HomeScreen>
                 // '그 사람의 목록'이라, 거기를 안 지나면 아무 데도 안 지난다.
                 if (pinned.length >= 10) ...[
                   _groupCard(pinned.take(5).toList()),
-                  const SliverToBoxAdapter(child: InlineAdBlock(gapAbove: 20)),
+                  const SliverToBoxAdapter(
+                      child: InlineAdBlock(gapAbove: 20, wide: true)),
                   _groupCard(pinned.skip(5).toList()),
                 ] else if (pinned.isNotEmpty)
                   _groupCard(pinned),
@@ -2537,7 +2538,8 @@ class _HomeScreenState extends State<HomeScreen>
                   _groupCard(rest.take(5).toList()),
                   // 카드와 카드 사이. 광고 판이 스스로 자르는 선과 다른
                   // 바탕색을 갖고 있어 여백은 조금이면 된다.
-                  const SliverToBoxAdapter(child: InlineAdBlock(gapAbove: 20)),
+                  const SliverToBoxAdapter(
+                      child: InlineAdBlock(gapAbove: 20, wide: true)),
                   _groupCard(rest.skip(5).toList()),
                 ] else ...[
                   if (rest.isNotEmpty) _groupCard(rest),

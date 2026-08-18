@@ -408,7 +408,23 @@ class InlineAdBlock extends StatefulWidget {
   /// 사라져야 한다. 바깥에 두면 아무것도 없는 자리에 여백만 남는다.
   final double gapAbove;
 
-  const InlineAdBlock({super.key, this.gapAbove = 0});
+  /// 가로형으로 놓을 것인가.
+  ///
+  /// 2026-08-18 소유자 지시 — "메모 목록 중간에 오는 광고 ... 세로로 너무
+  /// 긴 배너는 안되겠다. 목록을 잘라먹는 느낌이라서."
+  ///
+  /// 자리가 다르면 크기도 달라야 한다는 것을 뒤늦게 알았다.
+  ///
+  ///   목록 **한가운데** — 아래에 목록이 더 있다. 큰 네모가 끼면 화면이
+  ///     통째로 광고가 되어 '여기서 목록이 끝났나' 싶어진다. 가로 띠는
+  ///     아래에 이어지는 줄이 같이 보이므로 '더 있다'가 눈에 남는다.
+  ///   목록 **맨 끝**과 편집 화면 끝 — 아래에 아무것도 없다. 자를 것이
+  ///     없으니 큰 것이 맞다(단가도 높다).
+  ///
+  /// 그래서 크기를 하나로 정하지 않고 자리가 고르게 한다.
+  final bool wide;
+
+  const InlineAdBlock({super.key, this.gapAbove = 0, this.wide = false});
 
   @override
   State<InlineAdBlock> createState() => _InlineAdBlockState();
@@ -441,6 +457,20 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     AdSize.mediumRectangle,
   ];
   static const List<AdSize> _small = [AdSize.mediumRectangle];
+
+  /// 가로형 차례. 큰 것부터라는 규칙은 여기서도 같다.
+  ///
+  ///   320×100  라지 배너. 가로형 중에서는 존재감이 있는 쪽이다
+  ///   320×50   보통 배너. **세상에서 가장 많이 채워지는 크기다** —
+  ///            여기까지 내려오면 거의 반드시 무언가 온다
+  ///
+  /// 인라인 적응형을 안 쓴다. 2026-08-17에 한 번 써 봤고, 적응형은
+  /// '최대'만 말하고 '최소'를 말하지 않아 구글이 늘 제일 작은 것을
+  /// 골라 줬다. 크기를 박는 편이 예측이 된다.
+  static const List<AdSize> _wide = [
+    AdSize.largeBanner,
+    AdSize.banner,
+  ];
 
   /// 300×600을 물을 만한 화면 높이(논리 픽셀). 이보다 낮으면 안 묻는다.
   static const double _tallEnough = 760;
@@ -484,8 +514,9 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     );
   }
 
-  List<AdSize> _ladder(double screenHeight) =>
-      screenHeight >= _tallEnough ? _big : _small;
+  List<AdSize> _ladder(double screenHeight) => widget.wide
+      ? _wide
+      : (screenHeight >= _tallEnough ? _big : _small);
 
   void _create(double screenHeight) {
     if (_creating || _ad != null) return;
@@ -540,6 +571,13 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   /// 이제 칸은 **화면 한 판을 넘지 않는다.** 넘으면 그것은 이미 페이지가
   /// 아니라 빈 벌판이다.
   double _slotH(double viewportH) {
+    // 가로형은 붙잡아 둘 것이 없다. 칸이 곧 광고다.
+    //
+    // 아래 1.35배와 '보이는 만큼의 한가운데'는 큰 네모를 화면에 잠깐
+    // 멎게 하려고 만든 장치인데, 가로 띠에 그걸 쓰면 띠 위아래로 빈
+    // 자리만 생긴다 — 목록을 자르지 않으려고 가로형으로 바꾸는 판에
+    // 여백으로 다시 자르는 꼴이다.
+    if (widget.wide) return _adH;
     final want = _adH * 1.35;
     return want > viewportH ? viewportH : want;
   }
@@ -561,6 +599,8 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   /// 자리에서 광고가 칸 밖으로 밀려 빈 자리가 남는다. '보이는 만큼의
   /// 한가운데'로 바꾸면 그 경우가 저절로 없어진다.
   double _shift(double slotH) {
+    // 칸이 광고와 같은 크기면 옮길 데가 없다. 렌더 객체를 물어볼 일도 없다.
+    if (slotH <= _adH) return 0;
     final mid = (slotH - _adH) / 2;
     final p = _pos;
     if (p == null || !p.hasPixels || !p.hasViewportDimension) return mid;
