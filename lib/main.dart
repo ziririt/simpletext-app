@@ -6575,17 +6575,58 @@ class _TrashScreenState extends State<TrashScreen> {
                 final at = (e['deletedAt'] ?? 0) as int;
                 final title = ((j['title'] ?? '') as String).trim();
                 final body = ((j['body'] ?? '') as String).trim();
-                final shown = title.isNotEmpty
-                    ? title
-                    : (body.isEmpty ? l.untitled : body.split('\n').first);
+                // 2026-08-18 소유자 지시 — "휴지통 안에 리스트에서 내용을
+                // 3줄 정도 보여줘. 그래야 무슨 노트인지 알 것 같애."
+                //
+                // 제목 한 줄과 '며칠 남음'만 있었다. 이 앱의 제목은 대개
+                // 앱이 지어 준 것이라, 지우고 나서 다시 볼 때 그 한 줄로는
+                // 어느 것이었는지 못 알아본다. **되살릴지 말지 정하는
+                // 자리에서 정작 무엇인지가 안 보였다.**
+                //
+                // 빈 줄을 걸러 낸 뒤 한 문단으로 이어 붙이고 세 줄에서
+                // 자른다. 줄바꿈을 그대로 두면 짧은 줄 셋으로 석 줄을 다
+                // 써 버려서 보이는 글자가 오히려 줄어든다.
+                final lines = body
+                    .split('\n')
+                    .map((x) => x.trim())
+                    .where((x) => x.isNotEmpty)
+                    .toList();
+                final shown =
+                    title.isNotEmpty ? title : (lines.isEmpty ? l.untitled : lines.first);
+                // 제목이 없어 첫 줄을 제목으로 쓴 판에서는 그 줄을 뺀다.
+                // 같은 문장이 위아래로 두 번 나오면 두 줄을 버리는 셈이다.
+                final preview =
+                    (title.isNotEmpty ? lines : lines.skip(1)).join('  ');
                 final left = trashDaysLeft(deletedAt: at, nowMs: now);
                 return ListTile(
+                  isThreeLine: true,
+                  titleAlignment: ListTileTitleAlignment.top,
+                  contentPadding:
+                      const EdgeInsets.fromLTRB(16, 10, 8, 10),
                   title: Text(shown,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(l.trashDaysLeftLabel(left),
-                      style: TextStyle(fontSize: 13.5, color: c.sub)),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                          letterSpacing: -0.2)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (preview.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(preview,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14, height: 1.42, color: c.sub)),
+                      ],
+                      const SizedBox(height: 5),
+                      Text(l.trashDaysLeftLabel(left),
+                          style: TextStyle(fontSize: 12.5, color: c.sub)),
+                    ],
+                  ),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     TextButton(
                       onPressed: () {
