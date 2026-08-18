@@ -28,6 +28,7 @@ import 'core/ai_provider.dart';
 import 'core/auto_meta.dart';
 import 'core/folders.dart';
 import 'core/hangul.dart';
+import 'core/key_vault.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
 import 'core/mono_controller.dart';
@@ -1175,6 +1176,22 @@ class Store extends ChangeNotifier {
       final raw = prefs.getString(_settingsKey);
       if (raw != null) settings = AppSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {}
+
+    // AI 키는 설정 JSON이 아니라 키체인에 있다(core/key_vault.dart).
+    //
+    // 옛 판이 JSON에 넣어 둔 키가 있으면 여기서 한 번 옮기고, 옛 자리의
+    // 사본은 지운다. 두 군데 있으면 어느 쪽이 참인지 알 수 없게 되고,
+    // 그런 물건은 반드시 어긋난 뒤에야 발견된다.
+    final fromPrefs = settings.aiKey.trim();
+    final fromVault = (await KeyVault.read()).trim();
+    if (fromVault.isNotEmpty) {
+      settings.aiKey = fromVault;
+    } else if (fromPrefs.isNotEmpty) {
+      await KeyVault.write(fromPrefs);
+    }
+    if (fromPrefs.isNotEmpty) {
+      await persistSettingsLocalOnly(); // 옛 사본 지우기
+    }
     // 체험 날짜 세기. 여기서 하는 이유는 이 지점이 '앱이 실제로 열렸다'를
     // 가장 확실히 아는 자리이기 때문이다. 하루에 몇 번 열든 bumpTrialDays가
     // 한 번만 올린다.
@@ -1210,7 +1227,11 @@ class Store extends ChangeNotifier {
 
   Future<void> persistSettingsLocalOnly() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_settingsKey, jsonEncode(settings.toJson()));
+    // AI 키만 다른 자리에 쓴다. 나머지 설정과 달리 이건 비밀이고,
+    // 앱을 지웠다 깔아도 남아야 한다.
+    final m = settings.toJson()..remove('aiKey');
+    await prefs.setString(_settingsKey, jsonEncode(m));
+    await KeyVault.write(settings.aiKey);
     notifyListeners();
   }
 
