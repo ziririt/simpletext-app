@@ -39,6 +39,8 @@ import 'package:flutter/services.dart';
 import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
 import 'core/sync_merge.dart';
+import 'core/sync_transport.dart';
+import 'sync/icloud_transport.dart';
 // CustomRule은 main.dart가 아니라 엔진 쪽에 산다(2026-08-16에 여기서 한 번
 // 틀렸다 — analyze가 undefined_method로 잡아 줬다).
 import 'core/tidy_engine.dart' show CustomRule;
@@ -71,6 +73,15 @@ class ICloudSync {
   ICloudSync._();
 
   static const MethodChannel _ch = MethodChannel('skyblue/icloud');
+
+  /// 옮기는 통로. 지금은 아이클라우드 하나뿐이지만, 구글 드라이브를 붙일
+  /// 때 **여기만 갈아 끼우면 된다** — 합치는 규칙(core/sync_merge.dart)도,
+  /// 아래의 셈도 그대로다.
+  SyncTransport _t = const IcloudTransport(_ch);
+
+  /// 시험과 앞으로 붙을 창고를 위한 문.
+  @visibleForTesting
+  set transport(SyncTransport t) => _t = t;
 
   /// 애플 기기에서만 돈다. 안드로이드·윈도우는 파일 백업/복원으로 간다.
   static bool get supported =>
@@ -244,15 +255,18 @@ class ICloudSync {
 
   Future<void> _run(String root) async {
     final store = Store.instance;
-    final notesDir = Directory('$root/notes');
-    final tombsDir = Directory('$root/tombs');
-    await notesDir.create(recursive: true);
-    await tombsDir.create(recursive: true);
+    final notesDir = '$root/notes';
+    final tombsDir = '$root/tombs';
+    await _t.ensureDir(notesDir);
+    await _t.ensureDir(tombsDir);
 
     // --- 원격 읽기 ---
-    final pending = <String>[]; // 아직 안 내려온 파일들
+    //
+    // 2026-08-18 — 아직 안 내려온 파일을 알아채고 당겨 오라고 이르는 일은
+    // 통로가 맡는다. 그건 아이클라우드만의 사정이라, 여기서 알고 있으면
+    // 구글 드라이브를 붙일 때 이 코드를 또 고쳐야 한다.
     final remoteNotes = <Note>[];
-    for (final f in await _readJsonDir(notesDir, pending)) {
+    for (final f in await _t.readDir(notesDir)) {
       try {
         remoteNotes.add(Note.fromJson(f));
       } catch (_) {
@@ -260,16 +274,9 @@ class ICloudSync {
       }
     }
     final remoteTombs = <Map<String, dynamic>>[];
-    for (final f in await _readJsonDir(tombsDir, pending)) {
+    for (final f in await _t.readDir(tombsDir)) {
       final id = f['id'];
       if (id is String && id.isNotEmpty) remoteTombs.add(f);
-    }
-    if (pending.isNotEmpty) {
-      // 아이클라우드는 파일을 '이름만' 먼저 내려 준다. 실제 내용은 요청해야
-      // 온다. 이번 차례에는 못 읽으니 다음 차례에 읽는다.
-      try {
-        await _ch.invokeMethod('download', {'paths': pending});
-      } catch (_) {}
     }
 
     // --- 합치기 (규칙은 core/sync_merge.dart) ---
@@ -298,7 +305,7 @@ class ICloudSync {
     for (final n in merged.notes) {
       final r = remoteById[n.id];
       if (r == null || r.updatedAt < n.updatedAt) {
-        await _writeJson(File('${notesDir.path}/${n.id}.json'), n.toJson());
+        await _t.write('$notesDir/${n.id}.json', n.toJson());
       }
     }
     final liveIds = {for (final n in merged.notes) n.id};
@@ -306,26 +313,17 @@ class ICloudSync {
     for (final t in merged.tombstones) {
       final id = t['id'] as String;
       tombIds.add(id);
-      final tf = File('${tombsDir.path}/$id.json');
-      if (!await tf.exists()) await _writeJson(tf, t);
+      final tf = '$tombsDir/$id.json';
+      if (!await _t.exists(tf)) await _t.write(tf, t);
       // 지워진 메모의 본문 파일은 치운다. 안 그러면 툼스톤이 만료된 뒤에
       // 그 파일이 '새 메모'로 되살아난다.
-      if (!liveIds.contains(id)) {
-        final nf = File('${notesDir.path}/$id.json');
-        if (await nf.exists()) {
-          try {
-            await nf.delete();
-          } catch (_) {}
-        }
-      }
+      if (!liveIds.contains(id)) await _t.remove('$notesDir/$id.json');
     }
     // 만료된 툼스톤 파일 치우기
     for (final t in remoteTombs) {
       final id = t['id'] as String;
       if (tombIds.contains(id)) continue;
-      try {
-        await File('${tombsDir.path}/$id.json').delete();
-      } catch (_) {}
+      await _t.remove('$tombsDir/$id.json');
     }
 
     await _syncRules(root);
@@ -362,7 +360,7 @@ class ICloudSync {
   Future<void> _syncRules(String root) async {
     final store = Store.instance;
     final s = store.settings;
-    final f = File('$root/rules.json');
+    final f = '$root/rules.json';
 
     final localBody = _rulesBody(store);
     final localSig = _sig(localBody);
@@ -380,23 +378,11 @@ class ICloudSync {
       await store.persistSettingsLocalOnly();
     }
 
-    Map<String, dynamic>? remote;
-    if (await f.exists()) {
-      try {
-        remote = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
-      } catch (_) {}
-    } else {
-      // 이름만 온 상태인지 확인
-      final ph = File('$root/.rules.json.icloud');
-      if (await ph.exists()) {
-        try {
-          await _ch.invokeMethod('download', {
-            'paths': [f.path]
-          });
-        } catch (_) {}
-        return; // 다음 차례에
-      }
-    }
+    final got = await _t.read(f);
+    // 아직 안 내려온 파일이다. 통로가 당겨 오라고 일러 뒀으니 다음 차례에.
+    // **여기서 '없음'으로 읽으면 이 기기 것이 구름을 덮는다.**
+    if (got.state == ReadState.notReady) return;
+    final remote = got.body;
 
     final remoteStamp = (remote?['stamp'] as int?) ?? -1;
 
@@ -425,7 +411,7 @@ class ICloudSync {
           s.rulesSig = localSig;
           await store.persistSettingsLocalOnly();
         }
-        await _writeJson(f, {..._rulesBody(store), 'stamp': s.rulesStamp});
+        await _t.write(f, {..._rulesBody(store), 'stamp': s.rulesStamp});
       case RulesMove.nothing:
         break;
     }
@@ -442,18 +428,12 @@ class ICloudSync {
   Future<void> _syncTrial(String root) async {
     final store = Store.instance;
     final s = store.settings;
-    final f = File('$root/trial.json');
-
-    Map<String, dynamic>? remote;
-    if (await f.exists()) {
-      try {
-        remote = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
-      } catch (_) {}
-    }
+    final f = '$root/trial.json';
+    final remote = (await _t.read(f)).body;
     var changed = false;
     if (remote != null) {
       int mx(String k, int cur) {
-        final v = remote![k];
+        final v = remote[k];
         return (v is int && v > cur) ? v : cur;
       }
 
@@ -476,7 +456,7 @@ class ICloudSync {
       await store.persistSettingsLocalOnly();
       store.bump();
     }
-    await _writeJson(f, {
+    await _t.write(f, {
       'days': s.trialDays,
       'tidy': s.trialTidyTotal,
       'wiz': s.trialWizTotal,
@@ -585,13 +565,9 @@ class ICloudSync {
 
     final store = Store.instance;
     final s = store.settings;
-    final dir = Directory('$root/prefs');
-    try {
-      await dir.create(recursive: true);
-    } catch (_) {
-      return;
-    }
-    final f = File('${dir.path}/$key.json');
+    final dir = '$root/prefs';
+    if (!await _t.ensureDir(dir)) return;
+    final f = '$dir/$key.json';
 
     final localBody = _prefsBody(store);
     final localSig = _sig(localBody);
@@ -603,22 +579,9 @@ class ICloudSync {
       await store.persistSettingsLocalOnly();
     }
 
-    Map<String, dynamic>? remote;
-    if (await f.exists()) {
-      try {
-        remote = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
-      } catch (_) {}
-    } else {
-      final ph = File('${dir.path}/.$key.json.icloud');
-      if (await ph.exists()) {
-        try {
-          await _ch.invokeMethod('download', {
-            'paths': [f.path]
-          });
-        } catch (_) {}
-        return; // 다음 차례에
-      }
-    }
+    final got = await _t.read(f);
+    if (got.state == ReadState.notReady) return;
+    final remote = got.body;
 
     final remoteStamp = (remote?['stamp'] as int?) ?? -1;
 
@@ -642,7 +605,7 @@ class ICloudSync {
           s.prefsSig = localSig;
           await store.persistSettingsLocalOnly();
         }
-        await _writeJson(f, {..._prefsBody(store), 'stamp': s.prefsStamp});
+        await _t.write(f, {..._prefsBody(store), 'stamp': s.prefsStamp});
       case RulesMove.nothing:
         break;
     }
@@ -696,47 +659,4 @@ class ICloudSync {
     return '${s.length}:$h';
   }
 
-  // -------------------------------------------------------------- 파일
-
-  /// 폴더 안의 json을 전부 읽는다. 아직 안 내려온 것은 [pending]에 담는다.
-  Future<List<Map<String, dynamic>>> _readJsonDir(
-      Directory dir, List<String> pending) async {
-    final out = <Map<String, dynamic>>[];
-    List<FileSystemEntity> items;
-    try {
-      items = await dir.list().toList();
-    } catch (_) {
-      return out;
-    }
-    for (final e in items) {
-      if (e is! File) continue;
-      final name = e.uri.pathSegments.last;
-      // 아이클라우드는 아직 안 내려받은 파일을 '.이름.icloud'로 놔둔다.
-      if (name.startsWith('.') && name.endsWith('.icloud')) {
-        final real = name.substring(1, name.length - '.icloud'.length);
-        pending.add('${dir.path}/$real');
-        continue;
-      }
-      if (!name.endsWith('.json')) continue;
-      try {
-        final j = jsonDecode(await e.readAsString());
-        if (j is Map<String, dynamic>) out.add(j);
-      } catch (_) {}
-    }
-    return out;
-  }
-
-  /// 임시 파일에 쓰고 이름을 바꾼다. 쓰는 도중에 앱이 죽어도 반쪽짜리 파일이
-  /// 아이클라우드로 올라가지 않게 하기 위해서다.
-  Future<void> _writeJson(File f, Map<String, dynamic> j) async {
-    final tmp = File('${f.path}.tmp');
-    try {
-      await tmp.writeAsString(jsonEncode(j), flush: true);
-      await tmp.rename(f.path);
-    } catch (_) {
-      try {
-        await tmp.delete();
-      } catch (_) {}
-    }
-  }
 }
