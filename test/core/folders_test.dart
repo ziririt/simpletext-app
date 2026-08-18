@@ -21,7 +21,10 @@ void main() {
     });
 
     test('파일 이름에 못 쓰는 글자를 뺀다 — 내보낼 때 터진다', () {
-      expect(normalizeFolder('2026/08 정리'), '2026 08 정리');
+      // 2026-08-18 — 빗금은 이제 '폴더 안의 폴더'를 뜻해서 안 지운다.
+      // 파일로 내보낼 때는 folderFileName 이 바꿔 준다.
+      expect(normalizeFolder('2026/08 정리'), '2026/08 정리');
+      expect(folderFileName('2026/08 정리'), '2026 - 08 정리');
       expect(normalizeFolder('테슬라: 기록'), '테슬라 기록');
       expect(normalizeFolder(r'a\b'), 'a b');
       expect(normalizeFolder('무엇?'), '무엇');
@@ -42,10 +45,36 @@ void main() {
       expect(normalizeFolder('///'), '');
     });
 
+    test('빗금은 폴더 안의 폴더 (2026-08-18)', () {
+      // 화면은 아직 한 겹만 보여 준다. 자료 형식만 미리 열어 둔 것이다.
+      expect(normalizeFolder('투자/미국주식'), '투자/미국주식');
+      // 겹친 빗금과 앞뒤 빗금은 정리한다.
+      expect(normalizeFolder('/투자//미국주식/'), '투자/미국주식');
+      // 겹마다 앞뒤 공백을 뗀다.
+      expect(normalizeFolder(' 투자 / 미국 주식 '), '투자/미국 주식');
+      // 세 겹까지. 넘치면 버린다 — 깊이로 얻는 것보다 잃는 것이 많다.
+      expect(normalizeFolder('가/나/다/라/마'), '가/나/다');
+    });
+
+    test('겹으로 나누기와 마지막 겹', () {
+      expect(folderParts('투자/미국주식/테슬라'), ['투자', '미국주식', '테슬라']);
+      expect(folderParts(''), isEmpty);
+      expect(folderLeaf('투자/미국주식'), '미국주식');
+      expect(folderLeaf('투자'), '투자');
+      expect(folderLeaf(''), '');
+    });
+
+    test('파일 이름으로 쓸 때는 빗금을 바꾼다', () {
+      expect(folderFileName('투자/미국주식'), '투자 - 미국주식');
+      expect(folderFileName(''), '');
+    });
+
     test("'.'과 '..'은 안 된다 — 파일 시스템에서 다른 뜻이다", () {
       expect(normalizeFolder('.'), '');
       expect(normalizeFolder('..'), '');
       expect(normalizeFolder(' .. '), '');
+      // 겹 하나가 '..'이어도 그 겹만 버린다.
+      expect(normalizeFolder('투자/../비밀'), '투자/비밀');
     });
   });
 

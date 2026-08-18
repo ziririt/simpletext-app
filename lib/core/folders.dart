@@ -17,26 +17,63 @@ library;
 ///
 /// 폴더 이름은 내보내기에서 **파일 이름의 일부가 된다.** 여기서 안 막으면
 /// 맥에서는 되고 윈도우에서는 안 되는 이름이 생긴다. 막는 쪽이 싸다.
-final RegExp _badChars = RegExp(r'[/\\:*?"<>|\x00-\x1f]');
+/// 빗금(/)은 여기 없다. **'폴더 안의 폴더'를 뜻하는 글자**로 쓰기 때문이다
+/// (2026-08-18). 나머지는 파일 이름에 못 쓰는 것들이라 공백으로 바꾼다.
+final RegExp _badChars = RegExp(r'[\\:*?"<>|\x00-\x1f]');
 final RegExp _spaces = RegExp(r'\s+');
 
 /// 폴더 이름의 최대 길이. 이보다 길면 목록에서 줄임표만 보인다.
+/// 빗금으로 이은 전체 길이를 센다.
 const int kFolderNameMax = 40;
+
+/// 몇 겹까지 허용하나.
+///
+/// 셋이면 '투자/미국주식/테슬라'다. 그보다 깊어지면 목록에서 이름이
+/// 줄임표뿐이 되고, 깊이로 얻는 것보다 잃는 것이 많아진다. 애플 메모도
+/// 사실상 이 언저리에서 쓰인다.
+const int kFolderDepthMax = 3;
 
 /// 폴더 이름을 다듬는다.
 ///
 /// 빈 이름은 '폴더 없음'과 같은 뜻이라 빈 문자열로 돌려준다.
 String normalizeFolder(String raw) {
-  var s = raw.replaceAll(_badChars, ' ');
-  s = s.replaceAll(_spaces, ' ').trim();
-  if (s.length > kFolderNameMax) {
-    s = s.substring(0, kFolderNameMax).trim();
+  final cleaned = raw.replaceAll(_badChars, ' ');
+  final parts = <String>[];
+  for (final seg in cleaned.split('/')) {
+    var t = seg.replaceAll(_spaces, ' ').trim();
+    // '.'과 '..'은 파일 시스템에서 자기 자신과 부모를 뜻한다. 폴더 이름으로
+    // 쓰면 내보내기가 엉뚱한 데를 가리킨다.
+    if (t == '.' || t == '..') t = '';
+    if (t.isEmpty) continue;
+    parts.add(t);
+    if (parts.length >= kFolderDepthMax) break;
   }
-  // '.'과 '..'은 파일 시스템에서 자기 자신과 부모를 뜻한다. 폴더 이름으로
-  // 쓰면 내보내기가 엉뚱한 데를 가리킨다.
-  if (s == '.' || s == '..') return '';
+  var s = parts.join('/');
+  if (s.length > kFolderNameMax) {
+    s = s.substring(0, kFolderNameMax);
+    // 자르다 빗금에서 끊기면 빈 칸이 하나 생긴다.
+    while (s.endsWith('/')) {
+      s = s.substring(0, s.length - 1);
+    }
+    s = s.trim();
+  }
   return s;
 }
+
+/// 이름을 겹으로 나눈다. 화면이 나무로 그릴 날을 위한 것.
+List<String> folderParts(String name) {
+  final n = normalizeFolder(name);
+  return n.isEmpty ? const [] : n.split('/');
+}
+
+/// 목록에 보일 짧은 이름 — 마지막 겹만.
+String folderLeaf(String name) {
+  final p = folderParts(name);
+  return p.isEmpty ? '' : p.last;
+}
+
+/// 파일 이름에 넣을 때 쓴다. 빗금은 파일 이름에 못 들어간다.
+String folderFileName(String name) => normalizeFolder(name).replaceAll('/', ' - ');
 
 /// 화면에 보여 줄 폴더 목록.
 ///
