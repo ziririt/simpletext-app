@@ -112,6 +112,13 @@ class L10nPt extends L10n {
   String get pinTooltip => 'Fixar no topo';
   @override
   String get unpinTooltip => 'Desafixar';
+
+  @override
+  String get unpinConfirmTitle => 'Desafixar esta nota?';
+
+  @override
+  String get unpinConfirmBody =>
+      'Toque e segure uma nota na lista para fixá-la novamente.';
   @override
   String get deleteTooltip => 'Excluir';
   @override

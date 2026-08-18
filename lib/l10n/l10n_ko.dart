@@ -112,6 +112,13 @@ class L10nKo extends L10n {
   String get pinTooltip => '리스트 상단 고정';
   @override
   String get unpinTooltip => '상단 고정 해제';
+
+  @override
+  String get unpinConfirmTitle => '상단 고정을 해제할까요?';
+
+  @override
+  String get unpinConfirmBody =>
+      '목록에서 노트를 길게 누르면 다시 고정할 수 있습니다.';
   @override
   String get deleteTooltip => '삭제';
   @override

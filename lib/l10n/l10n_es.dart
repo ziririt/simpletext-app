@@ -112,6 +112,13 @@ class L10nEs extends L10n {
   String get pinTooltip => 'Fijar arriba';
   @override
   String get unpinTooltip => 'Dejar de fijar';
+
+  @override
+  String get unpinConfirmTitle => '¿Quitar esta nota de los fijados?';
+
+  @override
+  String get unpinConfirmBody =>
+      'Mantén pulsada una nota en la lista para volver a fijarla.';
   @override
   String get deleteTooltip => 'Eliminar';
   @override

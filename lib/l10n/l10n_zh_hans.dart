@@ -112,6 +112,13 @@ class L10nZhHans extends L10n {
   String get pinTooltip => '置顶';
   @override
   String get unpinTooltip => '取消置顶';
+
+  @override
+  String get unpinConfirmTitle => '取消置顶这条笔记？';
+
+  @override
+  String get unpinConfirmBody =>
+      '在列表中长按笔记即可重新置顶。';
   @override
   String get deleteTooltip => '删除';
   @override

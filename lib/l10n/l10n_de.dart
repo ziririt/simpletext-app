@@ -112,6 +112,13 @@ class L10nDe extends L10n {
   String get pinTooltip => 'Oben anheften';
   @override
   String get unpinTooltip => 'Lösen';
+
+  @override
+  String get unpinConfirmTitle => 'Anheftung dieser Notiz aufheben?';
+
+  @override
+  String get unpinConfirmBody =>
+      'Halten Sie eine Notiz in der Liste gedrückt, um sie erneut anzuheften.';
   @override
   String get deleteTooltip => 'Löschen';
   @override

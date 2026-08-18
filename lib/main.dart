@@ -3507,9 +3507,7 @@ class _HomeScreenState extends State<HomeScreen>
       case 'folder':
         await _moveToFolder(n);
       case 'pin':
-        n.pinned = !n.pinned;
-        await store.persist();
-        if (mounted) setState(() {});
+        await _setPinned(n, !n.pinned);
       case 'meta':
         await openNote(context, n.id, showMeta: true);
       case 'del':
@@ -3522,6 +3520,41 @@ class _HomeScreenState extends State<HomeScreen>
           if (mounted) setState(() {});
         }
     }
+  }
+
+  /// 목록의 핀을 눌렀을 때. **묻고 나서** 푼다.
+  ///
+  /// 2026-08-18 소유자 지시.
+  ///
+  /// 왜 묻는가: 이 그림은 원래 **표시**였지 단추가 아니었다. 표시인 줄 알고
+  /// 눌러 본 사람이 고정을 잃으면 그건 도움이 아니라 사고다.
+  ///
+  /// 그리고 다시 거는 길이 '길게 누르기'라 눈에 안 보인다. 그 길을 물음
+  /// 안에 적어 둔다 — 되돌리는 법을 모르는 채로 무언가를 없애게 두면 안 된다.
+  Future<void> _askUnpin(Note n) async {
+    final l = L10n.of(context);
+    final ok = await confirmDialog(context,
+        title: l.unpinConfirmTitle,
+        body: l.unpinConfirmBody,
+        okLabel: l.unpinTooltip);
+    if (!ok || !mounted) return;
+    _setPinned(n, false);
+  }
+
+  /// 고정을 켜고 끄는 자리는 셋이다 — 밀기, 길게 누르기 시트, 핀 누르기.
+  /// 한 군데로 모은다. 안 그러면 아래의 **시각 올리기**를 어느 하나에서
+  /// 반드시 빠뜨린다(오늘 폴더에서 똑같은 사고를 겪었다).
+  Future<void> _setPinned(Note n, bool on) async {
+    n.pinned = on;
+    // 2026-08-18 — 시각을 올린다.
+    //
+    // 안 올리면 다음 동기화에서 구름에 남아 있는 옛 판이 '더 늦게 고친 것'이
+    // 되어 이긴다. 고정을 풀어도 다른 기기를 한 번 켜면 되살아난다. 폴더
+    // 지우기에서 오늘 겪은 것과 같은 자리다.
+    n.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    await store.persist();
+    ICloudSync.instance.scheduleUp();
+    if (mounted) setState(() {});
   }
 
   /// 목록에서 바로 폴더를 옮긴다.
@@ -3677,8 +3710,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       confirmDismiss: (dir) async {
         if (dir == DismissDirection.startToEnd) {
-          n.pinned = !n.pinned;
-          await store.persist();
+          await _setPinned(n, !n.pinned);
           return false;
         }
         final ok = await confirmDialog(context,
@@ -3815,9 +3847,23 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
                 if (n.pinned)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Icon(Icons.push_pin, size: 17, color: context.c.pin),
+                  // 2026-08-18 소유자 지시 — 핀을 하늘색으로, 그리고 눌러서
+                  // 풀 수 있게.
+                  //
+                  // 색: 노랑은 이 앱에서 **이 한 자리에만** 쓰이던 색이었다.
+                  // 색이 하나 더 있으면 그 색을 볼 때마다 '이건 무슨 뜻이지'를
+                  // 한 번 묻게 된다. 하늘색은 이미 '지금 이것'을 뜻한다.
+                  //
+                  // 손이 닿는 자리를 그림보다 넓게 잡는다. 17픽셀짜리 그림을
+                  // 정확히 집으라는 요구는 손가락에게 무리다.
+                  InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => _askUnpin(n),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 10, 6, 10),
+                      child: Icon(Icons.push_pin,
+                          size: 17, color: context.c.accent),
+                    ),
                   ),
               ],
             ),

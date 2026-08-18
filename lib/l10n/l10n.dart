@@ -92,6 +92,10 @@ abstract class L10n {
   String get metaTooltip;
   String get pinTooltip;
   String get unpinTooltip;
+
+  /// 목록의 핀을 눌렀을 때 묻는 말 (2026-08-18).
+  String get unpinConfirmTitle;
+  String get unpinConfirmBody;
   String get deleteTooltip;
   String get titleHint;
   String get sourceNone;
@@ -609,6 +613,8 @@ abstract class L10n {
         'metaTooltip': metaTooltip,
         'pinTooltip': pinTooltip,
         'unpinTooltip': unpinTooltip,
+        'unpinConfirmTitle': unpinConfirmTitle,
+        'unpinConfirmBody': unpinConfirmBody,
         'deleteTooltip': deleteTooltip,
         'titleHint': titleHint,
         'sourceNone': sourceNone,

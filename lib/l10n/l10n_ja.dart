@@ -112,6 +112,13 @@ class L10nJa extends L10n {
   String get pinTooltip => 'リスト上部に固定';
   @override
   String get unpinTooltip => '固定を解除';
+
+  @override
+  String get unpinConfirmTitle => '固定を解除しますか？';
+
+  @override
+  String get unpinConfirmBody =>
+      'リストでノートを長押しすると、もう一度固定できます。';
   @override
   String get deleteTooltip => '削除';
   @override

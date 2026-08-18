@@ -112,6 +112,13 @@ class L10nFr extends L10n {
   String get pinTooltip => 'Épingler en haut';
   @override
   String get unpinTooltip => 'Désépingler';
+
+  @override
+  String get unpinConfirmTitle => 'Détacher cette note ?';
+
+  @override
+  String get unpinConfirmBody =>
+      'Appuyez longuement sur une note dans la liste pour la réépingler.';
   @override
   String get deleteTooltip => 'Supprimer';
   @override

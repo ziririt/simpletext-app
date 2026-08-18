@@ -112,6 +112,13 @@ class L10nEn extends L10n {
   String get pinTooltip => 'Pin to top';
   @override
   String get unpinTooltip => 'Unpin';
+
+  @override
+  String get unpinConfirmTitle => 'Unpin this note?';
+
+  @override
+  String get unpinConfirmBody =>
+      'Long-press a note in the list to pin it again.';
   @override
   String get deleteTooltip => 'Delete';
   @override
