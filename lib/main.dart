@@ -7,7 +7,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
@@ -305,7 +304,7 @@ class AppC extends ThemeExtension<AppC> {
     // 비쳐 보이는 것이 아니라 색이 하나 더 생겼다. 틴트를 바탕과 같은
     // 색으로 두면 유리는 '밝기만 더한 층'이 되고, 그때부터 밑의 것이
     // 색이 아니라 형태로 비친다.
-    glass: Color(0x14EFF6FB),
+    glass: Color(0x33EFF6FB),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: _accent,
@@ -339,7 +338,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0x1415191D),
+    glass: Color(0x3315191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -2029,12 +2028,20 @@ class Glass extends StatelessWidget {
   final bool hairlineTop;
   final bool hairlineBottom;
   final BorderRadius? radius;
+
+  /// 아래로 갈수록 옅어지는가.
+  ///
+  /// 화면 맨 위에 떠 있는 머리에만 켠다. 자판 위 도구 막대처럼 **아래에
+  /// 붙는** 것에 켜면 결이 거꾸로라 위쪽이 뚫려 보인다.
+  final bool fade;
+
   const Glass({
     super.key,
     required this.child,
     this.hairlineTop = false,
     this.hairlineBottom = false,
     this.radius,
+    this.fade = false,
   });
 
   @override
@@ -2042,26 +2049,35 @@ class Glass extends StatelessWidget {
     final c = context.c;
     return ClipRRect(
       borderRadius: radius ?? BorderRadius.zero,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.glass,
-            borderRadius: radius,
-            // 둥근 유리에는 비균일 테두리를 못 쓴다(프레임워크 제약).
-            border: radius != null
-                ? null
-                : Border(
-                    top: hairlineTop
-                        ? BorderSide(color: c.glassLine)
-                        : BorderSide.none,
-                    bottom: hairlineBottom
-                        ? BorderSide(color: c.glassLine)
-                        : BorderSide.none,
-                  ),
-          ),
-          child: child,
+      child: Container(
+        decoration: BoxDecoration(
+          color: fade ? null : c.glass,
+          // 위는 옅은 막, 아래는 아무것도 없음. 선을 긋지 않고 경계를
+          // 알리는 방법이다.
+          gradient: fade
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    c.glass,
+                    c.glass.withValues(alpha: 0),
+                  ],
+                )
+              : null,
+          borderRadius: radius,
+          // 둥근 유리에는 비균일 테두리를 못 쓴다(프레임워크 제약).
+          border: radius != null
+              ? null
+              : Border(
+                  top: hairlineTop
+                      ? BorderSide(color: c.glassLine)
+                      : BorderSide.none,
+                  bottom: hairlineBottom
+                      ? BorderSide(color: c.glassLine)
+                      : BorderSide.none,
+                ),
         ),
+        child: child,
       ),
     );
   }
@@ -2734,6 +2750,7 @@ class _HomeScreenState extends State<HomeScreen>
                       left: 0,
                       right: 0,
                       child: Glass(
+                        fade: true,
                         // 2026-08-18 소유자 지시로 밑줄을 뗐다 — "시원스럽게
                         // 뚫린 느낌을 막고 있다."
                         //
@@ -5486,7 +5503,7 @@ static const int kTagScanChars = 3000;
           elevation: 0,
           scrolledUnderElevation: 0,
           // 목록 화면의 머리와 같은 유리다(AppC.glass, 흐림 24).
-          flexibleSpace: const Glass(child: SizedBox.expand()),
+          flexibleSpace: const Glass(fade: true, child: SizedBox.expand()),
           automaticallyImplyLeading: !widget.embedded,
           // 넓은 화면에서만 나오는 목록 접기 단추.
           //
