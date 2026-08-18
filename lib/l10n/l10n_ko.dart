@@ -278,6 +278,9 @@ class L10nKo extends L10n {
   String get lineEndTip => '줄 끝';
   @override
   String get indentTip => '들여쓰기';
+
+  @override
+  String get todoAction => '할 일';
   @override
   String get hideKeyboardTip => '키보드 내리기';
 

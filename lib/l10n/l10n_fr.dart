@@ -278,6 +278,9 @@ class L10nFr extends L10n {
   String get lineEndTip => 'Fin de ligne';
   @override
   String get indentTip => 'Indenter';
+
+  @override
+  String get todoAction => 'Tâche';
   @override
   String get hideKeyboardTip => 'Masquer le clavier';
 

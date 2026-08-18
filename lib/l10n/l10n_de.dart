@@ -278,6 +278,9 @@ class L10nDe extends L10n {
   String get lineEndTip => 'Zeilenende';
   @override
   String get indentTip => 'Einzug';
+
+  @override
+  String get todoAction => 'Aufgabe';
   @override
   String get hideKeyboardTip => 'Tastatur ausblenden';
 

@@ -278,6 +278,9 @@ class L10nPt extends L10n {
   String get lineEndTip => 'Fim da linha';
   @override
   String get indentTip => 'Recuo';
+
+  @override
+  String get todoAction => 'Tarefa';
   @override
   String get hideKeyboardTip => 'Ocultar teclado';
 

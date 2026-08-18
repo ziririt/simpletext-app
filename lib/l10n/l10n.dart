@@ -119,6 +119,9 @@ abstract class L10n {
   String get lineStartTip;
   String get lineEndTip;
   String get indentTip;
+
+  /// 자판 위 체크박스 단추 (2026-08-18).
+  String get todoAction;
   String get hideKeyboardTip;
 
   // 하단 바
@@ -618,6 +621,7 @@ abstract class L10n {
         'lineStartTip': lineStartTip,
         'lineEndTip': lineEndTip,
         'indentTip': indentTip,
+        'todoAction': todoAction,
         'hideKeyboardTip': hideKeyboardTip,
         'tidyAction': tidyAction,
         'wizardAction': wizardAction,

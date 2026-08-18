@@ -31,6 +31,7 @@ import 'core/key_vault.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
 import 'core/mono_controller.dart';
+import 'core/rich_spans.dart' show todoAt;
 import 'core/mru.dart';
 import 'core/paper.dart';
 import 'core/source_detect.dart';
@@ -1619,7 +1620,11 @@ class Store extends ChangeNotifier {
 void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+    ..showSnackBar(SnackBar(
+        content: Text(msg),
+        // 2026-08-18 소유자 요청 — "'깔끔하게 정리했습니다'가 1초 정도
+        // 줄어들면 좋겠어." 2초는 이미 읽은 글을 한 번 더 보는 시간이다.
+        duration: const Duration(milliseconds: 1100)));
 }
 
 /// 아이폰이 붙여넣을 때마다 묻는 것을 없애는 길 안내.
@@ -3898,6 +3903,35 @@ class _EditorScreenState extends State<EditorScreen>
     _save();
   }
 
+  /// 커서가 할 일 네모 위에 있으면 켜고 끈다.
+  ///
+  /// 그리는 규칙과 **같은 함수**(core/rich_spans.dart 의 todoAt)를 쓴다.
+  /// 둘이 다른 셈을 쓰면 보이는 네모와 눌리는 자리가 어긋난다.
+  void _toggleTodoAtCaret() {
+    final sel = bodyCtl.selection;
+    if (!sel.isValid || !sel.isCollapsed) return;
+    final off = sel.baseOffset;
+    final t = bodyCtl.text;
+    if (off < 0 || off > t.length) return;
+
+    var ls = off > 0 ? t.lastIndexOf('\n', off - 1) : -1;
+    ls = ls < 0 ? 0 : ls + 1;
+
+    final f = todoAt(t, ls);
+    if (f == null) return;
+    // 네모 언저리를 눌렀을 때만. 줄 뒤쪽을 눌러 커서를 옮기려던 것까지
+    // 켜 버리면, 글을 고치려다 할 일이 끝난 것이 된다.
+    if (off < f.markStart || off > f.markStart + 5) return;
+
+    final now = f.done ? ' ' : 'x';
+    bodyCtl.value = TextEditingValue(
+      text: t.replaceRange(f.boxAt, f.boxAt + 1, now),
+      selection: TextSelection.collapsed(offset: off),
+    );
+    HapticFeedback.selectionClick();
+    _save();
+  }
+
   void _insertText(String left, [String right = '']) {
     final sel = bodyCtl.selection;
     final text = bodyCtl.text;
@@ -4173,6 +4207,18 @@ class _EditorScreenState extends State<EditorScreen>
   ///
   /// **되돌리려면 kMenuOnFirstTap 을 false 로.** 다른 곳은 손대지 않았다.
   void _menuOnTap() {
+    // 2026-08-18 — 네모를 누르면 켜고 꺼진다.
+    //
+    // 진짜 체크박스 위젯을 글 안에 심는 방법도 있지만, 그러면 글자 수와
+    // 커서 자리가 어긋난다('- [ ]'는 다섯 글자인데 위젯은 한 글자로 센다).
+    // 그래서 글자는 그대로 두고, **누른 자리가 네모 언저리인지**만 본다.
+    //
+    // 본문 칸의 onTap 은 하나뿐이라 여기서 먼저 부른다. 다음 프레임에
+    // 부르는 까닭은 아래 _menuOnTap 주석과 같다 — **onTap 이 불릴 때는
+    // 커서가 아직 새 자리로 안 옮겨져 있다.**
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _toggleTodoAtCaret();
+    });
     if (!kMenuOnFirstTap) return;
     // 커서가 자리를 잡은 다음에 띄운다. 같은 프레임에 부르면 방금 놓인
     // 커서 자리를 아직 아무도 모른다.
@@ -4319,6 +4365,12 @@ class _EditorScreenState extends State<EditorScreen>
                     glyph: '-',
                     tip: l.listDashAction,
                     onTap: () => _makeList('dash')),
+                // 2026-08-18 소유자 요청 — 자판 위에 체크박스.
+                // 목록 셋 바로 옆이 제자리다. 할 일도 목록의 한 종류다.
+                _kbBtn(
+                    icon: Icons.check_box_outlined,
+                    tip: l.todoAction,
+                    onTap: () => _insertText('- [ ] ')),
                 _kbBtn(
                     icon: Icons.format_indent_increase,
                     tip: l.indentTip,
@@ -5555,6 +5607,9 @@ static const int kTagScanChars = 3000;
     bodyCtl.monoEnabled = store.settings.monoEditor;
     bodyCtl.bodyFontSize = store.settings.bodyFontSize;
     bodyCtl.lineHeight = store.settings.bodyLineHeight;
+    // 마크다운을 눈에 보이게 그릴 때 쓸 색(2026-08-18).
+    bodyCtl.subColor = context.c.sub;
+    bodyCtl.accentColor = context.c.accent;
 
     // 종이. 고르지 않았으면 paper.id == kPaperNone이고 아래 색은 안 쓴다.
     final paper = paperById(store.settings.paperMode);

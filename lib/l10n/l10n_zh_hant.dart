@@ -278,6 +278,9 @@ class L10nZhHant extends L10n {
   String get lineEndTip => '行尾';
   @override
   String get indentTip => '縮排';
+
+  @override
+  String get todoAction => '待辦';
   @override
   String get hideKeyboardTip => '收起鍵盤';
 

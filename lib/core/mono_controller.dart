@@ -12,12 +12,35 @@ library;
 import 'package:flutter/material.dart';
 
 import 'mono_spans.dart';
+import 'rich_spans.dart';
 
 class MonoTextController extends TextEditingController {
   MonoTextController({super.text});
 
   /// 설정의 "표를 등폭 글꼴로"가 켜져 있는지. 화면 build에서 넣어 준다.
   bool monoEnabled = true;
+
+  /// 마크다운을 눈에 보이게 그릴지. 2026-08-18 소유자 지시로 들어왔다.
+  bool richEnabled = true;
+
+  /// 표시(#, **, - )를 옅게 그릴 색. 화면 build에서 넣어 준다.
+  Color? subColor;
+
+  /// 할 일 네모의 색. 화면 build에서 넣어 준다.
+  Color? accentColor;
+
+  /// 제목을 얼마나 키우나.
+  ///
+  /// 값을 1.3 위로 안 올리는 데는 까닭이 있다. 이 앱에는 **줄 쳐진 종이**가
+  /// 있고(몰스킨·서리), 그 줄은 '한 줄의 높이'를 곱해서 긋는다. 글자만
+  /// 키우면 줄 높이가 따라 커져서 **글과 줄이 어긋난다.**
+  ///
+  /// 그래서 키운 만큼 줄 간격 배수를 그만큼 줄인다(_headStyle). 그러면 줄
+  /// 상자의 높이는 그대로고 글자만 커진다. 다만 그 셈에는 바닥이 있다 —
+  /// 1.3배를 넘기면 남는 줄 간격이 한글 받침이 닿을 만큼 좁아진다.
+  static const double h1Scale = 1.30;
+  static const double h2Scale = 1.18;
+  static const double h3Scale = 1.08;
 
   /// 등폭 구간에 쓸 글꼴. 한글이 영문의 정확히 2배라 공백 정렬이 성립한다.
   static const String fontFamily = 'D2Coding';
@@ -63,9 +86,15 @@ class MonoTextController extends TextEditingController {
     required bool withComposing,
   }) {
     final spans = monoEnabled ? monoSpans(text) : const <MonoSpan>[];
+    // 코드·표 구간 안의 '**'와 '#'은 글자 그대로다. 거기서는 안 그린다.
+    final rich = richEnabled
+        ? richSpans(text)
+            .where((r) => !spans.any((m) => r.start < m.end && m.start < r.end))
+            .toList()
+        : const <RichSpan>[];
     final composing =
         (withComposing && value.isComposingRangeValid) ? value.composing : null;
-    if (spans.isEmpty && composing == null) {
+    if (spans.isEmpty && rich.isEmpty && composing == null) {
       return TextSpan(text: text, style: style);
     }
 
@@ -83,6 +112,10 @@ class MonoTextController extends TextEditingController {
       cuts.add(s.start.clamp(0, text.length));
       cuts.add(s.end.clamp(0, text.length));
     }
+    for (final r in rich) {
+      cuts.add(r.start.clamp(0, text.length));
+      cuts.add(r.end.clamp(0, text.length));
+    }
     if (composing != null) {
       cuts.add(composing.start.clamp(0, text.length));
       cuts.add(composing.end.clamp(0, text.length));
@@ -97,6 +130,11 @@ class MonoTextController extends TextEditingController {
       final isComposing =
           composing != null && composing.start <= a && b <= composing.end;
       var segStyle = isMono ? monoStyle : base;
+      if (!isMono) {
+        for (final r in rich) {
+          if (r.start <= a && b <= r.end) segStyle = _dress(segStyle, r.kind);
+        }
+      }
       if (isComposing) {
         segStyle = segStyle.merge(
             const TextStyle(decoration: TextDecoration.underline));
@@ -104,5 +142,44 @@ class MonoTextController extends TextEditingController {
       children.add(TextSpan(text: text.substring(a, b), style: segStyle));
     }
     return TextSpan(style: style, children: children);
+  }
+
+  /// 구간 하나에 옷을 입힌다.
+  TextStyle _dress(TextStyle s, RichKind k) {
+    switch (k) {
+      case RichKind.marker:
+        // 지우지 않고 옅게. 편집기라서 글자를 없앨 수 없다(rich_spans.dart 머리말).
+        return s.copyWith(
+            color: (subColor ?? s.color)?.withValues(alpha: 0.45));
+      case RichKind.h1:
+        return _headStyle(s, h1Scale);
+      case RichKind.h2:
+        return _headStyle(s, h2Scale);
+      case RichKind.h3:
+        return _headStyle(s, h3Scale);
+      case RichKind.bold:
+        return s.copyWith(fontWeight: FontWeight.w700);
+      case RichKind.quote:
+        return s.copyWith(color: subColor ?? s.color);
+      case RichKind.box:
+        return s.copyWith(
+            color: accentColor ?? s.color, fontWeight: FontWeight.w700);
+      case RichKind.done:
+        return s.copyWith(
+            color: (subColor ?? s.color)?.withValues(alpha: 0.7),
+            decoration: TextDecoration.lineThrough,
+            decorationColor: (subColor ?? s.color)?.withValues(alpha: 0.5));
+    }
+  }
+
+  /// 글자는 키우고 줄 상자는 그대로 둔다.
+  ///
+  /// height 는 '글자 크기의 몇 배'라서, 크기를 k배 하면서 height 를 k로
+  /// 나누면 곱이 그대로다. 줄 쳐진 종이의 줄과 글이 계속 맞는 까닭이 이것이다.
+  TextStyle _headStyle(TextStyle s, double k) {
+    final fs = s.fontSize ?? bodyFontSize;
+    final h = s.height ?? lineHeight;
+    return s.copyWith(
+        fontSize: fs * k, height: h / k, fontWeight: FontWeight.w700);
   }
 }

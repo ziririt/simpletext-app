@@ -278,6 +278,9 @@ class L10nJa extends L10n {
   String get lineEndTip => '行末へ';
   @override
   String get indentTip => 'インデント';
+
+  @override
+  String get todoAction => 'チェックリスト';
   @override
   String get hideKeyboardTip => 'キーボードを閉じる';
 

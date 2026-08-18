@@ -278,6 +278,9 @@ class L10nEn extends L10n {
   String get lineEndTip => 'Line end';
   @override
   String get indentTip => 'Indent';
+
+  @override
+  String get todoAction => 'To-do';
   @override
   String get hideKeyboardTip => 'Hide keyboard';
 
