@@ -991,6 +991,14 @@ class AppSettings {
   int rulesStamp = 0;
   String rulesSig = '';
 
+  /// 모양 값(글자 크기·줄 간격·종이·화면 모드·정렬)을 위한 같은 짝.
+  ///
+  /// 2026-08-18 — 규칙과 따로 센다. 규칙은 모든 기기가 한 파일을 나눠 쓰고,
+  /// 모양은 기기마다 제 파일을 쓴다. 시각을 한 쌍으로 같이 쓰면 남의 기기가
+  /// 규칙을 고친 것만으로 내 글자 크기가 '바뀐 것'으로 세어진다.
+  int prefsStamp = 0;
+  String prefsSig = '';
+
   // 2026-08-16 — 정렬과 필터. 조사해 보니 "정렬 옵션이 없다"는 것이 앱을
   // 미완성으로 느끼게 만드는 대표 원인 중 하나였다. 있으면 아무도 눈치
   // 못 채고, 없으면 리뷰에 남는 종류다.
@@ -1064,6 +1072,8 @@ class AppSettings {
         'pasteTipDone': pasteTipDone,
         'bodyFontSize': bodyFontSize,
         'bodyLineHeight': bodyLineHeight,
+        'prefsStamp': prefsStamp,
+        'prefsSig': prefsSig,
         'aiKey': aiKey,
         'aiProvider': aiProvider,
         'aiModel': aiModel,
@@ -1140,6 +1150,8 @@ class AppSettings {
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.bodyLineHeight =
         ((j['bodyLineHeight'] ?? s.bodyLineHeight) as num).toDouble();
+    s.prefsStamp = (j['prefsStamp'] ?? s.prefsStamp) as int;
+    s.prefsSig = (j['prefsSig'] ?? s.prefsSig) as String;
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
     s.aiProvider = (j['aiProvider'] ?? s.aiProvider) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
@@ -8566,6 +8578,13 @@ class _SettingsScreenState extends State<SettingsScreen>
     final l = L10n.of(context);
     final s = store.settings;
     final r = s.customRules[i];
+
+    void setRegex(bool v) {
+      s.customRules[i] = CustomRule(find: r.find, replace: r.replace, regex: v);
+      store.persistSettings();
+      setState(() {});
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
       child: Row(
@@ -8591,15 +8610,43 @@ class _SettingsScreenState extends State<SettingsScreen>
               },
             ),
           ),
-          Checkbox(
-            value: r.regex,
-            onChanged: (v) {
-              s.customRules[i] = CustomRule(find: r.find, replace: r.replace, regex: v ?? false);
-              store.persistSettings();
-              setState(() {});
-            },
+          // 2026-08-18 소유자 신고 — "ㅁ 체크박스가 앞의 것인지 뒤의
+          // 것인지 헷갈린다."
+          //
+          // 머티리얼의 Checkbox 는 손가락이 닿을 자리를 48×48 로 잡는다.
+          // 네모 자체는 18인데 둘레에 보이지 않는 여백이 15씩 붙는 것이다.
+          // 그래서 화면에서는 네모가 제 이름표에서 멀찍이 떨어지고, 바로
+          // 왼쪽 입력칸에 더 가까워 보인다. **가까움이 곧 소속**이라, 눈은
+          // 가까운 쪽의 것으로 읽는다.
+          //
+          // 여백을 걷어 붙이고(shrinkWrap), 둘을 한 덩어리로 묶어 이름표를
+          // 눌러도 켜지게 한다. 손가락 자리는 그대로 넓으면서 눈에는
+          // 'ㅁ정규식' 한 덩어리로 보인다 — 줄여서 잃은 것을 이름표가
+          // 되돌려 준다.
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => setRegex(!r.regex),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 6, 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: Checkbox(
+                      value: r.regex,
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      onChanged: (v) => setRegex(v ?? false),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(l.regexLabel, style: const TextStyle(fontSize: 15)),
+                ],
+              ),
+            ),
           ),
-          Text(l.regexLabel, style: const TextStyle(fontSize: 15)),
           IconButton(
             icon: const Icon(Icons.close, size: 18),
             onPressed: () {

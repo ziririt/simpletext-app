@@ -22,12 +22,15 @@
 /// 필요한 것도 그 셋뿐이라, 안 바뀌는 것만 쓴다.
 library;
 
+import 'dart:math';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class KeyVault {
   KeyVault._();
 
   static const String _k = 'aiKey';
+  static const String _kDevice = 'deviceKey';
   static const FlutterSecureStorage _s = FlutterSecureStorage();
 
   /// 없으면 빈 문자열. 키체인이 없는 자리(웹 등)에서도 앱은 떠야 하므로
@@ -35,6 +38,39 @@ class KeyVault {
   static Future<String> read() async {
     try {
       return (await _s.read(key: _k)) ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  /// 이 기기의 이름표. **앱을 지웠다 깔아도 같은 값이 나온다.**
+  ///
+  /// 2026-08-18 소유자 지시 — "각 기기마다 업데이트하더라도 기기별로
+  /// 설정값이 유지되기를 바란다."
+  ///
+  /// 기기별로 설정을 두려면 '이 기기가 저 기기다'를 알아볼 이름이 있어야
+  /// 한다. 그런데 쓸 만한 이름이 마땅치 않다.
+  ///   identifierForVendor — 우리 앱을 전부 지우면 새 값이 나온다. 개발
+  ///     중에는 매번 바뀌므로 하필 우리가 필요한 순간에 못 쓴다.
+  ///   기기 이름(UIDevice.name) — iOS 16부터 별도 자격이 있어야 진짜
+  ///     이름을 준다. 없으면 'iPhone' 같은 기종명이라 두 대를 못 가른다.
+  ///
+  /// 그래서 우리가 직접 만들어 **키체인에** 둔다. 키체인은 앱을 지워도
+  /// 남는 자리이고, 우리는 이미 AI 키 때문에 그 자리를 쓰고 있다. 새 창고를
+  /// 여는 대신 열려 있는 창고를 쓴다.
+  ///
+  /// 실패하면 빈 문자열이다. 그때는 기기별 설정을 포기하고 예전처럼 이
+  /// 기기 안에만 둔다 — 못 하는 것과 잘못하는 것은 다르다.
+  static Future<String> deviceKey() async {
+    try {
+      final got = await _s.read(key: _kDevice);
+      if (got != null && got.isNotEmpty) return got;
+      final r = Random.secure();
+      final made = List.generate(16, (_) => r.nextInt(256))
+          .map((b) => b.toRadixString(16).padLeft(2, '0'))
+          .join();
+      await _s.write(key: _kDevice, value: made);
+      return made;
     } catch (_) {
       return '';
     }

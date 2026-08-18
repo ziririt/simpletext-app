@@ -36,6 +36,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
 import 'core/sync_merge.dart';
 // CustomRule은 main.dart가 아니라 엔진 쪽에 산다(2026-08-16에 여기서 한 번
@@ -429,6 +430,7 @@ class ICloudSync {
         break;
     }
 
+    await _syncPrefs(root);
     await _syncTrial(root);
   }
 
@@ -505,7 +507,31 @@ class ICloudSync {
       'customRules': s.customRules
           .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
           .toList(),
-      // 2026-08-18에 실은 것들 — 보이는 모양에 관한 값이다.
+    };
+  }
+
+  /// 이 기기만의 값. 다른 기기로 안 건너간다.
+  ///
+  /// 2026-08-18 소유자 지시 — "폰트 사이즈는 맥은 큰 폰트로 해도 상관없지만,
+  /// 그 큰 폰트로 아이폰으로 보기는 싫은 것이다."
+  ///
+  /// 아침에는 이걸 규칙과 같이 실었다가 되돌린다. 실어 보고 나서야 선이
+  /// 어디인지 분명해졌다.
+  ///
+  ///   **무엇이 바뀌는가** — 정리 규칙, 바꾸기 규칙, 폴더, 자주 쓰는 지시문.
+  ///     같은 글을 넣으면 어느 기기에서든 같은 결과가 나와야 한다. 기기마다
+  ///     다르면 그건 규칙이 아니다.
+  ///   **어떻게 보이는가** — 글자 크기, 줄 간격, 종이, 화면 모드, 정렬.
+  ///     27인치 앞에 앉아 있을 때와 손에 쥐고 볼 때는 알맞은 크기가 다르다.
+  ///     같게 만드는 것이 오히려 불편하다.
+  ///
+  /// 소유자가 2026-08-16에 규칙을 두고 "모든 기기에서 동기화되어야 한다"고
+  /// 했던 것과 오늘 모양을 두고 "각각 다르게 하고 싶다"고 한 것은 모순이
+  /// 아니다. 서로 다른 것을 말한 것이고, 내가 그 둘을 한 통에 담았던 것이
+  /// 문제였다.
+  Map<String, dynamic> _prefsBody(Store store) {
+    final s = store.settings;
+    return {
       'bodyFontSize': s.bodyFontSize,
       'bodyLineHeight': s.bodyLineHeight,
       'themeMode': s.themeMode,
@@ -513,9 +539,113 @@ class ICloudSync {
       'monoEditor': s.monoEditor,
       'previewBeforeApply': s.previewBeforeApply,
       'sortMode': s.sortMode,
-      // 한 번 본 안내를 다른 기기에서 또 보여 주지 않는다.
       'pasteTipDone': s.pasteTipDone,
     };
+  }
+
+  void _applyPrefs(Store store, Map<String, dynamic> j) {
+    final s = store.settings;
+    T pick<T>(String k, T cur) {
+      final v = j[k];
+      return v is T ? v : cur;
+    }
+
+    // JSON은 17을 정수로 되돌린다. pick<double>로 받으면 'double이 아니다'가
+    // 되어 조용히 지금 값을 지킨다 — 안 바뀌는데 왜 안 바뀌는지 알 수 없는
+    // 종류의 고장이다.
+    double pickNum(String k, double cur) {
+      final v = j[k];
+      return v is num ? v.toDouble() : cur;
+    }
+
+    s.bodyFontSize = pickNum('bodyFontSize', s.bodyFontSize).clamp(
+        MonoTextController.minBodyFontSize, MonoTextController.maxBodyFontSize);
+    s.bodyLineHeight = pickNum('bodyLineHeight', s.bodyLineHeight).clamp(
+        MonoTextController.minBodyHeight, MonoTextController.maxBodyHeight);
+    s.themeMode = pick('themeMode', s.themeMode);
+    s.paperMode = pick('paperMode', s.paperMode);
+    s.monoEditor = pick('monoEditor', s.monoEditor);
+    s.previewBeforeApply = pick('previewBeforeApply', s.previewBeforeApply);
+    s.sortMode = pick('sortMode', s.sortMode);
+    s.pasteTipDone = pick('pasteTipDone', s.pasteTipDone);
+  }
+
+  /// 이 기기의 모양 값을 구름의 제 칸에 맞춘다.
+  ///
+  /// 칸 이름은 키체인에 둔 이름표다(core/key_vault.dart). 앱을 지웠다 깔아도
+  /// 같은 이름이 나오므로 **재설치해도 그 기기 값이 돌아온다.** 이름표를
+  /// 못 얻으면 아무것도 안 한다 — 남의 칸을 덮어쓰느니 안 하는 게 낫다.
+  ///
+  /// 누가 이기는지는 규칙과 같은 셈을 쓴다(rulesMove). 같은 칸에 쓰는 것은
+  /// 이 기기뿐이라 다툴 일이 거의 없지만, '새로 깐 앱은 듣기부터 한다'는
+  /// 그 셈의 핵심이 여기서도 그대로 필요하다.
+  Future<void> _syncPrefs(String root) async {
+    final key = await KeyVault.deviceKey();
+    if (key.isEmpty) return;
+
+    final store = Store.instance;
+    final s = store.settings;
+    final dir = Directory('$root/prefs');
+    try {
+      await dir.create(recursive: true);
+    } catch (_) {
+      return;
+    }
+    final f = File('${dir.path}/$key.json');
+
+    final localBody = _prefsBody(store);
+    final localSig = _sig(localBody);
+    final firstRun = s.prefsStamp == 0;
+
+    if (!firstRun && localSig != s.prefsSig) {
+      s.prefsSig = localSig;
+      s.prefsStamp = DateTime.now().millisecondsSinceEpoch;
+      await store.persistSettingsLocalOnly();
+    }
+
+    Map<String, dynamic>? remote;
+    if (await f.exists()) {
+      try {
+        remote = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
+      } catch (_) {}
+    } else {
+      final ph = File('${dir.path}/.$key.json.icloud');
+      if (await ph.exists()) {
+        try {
+          await _ch.invokeMethod('download', {
+            'paths': [f.path]
+          });
+        } catch (_) {}
+        return; // 다음 차례에
+      }
+    }
+
+    final remoteStamp = (remote?['stamp'] as int?) ?? -1;
+
+    switch (rulesMove(
+      firstRun: firstRun,
+      hasRemote: remote != null,
+      remoteStamp: remoteStamp,
+      localStamp: s.prefsStamp,
+    )) {
+      case RulesMove.takeRemote:
+        _applyPrefs(store, remote!);
+        s.prefsStamp = remoteStamp > 0
+            ? remoteStamp
+            : DateTime.now().millisecondsSinceEpoch;
+        s.prefsSig = _sig(_prefsBody(store));
+        await store.persistSettingsLocalOnly();
+        store.bump();
+      case RulesMove.pushLocal:
+        if (firstRun) {
+          s.prefsStamp = DateTime.now().millisecondsSinceEpoch;
+          s.prefsSig = localSig;
+          await store.persistSettingsLocalOnly();
+        }
+        await _writeJson(f, {..._prefsBody(store), 'stamp': s.prefsStamp});
+      case RulesMove.nothing:
+        break;
+    }
   }
 
   void _applyRules(Store store, Map<String, dynamic> j) {
@@ -537,28 +667,6 @@ class ICloudSync {
     s.headingPadBelow = pick('headingPadBelow', s.headingPadBelow);
     s.bulletIndent = pick('bulletIndent', s.bulletIndent);
     s.removeCitations = pick('removeCitations', s.removeCitations);
-
-    // JSON은 17을 정수로 되돌린다. pick<double>로 받으면 'double이 아니다'가
-    // 되어 조용히 지금 값을 지킨다 — 안 바뀌는데 왜 안 바뀌는지 알 수 없는
-    // 종류의 고장이다. 숫자는 따로 받는다.
-    double pickNum(String k, double cur) {
-      final v = j[k];
-      return v is num ? v.toDouble() : cur;
-    }
-
-    s.bodyFontSize = pickNum('bodyFontSize', s.bodyFontSize)
-        .clamp(MonoTextController.minBodyFontSize,
-            MonoTextController.maxBodyFontSize);
-    s.bodyLineHeight = pickNum('bodyLineHeight', s.bodyLineHeight)
-        .clamp(MonoTextController.minBodyHeight,
-            MonoTextController.maxBodyHeight);
-    s.themeMode = pick('themeMode', s.themeMode);
-    // 모르는 종이 이름이 와도 paperById가 '기본'으로 떨어뜨린다.
-    s.paperMode = pick('paperMode', s.paperMode);
-    s.monoEditor = pick('monoEditor', s.monoEditor);
-    s.previewBeforeApply = pick('previewBeforeApply', s.previewBeforeApply);
-    s.sortMode = pick('sortMode', s.sortMode);
-    s.pasteTipDone = pick('pasteTipDone', s.pasteTipDone);
     final fd = j['folders'];
     if (fd is List) {
       s.folders = fd.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
