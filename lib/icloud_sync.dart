@@ -36,6 +36,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'core/mono_controller.dart' show MonoTextController;
 import 'core/sync_merge.dart';
 // CustomRule은 main.dart가 아니라 엔진 쪽에 산다(2026-08-16에 여기서 한 번
 // 틀렸다 — analyze가 undefined_method로 잡아 줬다).
@@ -331,6 +332,24 @@ class ICloudSync {
 
   // ------------------------------------------------------ 규칙·체험 맞추기
 
+  /// 2026-08-18 — 여기가 담는 것이 늘었다. 소유자 신고: "각종 설정 값들이
+  /// 앱 업데이트하면 다 날아가나? 설정 값들 유지되게 할 수 있으면 좋겠다."
+  ///
+  /// 까닭은 개발 중의 설치가 업데이트가 아니라 '지우고 새로 깔기'라서다.
+  /// 실사용자는 스토어 업데이트를 받으므로 안 겪는다. 그렇다고 넘길 일은
+  /// 아니었다 — 기기를 바꾸거나 앱을 지웠다 다시 깔면 누구든 겪는다.
+  ///
+  /// 그래서 글자 크기·줄 간격·종이·화면 모드·정렬 기준까지 여기 싣는다.
+  /// 예전에는 "기기마다 다른 게 자연스럽다"고 적어 두고 안 실었는데,
+  /// 그건 내 짐작이었지 사용자가 그렇게 말한 적이 없다. 소유자는 반대로
+  /// 말했다.
+  ///
+  /// 다만 둘은 끝까지 안 싣는다.
+  ///   잠금(lockOn) — 잠금을 못 쓰는 기기에 켜진 값이 넘어오면 그 기기는
+  ///     영영 안 열린다. 편의를 위해 문을 잠그는 일은 하지 않는다.
+  ///   AI 키 — 키체인에 있고, 기기 밖으로 안 나간다(core/key_vault.dart).
+  ///   광고 없는 날·필터 — 그날 그 기기의 일이다.
+  ///
   /// 정리 규칙과 자동 바꾸기 규칙은 기기마다 다시 설정하게 두면 안 된다
   /// (소유자 지적). 메모와 달리 이건 합칠 수 없는 값이라 **늦게 고친 쪽이
   /// 통째로 이긴다.** 규칙 목록 두 벌을 섞으면 사용자가 지운 규칙이
@@ -458,6 +477,16 @@ class ICloudSync {
       'customRules': s.customRules
           .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
           .toList(),
+      // 2026-08-18에 실은 것들 — 보이는 모양에 관한 값이다.
+      'bodyFontSize': s.bodyFontSize,
+      'bodyLineHeight': s.bodyLineHeight,
+      'themeMode': s.themeMode,
+      'paperMode': s.paperMode,
+      'monoEditor': s.monoEditor,
+      'previewBeforeApply': s.previewBeforeApply,
+      'sortMode': s.sortMode,
+      // 한 번 본 안내를 다른 기기에서 또 보여 주지 않는다.
+      'pasteTipDone': s.pasteTipDone,
     };
   }
 
@@ -480,6 +509,28 @@ class ICloudSync {
     s.headingPadBelow = pick('headingPadBelow', s.headingPadBelow);
     s.bulletIndent = pick('bulletIndent', s.bulletIndent);
     s.removeCitations = pick('removeCitations', s.removeCitations);
+
+    // JSON은 17을 정수로 되돌린다. pick<double>로 받으면 'double이 아니다'가
+    // 되어 조용히 지금 값을 지킨다 — 안 바뀌는데 왜 안 바뀌는지 알 수 없는
+    // 종류의 고장이다. 숫자는 따로 받는다.
+    double pickNum(String k, double cur) {
+      final v = j[k];
+      return v is num ? v.toDouble() : cur;
+    }
+
+    s.bodyFontSize = pickNum('bodyFontSize', s.bodyFontSize)
+        .clamp(MonoTextController.minBodyFontSize,
+            MonoTextController.maxBodyFontSize);
+    s.bodyLineHeight = pickNum('bodyLineHeight', s.bodyLineHeight)
+        .clamp(MonoTextController.minBodyHeight,
+            MonoTextController.maxBodyHeight);
+    s.themeMode = pick('themeMode', s.themeMode);
+    // 모르는 종이 이름이 와도 paperById가 '기본'으로 떨어뜨린다.
+    s.paperMode = pick('paperMode', s.paperMode);
+    s.monoEditor = pick('monoEditor', s.monoEditor);
+    s.previewBeforeApply = pick('previewBeforeApply', s.previewBeforeApply);
+    s.sortMode = pick('sortMode', s.sortMode);
+    s.pasteTipDone = pick('pasteTipDone', s.pasteTipDone);
     final fd = j['folders'];
     if (fd is List) {
       s.folders = fd.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();

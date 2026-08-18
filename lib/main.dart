@@ -936,8 +936,12 @@ class AppSettings {
   // 미완성으로 느끼게 만드는 대표 원인 중 하나였다. 있으면 아무도 눈치
   // 못 채고, 없으면 리뷰에 남는 종류다.
   //
-  // 규칙과 달리 이건 기기마다 다른 게 자연스러워서 동기화하지 않는다
-  // (맥에서는 제목순, 폰에서는 최근순으로 보고 싶을 수 있다).
+  // 2026-08-18 — 정렬 기준은 동기화한다. 예전에 "맥에서는 제목순, 폰에서는
+  // 최근순으로 보고 싶을 수 있다"고 적어 뒀는데 그건 내 짐작이었다.
+  // 소유자는 반대로 말했다 — 설정은 남아 있어야 한다.
+  //
+  // 필터는 여전히 안 올린다. 그건 설정이 아니라 '지금 보고 있는 화면'이라,
+  // 다른 기기에서 걸어 둔 필터가 넘어오면 메모가 사라진 것처럼 보인다.
   String sortMode = 'updated'; // updated | created | title
   String filterSource = ''; // 빈 문자열 = 전체
   String filterTag = '';
@@ -958,8 +962,10 @@ class AppSettings {
   /// 굿노트처럼", 그리고 "몰스킨 스타일 프리셋은 필요하다."
   ///
   /// 값의 뜻과 색은 core/paper.dart에 있다. 여기는 고른 이름만 담는다.
-  /// 기기마다 다른 게 자연스러워서(맥은 큰 화면이라 모눈, 폰은 몰스킨처럼)
-  /// 정렬·필터와 같이 동기화하지 않는다.
+  ///
+  /// 2026-08-18 — 동기화한다. 예전에 "맥은 모눈, 폰은 몰스킨처럼 기기마다
+  /// 다른 게 자연스럽다"고 적어 뒀는데, 사용자가 그렇게 말한 적은 없다.
+  /// 종이를 고르는 데 든 수고를 기기마다 다시 하게 만들 이유가 없다.
   String paperMode = kPaperNone;
 
   /// 앱 잠금. 2026-08-16 로드맵 B단계.
@@ -1986,6 +1992,22 @@ class SplitShell extends StatefulWidget {
   static SplitShellState? of(BuildContext c) =>
       c.findAncestorStateOfType<SplitShellState>();
 
+  /// 한 화면에서 눈이 편하게 훑을 수 있는 폭.
+  ///
+  /// 2026-08-17에 글 칸에 쓰려고 만든 셈인데, 2026-08-18 소유자 지시로
+  /// 설정 화면도 같은 폭을 쓴다 — "맥앱과 아이패드 앱(가로모드)에서
+  /// 설정도 너무 넙대대하다."
+  ///
+  /// 같은 셈을 두 자리에 베껴 쓰지 않고 여기 하나로 둔다. 한쪽만 고치면
+  /// 글과 설정의 폭이 달라지고, 그건 화면이 두 개인 것처럼 보인다.
+  ///
+  /// 폰에서는 이 값이 화면보다 커서 아무 일도 일어나지 않는다 — 자리에
+  /// 따라 켜고 끄는 조건문이 필요 없다.
+  static double readWidth(BuildContext c) {
+    final s = MediaQuery.sizeOf(c).shortestSide;
+    return s < kMinReadWidth ? kMinReadWidth : s;
+  }
+
   @override
   State<SplitShell> createState() => SplitShellState();
 }
@@ -2107,13 +2129,7 @@ class SplitShellState extends State<SplitShell> {
                         // 것은 글자 크기가 아니라 줄 길이인 경우가 많다.
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            maxWidth: () {
-                              final s = MediaQuery.sizeOf(context).shortestSide;
-                              return s < SplitShell.kMinReadWidth
-                                  ? SplitShell.kMinReadWidth
-                                  : s;
-                            }(),
-                          ),
+                              maxWidth: SplitShell.readWidth(context)),
                           child: AnimatedSwitcher(
                         // 오른쪽 칸이 바뀔 때 뚝 끊기지 않게 아주 짧게 겹친다.
                         // 180ms는 '봤다'와 '기다렸다' 사이의 값이다 — 더 길면
@@ -7865,7 +7881,17 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      // 2026-08-18 소유자 지시 — "설정도 너무 넙대대하다. 본문처럼 한정
+      // 폭으로 가운데 정렬로."
+      //
+      // 넓은 화면에서 설정을 화면 폭만큼 늘리면 왼쪽 이름과 오른쪽 스위치가
+      // 한 뼘 넘게 떨어진다. 눈이 그 사이를 건너다니느라 무엇이 무엇의
+      // 스위치인지 매번 다시 확인하게 된다 — 표에서 줄이 길어질수록 칸이
+      // 헷갈리는 것과 같은 일이다.
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
+          child: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -8459,6 +8485,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 빈칸이라 이 정도는 값을 치를 만하다.
           SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
           ],
+        ),
+      ),
         ),
       ),
     );
