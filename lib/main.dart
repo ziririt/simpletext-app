@@ -305,7 +305,7 @@ class AppC extends ThemeExtension<AppC> {
     // 비쳐 보이는 것이 아니라 색이 하나 더 생겼다. 틴트를 바탕과 같은
     // 색으로 두면 유리는 '밝기만 더한 층'이 되고, 그때부터 밑의 것이
     // 색이 아니라 형태로 비친다.
-    glass: Color(0x8CEFF6FB),
+    glass: Color(0x4DEFF6FB),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: _accent,
@@ -339,7 +339,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0x8C15191D),
+    glass: Color(0x4D15191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -2043,7 +2043,7 @@ class Glass extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius ?? BorderRadius.zero,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+        filter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
         child: Container(
           decoration: BoxDecoration(
             color: c.glass,
@@ -8673,30 +8673,41 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 2026-08-16 소유자 요청 — 자동 바꾸기 규칙을 AI 위로 올린다.
           // 정리 규칙 바로 뒤에 붙는 게 맞다. 둘 다 '정리를 누르면 글이
           // 어떻게 바뀌나'에 답하는 항목이고, AI는 그 다음 이야기다.
+          // 2026-08-18 소유자 지시 — "'자동 바꾸기 규칙'은 설정에 다
+          // 나오게 하지 말고, 한 depth 더 들어가서. 이런 식으로 설정을
+          // 1depth에서 다 설정하게 할 수는 없어."
+          //
+          // 규칙 하나가 입력칸 둘에 체크박스에 지우기 단추까지 네 조각이다.
+          // 열 개를 만들면 설정 화면의 절반이 그 표가 된다. **설정 화면은
+          // 무엇을 정할 수 있는지 훑어보는 곳이지 정하는 곳이 아니다.**
+          // 훑어보는 곳에 정하는 도구가 펼쳐져 있으면 훑어볼 수가 없다.
+          //
+          // 여기 남는 것은 이름과 개수와 꺾쇠 하나다. 몇 개를 만들어
+          // 뒀는지는 여기서 알 수 있고, 손대는 일은 안으로 들어가서 한다.
           KeyedSubtree(
               key: _anchors['rules'], child: _secHeader(l.rulesSectionTitle)),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
-            child: Text(l.rulesSectionDesc,
-                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
-          ),
           _card([
-            for (int i = 0; i < s.customRules.length; i++) ...[
-              if (i > 0) _sep(),
-              _ruleRow(i),
-            ],
-            if (s.customRules.isNotEmpty) _sep(),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  s.customRules.add(const CustomRule(find: ''));
-                  store.persistSettings();
-                  setState(() {});
-                },
-                icon: const Icon(Icons.add),
-                label: Text(l.addRule),
-              ),
+            ListTile(
+              leading: Icon(Icons.find_replace, color: context.c.sub),
+              title: Text(l.rulesSectionTitle,
+                  style: const TextStyle(
+                      fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: Text(l.rulesSectionDesc,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                if (s.customRules.isNotEmpty)
+                  Text('${s.customRules.length}',
+                      style: TextStyle(fontSize: 16, color: context.c.sub)),
+                const SizedBox(width: 4),
+                Icon(Icons.chevron_right, color: context.c.sub),
+              ]),
+              onTap: () async {
+                await Navigator.push<void>(context,
+                    MaterialPageRoute(builder: (_) => const RulesScreen()));
+                if (mounted) setState(() {});
+              },
             ),
           ]),
           KeyedSubtree(
@@ -8993,6 +9004,39 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
+}
+
+/// 자동 바꾸기 규칙 — 설정에서 한 뎁스 들어온 곳.
+///
+/// 2026-08-18. 이 화면이 따로 있는 까닭은 위(설정 화면)에 적어 뒀다.
+///
+/// 카드 모양을 설정 화면에서 그대로 베껴 왔다. 함수를 같이 쓰게 묶지
+/// 않은 이유는 하나다 — 저쪽은 State의 메서드라 context를 몸에 지니고
+/// 있고, 여기로 끌어오려면 그 둘을 다 뜯어야 한다. 열 줄짜리 모양 하나
+/// 때문에 잘 돌고 있는 화면을 건드리는 것은 남는 장사가 아니다.
+class RulesScreen extends StatefulWidget {
+  const RulesScreen({super.key});
+
+  @override
+  State<RulesScreen> createState() => _RulesScreenState();
+}
+
+class _RulesScreenState extends State<RulesScreen> {
+  final store = Store.instance;
+
+  Widget _card(List<Widget> children) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Material(
+            color: context.c.panel,
+            child: Column(children: children),
+          ),
+        ),
+      );
+
+  Widget _sep() => Divider(height: 1, indent: 16, color: context.c.line);
+
   Widget _ruleRow(int i) {
     final l = L10n.of(context);
     final s = store.settings;
@@ -9075,6 +9119,52 @@ class _SettingsScreenState extends State<SettingsScreen>
             },
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final s = store.settings;
+    return Scaffold(
+      appBar: AppBar(title: Text(l.rulesSectionTitle)),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 40),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                child: Text(l.rulesSectionDesc,
+                    style: TextStyle(
+                        fontSize: 17,
+                        height: 1.35,
+                        color: context.c.guideInk)),
+              ),
+              _card([
+                for (int i = 0; i < s.customRules.length; i++) ...[
+                  if (i > 0) _sep(),
+                  _ruleRow(i),
+                ],
+                if (s.customRules.isNotEmpty) _sep(),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      s.customRules.add(const CustomRule(find: ''));
+                      store.persistSettings();
+                      setState(() {});
+                    },
+                    icon: const Icon(Icons.add),
+                    label: Text(l.addRule),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
       ),
     );
   }
