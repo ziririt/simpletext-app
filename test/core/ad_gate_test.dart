@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:simpletext/core/ad_gate.dart';
 
 void main() {
+  _trialAds();
   final today = DateTime(2026, 8, 16, 14, 30);
 
   test('dateKey는 자릿수를 채운다 (8월 → 08)', () {
@@ -33,5 +34,51 @@ void main() {
     expect(
         interstitialDue(now: today, adFreeDate: '2026-08-16', usedSeconds: 9999),
         isFalse);
+  });
+}
+
+// 2026-08-19 — 처음 2주는 광고가 없다. 소유자 지시로 붙인 규칙이라
+// 여기서 못 박는다. 이 고장은 화면을 봐도 안 보인다 — 광고가 안 뜨는
+// 것과 광고를 못 불러온 것이 눈으로는 똑같다.
+void _trialAds() {
+  group('체험 2주 동안은 광고가 없다 (2026-08-19)', () {
+    final now = DateTime(2026, 8, 19, 10);
+
+    test('체험 첫날 — 광고 없음', () {
+      expect(
+          adsOn(now: now, adFreeDate: '', trialDays: 1, premium: false), isFalse);
+    });
+
+    test('체험 마지막 날(14일째) — 아직 광고 없음', () {
+      expect(adsOn(now: now, adFreeDate: '', trialDays: 14, premium: false),
+          isFalse);
+    });
+
+    test('15일째 — 이제 광고가 나온다', () {
+      expect(
+          adsOn(now: now, adFreeDate: '', trialDays: 15, premium: false), isTrue);
+    });
+
+    test('프리미엄은 체험이 끝나도 광고 없음', () {
+      expect(
+          adsOn(now: now, adFreeDate: '', trialDays: 99, premium: true), isFalse);
+    });
+
+    test('전면 광고를 본 날은 그날 하루 광고 없음', () {
+      expect(
+          adsOn(
+              now: now,
+              adFreeDate: dateKey(now),
+              trialDays: 99,
+              premium: false),
+          isFalse);
+    });
+
+    // 아직 한 번도 안 연 상태(0)는 체험이 아니다. load()가 켤 때 1로
+    // 올리므로 실제로는 화면에 닿기 전에 1이 된다.
+    test('0일째는 체험이 아니다 — 화면에 닿기 전 값이다', () {
+      expect(
+          adsOn(now: now, adFreeDate: '', trialDays: 0, premium: false), isTrue);
+    });
   });
 }

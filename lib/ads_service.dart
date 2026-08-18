@@ -203,7 +203,11 @@ class _TopBannerBarState extends State<TopBannerBar> {
   Widget build(BuildContext context) {
     if (!adsSupported) return const SizedBox.shrink();
     final s = Store.instance.settings;
-    if (!bannerVisible(now: DateTime.now(), adFreeDate: s.adFreeDate)) {
+    if (!adsOn(
+        now: DateTime.now(),
+        adFreeDate: s.adFreeDate,
+        trialDays: s.trialDays,
+        premium: s.premium)) {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
@@ -637,7 +641,11 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   Widget build(BuildContext context) {
     if (!adsSupported) return const SizedBox.shrink();
     final s = Store.instance.settings;
-    if (!bannerVisible(now: DateTime.now(), adFreeDate: s.adFreeDate)) {
+    if (!adsOn(
+        now: DateTime.now(),
+        adFreeDate: s.adFreeDate,
+        trialDays: s.trialDays,
+        premium: s.premium)) {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
@@ -756,7 +764,9 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
 /// 드물고, 틀렸을 때의 값이 '빈칸이 두 줄뿐'이라 크지 않다.
 bool inlineAdLikely() =>
     adsSupported &&
-    bannerVisible(
+    adsOn(
         now: DateTime.now(),
-        adFreeDate: Store.instance.settings.adFreeDate) &&
+        adFreeDate: Store.instance.settings.adFreeDate,
+      trialDays: Store.instance.settings.trialDays,
+      premium: Store.instance.settings.premium) &&
     AdsService.instance.ready.value;
