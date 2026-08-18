@@ -45,13 +45,46 @@ fi
 # 무선 설치는 첫 시도에 자주 실패한다(아이패드에서 NWError 60 을 여러 번
 # 봤다). 한 번 실패했다고 멈추면 그날 그 기기만 옛 판으로 남는다. 세 번
 # 두드린다.
+# 시한을 둔 설치.
+#
+# 2026-08-18 — 아이패드가 자고 있어서 'Waiting for ... to connect...' 에서
+# 12분을 서 있었고, 그 뒤에 줄 서 있던 안드로이드와 맥이 통째로 밀렸다.
+# 두 번 겪고 고친다.
+#
+# 한 기기가 자고 있다고 나머지 기기가 못 받는 것은 배포 도구의 흠이다.
+# **기다림에도 끝이 있어야 한다.**
+#
+# macOS 에는 timeout 명령이 없다(2026-08-17에 확인). 뒤로 돌리고 지켜보다가
+# 시한이 지나면 끊는다. flutter install 은 자식을 낳으므로 이름으로 한 번 더
+# 훑어 정리한다 — 부모만 끊으면 자식이 남아 다음 기기를 또 막는다.
+install_try() { # $1=udid $2=이름 $3=시한(초)
+  flutter install --release -d "$1" > "/tmp/dep_$2.log" 2>&1 &
+  local pid=$! w=0
+  while kill -0 "$pid" 2>/dev/null && [ "$w" -lt "$3" ]; do
+    sleep 3
+    w=$((w + 3))
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    kill "$pid" 2>/dev/null
+    sleep 1
+    pkill -f "flutter install --release -d $1" >/dev/null 2>&1
+    echo "== $3초 안에 응답 없음 — 끊었다 ==" >> "/tmp/dep_$2.log"
+    return 1
+  fi
+  wait "$pid"
+}
+
 install_to() { # $1=udid $2=이름
   local i ok=0
   for i in 1 2 3; do
     log "$2 설치 중… (시도 $i)"
-    if flutter install --release -d "$1" > "/tmp/dep_$2.log" 2>&1 &&
+    if install_try "$1" "$2" 90 &&
        ! grep -q "Install failed" "/tmp/dep_$2.log"; then
       ok=1; break
+    fi
+    if grep -q "응답 없음" "/tmp/dep_$2.log"; then
+      log "$2 — 90초 동안 대답이 없다. 자고 있거나 그물 밖인 듯하다. 건너뛴다"
+      return 1
     fi
     tail -3 "/tmp/dep_$2.log"
     sleep 7
