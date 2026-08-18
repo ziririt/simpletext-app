@@ -841,6 +841,13 @@ class Note {
   /// 폴더는 "어디에 두었나"다. 태그는 여럿, 폴더는 하나.
   String folder;
 
+  /// 우리가 모르는 칸.
+  ///
+  /// 2026-08-18. 새 판 앱이 넣은 칸을 옛 판 앱이 지우지 않게, 읽을 때
+  /// 주워 담아 두었다가 쓸 때 도로 뿌린다. **형식이 바뀌는 동안 두 판이
+  /// 같은 폴더를 나눠 쓰는 며칠**을 무사히 건너기 위한 것이다.
+  final Map<String, dynamic> extra;
+
   Note({
     required this.id,
     this.title = '',
@@ -859,7 +866,9 @@ class Note {
     this.titleAuto = true,
     this.tagsAuto = true,
     this.folder = '',
-  })  : tags = tags ?? [],
+    Map<String, dynamic>? extra,
+  })  : extra = extra ?? const <String, dynamic>{},
+        tags = tags ?? [],
         history = history ?? [],
         historyAt = historyAt ?? [];
 
@@ -874,7 +883,21 @@ class Note {
     );
   }
 
+  /// 노트 자료의 판. 형식이 바뀌면 이 숫자로 가른다.
+  static const int schema = 1;
+
+  /// 우리가 아는 칸. 이 밖의 것은 [extra] 로 들어간다.
+  static const Set<String> knownKeys = {
+    'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
+    'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
+    'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder',
+  };
+
   Map<String, dynamic> toJson() => {
+        // 모르는 칸을 먼저 깔고 아는 칸으로 덮는다. 차례가 반대면 옛
+        // 자료가 새 값을 이긴다.
+        ...extra,
+        'v': schema,
         'id': id,
         'title': title,
         'body': body,
@@ -916,6 +939,10 @@ class Note {
         tagsAuto: (j['tagsAuto'] ??
             (((j['tags'] ?? const []) as List).isEmpty)) as bool,
         folder: normalizeFolder((j['folder'] ?? '') as String),
+        extra: {
+          for (final e in j.entries)
+            if (!knownKeys.contains(e.key)) e.key: e.value,
+        },
         tags: ((j['tags'] ?? []) as List).map((e) => e.toString()).toList(),
         createdAt: (j['createdAt'] ?? 0) as int,
         updatedAt: (j['updatedAt'] ?? 0) as int,
@@ -2312,17 +2339,41 @@ class SplitShellState extends State<SplitShell> {
                 child: ColoredBox(
                   color: _marginColor(context),
                   child: !alive
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Text(
-                            L10n.of(context).splitEmpty,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 16, height: 1.5, color: c.sub),
+                    ? Stack(children: [
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Text(
+                              L10n.of(context).splitEmpty,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 16, height: 1.5, color: c.sub),
+                            ),
                           ),
                         ),
-                      )
+                        // 편집 화면이 있을 때와 **같은 자리**에 둔다.
+                        // 열려 있든 비어 있든 새 노트 단추는 늘 오른쪽
+                        // 아래다 — 자리가 바뀌면 손이 매번 찾아야 한다.
+                        Positioned(
+                          right: 16,
+                          bottom: 16,
+                          child: FloatingActionButton(
+                            heroTag: 'split-new',
+                            tooltip: L10n.of(context).newNoteTooltip,
+                            backgroundColor: kAccentSoft,
+                            foregroundColor: kOnAccentSoft,
+                            onPressed: () async {
+                              final note = Note.fresh();
+                              store.notes.insert(0, note);
+                              await store.persist();
+                              if (!mounted) return;
+                              open(note.id);
+                            },
+                            child: const Icon(CupertinoIcons.square_pencil,
+                                size: 24),
+                          ),
+                        ),
+                      ])
                     : Center(
                         // 글 칸을 화면 폭만큼 늘리지 않는다. 한 줄이 길어질수록
                         // 눈이 다음 줄 첫머리를 찾기 어려워진다 — 읽기가 힘든
