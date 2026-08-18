@@ -123,20 +123,81 @@ void _one(String line, int base, List<RichSpan> out) {
 
 /// **굵게** 를 찾는다. 표시 두 쌍은 옅게, 사이는 굵게.
 void _bold(String line, int base, List<RichSpan> out, {int from = 0}) {
+  for (final p in boldPairs(line, from: from)) {
+    out.add(RichSpan(base + p.$1, base + p.$1 + 2, RichKind.marker));
+    out.add(RichSpan(base + p.$1 + 2, base + p.$2, RichKind.bold));
+    out.add(RichSpan(base + p.$2, base + p.$2 + 2, RichKind.marker));
+  }
+}
+
+/// [i]에서 시작하는 별표가 몇 개 이어지는가.
+int _starRun(String l, int i) {
+  var n = 0;
+  while (i + n < l.length && l[i + n] == '*') {
+    n++;
+  }
+  return n;
+}
+
+/// 여는 '**'가 될 수 있는가.
+///
+/// 뒤가 공백이거나 **닫는 문장부호**면 강조를 여는 것이 아니다.
+///
+/// 2026-08-18 소유자 신고로 넣은 규칙이다. 시드 메모에 이런 줄이 있었다.
+///
+///     별표(**), 우물 정(##), … 인사말이 **한 번에** 걷힙니다.
+///
+/// 앞의 '(**)' 는 별표를 **글감으로 적어 둔 것**이지 강조가 아니다. 그런데
+/// 앞에서부터 아무 짝이나 맺으면 그 '**'가 다음 '**'와 짝이 되어, 문장
+/// 한가운데가 굵어지고 진짜 짝의 한쪽이 홀로 남는다. 화면에 '한 번에**
+/// 걷힙니다'가 그렇게 나왔다.
+bool _canOpen(String l, int i) {
+  final n = i + 2;
+  if (n >= l.length) return false;
+  final c = l[n];
+  if (c.trim().isEmpty) return false;
+  return !')]}>,.!?;:'.contains(c);
+}
+
+/// 닫는 '**'가 될 수 있는가. 앞이 공백이면 아니다.
+bool _canClose(String l, int i) => i > 0 && l[i - 1].trim().isNotEmpty;
+
+/// 한 줄에서 **짝이 맞는** '**'의 자리들. (여는 자리, 닫는 자리).
+///
+/// 그리는 쪽(_bold)과 벗기는 쪽(core/plain_text.dart)과 정리 엔진이 **같은
+/// 함수**를 쓴다. 셋이 다른 셈을 하면 화면에서 굵게 보이던 것이 복사하면
+/// 안 벗겨지거나, 정리가 멀쩡한 강조를 지운다.
+///
+/// 별표가 셋 이상 이어진 것은 건드리지 않는다 — '***'는 구분선이다.
+List<(int, int)> boldPairs(String line, {int from = 0}) {
+  final out = <(int, int)>[];
   var i = from;
-  while (true) {
+  while (i < line.length) {
     final a = line.indexOf('**', i);
-    if (a < 0) return;
-    final b = line.indexOf('**', a + 2);
-    if (b < 0) return;
-    // 빈 '****'는 굵게가 아니다.
-    if (b > a + 2) {
-      out.add(RichSpan(base + a, base + a + 2, RichKind.marker));
-      out.add(RichSpan(base + a + 2, base + b, RichKind.bold));
-      out.add(RichSpan(base + b, base + b + 2, RichKind.marker));
+    if (a < 0) break;
+    if (_starRun(line, a) != 2 || !_canOpen(line, a)) {
+      i = a + _starRun(line, a);
+      continue;
     }
+    var b = -1;
+    var k = a + 2;
+    while (k < line.length) {
+      final c = line.indexOf('**', k);
+      if (c < 0) break;
+      if (_starRun(line, c) == 2 && c > a + 2 && _canClose(line, c)) {
+        b = c;
+        break;
+      }
+      k = c + _starRun(line, c);
+    }
+    if (b < 0) {
+      i = a + 2;
+      continue;
+    }
+    out.add((a, b));
     i = b + 2;
   }
+  return out;
 }
 
 /// 이 줄이 할 일 줄이면 네모의 자리를 준다. 아니면 null.

@@ -6,6 +6,7 @@
 library tidy_engine;
 
 import 'inbound_text.dart';
+import 'rich_spans.dart' show boldPairs;
 
 class CustomRule {
   final String find;
@@ -190,6 +191,46 @@ class TidyResult {
 }
 
 /// ---------------- 프리셋 5종 (기획서 22절) ----------------
+/// 짝이 없는 '**'만 지운다. 짝이 맞는 것과 '***'(구분선)은 안 건드린다.
+String _dropOrphanBold(String text, TidyReport rep) {
+  if (!text.contains('**')) return text;
+  final out = <String>[];
+  for (final line in text.split('\n')) {
+    if (!line.contains('**')) {
+      out.add(line);
+      continue;
+    }
+    final keep = <int>{};
+    for (final p in boldPairs(line)) {
+      keep.add(p.$1);
+      keep.add(p.$2);
+    }
+    final sb = StringBuffer();
+    var i = 0;
+    while (i < line.length) {
+      if (line[i] == '*') {
+        var run = 0;
+        while (i + run < line.length && line[i + run] == '*') {
+          run++;
+        }
+        // 둘짜리이고 짝이 없을 때만 뗀다. 셋 이상은 구분선이다.
+        if (run == 2 && !keep.contains(i)) {
+          rep.markers++;
+          i += 2;
+          continue;
+        }
+        sb.write(line.substring(i, i + run));
+        i += run;
+        continue;
+      }
+      sb.write(line[i]);
+      i++;
+    }
+    out.add(sb.toString());
+  }
+  return out.join('\n');
+}
+
 List<Preset> buildPresets() => [
       Preset(id: 'ai', name: 'AI 답변 정리', desc: '마크다운 마커·이모지·AI 서두 제거, 표 복구', opts: TidyOptions(
         stripHeadings: true, stripEmphasis: true, bulletsToDot: true, stripQuotes: true,
@@ -1126,6 +1167,16 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
         rep.markers++;
         return m.group(1)! + m.group(2)!;
       });
+    } else {
+      // '그대로 두기'를 골랐어도 **짝이 없는 '**'는 강조가 아니라 찌꺼기다.**
+      //
+      // 2026-08-18 소유자 지적 — "뒤에 있는 '**'는 남겨두는 게 맞니?
+      // 제거해야 하는 거 아니니?" 맞다. 그것은 강조를 여는 것도 닫는 것도
+      // 아니라 AI가 흘린 글자다. 화면에서도 그냥 별표 두 개로 보인다.
+      //
+      // 짝을 찾는 셈은 그리는 쪽과 같은 것을 쓴다(rich_spans.boldPairs).
+      // 여기서 따로 세면 화면에서 굵게 보이던 것을 정리가 지운다.
+      t = _dropOrphanBold(t, rep);
     }
   }
   if (o.removeEmoji) {

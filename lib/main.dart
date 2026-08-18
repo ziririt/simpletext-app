@@ -988,7 +988,7 @@ class Note {
 /// 사용자 정리 규칙 설정 (웹 프로토타입과 동일 기본값)
 class AppSettings {
   /// 저장된 설정의 판(版). 기본값을 바꿀 때 '한 번만' 갈아엎기 위해 쓴다.
-  static const int settingsRev = 3;
+  static const int settingsRev = 4;
 
   // 2026-08-14 소유자 신고 — **굵게**가 '굵게'로 바뀌어 나온다.
   // 따옴표가 필요 없는 자리에까지 따옴표가 붙어서 붙여넣기 뒤에 손이 간다.
@@ -1000,7 +1000,15 @@ class AppSettings {
   // 기본값을 덮어쓴다). 그래서 고칠 자리는 엔진이 아니라 여기다.
   String emphStyle = 'keep';
   String hrMode = 'keep';
-  String headingMode = 'strip';
+  /// 2026-08-18 — 'strip'에서 'keep'으로.
+  ///
+  /// 소유자 신고: "너 # 이나 ##를 볼드체로 안 하는 거 아니니?" 화면은
+  /// 제대로 그리고 있었다. **정리가 '#'을 먼저 깎아 버려서** 그릴 것이
+  /// 남지 않았던 것이다. 강조(**)와 똑같은 자리다 — 08-18에 강조만 고치고
+  /// 제목을 안 옮겼다. 오늘만 다섯 번째로 같은 실수다.
+  ///
+  /// 이제 화면에서 크게 그리고, 복사할 때 core/plain_text.dart 가 벗긴다.
+  String headingMode = 'keep';
   String headingSymbol = '■';
   String bulletChar = '-';
   bool smartDashList = true;
@@ -1244,6 +1252,12 @@ class AppSettings {
     // 갈아엎기는 언제나 '내가 도입된 판'을 적는다(위 주석 참고).
     if (((j['rev'] ?? 0) as int) < 3 && s.emphStyle == 'remove') {
       s.emphStyle = 'keep';
+    }
+    // 2026-08-18 — 제목도 같은 길로 옮긴다. 까닭은 headingMode 선언에 적었다.
+    // 판을 4로 적는 것은 3이 이미 나갔기 때문이다(갈아엎기는 언제나 '내가
+    // 도입된 판'을 적는다).
+    if (((j['rev'] ?? 0) as int) < 4 && s.headingMode == 'strip') {
+      s.headingMode = 'keep';
     }
     s.hrMode = (j['hrMode'] ?? s.hrMode) as String;
     s.headingMode = (j['headingMode'] ?? s.headingMode) as String;
@@ -8269,17 +8283,18 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
                     fontSize: 15, height: 1.35, color: context.c.guideInk)),
           ),
           _card([
-            // 기본값이 '제거'라서 맨 위에 둔다.
+            // 2026-08-18 — 기본값이 '그대로 두기'로 바뀌었으니 맨 위도
+            // 바꾼다. 목록의 첫 줄은 '보통 이렇게 씁니다'라는 말이다.
             _dropRow(l.emphTitle, l.emphSub, s.emphStyle, [
+              ('keep', l.keepLabel),
               ('remove', l.removeLabel),
               ('quoteSingle', l.emphQuoteSingle),
               ('quoteDouble', l.emphQuoteDouble),
-              ('keep', l.keepLabel),
             ], (v) => s.emphStyle = v),
             _sep(),
             _dropRow(l.headingTitle, null, s.headingMode, [
-              ('strip', l.headingStrip),
               ('keep', l.headingKeep),
+              ('strip', l.headingStrip),
               ('prefix', l.headingPrefix),
               ('bracket', l.headingBracket),
             ], (v) => s.headingMode = v),

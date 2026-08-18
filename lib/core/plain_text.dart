@@ -16,6 +16,8 @@
 /// 코드가 망가진다.
 library;
 
+import 'rich_spans.dart' show boldPairs;
+
 final RegExp _fence = RegExp(r'^\s*(```|~~~)');
 final RegExp _head = RegExp(r'^(#{1,6})\s+');
 final RegExp _quote = RegExp(r'^\s*>\s?');
@@ -61,14 +63,38 @@ String _line(String raw) {
   t = t.replaceFirst(_head, '');
   // 인용 — '> 가' → '가'
   t = t.replaceFirst(_quote, '');
-  // 굵게·기울임 — '**가**' → '가'
+  // 굵게 — 그리는 쪽과 **같은 함수**로 짝을 찾는다(rich_spans.boldPairs).
+  // 둘이 다른 셈을 하면 화면에서 굵게 보이던 것이 복사하면 안 벗겨진다.
+  t = _stripBold(t);
+  // 기울임 세 겹.
   t = _pairs(t, '***');
-  t = _pairs(t, '**');
   // 취소선
   t = _pairs(t, '~~');
   // 홑따옴표 코드 — `가` → 가
   t = _pairs(t, '`');
   return t;
+}
+
+/// 짝이 맞는 '**'만 벗긴다.
+String _stripBold(String line) {
+  final pairs = boldPairs(line);
+  if (pairs.isEmpty) return line;
+  final drop = <int>{};
+  for (final p in pairs) {
+    drop.add(p.$1);
+    drop.add(p.$2);
+  }
+  final sb = StringBuffer();
+  var i = 0;
+  while (i < line.length) {
+    if (drop.contains(i)) {
+      i += 2;
+      continue;
+    }
+    sb.write(line[i]);
+    i++;
+  }
+  return sb.toString();
 }
 
 /// 짝을 이룬 표시만 벗긴다. 짝이 안 맞으면 그대로 둔다 —
