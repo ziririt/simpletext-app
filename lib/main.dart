@@ -1995,7 +1995,7 @@ class SplitShellState extends State<SplitShell> {
     if (p.id == kPaperNone) {
       // '기본'은 종이 색이 없다. 그때 글 칸 바탕은 앱 바탕색이므로,
       // 같은 잣대를 앱 바탕색에 댄다.
-      return Color.lerp(context.c.bg, const Color(0xFF808080), kMarginToneT)!;
+      return Color(marginTone(context.c.bg.toARGB32()));
     }
     return Color(marginTone(p.bgOf(dark)));
   }
@@ -5747,9 +5747,24 @@ static const int kTagScanChars = 3000;
                         (box.maxHeight - blank - _headH).clamp(0.0, double.infinity);
                     return SingleChildScrollView(
                       controller: _bodyScroll,
-                      // 튕기는 스크롤은 블록을 씌우는 중에 문서가 더 크게
-                      // 흔들려 보이게 한다.
-                      physics: const ClampingScrollPhysics(),
+                      // 손가락으로 글을 끌어 고르는 자리에서는 튕김이
+                      // 방해가 된다 — 문서가 더 크게 흔들려 보인다. 그래서
+                      // 폰·태블릿에서는 클램핑을 박아 둔다.
+                      //
+                      // 2026-08-18 소유자 지시 — "맥용 앱의 스크롤이
+                      // 보편적인 맥 앱보다 조금 뻑뻑하고 답답한 속도이다."
+                      //
+                      // 맞다. 그리고 위의 까닭은 맥에 해당하지 않는다.
+                      // 맥에서는 휠과 트랙패드로 굴리지 손으로 글을 끌지
+                      // 않는다. 같은 값이 자리에 따라 다르게 작동하는
+                      // 경우다.
+                      //
+                      // 데스크톱에서는 값을 새로 고르는 대신 **손을 뗀다.**
+                      // 비워 두면 플랫폼이 정한다 — 맥은 튕김(고무줄),
+                      // 윈도우는 클램핑. 우리가 맥에 맞춰 값을 박으면
+                      // 윈도우에서 또 틀린다.
+                      physics:
+                          isDesktopPlatform ? null : const ClampingScrollPhysics(),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [

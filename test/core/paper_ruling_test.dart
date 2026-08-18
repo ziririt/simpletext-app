@@ -51,31 +51,32 @@ void main() {
       ]);
     });
 
-    // 여백은 종이와 같은 계열이되 한 톤 약해야 한다. '약하다'를 눈이 아니라
-    // 숫자로 못 박는다 — 밝은 종이는 어두워지고, 어두운 종이는 밝아진다.
-    test('여백은 종이를 중간 쪽으로 당긴 색이다', () {
+    // 여백은 어느 종이에서든 **본문보다 어둡다.** 방향이 종이에 따라 갈리면
+    // 다크에서 책상이 종이보다 밝아진다 — 2026-08-18에 실제로 그렇게
+    // 만들었다가 되돌렸다. 그 되돌림을 여기서 못 박는다.
+    test('여백은 언제나 본문보다 어둡다', () {
       for (final p in kPapers) {
         if (p.id == kPaperNone) continue;
         for (final dark in [false, true]) {
           final bg = p.bgOf(dark);
           final m = marginTone(bg);
-          final lb = relativeLuminance(bg);
-          final lm = relativeLuminance(m);
           final reason = '${p.id} dark=$dark';
-          // 눈에 보일 만큼은 다르되, 제 색을 주장할 만큼은 아니다.
-          expect(contrastRatio(bg, m) > 1.02, isTrue, reason: reason);
-          expect(contrastRatio(bg, m) < 1.45, isTrue, reason: reason);
-          // 방향: 종이가 중간(0.216 ≈ 회색 0x80)보다 밝으면 여백은 어둡다.
-          final mid = relativeLuminance(0xFF808080);
-          if (lb > mid) {
-            expect(lm < lb, isTrue, reason: reason);
-          } else if (lb < mid) {
-            expect(lm > lb, isTrue, reason: reason);
-          }
+          expect(relativeLuminance(m) < relativeLuminance(bg), isTrue,
+              reason: reason);
+          // 살짝. 보이되 제 색을 주장하지는 않는다.
+          expect(contrastRatio(bg, m) > 1.03, isTrue, reason: reason);
+          expect(contrastRatio(bg, m) < 1.25, isTrue, reason: reason);
           // 알파는 건드리지 않는다.
           expect((m >> 24) & 0xFF, (bg >> 24) & 0xFF, reason: reason);
         }
       }
+    });
+
+    // 아주 어두운 종이에서도 한 칸은 움직여야 한다. 곱셈만 쓰면 0x21의
+    // 5%는 1.65라 반올림해 두 칸, 사실상 없는 것과 같아진다.
+    test('아주 어두운 색에서도 바닥값이 지켜 준다', () {
+      expect(marginTone(0xFF101010), 0xFF0A0A0A);
+      expect(marginTone(0xFF000000), 0xFF000000);
     });
 
     test('색 종이 넷과 세피아는 줄이 없다', () {
