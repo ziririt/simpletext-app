@@ -365,7 +365,14 @@ class ICloudSync {
 
     final localBody = _rulesBody(store);
     final localSig = _sig(localBody);
-    if (localSig != s.rulesSig) {
+
+    // 이 기기에 아직 아무 기록이 없다 = 앱을 새로 깐 것이다.
+    // 그때는 아래 '이 기기에서 바뀌었다' 판정을 건너뛴다 — 기본값을
+    // '방금 바꾼 값'으로 신고하면 그것이 구름을 덮어쓴다.
+    // 자세한 사연은 core/sync_merge.dart 의 rulesMove 에 적었다.
+    final firstRun = s.rulesStamp == 0;
+
+    if (!firstRun && localSig != s.rulesSig) {
       // 이 기기에서 바뀌었다.
       s.rulesSig = localSig;
       s.rulesStamp = DateTime.now().millisecondsSinceEpoch;
@@ -391,14 +398,35 @@ class ICloudSync {
     }
 
     final remoteStamp = (remote?['stamp'] as int?) ?? -1;
-    if (remote != null && remoteStamp > s.rulesStamp) {
-      _applyRules(store, remote);
-      s.rulesStamp = remoteStamp;
-      s.rulesSig = _sig(_rulesBody(store));
-      await store.persistSettingsLocalOnly();
-      store.bump();
-    } else if (remoteStamp < s.rulesStamp) {
-      await _writeJson(f, {...localBody, 'stamp': s.rulesStamp});
+
+    switch (rulesMove(
+      firstRun: firstRun,
+      hasRemote: remote != null,
+      remoteStamp: remoteStamp,
+      localStamp: s.rulesStamp,
+    )) {
+      case RulesMove.takeRemote:
+        _applyRules(store, remote!);
+        // 구름의 시각을 그대로 물려받는다. 여기서 '지금'으로 새로 찍으면
+        // 받기만 하고도 이 기기가 가장 새것이 되어, 다른 기기가 그 뒤에
+        // 올린 것을 도로 밀어낸다.
+        s.rulesStamp = remoteStamp > 0
+            ? remoteStamp
+            : DateTime.now().millisecondsSinceEpoch;
+        s.rulesSig = _sig(_rulesBody(store));
+        await store.persistSettingsLocalOnly();
+        store.bump();
+      case RulesMove.pushLocal:
+        if (firstRun) {
+          // 구름에도 없다 — 이 기기가 처음이니 여기 것이 곧 기준이 된다.
+          // 시각을 0으로 두면 영영 아무도 못 이긴다.
+          s.rulesStamp = DateTime.now().millisecondsSinceEpoch;
+          s.rulesSig = localSig;
+          await store.persistSettingsLocalOnly();
+        }
+        await _writeJson(f, {..._rulesBody(store), 'stamp': s.rulesStamp});
+      case RulesMove.nothing:
+        break;
     }
 
     await _syncTrial(root);

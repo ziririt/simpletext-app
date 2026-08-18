@@ -169,3 +169,46 @@ MergeResult<T> mergeNotes<T>({
     removed: removed,
   );
 }
+
+// ------------------------------------------------------------------ 설정
+//
+// 2026-08-18 소유자 신고 — "설정 값들 유지되게 해준다고 하지 않았니? 방금도
+// 다시 앱이 들어오면서 설정값 초기화되었다."
+//
+// 이 셈을 파일 다루는 코드 안에 두었다가 틀렸다. 아이클라우드 폴더와
+// 다운로드 대기와 JSON 파싱이 뒤엉킨 자리라, 정작 **누가 이기는가**라는
+// 한 줄짜리 판단이 눈에 안 보였다. 밖으로 꺼내 테스트로 못 박는다.
+
+/// 설정 맞추기에서 이 기기가 할 일.
+enum RulesMove {
+  /// 구름 것을 받는다.
+  takeRemote,
+
+  /// 이 기기 것을 올린다.
+  pushLocal,
+
+  /// 아무것도 안 한다.
+  nothing,
+}
+
+/// 누가 이기는가.
+///
+/// [firstRun] 이 이 고침의 핵심이다. 새로 깐 앱은 설정이 전부 기본값인데,
+/// 예전 코드는 그것을 '방금 이 기기에서 바꾼 것'으로 읽었다. 지문이 다르니까
+/// (아무것도 없는 것과 기본값의 지문은 다르다) 시각을 지금으로 찍었고,
+/// 그러면 구름의 것보다 새것이 되어 **기본값이 구름을 덮어썼다.**
+///
+/// 아무것도 없는 것과 방금 비운 것은 다르다. 시각이 0이면 이 기기는 아직
+/// 아무 말도 한 적이 없고, 그때는 말할 자격이 없는 것으로 본다 — 들을
+/// 차례다.
+RulesMove rulesMove({
+  required bool firstRun,
+  required bool hasRemote,
+  required int remoteStamp,
+  required int localStamp,
+}) {
+  if (firstRun) return hasRemote ? RulesMove.takeRemote : RulesMove.pushLocal;
+  if (hasRemote && remoteStamp > localStamp) return RulesMove.takeRemote;
+  if (remoteStamp < localStamp) return RulesMove.pushLocal;
+  return RulesMove.nothing;
+}
