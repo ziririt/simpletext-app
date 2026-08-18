@@ -24,7 +24,7 @@ class L10nJa extends L10n {
   @override
   String get pinnedLabel => 'ピン固定';
   @override
-  String get notesLabel => 'メモ';
+  String get notesLabel => 'ノート';
   @override
   String get newNoteTooltip => '新規メモ';
   @override

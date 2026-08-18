@@ -24,7 +24,7 @@ class L10nKo extends L10n {
   @override
   String get pinnedLabel => '고정됨';
   @override
-  String get notesLabel => '메모';
+  String get notesLabel => '노트';
   @override
   String get newNoteTooltip => '새 문서 만들기';
   @override

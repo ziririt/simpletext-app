@@ -293,7 +293,19 @@ class AppC extends ThemeExtension<AppC> {
     //   태그 글자 #0070BE on #E1F4FF 4.7:1
     selBg: Color(0x663FB2F0),
     selHandle: _accent,
-    glass: Color(0xCCFFFFFF),
+    // 2026-08-18 소유자 지시 — "상단 고정바의 투명도를 살짝 줘서
+    // 스크롤되면서 메모가 위로 올라갈 때 고정바 밑으로 살짝 비춰지게."
+    // 0xCC(80%)에서 0xA6(65%)으로. 흐림을 24로 올려 그만큼을 메운다 —
+    // 투명도만 올리면 밑의 글자가 그대로 읽혀서 머리 위의 글자와 겹친다.
+    // 2026-08-18 소유자 지시 — "메인페이지 상단 고정바의 컬러는 흰색이네.
+    // 바탕색의 연하늘색과 동일하게 해줘. 확 뚫린 느낌이 나서."
+    //
+    // 흰색 틴트는 유리 밑에 흰 종이를 한 장 더 깐 것과 같다. 밑의 바탕이
+    // 하늘 쪽으로 기울어 있는데(#EFF6FB) 그 위에 중성 흰색을 얹으니,
+    // 비쳐 보이는 것이 아니라 색이 하나 더 생겼다. 틴트를 바탕과 같은
+    // 색으로 두면 유리는 '밝기만 더한 층'이 되고, 그때부터 밑의 것이
+    // 색이 아니라 형태로 비친다.
+    glass: Color(0xA6EFF6FB),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: _accent,
@@ -327,7 +339,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0xC615191D),
+    glass: Color(0xA615191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -611,6 +623,7 @@ class SimpleTextApp extends StatelessWidget {
       locale: locale,
       onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const GlideScrollBehavior(),
       localizationsDelegates: const [
         L10n.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -1990,6 +2003,27 @@ const double kHomeHeaderH = 60;
 ///   - 반투명 틴트 + 뒤 배경 블러(18). 콘텐츠가 밑으로 비쳐 흐른다
 ///   - 경계는 1px 실선 대신 아주 옅은 헤어라인
 ///   - 밝은 유리 위에 밝은 유리를 겹치지 말 것 (가독성이 무너진다)
+/// 조금 더 미끄러지는 굴림.
+///
+/// 2026-08-18 소유자 — "위/아래 스크롤을 할 때, 조금만 더 스르르륵
+/// 미끄러지는 듯한 유연한 느낌이 필요해."
+///
+/// 머티리얼 기본(ClampingScrollPhysics)은 손을 떼면 금세 선다. 애플 계열
+/// 굴림(BouncingScrollPhysics)은 마찰이 작아 한참 더 미끄러지고, 끝에
+/// 닿으면 고무줄처럼 되튄다. 한 앱이 기기마다 다른 속도로 구르면 그건 두
+/// 앱이므로 전부 뒤쪽으로 맞춘다.
+///
+/// RangeMaintainingScrollPhysics 를 부모로 두는 것은 머티리얼 기본과 같다 —
+/// 목록의 길이가 바뀌어도 보고 있던 자리를 지켜 준다. 이걸 빼면 동기화가
+/// 들어와 메모가 하나 늘어난 순간 화면이 튄다.
+class GlideScrollBehavior extends MaterialScrollBehavior {
+  const GlideScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const BouncingScrollPhysics(parent: RangeMaintainingScrollPhysics());
+}
+
 class Glass extends StatelessWidget {
   final Widget child;
   final bool hairlineTop;
@@ -2009,7 +2043,7 @@ class Glass extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius ?? BorderRadius.zero,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
           decoration: BoxDecoration(
             color: c.glass,
@@ -2038,16 +2072,17 @@ class Glass extends StatelessWidget {
 /// 메모를 여는 자리가 앱 안에 네 군데 있다. 규칙을 이 함수 하나에 모으지
 /// 않았다면 넓은 화면을 지원하면서 그중 하나는 반드시 빠뜨렸을 것이다.
 Future<void> openNote(BuildContext context, String id,
-    {bool autoTidy = false}) async {
+    {bool autoTidy = false, bool showMeta = false}) async {
   final shell = SplitShell.of(context);
   if (shell != null && shell.isWide) {
-    shell.open(id, autoTidy: autoTidy);
+    shell.open(id, autoTidy: autoTidy, showMeta: showMeta);
     return;
   }
   await Navigator.push(
     context,
     MaterialPageRoute(
-        builder: (_) => EditorScreen(noteId: id, autoTidy: autoTidy)),
+        builder: (_) => EditorScreen(
+            noteId: id, autoTidy: autoTidy, showMeta: showMeta)),
   );
 }
 
@@ -2110,6 +2145,7 @@ class SplitShell extends StatefulWidget {
 class SplitShellState extends State<SplitShell> {
   String? _openId;
   bool _autoTidy = false;
+  bool _showMeta = false;
 
   /// 왼쪽 목록을 펴 두었는가.
   ///
@@ -2147,10 +2183,11 @@ class SplitShellState extends State<SplitShell> {
 
   bool get isWide => MediaQuery.sizeOf(context).width >= SplitShell.kWideAt;
 
-  void open(String id, {bool autoTidy = false}) {
+  void open(String id, {bool autoTidy = false, bool showMeta = false}) {
     setState(() {
       _openId = id;
       _autoTidy = autoTidy;
+      _showMeta = showMeta;
     });
   }
 
@@ -2241,6 +2278,7 @@ class SplitShellState extends State<SplitShell> {
                             key: ValueKey(id),
                             noteId: id,
                             autoTidy: _autoTidy,
+                            showMeta: _showMeta,
                             embedded: true,
                           ),
                         ),
@@ -2689,7 +2727,13 @@ class _HomeScreenState extends State<HomeScreen>
                       left: 0,
                       right: 0,
                       child: Glass(
-                        hairlineBottom: true,
+                        // 2026-08-18 소유자 지시로 밑줄을 뗐다 — "시원스럽게
+                        // 뚫린 느낌을 막고 있다."
+                        //
+                        // 유리에 테두리를 그으면 그건 유리가 아니라 뚜껑이다.
+                        // 경계는 흐림과 투명도만으로 알린다 — 밑으로 글이
+                        // 흘러가는 것이 보이면 선을 안 그어도 거기가
+                        // 경계인 줄 안다.
                         child: SizedBox(
                           height: kHomeHeaderH,
                           child: Padding(
@@ -3205,8 +3249,13 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(children: [
-                      row(Icons.ios_share, l.exportNote,
-                          () => Navigator.pop(ctx, 'share')),
+                      // 2026-08-18 소유자 지시 — 맨 위에 '출처·태그'.
+                      // 누르면 그 줄이 펴진 채로 편집 화면이 열린다.
+                      // 목록에서 길게 누른 사람은 '이 메모를 손보겠다'고
+                      // 이미 말한 것이라, 열고 나서 메뉴를 또 열게 하면
+                      // 문이 둘이다.
+                      row(Icons.sell_outlined, l.metaTooltip,
+                          () => Navigator.pop(ctx, 'meta')),
                       Divider(height: 1, color: c.line),
                       row(Icons.folder_outlined, l.folderTitle,
                           () => Navigator.pop(ctx, 'folder')),
@@ -3215,8 +3264,11 @@ class _HomeScreenState extends State<HomeScreen>
                           n.pinned ? l.unpinTooltip : l.pinTooltip,
                           () => Navigator.pop(ctx, 'pin')),
                       Divider(height: 1, color: c.line),
-                      row(Icons.copy_all_outlined, l.noteDuplicate,
-                          () => Navigator.pop(ctx, 'dup')),
+                      // '복제'는 뺐다(2026-08-18 소유자 지시). 이 앱에서
+                      // 메모를 복제할 일은 거의 없는데, 다섯 줄짜리 시트의
+                      // 다섯 중 하나를 차지하고 있었다.
+                      row(Icons.ios_share, l.exportNote,
+                          () => Navigator.pop(ctx, 'share')),
                       Divider(height: 1, color: c.line),
                       row(Icons.delete_outline, l.delete,
                           () => Navigator.pop(ctx, 'del'),
@@ -3253,23 +3305,8 @@ class _HomeScreenState extends State<HomeScreen>
         n.pinned = !n.pinned;
         await store.persist();
         if (mounted) setState(() {});
-      case 'dup':
-        final copy = Note.fresh(body: n.body)
-          ..title = n.title
-          ..tags = List<String>.from(n.tags)
-          ..source = n.source
-          ..sourceAuto = n.sourceAuto
-          ..titleAuto = n.titleAuto
-          ..tagsAuto = n.tagsAuto
-          ..folder = n.folder
-          // 붙여넣은 시각은 원본의 것을 그대로 물려준다. 그 시각의 뜻은
-          // '이 답을 받은 때'라서 복제한 날로 바뀌면 거짓이 된다.
-          ..pastedAt = n.pastedAt;
-        store.notes.insert(0, copy);
-        await store.persist();
-        if (!mounted) return;
-        setState(() {});
-        _toast(context, L10n.of(context).noteDuplicated);
+      case 'meta':
+        await openNote(context, n.id, showMeta: true);
       case 'del':
         final ok = await confirmDialog(context,
             title: L10n.of(context).deleteConfirmTitle,
@@ -3568,6 +3605,13 @@ class EditorScreen extends StatefulWidget {
   final String noteId;
   final bool autoTidy;
 
+  /// 열자마자 제목·태그·출처 줄을 펴 놓는가.
+  ///
+  /// 2026-08-18 소유자 지시 — 목록에서 길게 눌러 '출처·태그'를 고르면
+  /// 그 줄이 이미 펴진 채로 열린다. 열고 나서 메뉴를 한 번 더 여는
+  /// 것은 '거기로 가겠다'고 말한 사람에게 문을 하나 더 세우는 짓이다.
+  final bool showMeta;
+
   /// 두 칸 화면의 오른쪽에 들어가 있는가. 그렇다면 뒤로가기 화살표를 안
   /// 그린다 — 돌아갈 화면이 없다. 목록이 이미 왼쪽에 있다.
   final bool embedded;
@@ -3576,6 +3620,7 @@ class EditorScreen extends StatefulWidget {
     super.key,
     required this.noteId,
     this.autoTidy = false,
+    this.showMeta = false,
     this.embedded = false,
   });
 
@@ -3887,6 +3932,25 @@ class _EditorScreenState extends State<EditorScreen>
   final GlobalKey _headKey = GlobalKey();
   double _headH = 0;
 
+  /// 유리 머리(AppBar)가 덮는 높이.
+  ///
+  /// 2026-08-18 소유자 지시 — "편집화면에서도 상단 고정바에 투명도를
+  /// 살짝 줘서 글이 스크롤될 때 살짝 비춰지게."
+  ///
+  /// 유리로 만들려면 글이 그 밑을 지나가야 한다. 그런데 이 화면에는
+  /// 굴러가지 않는 것들이 있다 — 맥의 입력 도구 막대, 그리고 켜 놓았을
+  /// 때의 제목·출처·태그 줄. 그것들이 머리 밑에 깔리면 비치는 것이
+  /// 아니라 가려지는 것이다.
+  ///
+  /// 그래서 자리를 두 군데 중 한 군데서만 비운다. 굴러가지 않는 것이
+  /// 있으면 스크롤 **바깥**에서(그럼 머리는 그냥 불투명한 것처럼 보인다),
+  /// 아무것도 없는 평소에는 스크롤 **안쪽**에서. 안쪽에서 비운 만큼이
+  /// 곧 글이 머리 밑으로 흘러 들어가는 길이다.
+  static const double _glassInset = kToolbarHeight;
+
+  double get _topInsetOutside => (_isDesktop || _showMeta) ? _glassInset : 0;
+  double get _topInsetInside => _topInsetOutside > 0 ? 0 : _glassInset;
+
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
   final GlobalKey _bodyKey = GlobalKey();
 
@@ -4116,6 +4180,19 @@ class _EditorScreenState extends State<EditorScreen>
                     icon: Icons.format_indent_increase,
                     tip: l.indentTip,
                     onTap: () => _insertText('  ')),
+                Container(
+                    width: 1,
+                    height: 26,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    color: context.c.toolbarLine),
+                // 2026-08-18 소유자 지시로 메뉴에서 여기로 내려왔다.
+                // 바꾸기는 **글을 치는 중에** 하는 일이다. 자판이 올라와
+                // 있는 순간에 손이 닿는 자리가 제자리고, 메뉴는 글을 다
+                // 쓰고 나서 여는 서랍이다.
+                _kbBtn(
+                    icon: Icons.find_replace,
+                    tip: l.replaceAction,
+                    onTap: _showReplaceDialog),
               ],
             ),
           ),
@@ -4158,6 +4235,7 @@ class _EditorScreenState extends State<EditorScreen>
     // 선택 범위가 바뀌는 것을 지켜본다. 글자가 바뀔 때(onChanged)와는
     // 다른 일이라 컨트롤러에 직접 붙는다.
     bodyCtl.addListener(_onSelectionChanged);
+    if (widget.showMeta) _showMeta = true;
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
     }
@@ -5393,8 +5471,15 @@ static const int kTagScanChars = 3000;
         // 키보드의 임자는 여기 하나다(위 주석 참고). 기본값이지만 일부러
         // 적어 둔다 — 이 값이 바깥과 겹치면 방금 그 사고가 다시 난다.
         resizeToAvoidBottomInset: true,
+        // 머리 밑으로 종이가 이어지게 한다. 종이가 머리에서 끊기면
+        // 유리 너머로 보이는 것이 흰 띠뿐이라 비치는 뜻이 없다.
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: paperBg,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          // 목록 화면의 머리와 같은 유리다(AppC.glass, 흐림 24).
+          flexibleSpace: const Glass(child: SizedBox.expand()),
           automaticallyImplyLeading: !widget.embedded,
           // 넓은 화면에서만 나오는 목록 접기 단추.
           //
@@ -5555,150 +5640,87 @@ static const int kTagScanChars = 3000;
               },
               itemBuilder: (ctx) {
                 final lm = L10n.of(ctx);
-                PopupMenuItem<String> jump(String a, String label) =>
-                    PopupMenuItem<String>(
-                      value: 'set:$a',
-                      height: 38,
-                      child: Padding(
-                        // 들여쓰기로 '앱 설정 아래 항목'임을 보인다.
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Text(label,
-                            style: TextStyle(fontSize: 14, color: ctx.c.sub)),
-                      ),
-                    );
                 // 2026-08-19 — 아래 막대에 있던 넷과 위에 있던 둘이
                 // 여기로 들어왔다. 메뉴로 옮긴 것을 아무도 못 찾는 일이
                 // 없도록 아이콘과 이름을 그대로 가져왔다 — 손가락은
                 // 자리를 기억하지만 눈은 모양을 기억한다.
-                PopupMenuItem<String> act(
-                        String v, IconData ic, String label) =>
+                PopupMenuItem<String> act(String v, IconData ic, String label,
+                        {bool enabled = true, Color? tint, bool bold = false}) =>
                     PopupMenuItem<String>(
                       value: v,
+                      enabled: enabled,
+                      // 48이 기본인데 열다섯 줄이면 720이다. 그러면 메뉴가
+                      // 화면에 안 들어가서 플러터가 위로 밀어 올리고, 밀어
+                      // 올린 메뉴가 삼선 단추를 덮는다(소유자 신고).
+                      // 줄을 42로 죄면 단추 아래에 그대로 머문다.
+                      height: 42,
                       child: Row(children: [
-                        Icon(ic, size: 19, color: ctx.c.guideInk),
+                        Icon(ic,
+                            size: 19,
+                            color: (tint ?? ctx.c.guideInk).withValues(
+                                alpha: enabled ? 1.0 : 0.4)),
                         const SizedBox(width: 10),
-                        Text(label),
+                        Text(label,
+                            style: TextStyle(
+                                color: tint,
+                                fontWeight:
+                                    bold ? FontWeight.w600 : FontWeight.w400)),
                       ]),
                     );
 
                 return [
-                  // --- 이 글에 대고 하는 일 ---
-                  act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
-                  act('tables', CupertinoIcons.table, lm.tableAction),
-                  act('replace', CupertinoIcons.search, lm.replaceAction),
-                  act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
-                  const PopupMenuDivider(),
-                  act(
-                      'meta',
-                      _showMeta ? Icons.sell : Icons.sell_outlined,
+                  // 2026-08-18 소유자 지시로 차례를 통째로 다시 짰다.
+                  //
+                  // 스물세 줄이 한 폭에 다 나와 있었다. 그중 여덟은 설정
+                  // 화면의 목차를 그대로 베껴 온 것이었는데, 서랍을 열면
+                  // 그 안에 다른 서랍의 목차까지 붙어 있는 꼴이었다.
+                  // 그 여덟을 '앱 설정' 한 줄로 접었다 — 두 뎁스로 가는
+                  // 것이 줄을 줄이는 유일하게 정직한 방법이다.
+                  //
+                  // 남은 것을 네 무리로 묶었다.
+                  //   1. 이 메모가 무엇인가        출처·태그, 폴더
+                  //   2. 정리                      미리보기, 방식 고르기
+                  //   3. 글을 손대는 일            마법사, 표, 붙이기,
+                  //                                복사, 내보내기
+                  //   4. 되돌리고 지우는 일        버전 기록, 원본 복귀, 삭제
+                  //
+                  // '상단 고정'은 뺐다. 목록에서 길게 눌러 하는 편이
+                  // 빠르고, 몇 달에 한 번 누르는 것이 매번 여는 서랍의
+                  // 한 줄을 차지할 이유가 없다.
+                  // '바꾸기'는 자판 위 도구 막대로 내려갔다.
+                  act('meta', _showMeta ? Icons.sell : Icons.sell_outlined,
                       lm.metaTooltip),
                   act(
-                      'pin',
-                      note.pinned ? Icons.push_pin : Icons.push_pin_outlined,
-                      note.pinned ? lm.unpinTooltip : lm.pinTooltip),
-                  const PopupMenuDivider(),
-                  // --- 편집 관련 (앞으로 여기에 더 붙는다) ---
-                  // 맨 위는 '정리 미리보기'다(2026-08-17 소유자 지시).
-                  // 이 앱에서 가장 많이 누르는 단추가 '정리'이고, 그
-                  // 단추가 하는 일을 미리 볼 수 있다는 것을 아는 사람이
-                  // 설정을 열어 본 사람뿐이면 안 된다.
-                  PopupMenuItem<String>(
-                    value: 'preview',
-                    child: Row(children: [
-                      Icon(CupertinoIcons.eye, size: 19, color: ctx.c.accent),
-                      const SizedBox(width: 10),
-                      Text(lm.menuTidyPreview,
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
-                  const PopupMenuDivider(),
-                  // 원본복귀는 버전기록 바로 위에 둔다. 되돌린 뒤 마음이
-                  // 바뀌면 바로 아래 항목에서 되찾을 수 있다는 것이 눈에
-                  // 보여야 한다(소유자가 짚은 배치).
-                  PopupMenuItem<String>(
-                    value: 'folder',
-                    child: Row(children: [
-                      Icon(
-                          note.folder.isEmpty
-                              ? Icons.folder_outlined
-                              : Icons.folder,
-                          size: 19,
-                          color: note.folder.isEmpty ? ctx.c.sub : ctx.c.accent),
-                      const SizedBox(width: 10),
-                      Text(note.folder.isEmpty ? lm.folderTitle : note.folder),
-                    ]),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'revert',
-                    enabled: _canRevert,
-                    child: Row(children: [
-                      Icon(CupertinoIcons.arrow_uturn_left,
-                          size: 19,
-                          color: _canRevert ? ctx.c.sub : ctx.c.sub.withValues(alpha: 0.4)),
-                      const SizedBox(width: 10),
-                      Text(lm.revertAction),
-                    ]),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'history',
-                    child: Row(children: [
-                      Icon(Icons.history, size: 19, color: ctx.c.sub),
-                      const SizedBox(width: 10),
-                      Text(lm.historyTitle),
-                    ]),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'append',
-                    child: Row(children: [
-                      Icon(Icons.attach_file, size: 19, color: ctx.c.sub),
-                      const SizedBox(width: 10),
-                      Text(lm.importAppend),
-                    ]),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'preset',
-                    child: Row(children: [
-                      Icon(CupertinoIcons.wand_stars, size: 19, color: ctx.c.sub),
-                      const SizedBox(width: 10),
-                      Text(lm.choosePreset),
-                    ]),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'export',
-                    child: Row(children: [
-                      Icon(Icons.ios_share, size: 19, color: ctx.c.sub),
-                      const SizedBox(width: 10),
-                      Text(lm.exportNote),
-                    ]),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'delete',
-                    child: Row(children: [
-                      Icon(Icons.delete_outline, size: 20, color: ctx.c.danger),
-                      const SizedBox(width: 10),
-                      Text(lm.delete, style: TextStyle(color: ctx.c.danger)),
-                    ]),
-                  ),
-                  const PopupMenuDivider(),
-                  // --- 앱 전체 설정 ---
-                  PopupMenuItem<String>(
-                    value: 'set:',
-                    child: Row(children: [
-                      Icon(Icons.settings_outlined, size: 20, color: ctx.c.accent),
-                      const SizedBox(width: 10),
-                      Text(lm.menuAppSettings,
-                          style: TextStyle(
-                              color: ctx.c.accent, fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
-                  jump('theme', lm.themeTitle),
-                  jump('fontsize', lm.bodyFontSizeTitle),
-                  jump('paper', lm.paperTitle),
-                  jump('lock', lm.lockTitle),
-                  jump('mono', lm.monoEditorTitle),
-                  jump('tidy', lm.settingsSecTidy),
-                  jump('rules', lm.rulesSectionTitle),
-                  jump('ai', lm.menuAiKey),
+                      'folder',
+                      note.folder.isEmpty
+                          ? Icons.folder_outlined
+                          : Icons.folder,
+                      note.folder.isEmpty ? lm.folderTitle : note.folder,
+                      tint: note.folder.isEmpty ? null : ctx.c.accent),
+                  const PopupMenuDivider(height: 9),
+                  act('preview', CupertinoIcons.eye, lm.menuTidyPreview,
+                      tint: ctx.c.accent, bold: true),
+                  act('preset', CupertinoIcons.wand_stars, lm.choosePreset),
+                  const PopupMenuDivider(height: 9),
+                  act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
+                  act('tables', CupertinoIcons.table, lm.tableAction),
+                  act('append', CupertinoIcons.paperclip, lm.importAppend),
+                  act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
+                  act('export', CupertinoIcons.square_arrow_up, lm.exportNote),
+                  const PopupMenuDivider(height: 9),
+                  // 버전 기록과 원본 복귀는 붙여 둔다. 되돌린 뒤 마음이
+                  // 바뀌면 바로 위 줄에서 되찾을 수 있다는 것이 눈에
+                  // 보여야 한다. 셋 다 '되돌리거나 없애는 일'이라 삭제와
+                  // 같은 무리에 둔다.
+                  act('history', CupertinoIcons.clock, lm.historyTitle),
+                  act('revert', CupertinoIcons.arrow_uturn_left,
+                      lm.revertAction,
+                      enabled: _canRevert),
+                  act('delete', CupertinoIcons.trash, lm.delete,
+                      tint: ctx.c.danger),
+                  const PopupMenuDivider(height: 9),
+                  act('set:', CupertinoIcons.gear_alt, lm.menuAppSettings,
+                      tint: ctx.c.accent, bold: true),
                 ];
               },
             ),
@@ -5706,6 +5728,8 @@ static const int kTagScanChars = 3000;
         ),
         body: Column(
           children: [
+            // 유리 머리가 덮는 자리 — 굴러가지 않는 것이 있을 때만 비운다.
+            if (_topInsetOutside > 0) SizedBox(height: _topInsetOutside),
             // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
             if (_isDesktop)
               _accessoryBar(atTop: true),
@@ -5894,7 +5918,7 @@ static const int kTagScanChars = 3000;
                               // 날짜 줄이 본문 위에 같이 굴러가므로 그만큼
                               // 줄을 내려 긋는다. 안 그러면 줄이 글자
                               // 한가운데를 가로지른다.
-                              headPad: _headH,
+                              headPad: _headH + _topInsetInside,
                             ),
                           ),
                         ),
@@ -5941,30 +5965,23 @@ static const int kTagScanChars = 3000;
                     // 이상하다. 날짜 줄을 안으로 들인 뒤로는 그 높이도
                     // 빼야 셈이 맞는다.
                     final minBody =
-                        (box.maxHeight - blank - _headH).clamp(0.0, double.infinity);
+                        (box.maxHeight - blank - _headH - _topInsetInside)
+                            .clamp(0.0, double.infinity);
                     return SingleChildScrollView(
                       controller: _bodyScroll,
-                      // 손가락으로 글을 끌어 고르는 자리에서는 튕김이
-                      // 방해가 된다 — 문서가 더 크게 흔들려 보인다. 그래서
-                      // 폰·태블릿에서는 클램핑을 박아 둔다.
-                      //
-                      // 2026-08-18 소유자 지시 — "맥용 앱의 스크롤이
-                      // 보편적인 맥 앱보다 조금 뻑뻑하고 답답한 속도이다."
-                      //
-                      // 맞다. 그리고 위의 까닭은 맥에 해당하지 않는다.
-                      // 맥에서는 휠과 트랙패드로 굴리지 손으로 글을 끌지
-                      // 않는다. 같은 값이 자리에 따라 다르게 작동하는
-                      // 경우다.
-                      //
-                      // 데스크톱에서는 값을 새로 고르는 대신 **손을 뗀다.**
-                      // 비워 두면 플랫폼이 정한다 — 맥은 튕김(고무줄),
-                      // 윈도우는 클램핑. 우리가 맥에 맞춰 값을 박으면
-                      // 윈도우에서 또 틀린다.
-                      physics:
-                          isDesktopPlatform ? null : const ClampingScrollPhysics(),
+                      // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
+                      // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
+                      // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
+                      // 들어온 신고는 반대쪽이었다 — 뻑뻑하다는 것이다.
+                      // 짐작으로 박은 값을 뗀다.
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          // 유리 머리가 덮는 자리. 이것이 스크롤 **안**에
+                          // 있어서, 굴리면 날짜 줄과 글이 머리 밑으로
+                          // 흘러 들어간다.
+                          if (_topInsetInside > 0)
+                            SizedBox(height: _topInsetInside),
                           // 날짜 줄. 고정이 아니라 글의 첫머리다 —
                           // 종이 맨 위에 적힌 날짜처럼, 읽어 내려가면
                           // 같이 올라가 사라진다.
