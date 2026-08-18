@@ -2749,16 +2749,7 @@ class _HomeScreenState extends State<HomeScreen>
                       top: 0,
                       left: 0,
                       right: 0,
-                      child: Glass(
-                        fade: true,
-                        // 2026-08-18 소유자 지시로 밑줄을 뗐다 — "시원스럽게
-                        // 뚫린 느낌을 막고 있다."
-                        //
-                        // 유리에 테두리를 그으면 그건 유리가 아니라 뚜껑이다.
-                        // 경계는 흐림과 투명도만으로 알린다 — 밑으로 글이
-                        // 흘러가는 것이 보이면 선을 안 그어도 거기가
-                        // 경계인 줄 안다.
-                        child: SizedBox(
+                      child: SizedBox(
                           height: kHomeHeaderH,
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
@@ -2836,7 +2827,6 @@ class _HomeScreenState extends State<HomeScreen>
                                   ]),
                           ),
                         ),
-                      ),
                     ),
                   ]),
                 ),
@@ -5502,8 +5492,6 @@ static const int kTagScanChars = 3000;
           backgroundColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
-          // 목록 화면의 머리와 같은 유리다(AppC.glass, 흐림 24).
-          flexibleSpace: const Glass(fade: true, child: SizedBox.expand()),
           automaticallyImplyLeading: !widget.embedded,
           // 넓은 화면에서만 나오는 목록 접기 단추.
           //
