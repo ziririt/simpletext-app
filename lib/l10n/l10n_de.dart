@@ -409,11 +409,12 @@ class L10nDe extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncScopeTitle => 'Was synchronisiert wird';
+  String get syncScopeTitle =>
+      'Umfang der Synchronisierung';
 
   @override
   String get syncScopeShared =>
-      'Wird synchronisiert: Notizen, Aufräumregeln, Ersetzungsregeln, Ordner, gespeicherte Anweisungen';
+      'Zwischen Apple-Geräten synchronisiert: Notizen, Aufräumregeln, selbst angelegte Ersetzungsregeln, Ordner, gespeicherte KI-Anweisungen';
 
   @override
   String get syncScopeDevice =>
@@ -421,7 +422,7 @@ class L10nDe extends L10n {
 
   @override
   String get syncScopeNever =>
-      'Nur auf diesem Gerät: KI-Schlüssel und App-Sperre verlassen es nie';
+      'Der KI-API-Schlüssel wird nicht in iCloud gesichert und muss auf jedem Gerät eingegeben werden';
 
   @override
   String get syncStateOn => 'Dieselben Notizen auf iPhone, iPad und Mac';

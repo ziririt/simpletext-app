@@ -407,19 +407,20 @@ class L10nJa extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncScopeTitle => '同期される項目';
+  String get syncScopeTitle =>
+      '同期の範囲';
 
   @override
   String get syncScopeShared =>
-      '同期されます — メモ、整形ルール、置換ルール、フォルダ、よく使う指示';
+      'Apple デバイス間で同期: メモ、整形ルール、手動で追加した置換ルール、フォルダ、よく使うAI編集の指示';
 
   @override
   String get syncScopeDevice =>
-      '端末ごと — 文字サイズ、行間、背景、外観、並び順';
+      '端末ごと: 文字サイズ、行間、背景、外観、並び順';
 
   @override
   String get syncScopeNever =>
-      'この端末のみ — AIキーとアプリロックは外に出ません';
+      'AI の API キーは iCloud に保存されないため、端末ごとに入力が必要です';
 
   @override
   String get syncStateOn => 'iPhone・iPad・Mac で同じメモを見られます';

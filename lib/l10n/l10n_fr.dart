@@ -409,11 +409,12 @@ class L10nFr extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncScopeTitle => 'Ce qui est synchronisé';
+  String get syncScopeTitle =>
+      'Portée de la synchronisation';
 
   @override
   String get syncScopeShared =>
-      'Synchronisé : notes, règles de nettoyage, règles de remplacement, dossiers, instructions enregistrées';
+      'Synchronisé entre appareils Apple : notes, règles de nettoyage, règles de remplacement ajoutées, dossiers, instructions IA enregistrées';
 
   @override
   String get syncScopeDevice =>
@@ -421,7 +422,7 @@ class L10nFr extends L10n {
 
   @override
   String get syncScopeNever =>
-      'Sur cet appareil uniquement : la clé IA et le verrouillage n’en sortent jamais';
+      'La clé d’API IA n’est pas envoyée vers iCloud, saisissez-la donc sur chaque appareil';
 
   @override
   String get syncStateOn => 'Les mêmes notes sur iPhone, iPad et Mac';

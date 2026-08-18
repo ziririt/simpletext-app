@@ -407,19 +407,20 @@ class L10nZhHans extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
-  String get syncScopeTitle => '哪些内容会同步';
+  String get syncScopeTitle =>
+      '同步范围';
 
   @override
   String get syncScopeShared =>
-      '会同步 — 备忘录、整理规则、替换规则、文件夹、常用指令';
+      '苹果设备间同步：备忘录、整理规则、手动添加的替换规则、文件夹、常用 AI 编辑指令';
 
   @override
   String get syncScopeDevice =>
-      '每台设备单独 — 字号、行距、背景、外观、排序';
+      '每台设备单独：字号、行距、背景、外观、排序';
 
   @override
   String get syncScopeNever =>
-      '仅本机 — AI 密钥和应用锁不会上传';
+      'AI API 密钥不会上传到 iCloud，需要在每台设备上分别输入';
 
   @override
   String get syncStateOn => '在 iPhone、iPad 和 Mac 上看到相同的备忘录';

@@ -407,19 +407,20 @@ class L10nKo extends L10n {
   String get syncTitle => 'iCloud 동기화';
 
   @override
-  String get syncScopeTitle => '무엇이 함께 가나';
+  String get syncScopeTitle =>
+      '동기화 범위';
 
   @override
   String get syncScopeShared =>
-      '함께 갑니다 — 메모, 정리 규칙, 자동 바꾸기 규칙, 폴더, 자주 쓰는 지시문';
+      '애플 기기 동기화 : 메모, 정리 규칙, 수동으로 추가한 바꾸기 규칙, 폴더, 자주 쓰는 AI편집 지시문';
 
   @override
   String get syncScopeDevice =>
-      '기기마다 따로 — 글자 크기, 줄 간격, 배경, 화면 모드, 정렬 기준';
+      '기기마다 따로 : 글자 크기, 줄 간격, 배경, 화면 모드, 정렬 기준';
 
   @override
   String get syncScopeNever =>
-      '이 기기에만 — AI 키와 앱 잠금은 어디에도 올라가지 않습니다';
+      'AI API KEY는 iCloud에 올라가지 않으니, 기기마다 입력해야 합니다';
 
   @override
   String get syncStateOn => '아이폰·아이패드·맥에서 같은 메모를 봅니다';
