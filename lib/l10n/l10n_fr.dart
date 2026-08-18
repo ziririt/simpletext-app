@@ -409,6 +409,21 @@ class L10nFr extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
+  String get syncScopeTitle => 'Ce qui est synchronisé';
+
+  @override
+  String get syncScopeShared =>
+      'Synchronisé : notes, règles de nettoyage, règles de remplacement, dossiers, instructions enregistrées';
+
+  @override
+  String get syncScopeDevice =>
+      'Par appareil : taille du texte, interligne, papier, apparence, tri';
+
+  @override
+  String get syncScopeNever =>
+      'Sur cet appareil uniquement : la clé IA et le verrouillage n’en sortent jamais';
+
+  @override
   String get syncStateOn => 'Les mêmes notes sur iPhone, iPad et Mac';
 
   @override

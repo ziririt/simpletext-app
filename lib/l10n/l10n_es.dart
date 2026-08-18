@@ -408,6 +408,21 @@ class L10nEs extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
+  String get syncScopeTitle => 'Qué se sincroniza';
+
+  @override
+  String get syncScopeShared =>
+      'Se sincroniza: notas, reglas de limpieza, reglas de reemplazo, carpetas, instrucciones guardadas';
+
+  @override
+  String get syncScopeDevice =>
+      'Por dispositivo: tamaño de texto, interlineado, papel, apariencia, orden';
+
+  @override
+  String get syncScopeNever =>
+      'Solo en este dispositivo: la clave de IA y el bloqueo no salen de aquí';
+
+  @override
   String get syncStateOn => 'Las mismas notas en iPhone, iPad y Mac';
 
   @override

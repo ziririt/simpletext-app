@@ -7748,6 +7748,52 @@ class _SettingsScreenState extends State<SettingsScreen>
     await store.persistSettings();
   }
 
+  /// 아이클라우드로 무엇이 건너가고 무엇이 안 건너가는지.
+  ///
+  /// 2026-08-19 소유자 지시 — "동기화되는 설정과 안 되는 설정을 구분해서
+  /// 간략하게 이용자 안내를 해줘."
+  ///
+  /// 2026-08-18에 규칙과 모양을 갈랐다. 까닭은 코드 주석에 길게 적어
+  /// 뒀지만 그건 우리끼리 보는 것이다. 쓰는 사람은 폰에서 글자 크기를
+  /// 키워 놓고 맥에서 안 바뀌면 그냥 **고장으로 읽는다.**
+  ///
+  /// 말해 주지 않은 규칙은 규칙이 아니라 변덕이다. 세 줄이면 된다.
+  ///
+  /// 셋째 줄(AI 키·잠금)이 특히 중요하다. 남의 열쇠를 구름에 안 올린다는
+  /// 것은 우리가 지키는 약속인데, 지키기만 하고 말하지 않으면 지킨 적이
+  /// 없는 것과 같다.
+  Widget _syncScopeBlock(L10n l) {
+    Widget line(String text) => Padding(
+          padding: const EdgeInsets.only(top: 7),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('· ',
+                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+              Expanded(
+                child: Text(text,
+                    style: TextStyle(
+                        fontSize: 14, height: 1.4, color: context.c.guideInk)),
+              ),
+            ],
+          ),
+        );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.syncScopeTitle,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+          line(l.syncScopeShared),
+          line(l.syncScopeDevice),
+          line(l.syncScopeNever),
+        ],
+      ),
+    );
+  }
+
   Widget _paperBlock(L10n l, AppSettings s) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     String nameOf(String id) => switch (id) {
@@ -8138,6 +8184,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   );
                 },
               ),
+              _sep(),
+              _syncScopeBlock(l),
             ]),
           ],
           KeyedSubtree(

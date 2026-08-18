@@ -408,6 +408,21 @@ class L10nEn extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
+  String get syncScopeTitle => 'What syncs';
+
+  @override
+  String get syncScopeShared =>
+      'Synced — notes, tidy rules, replace rules, folders, saved prompts';
+
+  @override
+  String get syncScopeDevice =>
+      'Per device — text size, line spacing, paper, appearance, sort order';
+
+  @override
+  String get syncScopeNever =>
+      'This device only — your AI key and app lock never leave it';
+
+  @override
   String get syncStateOn => 'The same notes on iPhone, iPad and Mac';
 
   @override

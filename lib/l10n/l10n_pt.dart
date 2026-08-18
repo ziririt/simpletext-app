@@ -408,6 +408,21 @@ class L10nPt extends L10n {
   String get syncTitle => 'iCloud';
 
   @override
+  String get syncScopeTitle => 'O que é sincronizado';
+
+  @override
+  String get syncScopeShared =>
+      'Sincroniza: notas, regras de organização, regras de substituição, pastas, instruções salvas';
+
+  @override
+  String get syncScopeDevice =>
+      'Por dispositivo: tamanho do texto, espaçamento, papel, aparência, ordenação';
+
+  @override
+  String get syncScopeNever =>
+      'Só neste dispositivo: a chave de IA e o bloqueio não saem daqui';
+
+  @override
   String get syncStateOn => 'As mesmas notas no iPhone, iPad e Mac';
 
   @override

@@ -277,6 +277,12 @@ abstract class L10n {
   String get menuAppSettings;
   String get menuAiKey;
   String get syncTitle;
+
+  /// 무엇이 함께 가고 무엇이 안 가는지 (2026-08-19)
+  String get syncScopeTitle;
+  String get syncScopeShared;
+  String get syncScopeDevice;
+  String get syncScopeNever;
   String get syncStateOn;
   String get syncStateOff;
   String get syncStateSyncing;
@@ -674,6 +680,10 @@ abstract class L10n {
         'menuAppSettings': menuAppSettings,
         'menuAiKey': menuAiKey,
         'syncTitle': syncTitle,
+        'syncScopeTitle': syncScopeTitle,
+        'syncScopeShared': syncScopeShared,
+        'syncScopeDevice': syncScopeDevice,
+        'syncScopeNever': syncScopeNever,
         'syncStateOn': syncStateOn,
         'syncStateOff': syncStateOff,
         'syncStateSyncing': syncStateSyncing,
