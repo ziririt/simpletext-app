@@ -194,6 +194,38 @@ class L10nEs extends L10n {
   @override
   String get folderCleared => 'Quitado de la carpeta';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => 'Gestionar carpetas';
+
+  @override
+  String get folderRename => 'Cambiar nombre';
+
+  @override
+  String get folderDelete => 'Eliminar carpeta';
+
+  @override
+  String get folderReorderHint => 'Arrastra para reordenar';
+
+  @override
+  String get folderManageEmpty => 'Aún no hay carpetas';
+
+  @override
+  String get folderDupName => 'Ya existe una carpeta con ese nombre';
+
+  @override
+  String get folderDeleted => 'Carpeta eliminada';
+
+  @override
+  String get folderRenamed => 'Nombre cambiado';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      'Las $count notas de «$name» seguirán en Todas. Las notas no se eliminan.';
+
+  @override
+  String folderNoteCount(int count) => '$count notas';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => 'Comprobando si de verdad se puede usar…';

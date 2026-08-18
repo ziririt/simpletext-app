@@ -194,6 +194,38 @@ class L10nZhHans extends L10n {
   @override
   String get folderCleared => '已移出文件夹';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => '管理文件夹';
+
+  @override
+  String get folderRename => '重命名';
+
+  @override
+  String get folderDelete => '删除文件夹';
+
+  @override
+  String get folderReorderHint => '拖动以排序';
+
+  @override
+  String get folderManageEmpty => '还没有文件夹';
+
+  @override
+  String get folderDupName => '已存在同名文件夹';
+
+  @override
+  String get folderDeleted => '已删除文件夹';
+
+  @override
+  String get folderRenamed => '已重命名';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      '“$name”中的 $count 条笔记仍可在全部笔记中查看。笔记不会被删除。';
+
+  @override
+  String folderNoteCount(int count) => '$count 条笔记';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => '正在确认是否真的可用…';

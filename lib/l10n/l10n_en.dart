@@ -194,6 +194,38 @@ class L10nEn extends L10n {
   @override
   String get folderCleared => 'Removed from folder';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => 'Manage folders';
+
+  @override
+  String get folderRename => 'Rename';
+
+  @override
+  String get folderDelete => 'Delete folder';
+
+  @override
+  String get folderReorderHint => 'Drag to reorder';
+
+  @override
+  String get folderManageEmpty => 'No folders yet';
+
+  @override
+  String get folderDupName => 'A folder with that name already exists';
+
+  @override
+  String get folderDeleted => 'Folder deleted';
+
+  @override
+  String get folderRenamed => 'Renamed';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      'The $count notes in \'$name\' will still be in All notes. Notes are not deleted.';
+
+  @override
+  String folderNoteCount(int count) => '$count notes';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => 'Checking whether it can actually be used…';

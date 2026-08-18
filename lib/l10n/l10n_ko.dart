@@ -194,6 +194,38 @@ class L10nKo extends L10n {
   @override
   String get folderCleared => '폴더에서 뺐습니다';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => '폴더 설정';
+
+  @override
+  String get folderRename => '이름 바꾸기';
+
+  @override
+  String get folderDelete => '폴더 삭제';
+
+  @override
+  String get folderReorderHint => '끌어서 차례를 바꿉니다';
+
+  @override
+  String get folderManageEmpty => '아직 폴더가 없습니다';
+
+  @override
+  String get folderDupName => '같은 이름의 폴더가 이미 있습니다';
+
+  @override
+  String get folderDeleted => '폴더를 지웠습니다';
+
+  @override
+  String get folderRenamed => '이름을 바꿨습니다';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      "'$name' 폴더 안의 노트 $count개는 전체 목록에서 볼 수 있습니다. 노트는 지워지지 않습니다.";
+
+  @override
+  String folderNoteCount(int count) => '노트 $count개';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => '실제로 쓸 수 있는지 확인하는 중…';

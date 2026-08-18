@@ -194,6 +194,38 @@ class L10nJa extends L10n {
   @override
   String get folderCleared => 'フォルダから外しました';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => 'フォルダの管理';
+
+  @override
+  String get folderRename => '名前を変更';
+
+  @override
+  String get folderDelete => 'フォルダを削除';
+
+  @override
+  String get folderReorderHint => 'ドラッグして並べ替え';
+
+  @override
+  String get folderManageEmpty => 'フォルダがありません';
+
+  @override
+  String get folderDupName => '同じ名前のフォルダがすでにあります';
+
+  @override
+  String get folderDeleted => 'フォルダを削除しました';
+
+  @override
+  String get folderRenamed => '名前を変更しました';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      '「$name」内のノート$count件は、すべてのノートで見られます。ノートは削除されません。';
+
+  @override
+  String folderNoteCount(int count) => 'ノート$count件';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => '実際に使えるか確認中…';

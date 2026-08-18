@@ -194,6 +194,38 @@ class L10nDe extends L10n {
   @override
   String get folderCleared => 'Aus dem Ordner entfernt';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => 'Ordner verwalten';
+
+  @override
+  String get folderRename => 'Umbenennen';
+
+  @override
+  String get folderDelete => 'Ordner löschen';
+
+  @override
+  String get folderReorderHint => 'Zum Sortieren ziehen';
+
+  @override
+  String get folderManageEmpty => 'Noch keine Ordner';
+
+  @override
+  String get folderDupName => 'Ein Ordner mit diesem Namen existiert bereits';
+
+  @override
+  String get folderDeleted => 'Ordner gelöscht';
+
+  @override
+  String get folderRenamed => 'Umbenannt';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      'Die $count Notizen in „$name“ bleiben unter Alle. Notizen werden nicht gelöscht.';
+
+  @override
+  String folderNoteCount(int count) => '$count Notizen';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => 'Wird geprüft, ob es wirklich nutzbar ist …';

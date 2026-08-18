@@ -46,19 +46,59 @@ String normalizeFolder(String raw) {
 /// **둘을 합치는 이유**가 이 함수의 전부다. 만들어 둔 목록만 보면 다른
 /// 기기에서 만든 폴더가 안 보이고(설정은 늦게 고친 쪽이 통째로 이긴다),
 /// 쓰이는 이름만 보면 방금 만든 빈 폴더가 눈앞에서 사라진다. 둘 다 나쁘다.
+///
+/// **차례는 사람이 정한다** (2026-08-18 소유자 지시로 바뀐 대목).
+///
+/// 전에는 통째로 사전 순이었다. 사전 순은 아무도 안 정한 차례라서 늘
+/// 공평해 보이지만, 열 개가 넘어가면 **자주 쓰는 폴더가 ㅎ으로 시작한다는
+/// 이유만으로 맨 끝에 간다.** 폴더를 만든 사람이 그 차례를 알고 있다.
+///
+/// 그래서 [kept]의 차례를 그대로 쓴다. [kept]에 없는데 메모가 쓰고 있는
+/// 이름(다른 기기에서 만들었거나 불러오기로 들어온 것)만 사전 순으로 뒤에
+/// 붙인다 — 그것들은 아직 아무도 자리를 안 정해 준 것들이다.
 List<String> folderNames(Iterable<String> used, Iterable<String> kept) {
-  final set = <String>{};
-  for (final s in [...used, ...kept]) {
-    final n = normalizeFolder(s);
-    if (n.isNotEmpty) set.add(n);
+  final out = <String>[];
+  final seen = <String>{};
+  void add(String raw) {
+    final n = normalizeFolder(raw);
+    if (n.isEmpty) return;
+    if (seen.add(n.toLowerCase())) out.add(n);
   }
-  final out = set.toList();
-  // 대소문자를 무시하고 사전 순. 같으면 원래 글자로 갈라 순서를 고정한다 —
-  // 순서가 그때그때 달라지면 목록이 흔들리는 것처럼 보인다.
-  out.sort((a, b) {
+
+  for (final s in kept) {
+    add(s);
+  }
+
+  final extra = <String>[];
+  final extraSeen = <String>{};
+  for (final s in used) {
+    final n = normalizeFolder(s);
+    if (n.isEmpty || seen.contains(n.toLowerCase())) continue;
+    if (extraSeen.add(n.toLowerCase())) extra.add(n);
+  }
+  extra.sort((a, b) {
     final r = a.toLowerCase().compareTo(b.toLowerCase());
     return r != 0 ? r : a.compareTo(b);
   });
+  for (final s in extra) {
+    add(s);
+  }
+  return out;
+}
+
+/// 끌어 놓은 결과의 차례.
+///
+/// 화면에서 떼어 놓는 이유: ReorderableListView 의 [newIndex]는 **끌던
+/// 것을 아직 뽑지 않은 상태**의 자리라서, 아래로 내릴 때 하나를 빼 줘야
+/// 한다. 이 한 줄을 화면 코드 안에 두면 반드시 한 번은 틀린다.
+List<String> reorderFolders(List<String> list, int oldIndex, int newIndex) {
+  if (oldIndex < 0 || oldIndex >= list.length) return List<String>.from(list);
+  final out = List<String>.from(list);
+  var to = newIndex;
+  if (to > oldIndex) to -= 1;
+  if (to < 0) to = 0;
+  if (to > out.length - 1) to = out.length - 1;
+  out.insert(to, out.removeAt(oldIndex));
   return out;
 }
 

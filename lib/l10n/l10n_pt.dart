@@ -194,6 +194,38 @@ class L10nPt extends L10n {
   @override
   String get folderCleared => 'Removido da pasta';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => 'Gerir pastas';
+
+  @override
+  String get folderRename => 'Renomear';
+
+  @override
+  String get folderDelete => 'Excluir pasta';
+
+  @override
+  String get folderReorderHint => 'Arraste para reordenar';
+
+  @override
+  String get folderManageEmpty => 'Ainda não há pastas';
+
+  @override
+  String get folderDupName => 'Já existe uma pasta com esse nome';
+
+  @override
+  String get folderDeleted => 'Pasta excluída';
+
+  @override
+  String get folderRenamed => 'Renomeado';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      'As $count notas em «$name» continuarão em Todas. As notas não são excluídas.';
+
+  @override
+  String folderNoteCount(int count) => '$count notas';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => 'Verificando se dá mesmo para usar…';

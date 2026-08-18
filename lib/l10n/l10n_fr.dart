@@ -194,6 +194,38 @@ class L10nFr extends L10n {
   @override
   String get folderCleared => 'Retiré du dossier';
 
+  // 폴더 관리 (2026-08-18)
+  @override
+  String get folderManage => 'Gérer les dossiers';
+
+  @override
+  String get folderRename => 'Renommer';
+
+  @override
+  String get folderDelete => 'Supprimer le dossier';
+
+  @override
+  String get folderReorderHint => 'Faites glisser pour réordonner';
+
+  @override
+  String get folderManageEmpty => 'Aucun dossier pour le moment';
+
+  @override
+  String get folderDupName => 'Un dossier portant ce nom existe déjà';
+
+  @override
+  String get folderDeleted => 'Dossier supprimé';
+
+  @override
+  String get folderRenamed => 'Renommé';
+
+  @override
+  String folderDeleteBody(String name, int count) =>
+      'Les $count notes de « $name » restent dans Toutes. Les notes ne sont pas supprimées.';
+
+  @override
+  String folderNoteCount(int count) => '$count notes';
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   @override
   String get aiPinging => 'Vérification de son fonctionnement réel…';

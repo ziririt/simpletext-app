@@ -153,6 +153,18 @@ abstract class L10n {
   String get folderNameHint;
   String get folderCleared;
 
+  // 폴더 관리 (2026-08-18)
+  String get folderManage;
+  String get folderRename;
+  String get folderDelete;
+  String get folderReorderHint;
+  String get folderManageEmpty;
+  String get folderDupName;
+  String get folderDeleted;
+  String get folderRenamed;
+  String folderDeleteBody(String name, int count);
+  String folderNoteCount(int count);
+
   // '키 확인'이 진짜로 한 번 불러 볼 때 (2026-08-17)
   String get aiPinging;
   String get aiPingOk;
@@ -617,6 +629,14 @@ abstract class L10n {
         'folderNew': folderNew,
         'folderNameHint': folderNameHint,
         'folderCleared': folderCleared,
+        'folderManage': folderManage,
+        'folderRename': folderRename,
+        'folderDelete': folderDelete,
+        'folderReorderHint': folderReorderHint,
+        'folderManageEmpty': folderManageEmpty,
+        'folderDupName': folderDupName,
+        'folderDeleted': folderDeleted,
+        'folderRenamed': folderRenamed,
         'aiPinging': aiPinging,
         'aiPingOk': aiPingOk,
         'aiAdvancedNote': aiAdvancedNote,

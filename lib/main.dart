@@ -305,7 +305,7 @@ class AppC extends ThemeExtension<AppC> {
     // 비쳐 보이는 것이 아니라 색이 하나 더 생겼다. 틴트를 바탕과 같은
     // 색으로 두면 유리는 '밝기만 더한 층'이 되고, 그때부터 밑의 것이
     // 색이 아니라 형태로 비친다.
-    glass: Color(0xA6EFF6FB),
+    glass: Color(0x8CEFF6FB),
     glassLine: Color(0x1F000000),
     tagBg: Color(0xFFE1F4FF),
     tagInk: _accent,
@@ -339,7 +339,7 @@ class AppC extends ThemeExtension<AppC> {
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
     selHandle: Color(0xFF4FC3F7),
-    glass: Color(0xA615191D),
+    glass: Color(0x8C15191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
     tagInk: Color(0xFF7ACBFF),
@@ -2043,7 +2043,7 @@ class Glass extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius ?? BorderRadius.zero,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
         child: Container(
           decoration: BoxDecoration(
             color: c.glass,
@@ -2447,6 +2447,11 @@ class _HomeScreenState extends State<HomeScreen>
               final ok = await ExportService.shareBackup();
               if (!mounted) return;
               if (!ok) _toast(context, l.exportFailed);
+            case 'folders':
+              await Navigator.push(context,
+                  MaterialPageRoute(
+                      builder: (_) => const FolderManageScreen()));
+              if (mounted) setState(() {});
             case 'trash':
               await Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const TrashScreen()));
@@ -2475,6 +2480,8 @@ class _HomeScreenState extends State<HomeScreen>
             // 일이고 설정은 자주 여는 곳이다. 한 번 더 눌러야 열리는 것은
             // 그만한 이유가 있을 때만 그렇게 둔다. 이제 위 줄 오른쪽 끝에
             // 톱니바퀴로 나와 있다.
+            // 2026-08-18 소유자 지시 — '폴더 설정'은 여기.
+            row('folders', Icons.folder_outlined, l.folderManage),
             row('trash', Icons.delete_outline, l.trashTitle),
           ];
         },
@@ -6648,6 +6655,217 @@ class _TrashScreenState extends State<TrashScreen> {
                 );
               },
             ),
+    );
+  }
+}
+
+
+/// 폴더 관리 — 이름을 바꾸고, 지우고, 더하고, 차례를 바꾼다.
+///
+/// 2026-08-18 소유자 지시.
+///
+/// **폴더를 지워도 노트는 안 지운다.** 이것이 이 화면의 유일하게 위험한
+/// 대목이라 규칙을 여기 적어 둔다 — 폴더는 '어디에 두었나'이지 '무엇인가'가
+/// 아니다. 서랍을 치운다고 그 안의 종이를 태우지는 않는다. 지울 때 그
+/// 안에 몇 장이 있었고 어디로 가는지를 글로 보여 주고 나서 지운다.
+class FolderManageScreen extends StatefulWidget {
+  const FolderManageScreen({super.key});
+
+  @override
+  State<FolderManageScreen> createState() => _FolderManageScreenState();
+}
+
+class _FolderManageScreenState extends State<FolderManageScreen> {
+  final store = Store.instance;
+
+  /// 이 이름을 쓰고 있는 메모 수.
+  int _count(String name) {
+    final low = normalizeFolder(name).toLowerCase();
+    return store.notes
+        .where((n) => normalizeFolder(n.folder).toLowerCase() == low)
+        .length;
+  }
+
+  /// 화면에 보이는 차례를 설정에 그대로 박아 둔다.
+  ///
+  /// 보이는 것과 저장된 것이 다르면, 다음에 이 화면을 열었을 때 차례가
+  /// 달라 보인다. 눈에 보인 것이 곧 저장된 것이어야 한다.
+  Future<void> _pin(List<String> names) async {
+    store.settings.folders = List<String>.from(names);
+    await store.persistSettings();
+  }
+
+  Future<String?> _ask(String title, String initial, List<String> taken) async {
+    final ctl = TextEditingController(text: initial);
+    final l = L10n.of(context);
+    final got = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          maxLength: kFolderNameMax,
+          decoration: InputDecoration(hintText: l.folderNameHint),
+          onSubmitted: (v) => Navigator.pop(ctx, v),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, ctl.text),
+              child: Text(l.done)),
+        ],
+      ),
+    );
+    ctl.dispose();
+    if (got == null || !mounted) return null;
+    final name = normalizeFolder(got);
+    if (name.isEmpty) return null;
+    // 자기 이름 그대로는 겹침이 아니다(대소문자만 고친 경우).
+    final others =
+        taken.where((e) => e.toLowerCase() != initial.toLowerCase()).toList();
+    if (!canAddFolder(name, others)) {
+      _toast(context, l.folderDupName);
+      return null;
+    }
+    return name;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    final s = store.settings;
+    final names = folderNames(store.notes.map((n) => n.folder), s.folders);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l.folderManage),
+        actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.add),
+            tooltip: l.folderNew,
+            onPressed: () async {
+              final name = await _ask(l.folderNew, '', names);
+              if (name == null) return;
+              await _pin([...names, name]);
+              if (mounted) setState(() {});
+            },
+          ),
+        ],
+      ),
+      body: names.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.folder_outlined, size: 46, color: c.sub),
+                  const SizedBox(height: 12),
+                  Text(l.folderManageEmpty,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: c.guideInk)),
+                ]),
+              ),
+            )
+          : Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l.folderReorderHint,
+                      style: TextStyle(fontSize: 13, color: c.sub)),
+                ),
+              ),
+              Expanded(
+                child: ReorderableListView.builder(
+                  padding: const EdgeInsets.only(bottom: 40),
+                  itemCount: names.length,
+                  onReorder: (from, to) async {
+                    HapticFeedback.selectionClick();
+                    await _pin(reorderFolders(names, from, to));
+                    if (mounted) setState(() {});
+                  },
+                  itemBuilder: (ctx, i) {
+                    final f = names[i];
+                    final n = _count(f);
+                    return ListTile(
+                      key: ValueKey('folder-$f'),
+                      leading: Icon(Icons.folder_outlined, color: c.sub),
+                      title: Text(f,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                      subtitle: Text(l.folderNoteCount(n),
+                          style: TextStyle(fontSize: 13, color: c.sub)),
+                      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                        IconButton(
+                          icon: Icon(CupertinoIcons.pencil, color: c.sub),
+                          tooltip: l.folderRename,
+                          onPressed: () async {
+                            final name = await _ask(l.folderRename, f, names);
+                            if (name == null || name == f) return;
+                            for (final note in store.notes) {
+                              if (normalizeFolder(note.folder).toLowerCase() ==
+                                  f.toLowerCase()) {
+                                note.folder = name;
+                              }
+                            }
+                            if (s.filterFolder.toLowerCase() ==
+                                f.toLowerCase()) {
+                              s.filterFolder = name;
+                            }
+                            await _pin([
+                              for (final x in names) x == f ? name : x,
+                            ]);
+                            await store.persist();
+                            if (!mounted) return;
+                            setState(() {});
+                            _toast(context, l.folderRenamed);
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(CupertinoIcons.trash, color: c.danger),
+                          tooltip: l.folderDelete,
+                          onPressed: () async {
+                            final ok = await confirmDialog(context,
+                                title: l.folderDelete,
+                                body: l.folderDeleteBody(f, n),
+                                okLabel: l.delete,
+                                destructive: true);
+                            if (!ok || !mounted) return;
+                            // 폴더만 떼고 노트는 그대로 둔다.
+                            for (final note in store.notes) {
+                              if (normalizeFolder(note.folder).toLowerCase() ==
+                                  f.toLowerCase()) {
+                                note.folder = '';
+                              }
+                            }
+                            if (s.filterFolder.toLowerCase() ==
+                                f.toLowerCase()) {
+                              s.filterFolder = '';
+                            }
+                            await _pin(names.where((x) => x != f).toList());
+                            await store.persist();
+                            if (!mounted) return;
+                            setState(() {});
+                            _toast(context, l.folderDeleted);
+                          },
+                        ),
+                        ReorderableDragStartListener(
+                          index: i,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 2, right: 6),
+                            child: Icon(Icons.drag_handle, color: c.sub),
+                          ),
+                        ),
+                      ]),
+                    );
+                  },
+                ),
+              ),
+            ]),
     );
   }
 }
