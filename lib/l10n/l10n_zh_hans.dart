@@ -434,7 +434,7 @@ class L10nZhHans extends L10n {
       '清除所有符号';
   @override
   String get presetStripDesc =>
-      '发到聊天、短信等没有格式的地方时';
+      '发到微信·短信时。符号和表情全部清掉，表格排成对齐的文字表';
   @override
   String get presetMinimalName =>
       '只去杂质';
@@ -453,6 +453,24 @@ class L10nZhHans extends L10n {
   @override
   String get presetBlogDesc =>
       '保留链接地址，去掉符号';
+
+  @override
+  String get tidySample => [
+        '## 今日小结 😊',
+        '',
+        '**要点**有三条[1][2]。',
+        '',
+        '- 第一条',
+        '- 第二条',
+        '',
+        '> 引用一行',
+        '',
+        '详见[博客](https://ezlong.com)',
+        '',
+        '| 项目 | 值 |',
+        '|---|---|',
+        '|营收|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => '设置';
@@ -847,7 +865,8 @@ class L10nZhHans extends L10n {
   String get tidyRulesTitle => '整理规则';
 
   @override
-  String get tidyRulesSub => '决定点按「整理」后文字会如何变化。';
+  String get tidyRulesSub =>
+      '决定按下"整理"后文字如何变化。这里选的只对"基本整理"生效 — 其他方式按名字所说的做。';
 
   @override
   String get syncOnTitle => '已开启';

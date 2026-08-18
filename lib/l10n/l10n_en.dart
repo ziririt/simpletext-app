@@ -435,7 +435,7 @@ class L10nEn extends L10n {
       'Strip all marks';
   @override
   String get presetStripDesc =>
-      'For places without formatting, like chat and SMS';
+      'For chat and SMS. Every mark and emoji goes; tables become aligned text';
   @override
   String get presetMinimalName =>
       'Lint only';
@@ -454,6 +454,24 @@ class L10nEn extends L10n {
   @override
   String get presetBlogDesc =>
       'Keeps link addresses, drops the marks';
+
+  @override
+  String get tidySample => [
+        '## Today\'s summary 😊',
+        '',
+        'The **key** points are three[1][2].',
+        '',
+        '- First item',
+        '- Second item',
+        '',
+        '> A quoted line',
+        '',
+        'More on the [blog](https://ezlong.com)',
+        '',
+        '| Item | Value |',
+        '|---|---|',
+        '|Sales|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => 'Settings';
@@ -850,7 +868,8 @@ class L10nEn extends L10n {
   String get tidyRulesTitle => 'Tidy-up rules';
 
   @override
-  String get tidyRulesSub => 'Decides how your text changes when you tap Tidy.';
+  String get tidyRulesSub =>
+      'Decides what Tidy does to your text. What you pick here applies to the basic tidy only — the other ways do exactly what their names say.';
 
   @override
   String get syncOnTitle => 'On';

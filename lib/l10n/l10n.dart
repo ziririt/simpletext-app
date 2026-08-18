@@ -264,6 +264,21 @@ abstract class L10n {
   String get presetBlogName;
   String get presetBlogDesc;
 
+  /// 정리 방식과 복사 종류를 고를 때 보여 주는 **보기 글**.
+  ///
+  /// 2026-08-18 소유자 지시 — "정리 방식을 나도 구분하기가 어렵다. 예시를
+  /// 디테일하게 좀 보여주면 어떨까?" · "복사할 종류도 좀더 알기 쉽게,
+  /// 직관적으로. 예시를 들어서."
+  ///
+  /// 이름과 한 줄 설명으로는 다섯이 안 갈라진다. 만든 사람도 못 고르는
+  /// 목록은 쓰는 사람은 더 못 고른다. 그래서 이 글 하나를 각 방식에
+  /// 통과시켜 결과를 나란히 보여 준다 — 말로 설명하는 것보다 짧다.
+  ///
+  /// 그러자면 이 안에 갈래를 가르는 것이 다 들어 있어야 한다. 제목(##),
+  /// 이모지, 굵게(**), 붙은 각주([1][2]), 글머리표, 인용(>), 링크,
+  /// 그리고 **칸이 어긋난 표**.
+  String get tidySample;
+
   String presetName(String id, String fallback) {
     switch (id) {
       case 'ai':
@@ -731,6 +746,7 @@ abstract class L10n {
         'presetTablesDesc': presetTablesDesc,
         'presetBlogName': presetBlogName,
         'presetBlogDesc': presetBlogDesc,
+        'tidySample': tidySample,
         'settingsTitle': settingsTitle,
         'menuAppSettings': menuAppSettings,
         'menuAiKey': menuAiKey,

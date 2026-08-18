@@ -436,7 +436,7 @@ class L10nFr extends L10n {
       'Tout enlever';
   @override
   String get presetStripDesc =>
-      'Pour les endroits sans mise en forme, chat et SMS';
+      'Pour le chat et les SMS. Toutes les marques et émojis partent, le tableau s’aligne';
   @override
   String get presetMinimalName =>
       'Peluches seulement';
@@ -455,6 +455,24 @@ class L10nFr extends L10n {
   @override
   String get presetBlogDesc =>
       'Garde les adresses des liens, enlève les signes';
+
+  @override
+  String get tidySample => [
+        '## Résumé du jour 😊',
+        '',
+        'Les **points clés** sont au nombre de trois[1][2].',
+        '',
+        '- Premier point',
+        '- Deuxième point',
+        '',
+        '> Une ligne citée',
+        '',
+        'Plus sur le [blog](https://ezlong.com)',
+        '',
+        '| Poste | Valeur |',
+        '|---|---|',
+        '|Ventes|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => 'Réglages';
@@ -851,7 +869,8 @@ class L10nFr extends L10n {
   String get tidyRulesTitle => 'Règles de nettoyage';
 
   @override
-  String get tidyRulesSub => 'Définit comment le texte change quand vous nettoyez.';
+  String get tidyRulesSub =>
+      'Définit ce que Ranger fait à votre texte. Votre choix ici ne vaut que pour le rangement de base ; les autres façons font exactement ce que leur nom dit.';
 
   @override
   String get syncOnTitle => 'Activé';

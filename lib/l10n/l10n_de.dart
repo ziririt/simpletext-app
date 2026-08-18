@@ -436,7 +436,7 @@ class L10nDe extends L10n {
       'Alle Zeichen entfernen';
   @override
   String get presetStripDesc =>
-      'Für Orte ohne Formatierung wie Chat und SMS';
+      'Für Chat und SMS. Alle Zeichen und Emojis fallen weg, Tabellen werden ausgerichtet';
   @override
   String get presetMinimalName =>
       'Nur Fusseln';
@@ -455,6 +455,24 @@ class L10nDe extends L10n {
   @override
   String get presetBlogDesc =>
       'Behält Linkadressen, entfernt die Zeichen';
+
+  @override
+  String get tidySample => [
+        '## Zusammenfassung von heute 😊',
+        '',
+        'Die **Kernpunkte** sind drei[1][2].',
+        '',
+        '- Erster Punkt',
+        '- Zweiter Punkt',
+        '',
+        '> Eine zitierte Zeile',
+        '',
+        'Mehr im [Blog](https://ezlong.com)',
+        '',
+        '| Posten | Wert |',
+        '|---|---|',
+        '|Umsatz|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => 'Einstellungen';
@@ -851,7 +869,8 @@ class L10nDe extends L10n {
   String get tidyRulesTitle => 'Aufräum-Regeln';
 
   @override
-  String get tidyRulesSub => 'Legt fest, wie sich der Text beim Aufräumen ändert.';
+  String get tidyRulesSub =>
+      'Legt fest, was Aufräumen mit dem Text macht. Ihre Wahl hier gilt nur für das Basis-Aufräumen — die anderen Wege tun genau das, was ihr Name sagt.';
 
   @override
   String get syncOnTitle => 'Ein';

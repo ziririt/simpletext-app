@@ -434,7 +434,7 @@ class L10nJa extends L10n {
       '記号をすべて削除';
   @override
   String get presetStripDesc =>
-      'LINEやSMSなど書式が使えない場所へ送るとき';
+      'LINEやSMSへ。記号も絵文字も全部落とし、表は桁をそろえた文字表に';
   @override
   String get presetMinimalName =>
       '汚れだけ落とす';
@@ -453,6 +453,24 @@ class L10nJa extends L10n {
   @override
   String get presetBlogDesc =>
       'リンクのアドレスは残し、記号だけ外す';
+
+  @override
+  String get tidySample => [
+        '## 今日のまとめ 😊',
+        '',
+        '**要点**は三つです[1][2]。',
+        '',
+        '- 一つ目',
+        '- 二つ目',
+        '',
+        '> 引用の一行',
+        '',
+        '詳しくは[ブログ](https://ezlong.com)へ',
+        '',
+        '| 項目 | 値 |',
+        '|---|---|',
+        '|売上|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => '設定';
@@ -847,7 +865,8 @@ class L10nJa extends L10n {
   String get tidyRulesTitle => '整える規則';
 
   @override
-  String get tidyRulesSub => '「整える」を押したとき文章がどう変わるかを決めます。';
+  String get tidyRulesSub =>
+      '「整える」を押したとき文がどう変わるかを決めます。ここで選んだものは「基本の整え」にだけ効きます — 他の方式は名前のとおりに動きます。';
 
   @override
   String get syncOnTitle => 'オン';

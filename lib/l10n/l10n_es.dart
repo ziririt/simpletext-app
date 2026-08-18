@@ -435,7 +435,7 @@ class L10nEs extends L10n {
       'Quitar todos los símbolos';
   @override
   String get presetStripDesc =>
-      'Para sitios sin formato, como chats y SMS';
+      'Para chats y SMS. Se van todas las marcas y emojis; la tabla queda alineada';
   @override
   String get presetMinimalName =>
       'Solo la pelusa';
@@ -454,6 +454,24 @@ class L10nEs extends L10n {
   @override
   String get presetBlogDesc =>
       'Conserva las direcciones de los enlaces, quita los símbolos';
+
+  @override
+  String get tidySample => [
+        '## Resumen de hoy 😊',
+        '',
+        'Las **claves** son tres[1][2].',
+        '',
+        '- Primer punto',
+        '- Segundo punto',
+        '',
+        '> Una línea citada',
+        '',
+        'Más en el [blog](https://ezlong.com)',
+        '',
+        '| Concepto | Valor |',
+        '|---|---|',
+        '|Ventas|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => 'Ajustes';
@@ -850,7 +868,8 @@ class L10nEs extends L10n {
   String get tidyRulesTitle => 'Reglas de limpieza';
 
   @override
-  String get tidyRulesSub => 'Define cómo cambia el texto al pulsar Limpiar.';
+  String get tidyRulesSub =>
+      'Define qué hace Ordenar con tu texto. Lo que elijas aquí solo afecta al orden básico; las demás formas hacen justo lo que dice su nombre.';
 
   @override
   String get syncOnTitle => 'Activado';

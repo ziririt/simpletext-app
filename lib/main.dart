@@ -1599,6 +1599,14 @@ class Store extends ChangeNotifier {
   TidyOptions effOpts(Preset p) {
     final s = settings;
     final o = p.opts.copyWith();
+    // 자동 바꾸기 규칙은 사람이 자기 글을 두고 적어 둔 것이라 어느 방식을
+    // 골라도 따라간다.
+    if (o.stripEmphasis) {
+      o.customRules = s.customRules.where((r) => r.find.isNotEmpty).toList();
+    }
+    // 2026-08-18 — 여기서부터는 '기본 정리'에만 씌운다. 까닭은
+    // core/tidy_engine.dart 의 Preset.userMarks 에 적었다.
+    if (!p.userMarks) return o;
     if (o.stripEmphasis) o.emphStyle = s.emphStyle;
     if (o.removeHr) o.hrMode = s.hrMode;
     if (o.stripHeadings) {
@@ -1610,7 +1618,6 @@ class Store extends ChangeNotifier {
     if (o.bulletsToDot) o.bulletChar = s.bulletChar;
     if (o.smartDashList) o.smartDashList = s.smartDashList;
     if (o.smartFillerHeading) o.smartFillerHeading = s.smartFillerHeading;
-    if (o.stripEmphasis) o.customRules = s.customRules.where((r) => r.find.isNotEmpty).toList();
     if (o.stripHeadings || o.smartFillerHeading) {
       o.headingPad = s.headingPad;
       o.headingPadAbove = s.headingPadAbove;
@@ -5224,27 +5231,109 @@ static const int kTagScanChars = 3000;
     }
   }
 
-  void _showPresetSheet() {
+  /// 글자 상자 — 보기 글과 결과를 같은 옷으로 보여 준다.
+  ///
+  /// 등폭 글꼴을 쓰는 까닭은 여기 담기는 것이 **표**이기도 하기 때문이다.
+  /// 줄 맞춘 표를 프로포셔널 글꼴로 그리면 맞춰 놓은 칸이 다시 어긋나
+  /// 보여서, 정작 보여 주려던 것이 안 보인다.
+  Widget _sampleBox(BuildContext ctx, String text) {
+    final c = ctx.c;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: c.codeBg,
+        border: Border.all(color: c.codeLine),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text.isEmpty ? '—' : text,
+        style: const TextStyle(
+            fontFamily: MonoTextController.fontFamily,
+            fontSize: 11.5,
+            height: 1.55),
+      ),
+    );
+  }
+
+  /// 갈래 한 칸 — 이름 · 한 줄 설명 · 이렇게 됩니다.
+  Widget _wayTile(BuildContext ctx, String name, String? desc, String out,
+      VoidCallback onTap) {
+    final c = ctx.c;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(name,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            if (desc != null && desc.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(desc, style: TextStyle(fontSize: 12.5, height: 1.35, color: c.sub)),
+            ],
+            const SizedBox(height: 8),
+            _sampleBox(ctx, out),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 보기 글 하나를 여러 갈래에 통과시켜 나란히 보여 주는 창.
+  ///
+  /// 2026-08-18 소유자 지시로 들어왔다. 자세한 까닭은 l10n 의 tidySample
+  /// 머리말에 적었다.
+  void _showWaysSheet(String sample, List<Widget> Function(BuildContext) rows) {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: buildPresets()
-              .map((p) => ListTile(
-                    title: Text(L10n.of(ctx).presetName(p.id, p.name),
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text(L10n.of(ctx).presetDesc(p.id, p.desc),
-                        style: const TextStyle(fontSize: 12)),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _runTidyWithPreset(p);
-                    },
-                  ))
-              .toList(),
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (ctx2, sc) => ListView(
+          controller: sc,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6, left: 4),
+              child: Text(L10n.of(ctx).originalLabel,
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: ctx.c.sub)),
+            ),
+            _sampleBox(ctx, sample),
+            const SizedBox(height: 6),
+            ...rows(ctx),
+          ],
         ),
       ),
+    );
+  }
+
+  void _showPresetSheet() {
+    final sample = L10n.of(context).tidySample;
+    _showWaysSheet(
+      sample,
+      (ctx) => [
+        for (final p in buildPresets())
+          _wayTile(
+            ctx,
+            L10n.of(ctx).presetName(p.id, p.name),
+            L10n.of(ctx).presetDesc(p.id, p.desc),
+            tidy(sample, store.effOpts(p)).text,
+            () {
+              Navigator.pop(ctx);
+              _runTidyWithPreset(p);
+            },
+          ),
+      ],
     );
   }
 
@@ -5793,66 +5882,59 @@ static const int kTagScanChars = 3000;
     );
   }
 
+  /// 복사 종류 고르기.
+  ///
+  /// 2026-08-18 소유자 지시 — "복사할 종류도 좀더 알기 쉽게, 직관적으로.
+  /// 예시를 들어서."
+  ///
+  /// 정리 방식과 같은 얼개다. 보기 글 하나를 네 갈래로 통과시킨다. '전체
+  /// 복사'와 '마크다운 그대로 복사'의 차이는 말로 하면 한 문단이지만
+  /// 나란히 놓으면 한 눈이다.
   void _showCopyMenu() {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            // 2026-08-18 — 복사하면 표시가 벗겨진다. 이 앱의 컨셉이다.
-            // 노트에는 마크다운을 담아 두어 굵게 보여 주고, 밖으로 나가는
-            // 순간 맨 글자가 된다.
-            ListTile(
-              title: Text(L10n.of(ctx).copyAll),
-              subtitle: Text(L10n.of(ctx).copyPlainSub,
-                  style: const TextStyle(fontSize: 12)),
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: toPlain(bodyCtl.text)));
-                Navigator.pop(ctx);
-                _toast(context, L10n.of(context).copiedAll);
-              },
-            ),
-            // 마크다운을 아는 곳(노션·슬랙·깃허브·옵시디언)에 붙일 때는
-            // 표시가 있어야 굵게가 살아난다.
-            ListTile(
-              title: Text(L10n.of(ctx).copyRaw),
-              subtitle: Text(L10n.of(ctx).copyRawSub,
-                  style: const TextStyle(fontSize: 12)),
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: bodyCtl.text));
-                Navigator.pop(ctx);
-                _toast(context, L10n.of(context).copiedAll);
-              },
-            ),
-            ListTile(
-              title: Text(L10n.of(ctx).tidyCopy),
-              subtitle: Text(L10n.of(ctx).tidyCopySub, style: const TextStyle(fontSize: 12)),
-              onTap: () {
-                final r = tidy(bodyCtl.text, store.effOpts(buildPresets().first));
-                Clipboard.setData(ClipboardData(text: r.text));
-                Navigator.pop(ctx);
-                _toast(context, L10n.of(context).tidyCopied(r.summary));
-              },
-            ),
-            ListTile(
-              title: Text(L10n.of(ctx).copyTableSpreadsheet),
-              onTap: () {
-                final r = extractTables(bodyCtl.text);
-                Navigator.pop(ctx);
-                if (r.tables.isEmpty) {
-                  _toast(context, L10n.of(context).noTablesFound);
-                } else {
-                  Clipboard.setData(ClipboardData(text: r.tables.map(tableToTSV).join('\n\n')));
-                  _toast(context, L10n.of(context).copiedTableSpreadsheet);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    final sample = L10n.of(context).tidySample;
+    final sampleTables = extractTables(sample);
+    _showWaysSheet(sample, (ctx) {
+      final l = L10n.of(ctx);
+      return [
+        // 2026-08-18 — 복사하면 표시가 벗겨진다. 이 앱의 컨셉이다.
+        // 노트에는 마크다운을 담아 두어 굵게 보여 주고, 밖으로 나가는
+        // 순간 맨 글자가 된다.
+        _wayTile(ctx, l.copyAll, l.copyPlainSub, toPlain(sample), () {
+          Clipboard.setData(ClipboardData(text: toPlain(bodyCtl.text)));
+          Navigator.pop(ctx);
+          _toast(context, L10n.of(context).copiedAll);
+        }),
+        // 마크다운을 아는 곳(노션·슬랙·깃허브·옵시디언)에 붙일 때는
+        // 표시가 있어야 굵게가 살아난다.
+        _wayTile(ctx, l.copyRaw, l.copyRawSub, sample, () {
+          Clipboard.setData(ClipboardData(text: bodyCtl.text));
+          Navigator.pop(ctx);
+          _toast(context, L10n.of(context).copiedAll);
+        }),
+        _wayTile(ctx, l.tidyCopy, l.tidyCopySub,
+            tidy(sample, store.effOpts(buildPresets().first)).text, () {
+          final r = tidy(bodyCtl.text, store.effOpts(buildPresets().first));
+          Clipboard.setData(ClipboardData(text: r.text));
+          Navigator.pop(ctx);
+          _toast(context, L10n.of(context).tidyCopied(r.summary));
+        }),
+        _wayTile(
+            ctx,
+            l.copyTableSpreadsheet,
+            null,
+            sampleTables.tables.map(tableToTSV).join('\n\n'), () {
+          final r = extractTables(bodyCtl.text);
+          Navigator.pop(ctx);
+          if (r.tables.isEmpty) {
+            _toast(context, L10n.of(context).noTablesFound);
+          } else {
+            Clipboard.setData(
+                ClipboardData(text: r.tables.map(tableToTSV).join('\n\n')));
+            _toast(context, L10n.of(context).copiedTableSpreadsheet);
+          }
+        }),
+      ];
+    });
   }
 
   @override

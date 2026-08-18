@@ -434,7 +434,7 @@ class L10nKo extends L10n {
       '기호 싹 지우기';
   @override
   String get presetStripDesc =>
-      '카톡·문자처럼 서식이 안 되는 곳에 보낼 때';
+      '카톡·문자에 보낼 때. 기호도 이모지도 다 걷고 표는 줄 맞춘 글자표로';
   @override
   String get presetMinimalName =>
       '잡티만 털기';
@@ -453,6 +453,24 @@ class L10nKo extends L10n {
   @override
   String get presetBlogDesc =>
       '링크는 살리고 기호만 없앨 때';
+
+  @override
+  String get tidySample => [
+        '## 오늘 정리 😊',
+        '',
+        '**핵심**은 세 가지입니다[1][2].',
+        '',
+        '- 첫째 항목',
+        '- 둘째 항목',
+        '',
+        '> 인용 한 줄',
+        '',
+        '[블로그](https://ezlong.com)에 자세히',
+        '',
+        '| 항목 | 값 |',
+        '|---|---|',
+        '|매출|120|',
+      ].join('\n');
 
   @override
   String get settingsTitle => '설정';
@@ -847,7 +865,8 @@ class L10nKo extends L10n {
   String get tidyRulesTitle => '세부 정리 규칙';
 
   @override
-  String get tidyRulesSub => '‘정리’를 누르면 글이 어떻게 바뀔지 정합니다.';
+  String get tidyRulesSub =>
+      '‘정리’를 누르면 글이 어떻게 바뀔지 정합니다. 여기서 고른 것은 ‘기본 정리’에만 걸립니다 — 나머지 방식은 이름 그대로 합니다.';
 
   @override
   String get syncOnTitle => '켜짐';

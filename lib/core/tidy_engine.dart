@@ -157,11 +157,33 @@ class TidyOptions {
 }
 
 class Preset {
+  const Preset({
+    required this.id,
+    required this.name,
+    required this.desc,
+    required this.opts,
+    this.userMarks = false,
+  });
+
   final String id;
   final String name;
   final String desc;
   final TidyOptions opts;
-  const Preset({required this.id, required this.name, required this.desc, required this.opts});
+
+  /// 설정 화면의 '세부 정리 규칙'(제목·강조·인용·가로줄·글머리표)을 이
+  /// 방식에도 씌울 것인가.
+  ///
+  /// 2026-08-18 소유자 신고 — "정리 방식을 나도 구분하기가 어렵다."
+  ///
+  /// 까닭은 설명이 아니라 규칙이었다. 설정이 **모든** 프리셋을 덮어쓰고
+  /// 있었다. 소유자가 '제목은 그대로 두기'를 고른 순간 '기호 싹 지우기'
+  /// 까지 제목을 그대로 두었다. 같은 보기 글을 다섯에 넣어 보니 '기호 싹
+  /// 지우기'의 결과에 '## 오늘 정리 😊'가 통째로 남아 있었다. 이름이
+  /// 거짓말을 하고 있었다.
+  ///
+  /// 이름이 곧 약속인 방식에서 그 약속을 설정이 깨면 안 된다. 그래서
+  /// 설정은 '기본 정리' 하나에만 걸린다. 나머지 넷은 이름 그대로 한다.
+  final bool userMarks;
 }
 
 class TableGrid {
@@ -236,10 +258,17 @@ List<Preset> buildPresets() => [
         stripHeadings: true, stripEmphasis: true, bulletsToDot: true, stripQuotes: true,
         removeHr: true, removeEmoji: true, removePreamble: true, repairTables: true,
         linkMode: 'text', stripHtml: true, unescape: true, removeOuterFence: true,
-        smartDashList: true, smartFillerHeading: true, removeCitations: true)),
-      Preset(id: 'strip', name: 'Markdown 완전 제거', desc: '마크다운 문법 최대 제거, 표는 TSV로', opts: TidyOptions(
+        smartDashList: true, smartFillerHeading: true, removeCitations: true),
+        userMarks: true),
+      // 2026-08-18 — 셋을 고쳤다.
+      //   · 이모지를 지운다. '싹'인데 이모지가 남으면 말이 안 된다.
+      //   · 인사말을 걷는다. 같은 까닭이다.
+      //   · 표를 탭(TSV)이 아니라 줄 맞춘 글자표로 놓는다. 이 방식이 가는
+      //     곳은 카톡·문자인데, 거기서 탭은 칸이 뭉개진다. 탭이 필요하면
+      //     '표만 꺼내기'가 따로 있다.
+      Preset(id: 'strip', name: 'Markdown 완전 제거', desc: '기호도 이모지도 다 걷어낸 맨 글자', opts: TidyOptions(
         stripHeadings: true, stripEmphasis: true, bulletsToDot: true, stripQuotes: true,
-        removeHr: true, repairTables: true, tablesToTSV: true,
+        removeHr: true, removeEmoji: true, removePreamble: true, repairTables: true,
         linkMode: 'text', stripHtml: true, unescape: true, removeOuterFence: true,
         smartDashList: true, smartFillerHeading: true, removeCitations: true)),
       Preset(id: 'minimal', name: '최소 정리', desc: '구조 보존, 잡티(공백·제로폭 문자 등)만 제거', opts: TidyOptions(
