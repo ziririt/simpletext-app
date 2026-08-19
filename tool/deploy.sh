@@ -64,6 +64,24 @@ if [ -f "$KEYS" ]; then
     if [ -n "$v" ]; then DEFINES="$DEFINES --dart-define=$k=$v"; fi
   done
 fi
+# 애플 쪽은 --dart-define 만으로 안 된다. 로그인 창이 사파리로 열렸다가
+# **앱으로 되돌아와야** 하고, 그 문은 Info.plist 에 적혀 있어야 한다.
+# 그 값을 저장소에 안 넣으려고, 지을 때마다 여기서 만들어 끼운다.
+#
+# 되돌아올 주소는 아이디를 거꾸로 뒤집은 것이다:
+#   763616465188-abc.apps.googleusercontent.com
+#   → com.googleusercontent.apps.763616465188-abc
+if [ -n "${GOOGLE_IOS_CLIENT_ID:-}" ]; then
+  REV="com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_ID%%.apps.googleusercontent.com}"
+  for f in ios/Flutter/Skyblue.xcconfig macos/Runner/Configs/Skyblue.xcconfig; do
+    printf '// tool/deploy.sh 가 만든 파일이다. 손으로 고치지 말 것.\nGOOGLE_IOS_REVERSED = %s\n' "$REV" > "$f"
+  done
+  echo "[구글] 애플 기기가 되돌아올 문을 달았다"
+else
+  rm -f ios/Flutter/Skyblue.xcconfig macos/Runner/Configs/Skyblue.xcconfig
+  echo "[구글] iOS 아이디가 없다 — 아이폰·아이패드·맥의 구글 로그인은 안 되는 판이 된다"
+fi
+
 if [ -z "$DEFINES" ]; then
   echo "[구글] 클라이언트 아이디가 없다 — 구글 드라이브 로그인은 안 되는 판이 된다"
 else

@@ -173,6 +173,18 @@
 				<string>skybluenote</string>
 			</array>
 		</dict>
+		<!-- 구글 로그인이 끝나고 앱으로 되돌아오는 문.
+		     값은 저장소에 안 넣는다 — ios/Flutter/*.xcconfig 머리말 참고. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.ziririt.simpletext.google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(GOOGLE_IOS_REVERSED)</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

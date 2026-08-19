@@ -1,1 +1,8 @@
 #include "Generated.xcconfig"
+
+// 구글 로그인에서 앱으로 되돌아올 주소. 진짜 값은 저장소 밖에 있다
+// (~/development/_patch/skyblue_keys.env → tool/deploy.sh 가 만들어 준다).
+// 여기 있는 것은 **자리를 비워 두지 않기 위한 기본값**이다. 빈 문자열을
+// 두면 Info.plist 에 빈 URL 종류가 생겨서 무엇이 잘못됐는지 안 보인다.
+GOOGLE_IOS_REVERSED = com.googleusercontent.apps.none
+#include? "Skyblue.xcconfig"

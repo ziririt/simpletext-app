@@ -53,3 +53,8 @@ app.*.map.json
 
 # 스토어 스크린샷은 생성 파일이라 커밋하지 않는다 (노하우 10절)
 store/screenshots/
+
+# 구글 로그인에서 되돌아올 주소. 지을 때 tool/deploy.sh 가 만든다.
+# 저장소에 안 넣는다 — 비밀이 아닌 것과 남에게 줘도 되는 것은 다르다.
+/ios/Flutter/Skyblue.xcconfig
+/macos/Runner/Configs/Skyblue.xcconfig
