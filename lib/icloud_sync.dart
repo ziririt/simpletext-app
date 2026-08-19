@@ -102,9 +102,26 @@ class ICloudSync {
     }
   }
 
-  /// 애플 기기에서만 돈다. 안드로이드·윈도우는 파일 백업/복원으로 간다.
+  /// **아이클라우드**를 쓸 수 있는 기기인가. 애플 기기에서만 참이다.
+  ///
+  /// 이름이 그냥 supported 인 것은 창고가 하나뿐이던 시절의 흔적이다.
+  /// 지금은 '동기화를 할 수 있는가'와 같은 말이 아니다 — 아래 [active].
   static bool get supported =>
       !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+
+  /// 지금 끼운 통로가 애플 채널을 거치는가.
+  ///
+  /// 창고가 늘면 **이 한 줄만** 본다. 2026-08-20 새벽에 이 판단이 세
+  /// 군데로 흩어져 있다가 안드로이드에서 동기화가 통째로 죽었다.
+  bool get _viaApple => _t.id != 'gdrive';
+
+  /// 이 기기에서, 지금 고른 창고로, 실제로 오갈 수 있는가.
+  ///
+  /// 2026-08-20 — 2.0.0 에서 통로 고르는 판단은 [useBackend] 로 모아
+  /// 놨는데, **돌아도 되는가**를 묻는 자리들은 여전히 '애플 기기인가'만
+  /// 보고 있었다. 그래서 안드로이드에서 구글 드라이브를 골라도 로그인만
+  /// 되고 동기화는 한 번도 안 돌았다. 아무 말 없이 — 그게 제일 나쁘다.
+  bool get active => _viaApple ? supported : true;
 
   final ValueNotifier<SyncState> state =
       ValueNotifier<SyncState>(SyncState.unsupported);
@@ -159,7 +176,7 @@ class ICloudSync {
 
   /// 앱이 켜질 때 한 번 부른다.
   Future<void> boot() async {
-    if (!supported) {
+    if (!active) {
       state.value = SyncState.unsupported;
       return;
     }
@@ -188,7 +205,7 @@ class ICloudSync {
   /// 사용자가 설정 앱에서 아이클라우드를 켜고 돌아오는 경로이기도 하므로,
   /// 꺼져 있던 경우에는 경로를 잊고 다시 물어본다.
   void onResume() {
-    if (!supported) return;
+    if (!active) return;
     if (state.value != SyncState.ok) forgetRoot();
     unawaited(syncNow());
   }
@@ -206,6 +223,22 @@ class ICloudSync {
   Future<void> recheck() async {
     forgetRoot();
     await syncNow();
+  }
+
+  /// 창고를 바꾼 직후에 부른다. 껐다 켠 것과 같다.
+  ///
+  /// [recheck] 로는 모자란다. 그건 경로만 잊는데, 안드로이드에서는
+  /// boot() 이 첫 줄에서 돌아갔던 탓에 **30초 시계 자체가 안 걸려**
+  /// 있다. 창고를 구글로 바꾼 그 순간부터 시계를 새로 건다.
+  Future<void> rebind() async {
+    _tick?.cancel();
+    _tick = null;
+    forgetRoot();
+    if (!active) {
+      state.value = SyncState.unsupported;
+      return;
+    }
+    await boot();
   }
 
   /// 설정 앱을 연다. iCloud 항목으로 직접 뛰는 주소는 비공개 API라
@@ -236,6 +269,11 @@ class ICloudSync {
   // -------------------------------------------------------------- 경로
 
   Future<String?> _rootPath() async {
+    // 구글 드라이브에는 뿌리가 없다. 방 이름이 그냥 딱지라서
+    // (sync/gdrive_transport.dart 머리말) 길을 그대로 쓴다. 여기서
+    // 애플 채널에 물으면 안드로이드에서는 아무것도 안 돌아오고,
+    // 그러면 syncNow() 가 '경로 없음'으로 판단해 조용히 멈춘다.
+    if (!_viaApple) return '';
     if (_rootAsked) return _root;
     _rootAsked = true;
     try {
@@ -263,7 +301,7 @@ class ICloudSync {
   // -------------------------------------------------------------- 본체
 
   Future<void> syncNow() async {
-    if (!supported || paused || _busy) return;
+    if (!active || paused || _busy) return;
     _busy = true;
     try {
       final root = await _rootPath();
@@ -287,8 +325,16 @@ class ICloudSync {
     final store = Store.instance;
     final notesDir = '$root/notes';
     final tombsDir = '$root/tombs';
-    await _t.ensureDir(notesDir);
-    await _t.ensureDir(tombsDir);
+    // 여기서 돌려주는 값을 안 보고 지나가면, 통로가 준비 안 된 판에서도
+    // 아래를 다 훑고 내려가 **'맞춰 놨다'고 말한다.** 구글 로그인이 안
+    // 된 상태가 정확히 그 판이다 — 토큰이 없어 모든 왕복이 빈손으로
+    // 돌아오는데, 빈손과 '아무것도 없는 창고'는 코드가 구별 못 한다.
+    //
+    // 던지면 syncNow() 가 받아서 '꺼짐'으로 둔다. 거짓 초록불보다
+    // 정직한 회색불이 낫다.
+    if (!await _t.ensureDir(notesDir) || !await _t.ensureDir(tombsDir)) {
+      throw StateError('통로가 아직 준비되지 않았다 (${_t.id})');
+    }
 
     // --- 원격 읽기 ---
     //

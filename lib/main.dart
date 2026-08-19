@@ -1933,6 +1933,15 @@ const Duration _kToastUndo = Duration(seconds: 5);
 /// 앱을 켤 때, 두 군데서 같은 판단을 하게 두면 한쪽만 고치는 날이 온다 —
 /// 그날의 증상은 '설정에서는 구글이라는데 실제로는 아이클라우드로 오간다'이고,
 /// 그건 아무도 못 알아챈다.
+/// 설정에 '동기화' 칸을 보여 줄 것인가.
+///
+/// 2026-08-20 — 예전엔 ICloudSync.supported 하나로 가렸다. 창고가 둘이
+/// 된 뒤로 그 말은 '애플 기기인가'라는 뜻밖에 안 된다. 안드로이드에서
+/// 구글 드라이브를 붙여 놓고 **그걸 고를 화면을 가려 놨었다.**
+///
+/// 창고가 하나라도 있으면 보여 준다. 여기 한 곳만 본다.
+bool get syncVisible => ICloudSync.supported || DriveAuth.supported;
+
 Future<void> applySyncBackend() async {
   ICloudSync.instance.useBackend(
     Store.instance.settings.syncBackend,
@@ -2563,7 +2572,7 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
     setState(() => s.syncBackend = v);
     await applySyncBackend();
     await store.persistSettings();
-    if (v != 'none') unawaited(ICloudSync.instance.recheck());
+    if (v != 'none') unawaited(ICloudSync.instance.rebind());
   }
 
   String _when(int ms) {
@@ -10088,7 +10097,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           //   ③ 그 안에 [설정 열기]와 [다시 확인]을 넣었다
           // 아이클라우드 항목으로 바로 뛰는 주소는 비공개 API라 심사에서
           // 반려된다 — 그래서 '설정 앱까지'만 열어 주고 나머지는 글로 잡는다.
-          if (ICloudSync.supported) ...[
+          if (syncVisible) ...[
             _secHeader(l.syncTitle),
             _card([
               // 2026-08-19 소유자 지시 — "베어는 설정에 '동기화' 부분 따로
@@ -10365,7 +10374,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 2026-08-16 소유자 요청 — 메모는 동기화되는데 키는 안 된다는 것을
           // 여기서 분명히 말해 준다. 말 안 하면 사용자는 다른 기기에서 키가
           // 비어 있는 것을 '버그'로 읽는다. 실제로는 우리가 일부러 안 보낸다.
-          if (ICloudSync.supported)
+          if (syncVisible)
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 0, 16, 8),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
