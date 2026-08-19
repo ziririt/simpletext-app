@@ -821,6 +821,50 @@ class L10nZhHant extends L10n {
   String get widgetAllLocked => '已鎖定的筆記不會顯示在小工具中';
 
   @override
+  String get attachTitle => '附件';
+
+  @override
+  String get attachAdd => '加入附件';
+
+  @override
+  String get attachRemove => '刪除附件';
+
+  @override
+  String get attachRemoveBody => '檔案會從這台裝置刪除，且無法復原。';
+
+  @override
+  String get attachFailed => '無法加入附件';
+
+  @override
+  String get attachNotHere => '這個檔案在另一台裝置上';
+
+  @override
+  String attachAndMore(int n) => '等 ${n} 個';
+
+  @override
+  String attachOther(String device, String what) => '附件：${device} 上的筆記附有 ${what}（僅可在該裝置查看）';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'Android 手機';
+      case 'windows':
+        return 'Windows 電腦';
+      case 'web':
+        return '網頁';
+      default:
+        return '其他裝置';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => '先前版本 $n';
 
   @override

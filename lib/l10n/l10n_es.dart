@@ -824,6 +824,50 @@ class L10nEs extends L10n {
   String get widgetAllLocked => 'Las notas bloqueadas no aparecen en el widget';
 
   @override
+  String get attachTitle => 'Adjuntos';
+
+  @override
+  String get attachAdd => 'Adjuntar archivo';
+
+  @override
+  String get attachRemove => 'Quitar adjunto';
+
+  @override
+  String get attachRemoveBody => 'El archivo se borrará de este dispositivo. No se puede deshacer.';
+
+  @override
+  String get attachFailed => 'No se pudo adjuntar el archivo';
+
+  @override
+  String get attachNotHere => 'Este archivo está en otro dispositivo';
+
+  @override
+  String attachAndMore(int n) => 'y ${n} más';
+
+  @override
+  String attachOther(String device, String what) => 'Adjunto: ${what} está adjunto en tu ${device} (solo visible en ese dispositivo)';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'teléfono Android';
+      case 'windows':
+        return 'PC con Windows';
+      case 'web':
+        return 'web';
+      default:
+        return 'otro dispositivo';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => 'Versión anterior $n';
 
   @override

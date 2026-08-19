@@ -825,6 +825,50 @@ class L10nDe extends L10n {
   String get widgetAllLocked => 'Gesperrte Notizen erscheinen nicht im Widget';
 
   @override
+  String get attachTitle => 'Anhänge';
+
+  @override
+  String get attachAdd => 'Datei anhängen';
+
+  @override
+  String get attachRemove => 'Anhang entfernen';
+
+  @override
+  String get attachRemoveBody => 'Die Datei wird von diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.';
+
+  @override
+  String get attachFailed => 'Datei konnte nicht angehängt werden';
+
+  @override
+  String get attachNotHere => 'Diese Datei liegt auf einem anderen Gerät';
+
+  @override
+  String attachAndMore(int n) => 'und ${n} weitere';
+
+  @override
+  String attachOther(String device, String what) => 'Anhang: ${what} hängt an der Notiz auf Ihrem ${device} (nur dort einsehbar)';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'Android-Telefon';
+      case 'windows':
+        return 'Windows-PC';
+      case 'web':
+        return 'Web';
+      default:
+        return 'anderes Gerät';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => 'Frühere Version $n';
 
   @override

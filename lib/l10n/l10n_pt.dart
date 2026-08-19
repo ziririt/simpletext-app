@@ -824,6 +824,50 @@ class L10nPt extends L10n {
   String get widgetAllLocked => 'Notas bloqueadas não aparecem no widget';
 
   @override
+  String get attachTitle => 'Anexos';
+
+  @override
+  String get attachAdd => 'Anexar arquivo';
+
+  @override
+  String get attachRemove => 'Remover anexo';
+
+  @override
+  String get attachRemoveBody => 'O arquivo será apagado deste dispositivo. Não é possível desfazer.';
+
+  @override
+  String get attachFailed => 'Não foi possível anexar o arquivo';
+
+  @override
+  String get attachNotHere => 'Este arquivo está em outro dispositivo';
+
+  @override
+  String attachAndMore(int n) => 'e mais ${n}';
+
+  @override
+  String attachOther(String device, String what) => 'Anexo: ${what} está anexado no seu ${device} (visível apenas nesse dispositivo)';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'celular Android';
+      case 'windows':
+        return 'PC com Windows';
+      case 'web':
+        return 'web';
+      default:
+        return 'outro dispositivo';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => 'Versão anterior $n';
 
   @override

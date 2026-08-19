@@ -468,6 +468,19 @@ abstract class L10n {
   String get historyWhyRestore;
   String get widgetEmpty;
   String get widgetAllLocked;
+  String get attachTitle;
+  String get attachAdd;
+  String get attachRemove;
+  String get attachRemoveBody;
+  String get attachFailed;
+  String get attachNotHere;
+
+  /// 아래 셋은 **틀에 값을 끼우는 말**이라 all 맵에 넣지 않는다.
+  /// tool/l10n_check.py 는 매개변수 있는 것을 세지 못한다
+  /// (lockSub·unknownPrefix 와 같은 자리).
+  String attachAndMore(int n);
+  String attachOther(String device, String what);
+  String deviceName(String kind);
   String historyUnknownTime(int n);
   String get selUnitSentence;
   String get selUnitLine;
@@ -888,6 +901,12 @@ abstract class L10n {
         'historyWhyRestore': historyWhyRestore,
         'widgetEmpty': widgetEmpty,
         'widgetAllLocked': widgetAllLocked,
+        'attachTitle': attachTitle,
+        'attachAdd': attachAdd,
+        'attachRemove': attachRemove,
+        'attachRemoveBody': attachRemoveBody,
+        'attachFailed': attachFailed,
+        'attachNotHere': attachNotHere,
         'selUnitSentence': selUnitSentence,
         'selUnitLine': selUnitLine,
         'selUnitPara': selUnitPara,

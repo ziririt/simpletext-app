@@ -824,6 +824,50 @@ class L10nEn extends L10n {
   String get widgetAllLocked => 'Locked notes don\'t appear in the widget';
 
   @override
+  String get attachTitle => 'Attachments';
+
+  @override
+  String get attachAdd => 'Attach a file';
+
+  @override
+  String get attachRemove => 'Remove attachment';
+
+  @override
+  String get attachRemoveBody => 'The file will be deleted from this device. This cannot be undone.';
+
+  @override
+  String get attachFailed => 'Could not attach the file';
+
+  @override
+  String get attachNotHere => 'This file lives on another device';
+
+  @override
+  String attachAndMore(int n) => 'and ${n} more';
+
+  @override
+  String attachOther(String device, String what) => 'Attachment: ${what} is attached on your ${device} (viewable on that device only)';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'Android phone';
+      case 'windows':
+        return 'Windows PC';
+      case 'web':
+        return 'web';
+      default:
+        return 'other device';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => 'Earlier version $n';
 
   @override

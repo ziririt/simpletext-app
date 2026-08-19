@@ -6,6 +6,7 @@
 /// 이번 범위에서 제외 — 로드맵의 후속 항목이다. 프리셋 이름은 Preset.id를 UI 층에서 매핑한다.
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show File;
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart'
@@ -15,15 +16,19 @@ import 'package:flutter/cupertino.dart'
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_selector/file_selector.dart' show openFiles, XFile;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
 import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
+import 'attach_store.dart';
+import 'core/attach_meta.dart';
 import 'core/auto_meta.dart';
 import 'core/folders.dart';
 import 'core/hangul.dart';
@@ -857,6 +862,13 @@ class Note {
   int updatedAt;
   List<String> history;
 
+  /// 이 메모에 붙은 파일들. **메타데이터만** 여기 있다.
+  ///
+  /// 2026-08-19 소유자 확정(HANDOVER 8-2절). 알맹이는 붙인 그 기기 안에만
+  /// 있고 클라우드로 안 나간다. 오가는 것은 이름·크기·붙인 시각·어느
+  /// 기기였는가 넷뿐이다. 규칙과 까닭은 core/attach_meta.dart 머리말.
+  List<Attach> attachments;
+
   /// 이 메모 하나만 잠갔는가. 2026-08-19 소유자 확정.
   ///
   /// **잠금은 화면만 가린다.** 본문은 지금처럼 그대로 저장되고
@@ -946,12 +958,14 @@ class Note {
     this.folder = '',
     this.taggedLen = -1,
     this.locked = false,
+    List<Attach>? attachments,
     Map<String, dynamic>? extra,
   })  : extra = extra ?? const <String, dynamic>{},
         tags = tags ?? [],
         history = history ?? [],
         historyAt = historyAt ?? [],
-        historyWhy = historyWhy ?? [];
+        historyWhy = historyWhy ?? [],
+        attachments = attachments ?? [];
 
   factory Note.fresh({String body = ''}) {
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -972,7 +986,7 @@ class Note {
     'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
     'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
     'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder', 'taggedLen',
-    'locked', 'historyWhy',
+    'locked', 'historyWhy', 'attach',
   };
 
   /// 기록에 남길 수 있는 최대 판 수.
@@ -1042,6 +1056,7 @@ class Note {
         'folder': folder,
         'taggedLen': taggedLen,
         'locked': locked,
+        'attach': attachments.map((e) => e.toJson()).toList(),
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -1071,6 +1086,10 @@ class Note {
         folder: normalizeFolder((j['folder'] ?? '') as String),
         taggedLen: (j['taggedLen'] ?? -1) as int,
         locked: (j['locked'] ?? false) as bool,
+        attachments: ((j['attach'] ?? const []) as List)
+            .map(Attach.fromJson)
+            .whereType<Attach>()
+            .toList(),
         extra: {
           for (final e in j.entries)
             if (!knownKeys.contains(e.key)) e.key: e.value,
@@ -1702,10 +1721,20 @@ class Store extends ChangeNotifier {
   /// 아직 들고 있는 그 메모가 '새 메모'로 보여 되살아난다.
   void purgeFromTrash(String id) {
     trash.removeWhere((e) => (e['note'] as Map)['id'] == id);
+    // 붙어 있던 파일도 같이 태운다. 휴지통을 비웠는데 디스크는 그대로면
+    // 사용자는 지운 줄 알고, 용량만 조용히 남는다.
+    //
+    // 휴지통으로 **보낼 때는** 안 태운다 — 되살릴 수 있는 메모의 첨부를
+    // 미리 태우면 되살려도 반쪽이다.
+    unawaited(AttachStore.purge(id));
     persist();
   }
 
   void emptyTrash() {
+    for (final e in trash) {
+      final id = ((e['note'] as Map)['id'] ?? '') as String;
+      if (id.isNotEmpty) unawaited(AttachStore.purge(id));
+    }
     trash.clear();
     persist();
   }
@@ -4758,6 +4787,249 @@ class _EditorScreenState extends State<EditorScreen>
   ///
   /// 12시간제/24시간제는 언어가 아니라 기기 설정을 따른다(맥 캡처가 17:53로
   /// 나온 이유). MediaQuery가 그 설정을 그대로 넘겨 준다.
+
+  // ── 첨부 ────────────────────────────────────────────────────────
+  //
+  // 2026-08-19 소유자 확정(HANDOVER 8-2절). 알맹이는 이 기기 안에만 있고
+  // 클라우드로 안 나간다. 다른 기기에는 "여기 뭐가 붙어 있다"고 알려만 준다.
+
+  /// 이 기기에 실제로 있는 첨부의 파일 자리. 아이디 → 파일.
+  ///
+  /// 화면을 그릴 때마다 디스크를 묻지 않기 위해 한 번 찾아 들고 있는다.
+  /// 값이 null 인 아이디는 '찾아봤는데 없더라'는 뜻이고, 아예 없는 아이디는
+  /// '아직 안 찾아봤다'는 뜻이다 — 이 둘은 다르다.
+  final Map<String, File?> _attachFiles = {};
+
+  /// 이 기기를 뭐라고 부를 것인가.
+  ///
+  /// 진짜 기기 이름('성동의 아이폰')을 안 쓴다. 애플이 개인정보로 막아 뒀고,
+  /// 막지 않았더라도 그 이름은 동기화 파일에 실려 클라우드로 나간다.
+  ///
+  /// 아이패드와 아이폰은 코드로 갈리지 않아서 화면 크기로 가른다. 600은
+  /// 머티리얼이 '작은 화면'과 '큰 화면'을 가르는 값이다.
+  String get _deviceKind {
+    final k = AttachStore.deviceKind;
+    if (k != 'iphone') return k;
+    return MediaQuery.sizeOf(context).shortestSide >= 600 ? 'ipad' : 'iphone';
+  }
+
+  Future<void> _loadAttachFiles() async {
+    for (final a in note.attachments) {
+      if (_attachFiles.containsKey(a.id)) continue;
+      _attachFiles[a.id] = await AttachStore.fileOf(note.id, a);
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _addAttachment() async {
+    final l = L10n.of(context);
+    final dev = _deviceKind;
+    try {
+      final picked = await openFiles();
+      if (picked.isEmpty || !mounted) return;
+      var added = 0;
+      for (final x in picked) {
+        // 아이디는 시각 + 셈으로 짓는다. 같은 밀리초에 여럿을 고르면
+        // 시각만으로는 겹친다 — 겹치면 앞의 파일을 덮어쓴다.
+        final id = '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}'
+            '${note.attachments.length + added}';
+        final meta = await AttachStore.add(
+          noteId: note.id,
+          name: x.name,
+          bytes: x.openRead(),
+          device: dev,
+          id: id,
+        );
+        if (meta == null) continue;
+        note.attachments.add(meta);
+        _attachFiles[meta.id] = await AttachStore.fileOf(note.id, meta);
+        added++;
+      }
+      if (added == 0) {
+        if (mounted) _toast(context, l.attachFailed);
+        return;
+      }
+      note.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      await store.persist();
+      if (mounted) setState(() {});
+    } catch (_) {
+      if (mounted) _toast(context, l.attachFailed);
+    }
+  }
+
+  Future<void> _openAttachment(Attach a) async {
+    final l = L10n.of(context);
+    final f = _attachFiles[a.id];
+    if (f == null) {
+      // 다른 기기에서 붙인 것. 여기엔 알맹이가 없다.
+      _toast(context, l.attachNotHere);
+      return;
+    }
+    if (attachShowsThumb(a.name)) {
+      // 그림은 앱 안에서 바로 펼친다. 공유 시트로 내보내면 '보려고 눌렀는데
+      // 남에게 보내는 화면'이 뜬다.
+      await showDialog<void>(
+        context: context,
+        barrierColor: Colors.black.withValues(alpha: 0.92),
+        builder: (ctx) => GestureDetector(
+          onTap: () => Navigator.pop(ctx),
+          child: Stack(children: [
+            Positioned.fill(
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 5,
+                child: Center(child: Image.file(f, fit: BoxFit.contain)),
+              ),
+            ),
+            Positioned(
+              top: 44,
+              right: 16,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ),
+          ]),
+        ),
+      );
+      return;
+    }
+    // 그 밖은 시스템에 넘긴다. 미리보기·다른 앱으로 열기·저장이 거기 다 있다
+    // — 우리가 뷰어를 만들면 그중 하나만 되는 더 나쁜 물건이 된다.
+    try {
+      await SharePlus.instance.share(ShareParams(files: [XFile(f.path)]));
+    } catch (_) {
+      if (mounted) _toast(context, l.attachFailed);
+    }
+  }
+
+  Future<void> _removeAttachment(Attach a) async {
+    final l = L10n.of(context);
+    final ok = await confirmDialog(context,
+        title: l.attachRemove,
+        body: l.attachRemoveBody,
+        okLabel: l.delete,
+        destructive: true);
+    if (!ok || !mounted) return;
+    await AttachStore.remove(note.id, a);
+    note.attachments.removeWhere((x) => x.id == a.id);
+    _attachFiles.remove(a.id);
+    note.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    await store.persist();
+    if (mounted) setState(() {});
+  }
+
+  Widget _attachStrip(L10n l) {
+    final c = context.c;
+    final mine = note.attachments.where((a) => a.device == _deviceKind).toList();
+    final others = groupOthers(note.attachments, _deviceKind);
+
+    Widget chip(Attach a) {
+      final f = _attachFiles[a.id];
+      final img = attachShowsThumb(a.name) && f != null;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Material(
+          color: c.panel,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => _openAttachment(a),
+            onLongPress: () => _removeAttachment(a),
+            onSecondaryTap: () => _removeAttachment(a),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(img ? 5 : 10, 5, 10, 5),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                if (img)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.file(f,
+                        width: 30, height: 30, fit: BoxFit.cover,
+                        // 파일이 그 사이 사라졌으면 그림 대신 종이 모양.
+                        errorBuilder: (_, __, ___) =>
+                            Icon(Icons.description_outlined,
+                                size: 20, color: c.sub)),
+                  )
+                else
+                  Icon(_attachIcon(a.name), size: 20, color: c.accent),
+                const SizedBox(width: 7),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(shortName(a.name),
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w500)),
+                    Text(humanSize(a.size),
+                        style: TextStyle(fontSize: 11, color: c.sub)),
+                  ],
+                ),
+              ]),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (mine.isNotEmpty)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [for (final a in mine) chip(a)]),
+            ),
+          // 다른 기기에서 붙인 것은 기기 하나에 한 줄. 파일마다 한 줄이면
+          // 다섯 개를 붙인 사람의 화면이 안내문으로 덮인다.
+          for (final e in others.entries)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 1, right: 6),
+                  child: Icon(CupertinoIcons.paperclip, size: 13, color: c.sub),
+                ),
+                Expanded(
+                  child: Text(
+                    l.attachOther(
+                      l.deviceName(e.key),
+                      othersSummary(e.value, l.attachAndMore(e.value.length - 1)),
+                    ),
+                    style: TextStyle(fontSize: 12.5, height: 1.35, color: c.sub),
+                  ),
+                ),
+              ]),
+            ),
+        ],
+      ),
+    );
+  }
+
+  IconData _attachIcon(String name) {
+    switch (attachKind(name)) {
+      case kAttachPdf:
+        return CupertinoIcons.doc_richtext;
+      case kAttachDoc:
+        return CupertinoIcons.doc_text;
+      case kAttachSheet:
+        return CupertinoIcons.table;
+      case kAttachSlide:
+        return CupertinoIcons.rectangle_on_rectangle;
+      case kAttachAudio:
+        return CupertinoIcons.waveform;
+      case kAttachVideo:
+        return CupertinoIcons.play_rectangle;
+      case kAttachArchive:
+        return CupertinoIcons.archivebox;
+      case kAttachText:
+        return CupertinoIcons.doc_plaintext;
+      default:
+        return CupertinoIcons.doc;
+    }
+  }
+
   /// 종이 머리에 적을 날짜 한 줄. 화면의 날짜 줄과 같은 규칙을 쓰되
   /// 위젯이 아니라 글자를 돌려준다 — 종이에는 시계 설정이 없으니 24시간제로.
   String _pdfDate(int ms) {
@@ -5196,6 +5468,9 @@ class _EditorScreenState extends State<EditorScreen>
   void initState() {
     super.initState();
     _bindStatusBarTap();
+    // 붙은 파일이 이 기기에 실제로 있는지 한 번 찾아 둔다. 화면을 그릴
+    // 때마다 디스크를 물으면 스크롤이 끊긴다.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAttachFiles());
     final idx = store.notes.indexWhere((n) => n.id == widget.noteId);
     if (idx < 0) {
       _found = false;
@@ -6871,6 +7146,10 @@ static const int kTagScanChars = 3000;
                   }
                   return;
                 }
+                if (v == 'attach') {
+                  await _addAttachment();
+                  return;
+                }
                 if (v == 'lock') {
                   if (await toggleNoteLock(context, note) && mounted) {
                     setState(() {});
@@ -6971,7 +7250,12 @@ static const int kTagScanChars = 3000;
                   const PopupMenuDivider(height: 9),
                   act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
                   act('tables', CupertinoIcons.table, lm.tableAction),
-                  act('append', CupertinoIcons.paperclip, lm.importAppend),
+                  // 클립은 '첨부'에 준다. 여태 '붙이기'(다른 파일의 글을
+                  // 본문 뒤에 잇는 일)가 쓰고 있었는데, 클립이 뜻하는 것은
+                  // 어디서나 파일을 매다는 일이다. 이름과 그림이 어긋나
+                  // 있으면 둘 다 못 찾는다.
+                  act('append', CupertinoIcons.tray_arrow_down, lm.importAppend),
+                  act('attach', CupertinoIcons.paperclip, lm.attachAdd),
                   act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
                   act('export', CupertinoIcons.square_arrow_up, lm.exportNote),
                   // 2026-08-19 — 종이. '내보내기'가 마크다운 파일을
@@ -7146,6 +7430,8 @@ static const int kTagScanChars = 3000;
                   ),
                 ),
               ),
+            // 첨부 줄. 붙은 것이 없으면 자리도 안 차지한다.
+            if (note.attachments.isNotEmpty) _attachStrip(l),
             Expanded(
               child: Padding(
                 // 2026-08-19 소유자 — "편집화면 본문의 폭도 여백미가 너무

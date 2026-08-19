@@ -821,6 +821,50 @@ class L10nZhHans extends L10n {
   String get widgetAllLocked => '已锁定的笔记不会显示在小组件中';
 
   @override
+  String get attachTitle => '附件';
+
+  @override
+  String get attachAdd => '添加附件';
+
+  @override
+  String get attachRemove => '删除附件';
+
+  @override
+  String get attachRemoveBody => '文件将从此设备删除，且无法恢复。';
+
+  @override
+  String get attachFailed => '无法添加附件';
+
+  @override
+  String get attachNotHere => '该文件在另一台设备上';
+
+  @override
+  String attachAndMore(int n) => '等 ${n} 个';
+
+  @override
+  String attachOther(String device, String what) => '附件：${device} 上的笔记附有 ${what}（仅可在该设备上查看）';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return '安卓手机';
+      case 'windows':
+        return 'Windows 电脑';
+      case 'web':
+        return '网页';
+      default:
+        return '其他设备';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => '早前版本 $n';
 
   @override

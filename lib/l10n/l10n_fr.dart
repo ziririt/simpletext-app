@@ -825,6 +825,50 @@ class L10nFr extends L10n {
   String get widgetAllLocked => 'Les notes verrouillées n\'apparaissent pas dans le widget';
 
   @override
+  String get attachTitle => 'Pièces jointes';
+
+  @override
+  String get attachAdd => 'Joindre un fichier';
+
+  @override
+  String get attachRemove => 'Retirer la pièce jointe';
+
+  @override
+  String get attachRemoveBody => 'Le fichier sera supprimé de cet appareil. C\'est irréversible.';
+
+  @override
+  String get attachFailed => 'Impossible de joindre le fichier';
+
+  @override
+  String get attachNotHere => 'Ce fichier se trouve sur un autre appareil';
+
+  @override
+  String attachAndMore(int n) => 'et ${n} de plus';
+
+  @override
+  String attachOther(String device, String what) => 'Pièce jointe : ${what} est joint à la note sur votre ${device} (consultable sur cet appareil uniquement)';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'téléphone Android';
+      case 'windows':
+        return 'PC Windows';
+      case 'web':
+        return 'web';
+      default:
+        return 'autre appareil';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => 'Version précédente $n';
 
   @override

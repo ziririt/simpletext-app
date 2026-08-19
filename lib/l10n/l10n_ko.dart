@@ -821,6 +821,50 @@ class L10nKo extends L10n {
   String get widgetAllLocked => '잠긴 메모는 위젯에 나오지 않습니다';
 
   @override
+  String get attachTitle => '첨부';
+
+  @override
+  String get attachAdd => '파일 첨부';
+
+  @override
+  String get attachRemove => '첨부 지우기';
+
+  @override
+  String get attachRemoveBody => '이 기기에서 파일이 지워집니다. 되돌릴 수 없습니다.';
+
+  @override
+  String get attachFailed => '첨부하지 못했습니다';
+
+  @override
+  String get attachNotHere => '이 파일은 다른 기기에 있습니다';
+
+  @override
+  String attachAndMore(int n) => '외 ${n}개';
+
+  @override
+  String attachOther(String device, String what) => '첨부파일 : ${device} 노트에 ${what} 가 첨부되어 있음 (해당 기기에서만 확인)';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return '아이폰';
+      case 'ipad':
+        return '아이패드';
+      case 'mac':
+        return '맥';
+      case 'android':
+        return '안드로이드 폰';
+      case 'windows':
+        return '윈도우 PC';
+      case 'web':
+        return '웹';
+      default:
+        return '다른 기기';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => '이전 판 $n';
 
   @override

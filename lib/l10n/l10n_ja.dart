@@ -821,6 +821,50 @@ class L10nJa extends L10n {
   String get widgetAllLocked => 'ロック中のメモはウィジェットに出ません';
 
   @override
+  String get attachTitle => '添付';
+
+  @override
+  String get attachAdd => 'ファイルを添付';
+
+  @override
+  String get attachRemove => '添付を削除';
+
+  @override
+  String get attachRemoveBody => 'この端末からファイルが削除されます。元に戻せません。';
+
+  @override
+  String get attachFailed => '添付できませんでした';
+
+  @override
+  String get attachNotHere => 'このファイルは別の端末にあります';
+
+  @override
+  String attachAndMore(int n) => 'ほか${n}件';
+
+  @override
+  String attachOther(String device, String what) => '添付ファイル：${device} のメモに ${what} が添付されています（その端末でのみ確認できます）';
+
+  @override
+  String deviceName(String kind) {
+    switch (kind) {
+      case 'iphone':
+        return 'iPhone';
+      case 'ipad':
+        return 'iPad';
+      case 'mac':
+        return 'Mac';
+      case 'android':
+        return 'Android スマホ';
+      case 'windows':
+        return 'Windows PC';
+      case 'web':
+        return 'ウェブ';
+      default:
+        return '別の端末';
+    }
+  }
+
+  @override
   String historyUnknownTime(int n) => '以前の版 $n';
 
   @override
