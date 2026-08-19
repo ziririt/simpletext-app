@@ -889,6 +889,24 @@ class L10nKo extends L10n {
   String get lockReasonOff => '잠금을 끄려면 확인이 필요합니다';
 
   @override
+  String get noteLock => '이 메모 잠그기';
+
+  @override
+  String get noteUnlock => '이 메모 잠금 풀기';
+
+  @override
+  String get noteLocked => '잠긴 메모';
+
+  @override
+  String get lockReasonNote => '잠긴 메모를 엽니다';
+
+  @override
+  String get noteLockDone => '이 메모를 잠갔습니다';
+
+  @override
+  String get noteUnlockDone => '이 메모의 잠금을 풀었습니다';
+
+  @override
   String get syncDiagSignedOut => '이 기기가 iCloud에 로그인되어 있지 않습니다. 먼저 로그인해 주십시오.';
 
   @override

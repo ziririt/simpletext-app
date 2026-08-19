@@ -889,6 +889,24 @@ class L10nZhHans extends L10n {
   String get lockReasonOff => '关闭锁定需要验证';
 
   @override
+  String get noteLock => '锁定此笔记';
+
+  @override
+  String get noteUnlock => '解锁此笔记';
+
+  @override
+  String get noteLocked => '已锁定的笔记';
+
+  @override
+  String get lockReasonNote => '打开已锁定的笔记';
+
+  @override
+  String get noteLockDone => '已锁定此笔记';
+
+  @override
+  String get noteUnlockDone => '已解锁此笔记';
+
+  @override
   String get syncDiagSignedOut => '此设备未登录 iCloud。请先登录。';
 
   @override

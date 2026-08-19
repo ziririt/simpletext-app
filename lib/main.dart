@@ -34,6 +34,7 @@ import 'core/mono_controller.dart';
 import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
 import 'core/mru.dart';
+import 'core/note_lock.dart';
 import 'core/paper.dart';
 import 'core/plain_text.dart';
 import 'core/source_detect.dart';
@@ -851,6 +852,14 @@ class Note {
   int updatedAt;
   List<String> history;
 
+  /// 이 메모 하나만 잠갔는가. 2026-08-19 소유자 확정.
+  ///
+  /// **잠금은 화면만 가린다.** 본문은 지금처럼 그대로 저장되고
+  /// 동기화되고 백업에 실린다. 남이 내 기기를 집었을 때 못 보게
+  /// 하는 자물쇠이지, 디스크 위의 글자를 암호로 바꾸는 일이 아니다.
+  /// 무엇이 가려지고 무엇이 안 가려지는지는 core/note_lock.dart.
+  bool locked;
+
   /// 각 이전 판을 남긴 시각. history와 같은 자리끼리 짝이다.
   ///
   /// 2026-08-16 — 예전 저장본에는 이 칸이 없다. 없으면 빈 목록이고, 그때는
@@ -919,6 +928,7 @@ class Note {
     this.tagsAuto = true,
     this.folder = '',
     this.taggedLen = -1,
+    this.locked = false,
     Map<String, dynamic>? extra,
   })  : extra = extra ?? const <String, dynamic>{},
         tags = tags ?? [],
@@ -944,6 +954,7 @@ class Note {
     'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
     'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
     'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder', 'taggedLen',
+    'locked',
   };
 
   Map<String, dynamic> toJson() => {
@@ -969,6 +980,7 @@ class Note {
         'tagsAuto': tagsAuto,
         'folder': folder,
         'taggedLen': taggedLen,
+        'locked': locked,
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -994,6 +1006,7 @@ class Note {
             (((j['tags'] ?? const []) as List).isEmpty)) as bool,
         folder: normalizeFolder((j['folder'] ?? '') as String),
         taggedLen: (j['taggedLen'] ?? -1) as int,
+        locked: (j['locked'] ?? false) as bool,
         extra: {
           for (final e in j.entries)
             if (!knownKeys.contains(e.key)) e.key: e.value,
@@ -1748,6 +1761,34 @@ class Store extends ChangeNotifier {
     }
     return true;
   }
+}
+
+/// 메모 하나를 잠그고 푼다. 목록과 편집 화면 둘 다 여기를 부른다.
+///
+/// 켤 때도 끌 때도 얼굴·지문을 묻는다. 끌 때 안 물으면, 잠긴 화면을 못 여는
+/// 사람도 자물쇠는 떼어 낼 수 있다 — 그러면 자물쇠가 아니다.
+Future<bool> toggleNoteLock(BuildContext context, Note n) async {
+  final l = L10n.of(context);
+  if (!n.locked) {
+    if (!await LockService.instance.available()) {
+      if (context.mounted) _toast(context, l.lockUnavailable(lockVendor));
+      return false;
+    }
+    if (!await LockService.instance.ask(l.lockReasonOn)) return false;
+    n.locked = true;
+  } else {
+    if (!await LockService.instance.ask(l.lockReasonOff)) return false;
+    n.locked = false;
+  }
+  // 시각을 올린다. 안 올리면 다음 동기화에서 구름의 옛 판이 이겨서
+  // 자물쇠가 조용히 풀린다(_setPinned에서 같은 자리를 겪었다).
+  n.updatedAt = DateTime.now().millisecondsSinceEpoch;
+  await Store.instance.persist();
+  ICloudSync.instance.scheduleUp();
+  if (context.mounted) {
+    _toast(context, n.locked ? l.noteLockDone : l.noteUnlockDone);
+  }
+  return true;
 }
 
 void _toast(BuildContext context, String msg) {
@@ -2579,6 +2620,15 @@ class Glass extends StatelessWidget {
 /// 않았다면 넓은 화면을 지원하면서 그중 하나는 반드시 빠뜨렸을 것이다.
 Future<void> openNote(BuildContext context, String id,
     {bool autoTidy = false, bool showMeta = false}) async {
+  // 잠긴 메모는 여기서 막는다. 바로 위 주석이 말한 그 까닭 그대로다 —
+  // 여는 자리가 넷인데 그중 하나라도 빠뜨리면 이건 잠금이 아니라
+  // **잠금처럼 보이는 것**이 된다.
+  final reason = L10n.of(context).lockReasonNote;
+  final i = Store.instance.notes.indexWhere((x) => x.id == id);
+  if (i >= 0 && Store.instance.notes[i].locked) {
+    final ok = await LockService.instance.ask(reason);
+    if (!ok || !context.mounted) return;
+  }
   final shell = SplitShell.of(context);
   if (shell != null && shell.isWide) {
     shell.open(id, autoTidy: autoTidy, showMeta: showMeta);
@@ -3183,8 +3233,17 @@ class _HomeScreenState extends State<HomeScreen>
       // 2026-08-16 — contains에서 hangulContains로 바꿨다. "ㅌㅅㄹ"을 치면
       // "테슬라"가 나와야 한다. 한국 사용자에게 초성 검색은 있으면 좋은
       // 기능이 아니라 기본 기대치다(규칙은 core/hangul.dart, 테스트로 고정).
+      // 잠긴 메모는 본문을 안 내준다. 안 그러면 본문에만 있는 낱말을 쳐서
+      // "그 낱말이 거기 있다"를 알아낼 수 있다 — 글자를 안 보여 주고도
+      // 내용이 새는 길이다(core/note_lock.dart).
       return hangulContains(
-          '${n.title} ${n.body} ${n.tags.join(' ')} ${n.source}', q);
+          searchHaystack(
+              locked: n.locked,
+              title: n.title,
+              body: n.body,
+              tags: n.tags,
+              source: n.source),
+          q);
     }).toList();
 
     int order(Note a, Note b) {
@@ -3725,11 +3784,13 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _peek(Note n) async {
     final l = L10n.of(context);
     final c = context.c;
-    final preview = n.body.trim();
-    final title = n.title.trim().isNotEmpty
-        ? n.title.trim()
-        : (preview.split('\n').firstWhere((x) => x.trim().isNotEmpty,
-            orElse: () => l.untitled));
+    // 길게 누르기는 '열지 않고 살짝 보는' 자리다. 잠근 메모를 여기서
+    // 보여 주면 자물쇠를 옆문으로 지나가는 셈이 된다.
+    final preview = peekBody(locked: n.locked, body: n.body);
+    final head = listTitle(locked: n.locked, title: n.title, body: n.body);
+    final title = head.isNotEmpty
+        ? head.split('\n').first
+        : l.untitled;
 
     // 아이콘은 앱의 하늘색을 쓴다. 소유자: "내 컬러 정체성이 스카이블루이니
     // 블루계통 컬러를 써줘."
@@ -3814,7 +3875,9 @@ class _HomeScreenState extends State<HomeScreen>
                                     height: 1.3)),
                             const SizedBox(height: 8),
                             Text(
-                              preview.isEmpty ? l.bodyHint : preview,
+                              n.locked
+                                  ? l.noteLocked
+                                  : (preview.isEmpty ? l.bodyHint : preview),
                               maxLines: 14,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -3851,6 +3914,9 @@ class _HomeScreenState extends State<HomeScreen>
                       // '복제'는 뺐다(2026-08-18 소유자 지시). 이 앱에서
                       // 메모를 복제할 일은 거의 없는데, 다섯 줄짜리 시트의
                       // 다섯 중 하나를 차지하고 있었다.
+                      row(n.locked ? Icons.lock_open : Icons.lock_outline,
+                          n.locked ? l.noteUnlock : l.noteLock,
+                          () => Navigator.pop(ctx, 'lock')),
                       row(Icons.ios_share, l.exportNote,
                           () => Navigator.pop(ctx, 'share')),
                       Divider(height: 1, color: c.line),
@@ -3880,6 +3946,8 @@ class _HomeScreenState extends State<HomeScreen>
     if (act == null || !mounted) return;
 
     switch (act) {
+      case 'lock':
+        if (await toggleNoteLock(context, n) && mounted) setState(() {});
       case 'share':
         final ok = await ExportService.shareNote(n);
         if (!ok && mounted) _toast(context, L10n.of(context).exportFailed);
@@ -4041,11 +4109,10 @@ class _HomeScreenState extends State<HomeScreen>
     // 첫 줄 하나만 쓰던 것을 빈 줄을 걸러 한 문단으로 이어 붙인다.
     // 첫 줄만 쓰면 그 줄이 짧을 때(제목처럼 한 마디 적어 둔 경우)
     // 미리보기가 한 줄로 끝나 버려서, 석 줄을 내주고도 한 줄만 보인다.
-    final firstLine = n.body
-        .split('\n')
-        .map((x) => x.trim())
-        .where((x) => x.isNotEmpty)
-        .join('  ');
+    // 제목이 비면 이 줄이 제목 자리로 올라간다. 잠긴 메모에서는 빈
+    // 문자열이 되고, 그래서 제목 줄이 저절로 '제목 없음'으로 떨어진다 —
+    // **제목 줄로 본문이 새는** 가장 놓치기 쉬운 구멍이 여기서 막힌다.
+    final firstLine = listPreview(locked: n.locked, body: n.body);
 
     // 두 칸 화면에서 지금 오른쪽에 열려 있는 메모인가.
     //
@@ -4199,7 +4266,20 @@ class _HomeScreenState extends State<HomeScreen>
                       // 미리보기를 두 줄로 편다. 한 줄이면 어차피 잘리는데,
                       // 잘린 한 줄은 '이 글이 무엇인가'를 거의 못 알려 준다.
                       // 두 줄이면 대개 첫 문장이 끝까지 보인다.
-                      if (firstLine.isNotEmpty) ...[
+                      // 잠긴 메모는 본문 자리에 자물쇠 한 줄만 놓는다.
+                      // 빈 자리로 두면 '내용이 없는 메모'로 보인다 — 가린
+                      // 것과 없는 것은 다른 말이라 그렇게 보이면 안 된다.
+                      if (n.locked) ...[
+                        const SizedBox(height: 4),
+                        Row(children: [
+                          Icon(Icons.lock_outline,
+                              size: 14, color: context.c.sub),
+                          const SizedBox(width: 5),
+                          Text(l.noteLocked,
+                              style: TextStyle(
+                                  fontSize: 14, color: context.c.sub)),
+                        ]),
+                      ] else if (firstLine.isNotEmpty) ...[
                         const SizedBox(height: 3),
                         Text(firstLine,
                             // 폰은 둘, 넓은 화면 왼쪽 칸은 셋. 폰에서는
@@ -6623,6 +6703,12 @@ static const int kTagScanChars = 3000;
                   }
                   return;
                 }
+                if (v == 'lock') {
+                  if (await toggleNoteLock(context, note) && mounted) {
+                    setState(() {});
+                  }
+                  return;
+                }
                 if (v == 'pdf' || v == 'print') {
                   final ok = v == 'print'
                       ? await PdfService.printNote(note,
@@ -6703,6 +6789,13 @@ static const int kTagScanChars = 3000;
                           : Icons.folder,
                       note.folder.isEmpty ? lm.folderTitle : note.folder,
                       tint: note.folder.isEmpty ? null : ctx.c.accent),
+                  // 잠금은 '이 메모가 무엇인가' 무리에 둔다. 정리·복사와
+                  // 달리 글을 손대는 일이 아니라 이 메모의 성격이다.
+                  act(
+                      'lock',
+                      note.locked ? Icons.lock : Icons.lock_outline,
+                      note.locked ? lm.noteUnlock : lm.noteLock,
+                      tint: note.locked ? ctx.c.accent : null),
                   const PopupMenuDivider(height: 9),
                   act('preview', CupertinoIcons.eye, lm.menuTidyPreview,
                       tint: ctx.c.accent, bold: true),
@@ -7623,17 +7716,24 @@ class _TrashScreenState extends State<TrashScreen> {
                 // 빈 줄을 걸러 낸 뒤 한 문단으로 이어 붙이고 세 줄에서
                 // 자른다. 줄바꿈을 그대로 두면 짧은 줄 셋으로 석 줄을 다
                 // 써 버려서 보이는 글자가 오히려 줄어든다.
-                final lines = body
-                    .split('\n')
-                    .map((x) => x.trim())
-                    .where((x) => x.isNotEmpty)
-                    .toList();
+                // 잠긴 메모를 지우면 휴지통에서 본문이 보였다. 지운 것은
+                // 아직 지워진 게 아니고 되살릴 수 있는 것이라, 여기서 새면
+                // 잠금이 그대로 뚫린다.
+                final locked = (j['locked'] ?? false) as bool;
+                final lines = locked
+                    ? const <String>[]
+                    : body
+                        .split('\n')
+                        .map((x) => x.trim())
+                        .where((x) => x.isNotEmpty)
+                        .toList();
                 final shown =
                     title.isNotEmpty ? title : (lines.isEmpty ? l.untitled : lines.first);
                 // 제목이 없어 첫 줄을 제목으로 쓴 판에서는 그 줄을 뺀다.
                 // 같은 문장이 위아래로 두 번 나오면 두 줄을 버리는 셈이다.
-                final preview =
-                    (title.isNotEmpty ? lines : lines.skip(1)).join('  ');
+                final preview = locked
+                    ? l.noteLocked
+                    : (title.isNotEmpty ? lines : lines.skip(1)).join('  ');
                 final left = trashDaysLeft(deletedAt: at, nowMs: now);
                 return ListTile(
                   isThreeLine: true,

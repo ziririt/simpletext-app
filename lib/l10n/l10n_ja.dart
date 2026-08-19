@@ -889,6 +889,24 @@ class L10nJa extends L10n {
   String get lockReasonOff => 'ロックを解除するには確認が必要です';
 
   @override
+  String get noteLock => 'このメモをロック';
+
+  @override
+  String get noteUnlock => 'このメモのロックを解除';
+
+  @override
+  String get noteLocked => 'ロック中のメモ';
+
+  @override
+  String get lockReasonNote => 'ロックされたメモを開きます';
+
+  @override
+  String get noteLockDone => 'このメモをロックしました';
+
+  @override
+  String get noteUnlockDone => 'このメモのロックを解除しました';
+
+  @override
   String get syncDiagSignedOut => 'この端末は iCloud にサインインしていません。まずサインインしてください。';
 
   @override

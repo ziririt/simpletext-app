@@ -892,6 +892,24 @@ class L10nPt extends L10n {
   String get lockReasonOff => 'Verifique para desativar o bloqueio';
 
   @override
+  String get noteLock => 'Bloquear esta nota';
+
+  @override
+  String get noteUnlock => 'Desbloquear esta nota';
+
+  @override
+  String get noteLocked => 'Nota bloqueada';
+
+  @override
+  String get lockReasonNote => 'Abrir a nota bloqueada';
+
+  @override
+  String get noteLockDone => 'Nota bloqueada';
+
+  @override
+  String get noteUnlockDone => 'Nota desbloqueada';
+
+  @override
   String get syncDiagSignedOut => 'Este dispositivo não está conectado ao iCloud. Entre primeiro.';
 
   @override

@@ -893,6 +893,24 @@ class L10nFr extends L10n {
   String get lockReasonOff => 'Vérifiez pour désactiver le verrouillage';
 
   @override
+  String get noteLock => 'Verrouiller cette note';
+
+  @override
+  String get noteUnlock => 'Déverrouiller cette note';
+
+  @override
+  String get noteLocked => 'Note verrouillée';
+
+  @override
+  String get lockReasonNote => 'Ouvrir la note verrouillée';
+
+  @override
+  String get noteLockDone => 'Note verrouillée';
+
+  @override
+  String get noteUnlockDone => 'Note déverrouillée';
+
+  @override
   String get syncDiagSignedOut => 'Cet appareil n\'est pas connecté à iCloud. Connectez-vous d\'abord.';
 
   @override

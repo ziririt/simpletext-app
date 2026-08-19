@@ -892,6 +892,24 @@ class L10nEn extends L10n {
   String get lockReasonOff => 'Verify to turn off the lock';
 
   @override
+  String get noteLock => 'Lock this note';
+
+  @override
+  String get noteUnlock => 'Unlock this note';
+
+  @override
+  String get noteLocked => 'Locked note';
+
+  @override
+  String get lockReasonNote => 'Open the locked note';
+
+  @override
+  String get noteLockDone => 'This note is locked';
+
+  @override
+  String get noteUnlockDone => 'This note is unlocked';
+
+  @override
   String get syncDiagSignedOut => 'This device is not signed in to iCloud. Please sign in first.';
 
   @override

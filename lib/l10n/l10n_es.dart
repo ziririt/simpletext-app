@@ -892,6 +892,24 @@ class L10nEs extends L10n {
   String get lockReasonOff => 'Verifica para desactivar el bloqueo';
 
   @override
+  String get noteLock => 'Bloquear esta nota';
+
+  @override
+  String get noteUnlock => 'Desbloquear esta nota';
+
+  @override
+  String get noteLocked => 'Nota bloqueada';
+
+  @override
+  String get lockReasonNote => 'Abrir la nota bloqueada';
+
+  @override
+  String get noteLockDone => 'Nota bloqueada';
+
+  @override
+  String get noteUnlockDone => 'Nota desbloqueada';
+
+  @override
   String get syncDiagSignedOut => 'Este dispositivo no ha iniciado sesión en iCloud. Inicia sesión primero.';
 
   @override

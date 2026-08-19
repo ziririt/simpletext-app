@@ -489,6 +489,12 @@ abstract class L10n {
   String get lockReasonOpen;
   String get lockReasonOn;
   String get lockReasonOff;
+  String get noteLock;
+  String get noteUnlock;
+  String get noteLocked;
+  String get lockReasonNote;
+  String get noteLockDone;
+  String get noteUnlockDone;
   String get syncDiagSignedOut;
   String get syncDiagNoContainer;
   String get syncDiagPreparing;
@@ -890,6 +896,12 @@ abstract class L10n {
         'lockReasonOpen': lockReasonOpen,
         'lockReasonOn': lockReasonOn,
         'lockReasonOff': lockReasonOff,
+        'noteLock': noteLock,
+        'noteUnlock': noteUnlock,
+        'noteLocked': noteLocked,
+        'lockReasonNote': lockReasonNote,
+        'noteLockDone': noteLockDone,
+        'noteUnlockDone': noteUnlockDone,
         'syncDiagSignedOut': syncDiagSignedOut,
         'syncDiagNoContainer': syncDiagNoContainer,
         'syncDiagPreparing': syncDiagPreparing,

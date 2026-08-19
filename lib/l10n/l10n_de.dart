@@ -893,6 +893,24 @@ class L10nDe extends L10n {
   String get lockReasonOff => 'Bestätigen, um die Sperre zu deaktivieren';
 
   @override
+  String get noteLock => 'Diese Notiz sperren';
+
+  @override
+  String get noteUnlock => 'Diese Notiz entsperren';
+
+  @override
+  String get noteLocked => 'Gesperrte Notiz';
+
+  @override
+  String get lockReasonNote => 'Gesperrte Notiz öffnen';
+
+  @override
+  String get noteLockDone => 'Notiz gesperrt';
+
+  @override
+  String get noteUnlockDone => 'Notiz entsperrt';
+
+  @override
   String get syncDiagSignedOut => 'Dieses Gerät ist nicht bei iCloud angemeldet. Bitte zuerst anmelden.';
 
   @override
