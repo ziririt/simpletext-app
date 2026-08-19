@@ -166,10 +166,22 @@ class L10nKo extends L10n {
 
   @override
   String get revertConfirmBody =>
-      '처음 붙여넣은 글로 돌아갑니다. 그 뒤에 정리한 것과 손으로 고친 것이 모두 사라집니다.\n\n지금 글은 버전기록에 남으니 언제든 다시 꺼낼 수 있습니다.';
+      '처음 붙여넣은 글로 돌아갑니다. 그 뒤에 정리한 것과 손으로 고친 것이 모두 사라집니다.\n\n되돌린 뒤에도 이전 편집 내역으로 갈 수 있습니다 — 삼선 메뉴 → 버전 기록의 맨 위 항목이 지금 이 글입니다.';
 
   @override
   String get revertConfirmOk => '원본으로';
+
+  @override
+  String get okAction =>
+      '확인';
+
+  @override
+  String get revertDoneTitle =>
+      '원본으로 되돌렸습니다';
+
+  @override
+  String get revertDoneBody =>
+      '방금까지 쓰던 글은 사라지지 않았습니다.\n\n삼선 메뉴 → 버전 기록을 열면 맨 위 항목이 원복 직전의 글입니다. 눌러서 언제든 되살릴 수 있습니다.';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -786,6 +798,21 @@ class L10nKo extends L10n {
   @override
   String get historyOriginal =>
       '붙여넣은 원본';
+
+  @override
+  String get historyWhyTidy => '정리 직전';
+
+  @override
+  String get historyWhyAi => 'AI 편집 직전';
+
+  @override
+  String get historyWhyReplace => '바꾸기 직전';
+
+  @override
+  String get historyWhyRevert => '원본 복귀 직전';
+
+  @override
+  String get historyWhyRestore => '되살리기 직전';
 
   @override
   String historyUnknownTime(int n) => '이전 판 $n';

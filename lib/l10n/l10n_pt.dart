@@ -166,10 +166,22 @@ class L10nPt extends L10n {
 
   @override
   String get revertConfirmBody =>
-      'A nota volta ao texto que colou no início. Todas as organizações e todas as edições feitas depois vão desaparecer.\n\nO texto atual fica no histórico, por isso pode trazê-lo de volta.';
+      'A nota volta ao texto que você colou no início. Toda a organização e as edições feitas depois serão perdidas.\n\nVocê ainda pode voltar às edições anteriores — o menu → Histórico de versões guarda o texto atual como primeiro item.';
 
   @override
   String get revertConfirmOk => 'Voltar';
+
+  @override
+  String get okAction =>
+      'OK';
+
+  @override
+  String get revertDoneTitle =>
+      'Voltou ao original';
+
+  @override
+  String get revertDoneBody =>
+      'O texto em que você estava trabalhando não se perdeu.\n\nAbra o menu → Histórico de versões: o primeiro item é o texto de antes da reversão. Toque nele para trazê-lo de volta quando quiser.';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -789,6 +801,21 @@ class L10nPt extends L10n {
   @override
   String get historyOriginal =>
       'Como foi colado';
+
+  @override
+  String get historyWhyTidy => 'Antes de organizar';
+
+  @override
+  String get historyWhyAi => 'Antes da edição por IA';
+
+  @override
+  String get historyWhyReplace => 'Antes de substituir';
+
+  @override
+  String get historyWhyRevert => 'Antes de voltar ao original';
+
+  @override
+  String get historyWhyRestore => 'Antes de restaurar';
 
   @override
   String historyUnknownTime(int n) => 'Versão anterior $n';

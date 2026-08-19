@@ -166,10 +166,22 @@ class L10nZhHant extends L10n {
 
   @override
   String get revertConfirmBody =>
-      '將回到你最初貼上的文字。之後的整理和手動修改都會消失。\n\n現在的文字會留在版本記錄裡，隨時可以取回。';
+      '筆記會回到你最初貼上的文字，之後的整理與手動修改都會消失。\n\n還原後仍可回到先前的編輯 — 選單 → 版本紀錄的第一條就是現在這段內容。';
 
   @override
   String get revertConfirmOk => '還原';
+
+  @override
+  String get okAction =>
+      '確定';
+
+  @override
+  String get revertDoneTitle =>
+      '已還原為原文';
+
+  @override
+  String get revertDoneBody =>
+      '剛才的內容並沒有消失。\n\n開啟選單 → 版本紀錄，最上面那一條就是還原前的內容，隨時可以點擊回復。';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -786,6 +798,21 @@ class L10nZhHant extends L10n {
   @override
   String get historyOriginal =>
       '貼上時的原文';
+
+  @override
+  String get historyWhyTidy => '整理前';
+
+  @override
+  String get historyWhyAi => 'AI 編輯前';
+
+  @override
+  String get historyWhyReplace => '取代前';
+
+  @override
+  String get historyWhyRevert => '還原原文前';
+
+  @override
+  String get historyWhyRestore => '回復前';
 
   @override
   String historyUnknownTime(int n) => '先前版本 $n';

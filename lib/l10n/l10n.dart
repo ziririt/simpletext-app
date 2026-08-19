@@ -144,6 +144,9 @@ abstract class L10n {
   String get revertConfirmTitle;
   String get revertConfirmBody;
   String get revertConfirmOk;
+  String get okAction;
+  String get revertDoneTitle;
+  String get revertDoneBody;
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   String get listBulletAction;
@@ -458,6 +461,11 @@ abstract class L10n {
   String get historyEmpty;
   String get historyRestore;
   String get historyOriginal;
+  String get historyWhyTidy;
+  String get historyWhyAi;
+  String get historyWhyReplace;
+  String get historyWhyRevert;
+  String get historyWhyRestore;
   String historyUnknownTime(int n);
   String get selUnitSentence;
   String get selUnitLine;
@@ -697,6 +705,9 @@ abstract class L10n {
         'revertConfirmTitle': revertConfirmTitle,
         'revertConfirmBody': revertConfirmBody,
         'revertConfirmOk': revertConfirmOk,
+        'okAction': okAction,
+        'revertDoneTitle': revertDoneTitle,
+        'revertDoneBody': revertDoneBody,
         'listBulletAction': listBulletAction,
         'listDashAction': listDashAction,
         'listNumberAction': listNumberAction,
@@ -868,6 +879,11 @@ abstract class L10n {
         'historyEmpty': historyEmpty,
         'historyRestore': historyRestore,
         'historyOriginal': historyOriginal,
+        'historyWhyTidy': historyWhyTidy,
+        'historyWhyAi': historyWhyAi,
+        'historyWhyReplace': historyWhyReplace,
+        'historyWhyRevert': historyWhyRevert,
+        'historyWhyRestore': historyWhyRestore,
         'selUnitSentence': selUnitSentence,
         'selUnitLine': selUnitLine,
         'selUnitPara': selUnitPara,

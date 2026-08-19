@@ -166,10 +166,22 @@ class L10nJa extends L10n {
 
   @override
   String get revertConfirmBody =>
-      '最初に貼り付けた文章に戻ります。そのあとの整形と手直しはすべて消えます。\n\n今の文章は変更履歴に残るので、いつでも取り出せます。';
+      '最初に貼り付けた文章に戻ります。そのあとの整理や手直しはすべて消えます。\n\n戻したあとも以前の編集に戻れます — メニュー → 変更履歴のいちばん上が今の文章です。';
 
   @override
   String get revertConfirmOk => '戻す';
+
+  @override
+  String get okAction =>
+      '確認';
+
+  @override
+  String get revertDoneTitle =>
+      '原文に戻しました';
+
+  @override
+  String get revertDoneBody =>
+      'さっきまでの文章は消えていません。\n\nメニュー → 変更履歴を開くと、いちばん上の項目が戻す直前の文章です。タップすればいつでも復元できます。';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -786,6 +798,21 @@ class L10nJa extends L10n {
   @override
   String get historyOriginal =>
       '貼り付けた原文';
+
+  @override
+  String get historyWhyTidy => '整理の直前';
+
+  @override
+  String get historyWhyAi => 'AI編集の直前';
+
+  @override
+  String get historyWhyReplace => '置換の直前';
+
+  @override
+  String get historyWhyRevert => '原文に戻す直前';
+
+  @override
+  String get historyWhyRestore => '復元の直前';
 
   @override
   String historyUnknownTime(int n) => '以前の版 $n';

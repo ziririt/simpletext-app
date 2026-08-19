@@ -166,10 +166,22 @@ class L10nEs extends L10n {
 
   @override
   String get revertConfirmBody =>
-      'La nota vuelve al texto que pegaste al principio. Se perderán todas las limpiezas y todos los cambios que hiciste después.\n\nEl texto actual queda en el historial, así que podrás recuperarlo.';
+      'La nota vuelve al texto que pegaste al principio. Se perderán la limpieza y los cambios que hiciste después.\n\nAún podrás volver a tus ediciones anteriores: el menú → Historial de versiones guarda el texto actual como primera entrada.';
 
   @override
   String get revertConfirmOk => 'Volver';
+
+  @override
+  String get okAction =>
+      'Aceptar';
+
+  @override
+  String get revertDoneTitle =>
+      'Se volvió al original';
+
+  @override
+  String get revertDoneBody =>
+      'El texto en el que trabajabas no se ha perdido.\n\nAbre el menú → Historial de versiones: la primera entrada es el texto de justo antes. Tócala para recuperarlo cuando quieras.';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -789,6 +801,21 @@ class L10nEs extends L10n {
   @override
   String get historyOriginal =>
       'Tal como se pegó';
+
+  @override
+  String get historyWhyTidy => 'Antes de ordenar';
+
+  @override
+  String get historyWhyAi => 'Antes de la edición con IA';
+
+  @override
+  String get historyWhyReplace => 'Antes de reemplazar';
+
+  @override
+  String get historyWhyRevert => 'Antes de volver al original';
+
+  @override
+  String get historyWhyRestore => 'Antes de restaurar';
 
   @override
   String historyUnknownTime(int n) => 'Versión anterior $n';

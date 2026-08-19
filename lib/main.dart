@@ -27,6 +27,7 @@ import 'core/ai_provider.dart';
 import 'core/auto_meta.dart';
 import 'core/folders.dart';
 import 'core/hangul.dart';
+import 'core/history_align.dart';
 import 'core/key_vault.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
@@ -866,6 +867,17 @@ class Note {
   /// 화면에 시각 대신 '이전 판 n'이라고 쓴다. 짝이 안 맞아도 죽지 않는다.
   List<int> historyAt;
 
+  /// 각 이전 판이 **왜** 남았는가. history와 끝에서부터 짝이다.
+  ///
+  /// 2026-08-19 소유자 지시 — "원복하기 직전의 히스토리를 잘 따라갈 수
+  /// 있으면 좋겠다. 정교하게." 시각만으로는 못 따라간다. 오후 두 시에
+  /// 남은 판이 셋이면 어느 것이 원본 복귀 직전인지 알 길이 없다.
+  ///
+  /// 옮겨 적을 말이 아니라 **부호**를 넣는다('tidy', 'ai', 'replace',
+  /// 'revert', 'restore'). 화면에 쓸 말은 그때의 언어로 고른다 — 말을
+  /// 그대로 저장하면 언어를 바꾼 뒤 옛 기록만 옛 언어로 남는다.
+  List<String> historyWhy;
+
   String lastReport;
 
   /// 이 글을 붙여넣은 시각. 0이면 붙여넣은 게 아니라 직접 쓴 글이다.
@@ -921,6 +933,7 @@ class Note {
     required this.updatedAt,
     List<String>? history,
     List<int>? historyAt,
+    List<String>? historyWhy,
     this.lastReport = '',
     this.pastedAt = 0,
     this.sourceAuto = false,
@@ -933,7 +946,8 @@ class Note {
   })  : extra = extra ?? const <String, dynamic>{},
         tags = tags ?? [],
         history = history ?? [],
-        historyAt = historyAt ?? [];
+        historyAt = historyAt ?? [],
+        historyWhy = historyWhy ?? [];
 
   factory Note.fresh({String body = ''}) {
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -954,8 +968,50 @@ class Note {
     'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
     'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
     'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder', 'taggedLen',
-    'locked',
+    'locked', 'historyWhy',
   };
+
+  /// 기록에 남길 수 있는 최대 판 수.
+  static const int historyMax = 30;
+
+  /// 이전 판 하나를 기록에 넣는다.
+  ///
+  /// 이 일을 하는 자리가 앱 안에 **다섯**이었다 — 정리, AI 편집, 바꾸기,
+  /// 원본 복귀, 그리고 버전 기록에서 되살리기. 다섯 곳이 전부 같은 여섯
+  /// 줄을 베껴 쓰고 있었다. '왜 남았나'를 붙이려고 다섯 곳을 다 찾아
+  /// 다니다가, 이게 바로 이 저장소가 오늘만 세 번 겪은 그 자리라는 걸
+  /// 알았다 — 한쪽을 고치고 반대쪽을 안 보는 자리. 그래서 먼저 하나로
+  /// 모았다.
+  ///
+  /// [why]는 옮겨 적을 말이 아니라 부호다. historyWhy 주석을 볼 것.
+  void pushHistory(String before, {required String why}) {
+    history.add(before);
+    historyAt.add(DateTime.now().millisecondsSinceEpoch);
+    historyWhy.add(why);
+    while (history.length > historyMax) {
+      history.removeAt(0);
+      if (historyAt.isNotEmpty) historyAt.removeAt(0);
+      if (historyWhy.isNotEmpty) historyWhy.removeAt(0);
+    }
+  }
+
+  /// 방금 넣은 기록을 도로 뺀다 — 되돌리기를 되돌릴 때만 쓴다.
+  ///
+  /// 자국을 남기지 않는 것이 중요하다. 잘못 눌러 놓고 바로 취소한 일까지
+  /// 목록에 쌓이면, 다음에 그 목록을 볼 때 무엇이 진짜였는지 흐려진다.
+  bool popHistoryIf(String expected) {
+    if (history.isEmpty || history.last != expected) return false;
+    history.removeLast();
+    if (historyAt.isNotEmpty) historyAt.removeLast();
+    if (historyWhy.isNotEmpty) historyWhy.removeLast();
+    return true;
+  }
+
+  /// [i]번째 이전 판이 남은 시각. 없으면 0.
+  int historyTimeOf(int i) => sideValue(historyAt, history.length, i) ?? 0;
+
+  /// [i]번째 이전 판이 남은 까닭의 부호. 없으면 빈 글자.
+  String historyWhyOf(int i) => sideValue(historyWhy, history.length, i) ?? '';
 
   Map<String, dynamic> toJson() => {
         // 모르는 칸을 먼저 깔고 아는 칸으로 덮는다. 차례가 반대면 옛
@@ -973,6 +1029,7 @@ class Note {
         'updatedAt': updatedAt,
         'history': history,
         'historyAt': historyAt,
+        'historyWhy': historyWhy,
         'lastReport': lastReport,
         'pastedAt': pastedAt,
         'sourceAuto': sourceAuto,
@@ -992,6 +1049,9 @@ class Note {
         source: (j['source'] ?? '') as String,
         historyAt: ((j['historyAt'] ?? const []) as List)
             .map((e) => e is int ? e : 0)
+            .toList(),
+        historyWhy: ((j['historyWhy'] ?? const []) as List)
+            .map((e) => e is String ? e : '')
             .toList(),
         pastedAt: (j['pastedAt'] ?? 0) as int,
         sourceAuto: (j['sourceAuto'] ?? false) as bool,
@@ -1791,6 +1851,22 @@ Future<bool> toggleNoteLock(BuildContext context, Note n) async {
   return true;
 }
 
+/// 되돌릴 수 있는 일을 한 뒤의 알림 — 오른쪽에 '실행 취소'가 붙는다.
+///
+/// 보통 알림보다 오래 띄운다(6초). 단추가 달린 알림이 2초 만에 사라지면
+/// 그건 단추가 아니라 놀리는 것이다.
+void _toastUndo(BuildContext context, String msg, VoidCallback onUndo) {
+  final l = L10n.of(context);
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(
+      content: Text(msg),
+      duration: const Duration(seconds: 6),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(label: l.undoTip, onPressed: onUndo),
+    ));
+}
+
 void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -1909,6 +1985,49 @@ Future<void> maybeShowPasteTip(BuildContext context) async {
 ///
 /// 지우는 일에는 어느 판에서든 빨강을 쓴다. 되돌릴 수 있는 일과 없는 일이
 /// 같은 색이면 손이 눈보다 먼저 움직인다.
+/// 알림 창 하나 — 고를 것이 없고 읽고 닫기만 한다.
+///
+/// 2026-08-19 소유자 지시. confirmDialog 와 갈라 둔 까닭이 있다. 취소가
+/// 있는 창은 "할까 말까"를 묻는 것이고, 이건 이미 끝난 일을 **알려 주는**
+/// 것이다. 같은 창에 취소를 남겨 두면 누른 사람이 "취소하면 방금 일이
+/// 없던 게 되나" 하고 한 번 더 헷갈린다.
+Future<void> infoDialog(
+  BuildContext context, {
+  required String title,
+  required String body,
+}) async {
+  final apple = defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
+  await showAdaptiveDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final ok = L10n.of(ctx).okAction;
+      if (apple) {
+        return CupertinoAlertDialog(
+          title: Text(title),
+          content: Padding(
+              padding: const EdgeInsets.only(top: 8), child: Text(body)),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ok),
+            ),
+          ],
+        );
+      }
+      return AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(ok)),
+        ],
+      );
+    },
+  );
+}
+
 Future<bool> confirmDialog(
   BuildContext context, {
   required String title,
@@ -5595,19 +5714,39 @@ static const int kTagScanChars = 3000;
     if (!ok || !mounted) return;
 
     // 지금 글을 먼저 남긴다. 이 순서가 뒤바뀌면 되돌리기를 되돌릴 수 없다.
-    note.history.add(bodyCtl.text);
-    note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
-    if (note.history.length > 30) {
-      note.history.removeAt(0);
-      if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
-    }
+    final before = bodyCtl.text;
+    note.pushHistory(before, why: 'revert');
     note.body = target;
     note.lastReport = '';
     bodyCtl.text = target;
     await _save();
     if (!mounted) return;
     setState(() {});
-    _toast(context, L10n.of(context).revertedToast);
+    // 2026-08-19 소유자 신고 — 잘못 눌러 놓고 되찾는 길을 몰랐다.
+    //
+    // 되돌릴 수 있다는 사실이 화면 어디에도 없었다. 기록에는 멀쩡히
+    // 남아 있는데 그걸 알려 주는 줄이 하나도 없으면, 그건 남아 있지 않은
+    // 것과 같다. 그래서 둘을 겹쳐 둔다.
+    //
+    //   1. 창 하나로 **어디로 가면 되는지**를 알려 준다(소유자 지시).
+    //      경고 알럿에도 같은 말이 이미 있었지만 못 보고 지나쳤다 —
+    //      있는데 안 읽히는 말은 없는 말이다. 그래서 일이 벌어진 **뒤에**,
+    //      화면 한가운데에서 다시 말한다.
+    //   2. 창을 닫으면 아래 막대에 '실행 취소'가 남는다. 안내를 읽고
+    //      "아 잘못 눌렀네" 한 사람이 그 자리에서 바로 되돌릴 수 있어야
+    //      한다. 창을 먼저 띄우는 것은 그래서다 — 막대를 먼저 띄우면
+    //      창이 그 위를 덮고, 창을 닫을 즈음 막대는 사라져 있다.
+    await infoDialog(context,
+        title: l.revertDoneTitle, body: l.revertDoneBody);
+    if (!mounted) return;
+    _toastUndo(context, L10n.of(context).revertedToast, () async {
+      note.popHistoryIf(before);
+      note.body = before;
+      note.lastReport = '';
+      bodyCtl.text = before;
+      await _save();
+      if (mounted) setState(() {});
+    });
   }
 
   /// [forcePreview]가 참이면 설정과 무관하게 미리보기를 먼저 보여 준다.
@@ -5641,12 +5780,7 @@ static const int kTagScanChars = 3000;
         : true;
     if (apply == true) {
       await _bumpUse(wizard: false);
-      note.history.add(note.body);
-      note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
-      if (note.history.length > 30) {
-        note.history.removeAt(0);
-        if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
-      }
+      note.pushHistory(note.body, why: 'tidy');
       if (note.originalBody.isEmpty) note.originalBody = note.body;
       // 제목은 "본문 맨 위 한 줄"이다(소유자 확정 2026-08-14).
       // 정리하면서 맨 윗줄이 바뀔 수 있으므로(출력 시각 줄 제거 등) 다시 뽑는다.
@@ -6195,15 +6329,7 @@ static const int kTagScanChars = 3000;
                         }
 
                         if (text != before) {
-                          note.history.add(before);
-                          note.historyAt
-                              .add(DateTime.now().millisecondsSinceEpoch);
-                          if (note.history.length > 30) {
-                            note.history.removeAt(0);
-                            if (note.historyAt.isNotEmpty) {
-                              note.historyAt.removeAt(0);
-                            }
-                          }
+                          note.pushHistory(before, why: 'ai');
                           bodyCtl.text = text;
                         }
                         await _save();
@@ -6316,12 +6442,7 @@ static const int kTagScanChars = 3000;
                     if (mounted) _toast(context, L10n.of(context).noMatches);
                     return;
                   }
-                  note.history.add(bodyCtl.text);
-                  note.historyAt.add(DateTime.now().millisecondsSinceEpoch);
-                  if (note.history.length > 30) {
-                    note.history.removeAt(0);
-                    if (note.historyAt.isNotEmpty) note.historyAt.removeAt(0);
-                  }
+                  note.pushHistory(bodyCtl.text, why: 'replace');
                   bodyCtl.text = result;
                   if (saveRule) {
                     store.settings.customRules.add(CustomRule(find: find, replace: rawRepl, regex: useRegex));
@@ -8042,12 +8163,7 @@ class _HistorySheetState extends State<HistorySheet> {
     final n = widget.note;
     // 되돌리기 자체도 되돌릴 수 있어야 한다. 지금 글을 먼저 기록에 넣는다 —
     // 안 그러면 '되돌리기'가 곧 '지금 글을 버리기'가 된다.
-    n.history.add(n.body);
-    n.historyAt.add(DateTime.now().millisecondsSinceEpoch);
-    if (n.history.length > 30) {
-      n.history.removeAt(0);
-      if (n.historyAt.isNotEmpty) n.historyAt.removeAt(0);
-    }
+    n.pushHistory(n.body, why: 'restore');
     n.body = text;
     n.updatedAt = DateTime.now().millisecondsSinceEpoch;
     await store.persist();
@@ -8063,9 +8179,14 @@ class _HistorySheetState extends State<HistorySheet> {
     final tag = Localizations.localeOf(context).toLanguageTag();
 
     // 최신 것이 위로. 그리고 맨 아래에 붙여넣은 원본을 둔다.
-    final items = <(String, String, String)>[];
+    //
+    // 2026-08-19 — 곁줄(시각·까닭)을 **끝에서부터** 맞춘다. 앞에서부터
+    // 세면 오늘 남긴 시각이 몇 달 전 판에 붙는다. 까닭은
+    // core/history_align.dart 에 적어 뒀고 시험으로 못 박아 뒀다.
+    final items = <(String, String, String, String)>[];
     for (var i = n.history.length - 1; i >= 0; i--) {
-      final at = i < n.historyAt.length ? n.historyAt[i] : 0;
+      final at = n.historyTimeOf(i);
+      final why = _whyLabel(l, n.historyWhyOf(i));
       String when;
       if (at > 0) {
         final t = DateTime.fromMillisecondsSinceEpoch(at);
@@ -8077,7 +8198,7 @@ class _HistorySheetState extends State<HistorySheet> {
       } else {
         when = l.historyUnknownTime(i + 1);
       }
-      items.add((when, n.history[i], _peek(n.history[i])));
+      items.add((when, n.history[i], _peek(n.history[i]), why));
     }
     final orig = n.originalBody.trim();
     final hasOrig = orig.isNotEmpty && orig != n.body.trim();
@@ -8124,7 +8245,7 @@ class _HistorySheetState extends State<HistorySheet> {
                   shrinkWrap: true,
                   children: [
                     for (final it in items)
-                      _row(it.$1, it.$3, () => _restore(it.$2)),
+                      _row(it.$1, it.$3, () => _restore(it.$2), why: it.$4),
                     if (hasOrig)
                       _row(l.historyOriginal, _peek(n.originalBody),
                           () => _restore(n.originalBody),
@@ -8143,8 +8264,27 @@ class _HistorySheetState extends State<HistorySheet> {
     return one.length > 90 ? '${one.substring(0, 90)}…' : one;
   }
 
+  /// 부호를 그때의 언어로. 모르는 부호(옛 저장본, 다음 판이 붙일 새 부호)는
+  /// 빈 글자로 두고 시각만 보여 준다 — 모르면 아무 말도 안 하는 편이 낫다.
+  static String _whyLabel(L10n l, String code) {
+    switch (code) {
+      case 'tidy':
+        return l.historyWhyTidy;
+      case 'ai':
+        return l.historyWhyAi;
+      case 'replace':
+        return l.historyWhyReplace;
+      case 'revert':
+        return l.historyWhyRevert;
+      case 'restore':
+        return l.historyWhyRestore;
+      default:
+        return '';
+    }
+  }
+
   Widget _row(String when, String peek, VoidCallback onTap,
-      {bool accent = false}) {
+      {bool accent = false, String why = ''}) {
     final c = context.c;
     final l = L10n.of(context);
     return Padding(
@@ -8162,7 +8302,12 @@ class _HistorySheetState extends State<HistorySheet> {
               children: [
                 Row(children: [
                   Expanded(
-                    child: Text(when,
+                    // 까닭이 앞, 시각이 뒤. 사람이 기억하는 것은 '몇 시'가
+                    // 아니라 '무엇을 하기 전'이다. 오후 두 시에 남은 판이
+                    // 셋이면 시각으로는 고를 수 없다.
+                    child: Text(why.isEmpty ? when : '$why  ·  $when',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,

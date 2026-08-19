@@ -166,10 +166,22 @@ class L10nEn extends L10n {
 
   @override
   String get revertConfirmBody =>
-      'This returns the note to the text you first pasted. Every tidy-up and every edit you made after that will be gone.\n\nThe text you have now is kept in Version history, so you can bring it back.';
+      'This returns the note to the text you first pasted. Every tidy-up and every edit you made after that will be gone.\n\nYou can still get back to your earlier edits — the menu → Version history keeps the text you have now as its top entry.';
 
   @override
   String get revertConfirmOk => 'Restore';
+
+  @override
+  String get okAction =>
+      'OK';
+
+  @override
+  String get revertDoneTitle =>
+      'Reverted to the original';
+
+  @override
+  String get revertDoneBody =>
+      'The text you were working on is not gone.\n\nOpen the menu → Version history: the top entry is the text from just before the revert. Tap it to bring it back at any time.';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -789,6 +801,21 @@ class L10nEn extends L10n {
   @override
   String get historyOriginal =>
       'As pasted';
+
+  @override
+  String get historyWhyTidy => 'Before tidy';
+
+  @override
+  String get historyWhyAi => 'Before AI edit';
+
+  @override
+  String get historyWhyReplace => 'Before replace';
+
+  @override
+  String get historyWhyRevert => 'Before reverting to original';
+
+  @override
+  String get historyWhyRestore => 'Before restoring';
 
   @override
   String historyUnknownTime(int n) => 'Earlier version $n';

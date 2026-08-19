@@ -166,10 +166,22 @@ class L10nDe extends L10n {
 
   @override
   String get revertConfirmBody =>
-      'Die Notiz kehrt zu dem Text zurück, den Sie zuerst eingefügt haben. Jede Bereinigung und jede spätere Änderung ist dann weg.\n\nDer Text, den Sie jetzt haben, bleibt im Verlauf und lässt sich zurückholen.';
+      'Die Notiz kehrt zu dem Text zurück, den Sie zuerst eingefügt haben. Alle späteren Aufräumarbeiten und Änderungen gehen verloren.\n\nSie kommen weiterhin zu Ihren früheren Fassungen — im Menü → Versionsverlauf steht der jetzige Text ganz oben.';
 
   @override
   String get revertConfirmOk => 'Wiederherstellen';
+
+  @override
+  String get okAction =>
+      'OK';
+
+  @override
+  String get revertDoneTitle =>
+      'Auf das Original zurückgesetzt';
+
+  @override
+  String get revertDoneBody =>
+      'Der Text, an dem Sie gearbeitet haben, ist nicht verloren.\n\nÖffnen Sie das Menü → Versionsverlauf: Der oberste Eintrag ist der Text von unmittelbar davor. Tippen Sie darauf, um ihn jederzeit zurückzuholen.';
 
   // 자판 위 막대의 목록 셋 (2026-08-17)
   @override
@@ -790,6 +802,21 @@ class L10nDe extends L10n {
   @override
   String get historyOriginal =>
       'Wie eingefügt';
+
+  @override
+  String get historyWhyTidy => 'Vor dem Aufräumen';
+
+  @override
+  String get historyWhyAi => 'Vor der KI-Bearbeitung';
+
+  @override
+  String get historyWhyReplace => 'Vor dem Ersetzen';
+
+  @override
+  String get historyWhyRevert => 'Vor der Rückkehr zum Original';
+
+  @override
+  String get historyWhyRestore => 'Vor dem Wiederherstellen';
 
   @override
   String historyUnknownTime(int n) => 'Frühere Version $n';
