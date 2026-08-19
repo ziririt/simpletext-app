@@ -96,33 +96,70 @@ install_try() { # $1=udid $2=이름 $3=시한(초)
   wait "$pid"
 }
 
+# 기기에 깔린 판을 묻는다. 안 깔려 있으면 빈 글자.
+installed_version() { # $1=udid
+  xcrun devicectl device info apps --device "$1" \
+      --bundle-id com.ziririt.simpletext 2>/dev/null |
+    awk '/com.ziririt.simpletext/{print $(NF-1)"."$NF}'
+}
+
+# 기기가 대답을 하는가. 붙지도 않은 기기에 설치를 **시작조차 하지 않기**
+# 위한 물음이다.
+#
+# 2026-08-19 밤 사고의 핵심이 여기다. 옛 코드는 곧바로 flutter install 을
+# 던지고 90초 뒤에 끊었는데, 그 사이 iOS 는 이미 옛 앱을 치워 놓은 뒤였다.
+# 치우고 못 넣으면 앱은 사라진다.
+device_awake() { # $1=udid
+  xcrun devicectl device info apps --device "$1" \
+      --bundle-id com.ziririt.simpletext >/dev/null 2>&1
+}
+
 install_to() { # $1=udid $2=이름
+  # (가) 아예 안 붙는 기기 — 손도 안 댄다. 이 갈래는 안전하다.
+  if ! device_awake "$1"; then
+    log "$2 — 기기가 대답을 안 한다(잠겼거나 그물 밖). 손도 안 댔다"
+    return 1
+  fi
+
+  # 붙기는 붙었다. 여기서부터는 **앱을 잃을 수 있는 구간**이다.
+  local before
+  before=$(installed_version "$1")
+
+  # 시한을 90에서 240으로 늘렸다. 무선으로 40MB짜리를 넣는 데 90초는
+  # 빠듯하다 — 넉넉지 않은 시한이 곧 앱을 지우는 칼이 됐다.
   local i ok=0
   for i in 1 2 3; do
     log "$2 설치 중… (시도 $i)"
-    if install_try "$1" "$2" 90 &&
+    if install_try "$1" "$2" 240 &&
        ! grep -q "Install failed" "/tmp/dep_$2.log"; then
       ok=1; break
     fi
+    # (나) 붙어서 설치하다 끊겼다. **건너뛰지 않는다.** 되묻고 다시 한다.
     if grep -q "응답 없음" "/tmp/dep_$2.log"; then
-      log "$2 — 90초 동안 대답이 없다. 자고 있거나 그물 밖인 듯하다. 건너뛴다"
-      return 1
+      if [ -n "$before" ] && [ -z "$(installed_version "$1")" ]; then
+        log "$2 ** 끊긴 자리에서 앱이 사라졌다 — 곧바로 다시 넣는다 **"
+      else
+        log "$2 — 시한을 넘겨 끊었다. 다시 해 본다"
+      fi
     fi
     tail -3 "/tmp/dep_$2.log"
     sleep 7
   done
-  [ "$ok" = 1 ] || { log "$2 설치 실패 — 세 번 다 안 됐다"; return 1; }
 
   # 여기가 이 함수의 존재 이유다. 명령이 아니라 기기에게 묻는다.
   local V
-  V=$(xcrun devicectl device info apps --device "$1" \
-        --bundle-id com.ziririt.simpletext 2>/dev/null |
-      awk '/com.ziririt.simpletext/{print $(NF-1)"."$NF}')
+  V=$(installed_version "$1")
   if [ -n "$V" ]; then
     log "$2 확인: 기기가 $V 라고 답했다"
-  else
-    log "$2 설치는 됐다는데 기기에 되물으니 답이 없다 — 눈으로 확인할 것"
+    return 0
   fi
+  # 앱이 없다. 있다가 없어진 것이면 사고다 — 조용히 넘어가면 안 된다.
+  if [ -n "$before" ]; then
+    log "$2 ****** 앱이 기기에서 사라졌다. 손으로 확인할 것 ($before 였다) ******"
+  else
+    log "$2 설치 실패 — 기기에 앱이 없다"
+  fi
+  return 1
 }
 
 [ "$WHAT" = "all" ] || [ "$WHAT" = "iphone" ] && install_to "$IPHONE" iphone
