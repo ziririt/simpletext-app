@@ -114,7 +114,7 @@ class L10nEs extends L10n {
   @override
   String get previewSub2 => 'Muestra el resultado y pregunta antes de aplicar';
   @override
-  String get metaTooltip => 'Fuente y etiquetas';
+  String get metaTooltip => 'Título y etiquetas';
   @override
   String get pinTooltip => 'Fijar arriba';
   @override

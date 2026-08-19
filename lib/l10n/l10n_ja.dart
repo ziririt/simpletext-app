@@ -114,7 +114,7 @@ class L10nJa extends L10n {
   @override
   String get previewSub2 => '結果を先に表示して適用するか確認します';
   @override
-  String get metaTooltip => '出典・タグ';
+  String get metaTooltip => 'タイトル・タグ';
   @override
   String get pinTooltip => 'リスト上部に固定';
   @override

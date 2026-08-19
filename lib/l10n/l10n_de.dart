@@ -114,7 +114,7 @@ class L10nDe extends L10n {
   @override
   String get previewSub2 => 'Zeigt das Ergebnis zuerst und fragt vor dem Anwenden';
   @override
-  String get metaTooltip => 'Quelle & Tags';
+  String get metaTooltip => 'Titel & Tags';
   @override
   String get pinTooltip => 'Oben anheften';
   @override

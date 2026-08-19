@@ -4630,6 +4630,21 @@ class _EditorScreenState extends State<EditorScreen>
   static const double _glassInset = kToolbarHeight;
 
   double get _topInsetOutside => (_isDesktop || _showMeta) ? _glassInset : 0;
+
+  /// 머리에 보여 줄 제목.
+  ///
+  /// 손으로 적은 것이 먼저다. 없으면 본문 첫 줄에서 뽑는데, 목록이 쓰는
+  /// 것과 **같은 함수**(core/auto_meta.dart 의 autoTitle)를 쓴다. 다른
+  /// 함수를 쓰면 목록과 머리가 같은 글을 두 이름으로 부른다.
+  ///
+  /// 둘 다 없으면 빈 글이다. 그때는 안내말을 띄운다 — 빈 자리를 그냥
+  /// 두면 눌러서 펼 수 있다는 것을 아무도 모른다.
+  String _headTitle(L10n l) {
+    final t = titleCtl.text.trim();
+    if (t.isNotEmpty) return t;
+    final a = autoTitle(bodyCtl.text).trim();
+    return a.isEmpty ? l.titleHint : a;
+  }
   double get _topInsetInside => _topInsetOutside > 0 ? 0 : _glassInset;
 
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
@@ -6367,7 +6382,49 @@ static const int kTagScanChars = 3000;
                   onPressed: () => SplitShell.of(context)!.toggleList(),
                 )
               : null,
-          title: const SizedBox.shrink(),
+          centerTitle: true,
+          // 2026-08-19 소유자 지시 — "편집 화면 맨 위 중앙에 글 제목이
+          // 나오면 좋겠다. 그거 터치하면 글제목 태그 편집 화면으로.
+          // 그리고 한번 더 터치하면 글제목 태그 편집 사라지고."
+          //
+          // 여기는 비어 있었다. 2026-08-16 에 제목 칸을 평소엔 숨기기로
+          // 했는데(자동으로 붙으니까), 그러고 나니 **이 화면이 무슨 글인지
+          // 알려 주는 것이 하나도 남지 않았다.** 목록에서 방금 눌러
+          // 들어왔으면 알지만, 앱을 다시 열면 마지막 글이 그냥 열린다.
+          //
+          // 그래서 머리에는 보여 주기만 하고, 고치려면 눌러서 편다.
+          // 숨긴 까닭과 알려 줄 필요를 둘 다 지킨다.
+          //
+          // Listenable.merge 로 두 칸을 함께 듣는 까닭 — 제목은 손으로 적은
+          // 것이 없으면 본문에서 뽑는다. setState 로 하면 글자를 칠 때마다
+          // 화면 전체를 다시 그려야 하고, 안 하면 머리가 옛 제목에 멈춘다.
+          // 여기서 듣게 하면 머리 글자 하나만 다시 그린다.
+          title: AnimatedBuilder(
+            animation: Listenable.merge([titleCtl, bodyCtl]),
+            builder: (_, __) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                // 뭔가가 열리고 닫히는 순간이다. 이런 데만 준다.
+                HapticFeedback.selectionClick();
+                setState(() => _showMeta = !_showMeta);
+              },
+              child: SizedBox(
+                width: double.infinity,
+                child: Text(
+                  _headTitle(l),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      // 펴 두었을 때 색이 바뀐다. 눌러서 뭔가 됐다는 것을
+                      // 알려 주는 가장 조용한 방법이다.
+                      color: _showMeta ? context.c.accent : context.c.sub),
+                ),
+              ),
+            ),
+          ),
           actions: [
             if (_editing)
               TextButton(

@@ -114,7 +114,7 @@ class L10nPt extends L10n {
   @override
   String get previewSub2 => 'Mostra o resultado e pergunta antes de aplicar';
   @override
-  String get metaTooltip => 'Fonte e tags';
+  String get metaTooltip => 'Título e tags';
   @override
   String get pinTooltip => 'Fixar no topo';
   @override

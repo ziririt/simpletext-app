@@ -114,7 +114,7 @@ class L10nZhHans extends L10n {
   @override
   String get previewSub2 => '先显示整理结果，再询问是否应用';
   @override
-  String get metaTooltip => '来源·标签';
+  String get metaTooltip => '标题·标签';
   @override
   String get pinTooltip => '置顶';
   @override

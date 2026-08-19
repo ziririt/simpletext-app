@@ -114,7 +114,7 @@ class L10nFr extends L10n {
   @override
   String get previewSub2 => 'Affiche le résultat puis demande avant d’appliquer';
   @override
-  String get metaTooltip => 'Source et tags';
+  String get metaTooltip => 'Titre et tags';
   @override
   String get pinTooltip => 'Épingler en haut';
   @override

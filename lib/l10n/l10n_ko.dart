@@ -114,7 +114,7 @@ class L10nKo extends L10n {
   @override
   String get previewSub2 => '정리 결과를 먼저 보여 주고 적용할지 묻습니다';
   @override
-  String get metaTooltip => '출처·태그';
+  String get metaTooltip => '제목·태그';
   @override
   String get pinTooltip => '리스트 상단 고정';
   @override

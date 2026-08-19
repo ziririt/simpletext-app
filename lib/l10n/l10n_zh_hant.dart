@@ -114,7 +114,7 @@ class L10nZhHant extends L10n {
   @override
   String get previewSub2 => '先顯示整理結果，再詢問是否套用';
   @override
-  String get metaTooltip => '來源·標籤';
+  String get metaTooltip => '標題·標籤';
   @override
   String get pinTooltip => '置頂';
   @override
