@@ -3145,6 +3145,7 @@ class _HomeScreenState extends State<HomeScreen>
     // 다른 앱에서 보낸 글 받기(2026-08-17). 목록 화면이 살아 있는 동안
     // 계속 듣는다.
     _wireShare();
+    _wireWidget();
     // 맥 상단의 '파일' 메뉴. 첫 프레임 뒤에 단다 — 그때라야 L10n이 있다.
     if (MacMenu.supported) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _installMacMenu());
@@ -3337,6 +3338,36 @@ class _HomeScreenState extends State<HomeScreen>
   /// 앱에서 그냥 보낸 것이다. 남이 보낸 글을 묻지도 않고 고쳐 놓으면
   /// 사용자는 무슨 일이 일어났는지 모른다. 글은 열어 두고, 정리 버튼은
   /// 바로 아래에 있다.
+  /// 홈 화면 위젯에서 눌러 들어온 것.
+  ///
+  /// 공유 받기와 똑같이 **두 길**을 다 받는다. 앱이 켜져 있으면 흐름으로
+  /// 오고, 꺼져 있었으면 켜지면서 한 번 온다.
+  void _wireWidget() {
+    if (!WidgetBridge.supported) return;
+    WidgetBridge.clicks.listen(_openFromWidget);
+    WidgetBridge.initialClick().then((u) {
+      if (u != null) _openFromWidget(u);
+    });
+  }
+
+  Future<void> _openFromWidget(Uri? uri) async {
+    final id = WidgetBridge.noteIdFrom(uri);
+    if (id == null || !mounted) return;
+    if (id.isEmpty) {
+      // 위젯의 연필 — 새 메모.
+      final note = Note.fresh();
+      store.notes.insert(0, note);
+      await store.persist();
+      if (!mounted) return;
+      await openNote(context, note.id);
+      return;
+    }
+    // 그 사이에 지워졌을 수 있다. 없는 메모를 열면 빈 편집 화면이 뜨는데,
+    // 그건 '없어졌다'가 아니라 '새로 썼다'로 보여서 더 나쁘다.
+    if (!store.notes.any((n) => n.id == id)) return;
+    if (mounted) await openNote(context, id);
+  }
+
   void _wireShare() {
     ShareIntake.listen((t) {
       if (mounted) _intake(t, tidy: false);

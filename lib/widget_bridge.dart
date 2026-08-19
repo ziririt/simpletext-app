@@ -130,6 +130,28 @@ class WidgetBridge {
     }
   }
 
+  /// 앱이 켜져 있는 동안 위젯을 누른 것.
+  ///
+  /// 화면 쪽이 home_widget 을 직접 알 필요는 없다. 밖으로 나가는 문을 이
+  /// 파일 하나로 좁혀 두면, 나중에 플러그인을 갈아 끼울 때 고칠 자리가
+  /// 여기뿐이다.
+  static Stream<Uri?> get clicks =>
+      supported ? HomeWidget.widgetClicked : const Stream<Uri?>.empty();
+
+  /// 앱이 꺼져 있을 때 위젯을 눌러 켠 것.
+  ///
+  /// 이 둘은 **다른 길**이다. 하나만 붙이면 "처음엔 되는데 두 번째부터
+  /// 안 된다"거나 그 반대가 된다 — 공유 받기(share_intake.dart)에서 이미
+  /// 겪은 자리다.
+  static Future<Uri?> initialClick() async {
+    if (!supported) return null;
+    try {
+      return await HomeWidget.initiallyLaunchedFromHomeWidget();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 위젯에서 눌러 들어온 주소에서 메모 아이디를 꺼낸다.
   ///
   /// skybluenote://note?id=n123  →  'n123'

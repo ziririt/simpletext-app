@@ -249,23 +249,44 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 다섯 줄이면 4x2 위젯을 채우고 4x4에서도 허전하지 않다. 더 필요해지면 그때
 어댑터로 옮긴다.
 
-### 남은 한 걸음 — 아이폰 위젯 (소유자가 Xcode에서 눌러야 함)
+### 아이폰 위젯 — Xcode 창을 안 열고 만들었다 (2026-08-19)
 
-App Group `group.com.ziririt.simpletext` 는 이미 ios/Runner.entitlements 에 있다.
-그 위에 Widget Extension 타겟만 얹으면 된다.
+소유자가 "나는 xcode를 다룰 줄 모른다"고 했다. File → New → Target 은 사람이
+눌러야 하는 일처럼 보이지만, 그 창이 하는 일은 결국 `project.pbxproj` 를
+고치는 것뿐이다. 코코아팟이 데려온 **xcodeproj 젬**이 같은 일을 한다.
 
-  1. Xcode 에서 `ios/Runner.xcworkspace` 를 연다.
-  2. File → New → Target… → **Widget Extension**.
-     Product Name: `SkyblueWidget`, "Include Live Activity"·"Include Configuration
-     App Intent" 는 **끈다**. Activate 를 묻거든 Activate.
-  3. 새로 생긴 SkyblueWidget 타겟 → Signing & Capabilities →
-     **+ Capability → App Groups** → `group.com.ziririt.simpletext` 체크.
-  4. 그다음 Swift 파일을 채우는 것은 코드 쪽 일이다.
-     읽을 것: UserDefaults(suiteName: "group.com.ziririt.simpletext")
-     의 `feed` 키(문자열, JSON). 모양은 widget_feed.dart 의 `widgetPayload`.
+    export GEM_HOME=/opt/homebrew/Cellar/cocoapods/1.16.2_2/libexec
+    ruby ~/development/_patch/ios/add_widget_target.rb
 
-이 셋을 하기 전에는 `WidgetBridge` 의 iOS 갱신 호출이 조용히 아무것도 안 한다
-(오류는 안 난다).
+설정값은 짐작하지 않았다. 이 프로젝트에는 이미 **ShareExtension** 이라는 같은
+갈래(app extension)의 타겟이 있고, 그 값은 실제로 서명이 되고 기기에 깔린
+검증된 값이다. 스크립트가 그걸 **읽어서** 팀 아이디와 배포 대상을 가져온다.
+앞으로 애플 쪽 타겟을 또 만들 일이 있으면 이 스크립트를 본떠라.
+
+빠뜨리기 쉬운 자리 셋 — 세 개 다 안 하면 조용히 아무 일도 안 일어난다:
+
+1. **Debug/Release/Profile 세 판을 다 만들어야 한다.** `new_target` 은 둘만
+   만든다. Profile 이 빠지면 그 판 빌드에서 통째로 터진다.
+2. **Generated.xcconfig 를 물려받아야** `$(FLUTTER_BUILD_NAME)` 이 풀린다.
+3. **Runner 의 'Embed Foundation Extensions' 단계에 넣어야** 앱 안에 실린다.
+   넣는 자리는 `symbol_dst_subfolder_spec == :plug_ins`.
+
+그리고 iOS 쪽에는 앱 자체에도 손댈 것이 하나 있었다 — `ios/Runner/Info.plist`
+의 **CFBundleURLTypes 에 `skybluenote` 를 등록**. 없으면 위젯을 눌러도 iOS가
+그 주소를 아무도 안 받는 것으로 보고 조용히 버린다.
+
+또 하나: home_widget 의 iOS 쪽은 주소에 **`homeWidget` 이라는 열쇠말이 있는
+것만** '위젯에서 온 것'으로 친다(`isWidgetUrl`). 그래서 Swift 쪽 링크는
+`skybluenote://note?homeWidget=1&id=…` 꼴이다. 안드로이드는 인텐트 action 으로
+가리므로 열쇠말이 필요 없다 — 두 쪽 규칙이 다르다는 것을 여기 적어 둔다.
+
+### 아직 안 한 것
+
+- 위젯 갤러리에 뜨는 이름·설명(`configurationDisplayName`, `description`)이
+  아직 한국어 한 벌뿐이다. 아홉 언어로 하려면 SkyblueWidget 타겟에
+  `*.lproj/Localizable.strings` 를 붙여야 한다.
+- 잠금 화면 위젯(accessory family)은 안 만들었다. 잠긴 메모를 거르는 규칙은
+  이미 있으니 넣으려면 `supportedFamilies` 에 더하면 된다.
 
 ## 8-0. 지금 열려 있는 항목 (2026-08-14, 클라우드 코드 세션 → 맥 코워크 인계)
 
