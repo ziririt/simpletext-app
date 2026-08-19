@@ -57,11 +57,21 @@ void main() {
             greaterThanOrEqualTo(4.5));
       });
 
-      test('보조 글자는 최소한 3:1은 넘는다', () {
-        // 날짜·부가정보용이라 본문 기준을 그대로 대지 않는다. 다만
-        // 배경에 묻히면 안 되므로 조작점 기준(3:1)은 지킨다.
-        expect(contrastRatio(_v(c.sub), _v(c.bg)), greaterThanOrEqualTo(3.0));
-        expect(contrastRatio(_v(c.sub), _v(c.panel)), greaterThanOrEqualTo(3.0));
+      test('보조 글자도 읽어야 하는 글자다 (4.5:1)', () {
+        // 2026-08-20 소유자 신고 — "그렇게 옅은 회색은 사용금지 css다."
+        //
+        // **이 시험이 바로 그 옅은 회색을 지켜 주고 있었다.** 예전 문턱은
+        // 3:1이었고 옛 색은 3.2:1이라 통과했다. 시험은 초록불이었고,
+        // 화면은 안 읽혔다. 통과하는 시험이 고장을 가린 자리다.
+        //
+        // 잘못은 색이 아니라 **문턱을 그렇게 정한 판단**에 있었다. 이 색이
+        // 붙는 자리를 '날짜·부가정보'라고 적어 뒀는데, 실제로는 설정의 값과
+        // 안내 문구가 전부 이 색이다. 눈으로 안 보고 이름만 보고 정했다.
+        //
+        // 읽으라고 쓴 글자는 전부 4.5:1이다. 조작점 기준(3:1)은 손잡이와
+        // 테두리처럼 **읽는 것이 아닌 것**에만 댄다.
+        expect(contrastRatio(_v(c.sub), _v(c.bg)), greaterThanOrEqualTo(4.5));
+        expect(contrastRatio(_v(c.sub), _v(c.panel)), greaterThanOrEqualTo(4.5));
       });
 
       test('선택 손잡이가 보인다 (조작점 3:1)', () {
