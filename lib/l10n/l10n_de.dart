@@ -131,6 +131,8 @@ class L10nDe extends L10n {
   @override
   String get titleHint => 'Titel (automatisch)';
   @override
+  String get titleTapHint => 'Titel eingeben';
+  @override
   String get sourceNone => 'Keine Quelle';
   @override
   String get sourceOther => 'Sonstige';
@@ -344,20 +346,18 @@ class L10nDe extends L10n {
   @override
   String appliedPrefix(String what) => 'Angewendet · $what';
   @override
-  String unknownPrefix(String what) => 'Nicht als Regel erkannt · $what';
+  String unknownPrefix(String what) => 'Das übernimmt die KI · $what';
   @override
   String get aiKeyPromo =>
       'Mit einem KI-API-Schlüssel in den Einstellungen werden auch solche freien Anweisungen verarbeitet.';
   @override
-  String get aiRunUnknown => 'Nicht erkannte Befehle mit KI ausführen';
-  @override
   String get aiBusyLabel => 'KI bearbeitet…';
+  @override
+  String get aiWorking => 'Die KI liest Ihre Anweisung und bearbeitet…';
   @override
   String get aiEmptyResponse => 'Leere Antwort';
   @override
   String aiCallFailed(String error) => 'KI-Aufruf fehlgeschlagen: $error';
-  @override
-  String get aiApplyResult => 'KI-Ergebnis anwenden';
   @override
   String get aiAppliedToast => 'KI-Bearbeitung angewendet — mit Rückgängig wiederherstellbar';
   @override

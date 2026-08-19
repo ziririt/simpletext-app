@@ -98,6 +98,9 @@ abstract class L10n {
   String get unpinConfirmBody;
   String get deleteTooltip;
   String get titleHint;
+
+  /// 머리의 빈 제목 자리에 두는 시키는 말. 이름표가 아니다.
+  String get titleTapHint;
   String get sourceNone;
   String get sourceOther;
   String get tagsHint;
@@ -209,11 +212,12 @@ abstract class L10n {
   String appliedPrefix(String what);
   String unknownPrefix(String what);
   String get aiKeyPromo;
-  String get aiRunUnknown;
   String get aiBusyLabel;
+
+  /// AI 가 도는 동안 창에 뜨는 줄.
+  String get aiWorking;
   String get aiEmptyResponse;
   String aiCallFailed(String error);
-  String get aiApplyResult;
   String get aiAppliedToast;
   String get close;
   String get interpretApply;
@@ -652,6 +656,7 @@ abstract class L10n {
         'unpinConfirmBody': unpinConfirmBody,
         'deleteTooltip': deleteTooltip,
         'titleHint': titleHint,
+        'titleTapHint': titleTapHint,
         'sourceNone': sourceNone,
         'sourceOther': sourceOther,
         'tagsHint': tagsHint,
@@ -724,10 +729,9 @@ abstract class L10n {
         'favRemove': favRemove,
         'favSavedToast': favSavedToast,
         'aiKeyPromo': aiKeyPromo,
-        'aiRunUnknown': aiRunUnknown,
         'aiBusyLabel': aiBusyLabel,
+        'aiWorking': aiWorking,
         'aiEmptyResponse': aiEmptyResponse,
-        'aiApplyResult': aiApplyResult,
         'aiAppliedToast': aiAppliedToast,
         'close': close,
         'interpretApply': interpretApply,

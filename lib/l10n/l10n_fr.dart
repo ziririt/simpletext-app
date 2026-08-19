@@ -131,6 +131,8 @@ class L10nFr extends L10n {
   @override
   String get titleHint => 'Titre (automatique)';
   @override
+  String get titleTapHint => 'Ajouter un titre';
+  @override
   String get sourceNone => 'Aucune source';
   @override
   String get sourceOther => 'Autre';
@@ -344,20 +346,18 @@ class L10nFr extends L10n {
   @override
   String appliedPrefix(String what) => 'Appliqué · $what';
   @override
-  String unknownPrefix(String what) => 'Non reconnu comme règle · $what';
+  String unknownPrefix(String what) => 'L\'IA s\'en charge · $what';
   @override
   String get aiKeyPromo =>
       'Ajoutez une clé d\'API d\'IA dans les réglages pour traiter aussi ces éditions libres.';
   @override
-  String get aiRunUnknown => 'Exécuter les commandes non reconnues avec l\'IA';
-  @override
   String get aiBusyLabel => 'L\'IA édite…';
+  @override
+  String get aiWorking => 'L\'IA lit votre consigne et modifie le texte…';
   @override
   String get aiEmptyResponse => 'Réponse vide';
   @override
   String aiCallFailed(String error) => 'Échec de l\'appel IA : $error';
-  @override
-  String get aiApplyResult => 'Appliquer le résultat de l\'IA';
   @override
   String get aiAppliedToast => 'Édition IA appliquée — récupérable avec Annuler';
   @override

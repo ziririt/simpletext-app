@@ -131,6 +131,8 @@ class L10nJa extends L10n {
   @override
   String get titleHint => 'タイトル（自動）';
   @override
+  String get titleTapHint => 'タイトルを入力';
+  @override
   String get sourceNone => '出典なし';
   @override
   String get sourceOther => 'その他';
@@ -343,19 +345,17 @@ class L10nJa extends L10n {
   @override
   String appliedPrefix(String what) => '適用済み · $what';
   @override
-  String unknownPrefix(String what) => 'ルールとして解釈できません · $what';
+  String unknownPrefix(String what) => 'AI が引き受ける部分 · $what';
   @override
   String get aiKeyPromo => '設定にAI APIキーを入れると、このような自由編集の指示も処理できます。';
   @override
-  String get aiRunUnknown => '解釈できない指示をAIで実行';
-  @override
   String get aiBusyLabel => 'AI編集中…';
+  @override
+  String get aiWorking => 'AI が指示を読んで編集しています…';
   @override
   String get aiEmptyResponse => '空の応答';
   @override
   String aiCallFailed(String error) => 'AI呼び出しに失敗: $error';
-  @override
-  String get aiApplyResult => 'AIの結果を適用';
   @override
   String get aiAppliedToast => 'AI編集を適用しました — 「元に戻す」で復元できます';
   @override

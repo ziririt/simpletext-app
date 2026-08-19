@@ -131,6 +131,8 @@ class L10nPt extends L10n {
   @override
   String get titleHint => 'Título (automático)';
   @override
+  String get titleTapHint => 'Adicionar título';
+  @override
   String get sourceNone => 'Sem fonte';
   @override
   String get sourceOther => 'Outro';
@@ -344,19 +346,17 @@ class L10nPt extends L10n {
   @override
   String appliedPrefix(String what) => 'Aplicado · $what';
   @override
-  String unknownPrefix(String what) => 'Não reconhecido como regra · $what';
+  String unknownPrefix(String what) => 'A IA cuida disto · $what';
   @override
   String get aiKeyPromo => 'Adicione uma chave de API de IA nos Ajustes para processar também edições livres assim.';
   @override
-  String get aiRunUnknown => 'Executar comandos não reconhecidos com IA';
-  @override
   String get aiBusyLabel => 'IA editando…';
+  @override
+  String get aiWorking => 'A IA está lendo sua instrução e editando…';
   @override
   String get aiEmptyResponse => 'Resposta vazia';
   @override
   String aiCallFailed(String error) => 'Falha na chamada de IA: $error';
-  @override
-  String get aiApplyResult => 'Aplicar resultado da IA';
   @override
   String get aiAppliedToast => 'Edição de IA aplicada — recuperável com Desfazer';
   @override

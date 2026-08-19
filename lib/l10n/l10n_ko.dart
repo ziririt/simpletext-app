@@ -131,6 +131,8 @@ class L10nKo extends L10n {
   @override
   String get titleHint => '제목(자동)';
   @override
+  String get titleTapHint => '제목 입력';
+  @override
   String get sourceNone => '출처 없음';
   @override
   String get sourceOther => '기타';
@@ -343,19 +345,17 @@ class L10nKo extends L10n {
   @override
   String appliedPrefix(String what) => '적용됨 · $what';
   @override
-  String unknownPrefix(String what) => '규칙으로 해석 불가 · $what';
+  String unknownPrefix(String what) => 'AI가 맡을 부분 · $what';
   @override
   String get aiKeyPromo => '설정에 AI API 키를 넣으면 이런 자유 편집 명령도 처리됩니다.';
   @override
-  String get aiRunUnknown => '해석 불가 명령을 AI로 실행';
-  @override
   String get aiBusyLabel => 'AI 편집 중…';
+  @override
+  String get aiWorking => 'AI가 지시를 읽고 편집하고 있습니다…';
   @override
   String get aiEmptyResponse => '빈 응답';
   @override
   String aiCallFailed(String error) => 'AI 호출 실패: $error';
-  @override
-  String get aiApplyResult => 'AI 결과 적용';
   @override
   String get aiAppliedToast => 'AI 편집을 적용했습니다 — 되돌리기로 복구 가능';
   @override

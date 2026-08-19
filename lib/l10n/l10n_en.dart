@@ -131,6 +131,8 @@ class L10nEn extends L10n {
   @override
   String get titleHint => 'Title (auto)';
   @override
+  String get titleTapHint => 'Add a title';
+  @override
   String get sourceNone => 'No source';
   @override
   String get sourceOther => 'Other';
@@ -344,19 +346,17 @@ class L10nEn extends L10n {
   @override
   String appliedPrefix(String what) => 'Applied · $what';
   @override
-  String unknownPrefix(String what) => 'Not a recognized rule · $what';
+  String unknownPrefix(String what) => 'The AI will handle this · $what';
   @override
   String get aiKeyPromo => 'Add an AI API key in Settings to handle free-form edits like this.';
   @override
-  String get aiRunUnknown => 'Run unrecognized commands with AI';
-  @override
   String get aiBusyLabel => 'AI editing…';
+  @override
+  String get aiWorking => 'The AI is reading your instruction and editing…';
   @override
   String get aiEmptyResponse => 'Empty response';
   @override
   String aiCallFailed(String error) => 'AI call failed: $error';
-  @override
-  String get aiApplyResult => 'Apply AI result';
   @override
   String get aiAppliedToast => 'AI edit applied — recoverable with Undo';
   @override

@@ -4643,8 +4643,16 @@ class _EditorScreenState extends State<EditorScreen>
     final t = titleCtl.text.trim();
     if (t.isNotEmpty) return t;
     final a = autoTitle(bodyCtl.text).trim();
-    return a.isEmpty ? l.titleHint : a;
+    // 빈 자리에는 이름표가 아니라 **시키는 말**을 둔다. '제목(자동)'은
+    // 그 칸이 무엇인지만 말하고 무엇을 하라고는 말하지 않는다
+    // (2026-08-19 소유자 신고).
+    return a.isEmpty ? l.titleTapHint : a;
   }
+
+  /// 머리에 보여 줄 것이 안내말뿐인가 — 손으로 적은 제목도, 본문에서 뽑을
+  /// 것도 없는 상태. 연필을 붙일지와 눌렀을 때 자판을 띄울지를 이걸로 가른다.
+  bool get _headTitleEmpty =>
+      titleCtl.text.trim().isEmpty && autoTitle(bodyCtl.text).trim().isEmpty;
   double get _topInsetInside => _topInsetOutside > 0 ? 0 : _glassInset;
 
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
@@ -5984,13 +5992,26 @@ static const int kTagScanChars = 3000;
                     // "해석 불가"를 한 줄씩 찍고 있었다. 지시 하나를 넣었는데
                     // 실패가 셋으로 보이니, 사용자에게는 세 배로 고장 난
                     // 것처럼 읽힌다. 못 알아들은 것은 하나다 — 그 지시.
-                    if (unknown.isNotEmpty)
+                    // 도는 동안에는 돈다고 말한다. 이 자리에 '해석 불가'가
+                    // 떠 있으면, 일이 되고 있는 중에 고장 났다고 적힌
+                    // 셈이다(2026-08-19 소유자 신고).
+                    if (aiBusy)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
+                        child: Text(l.aiWorking,
+                            style: TextStyle(
+                                color: context.c.accent,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600)),
+                      )
+                    else if (unknown.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        // 경고색을 뺐다. 이건 실패가 아니라 **다음 차례**다.
                         child: Text(l.unknownPrefix(unknown.join(' ')),
-                            style: TextStyle(color: context.c.warnInk, fontSize: 12.5)),
+                            style: TextStyle(color: context.c.sub, fontSize: 12.5)),
                       ),
-                    if (unknown.isNotEmpty && store.settings.aiKey.isEmpty)
+                    if (!aiBusy && unknown.isNotEmpty && store.settings.aiKey.isEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(l.aiKeyPromo,
@@ -6401,29 +6422,61 @@ static const int kTagScanChars = 3000;
           // 여기서 듣게 하면 머리 글자 하나만 다시 그린다.
           title: AnimatedBuilder(
             animation: Listenable.merge([titleCtl, bodyCtl]),
-            builder: (_, __) => GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                // 뭔가가 열리고 닫히는 순간이다. 이런 데만 준다.
-                HapticFeedback.selectionClick();
-                setState(() => _showMeta = !_showMeta);
-              },
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  _headTitle(l),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      // 펴 두었을 때 색이 바뀐다. 눌러서 뭔가 됐다는 것을
-                      // 알려 주는 가장 조용한 방법이다.
-                      color: _showMeta ? context.c.accent : context.c.sub),
+            builder: (_, __) {
+              final empty = _headTitleEmpty;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  // 뭔가가 열리고 닫히는 순간이다. 이런 데만 준다.
+                  HapticFeedback.selectionClick();
+                  final opening = !_showMeta;
+                  setState(() => _showMeta = opening);
+                  // 2026-08-19 소유자 신고 — "제목 입력란을 못 찾는 유저가
+                  // 있음." 펴 주기만 하고 손을 놓으면, 칸이 나와도 어디를
+                  // 눌러야 하는지 또 찾아야 한다. 제목이 비어 있으면 그
+                  // 칸으로 바로 데려간다. 이미 제목이 있으면 안 데려간다 —
+                  // 보려고 편 사람의 손에서 자판이 튀어나오면 방해다.
+                  if (opening && empty) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _titleFocus.requestFocus();
+                    });
+                  }
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 글자만으로는 누를 수 있다는 뜻이 안 선다. 제목이
+                    // 없을 때만 연필을 붙인다 — 있을 때는 제목 자체가
+                    // 읽을 거리라 아이콘이 끼면 시끄럽다.
+                    if (empty) ...[
+                      Icon(Icons.edit_outlined,
+                          size: 15,
+                          color: _showMeta ? context.c.accent : context.c.sub),
+                      const SizedBox(width: 5),
+                    ],
+                    Flexible(
+                      child: Text(
+                        _headTitle(l),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 16,
+                            // 빈 자리의 안내말은 제목이 아니다. 덜 굵게 해서
+                            // 진짜 제목과 눈으로 구별되게 둔다.
+                            fontWeight:
+                                empty ? FontWeight.w600 : FontWeight.w700,
+                            // 펴 두었을 때 색이 바뀐다. 눌러서 뭔가 됐다는
+                            // 것을 알려 주는 가장 조용한 방법이다.
+                            color:
+                                _showMeta ? context.c.accent : context.c.sub),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
+              );
+            },
           ),
           actions: [
             if (_editing)

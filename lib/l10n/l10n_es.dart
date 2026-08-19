@@ -131,6 +131,8 @@ class L10nEs extends L10n {
   @override
   String get titleHint => 'Título (automático)';
   @override
+  String get titleTapHint => 'Añadir título';
+  @override
   String get sourceNone => 'Sin fuente';
   @override
   String get sourceOther => 'Otro';
@@ -344,19 +346,17 @@ class L10nEs extends L10n {
   @override
   String appliedPrefix(String what) => 'Aplicado · $what';
   @override
-  String unknownPrefix(String what) => 'No se reconoce como regla · $what';
+  String unknownPrefix(String what) => 'De esto se encarga la IA · $what';
   @override
   String get aiKeyPromo => 'Añade una clave de API de IA en Ajustes para procesar también estas ediciones libres.';
   @override
-  String get aiRunUnknown => 'Ejecutar con IA los comandos no reconocidos';
-  @override
   String get aiBusyLabel => 'IA editando…';
+  @override
+  String get aiWorking => 'La IA está leyendo tu instrucción y editando…';
   @override
   String get aiEmptyResponse => 'Respuesta vacía';
   @override
   String aiCallFailed(String error) => 'Error al llamar a la IA: $error';
-  @override
-  String get aiApplyResult => 'Aplicar resultado de IA';
   @override
   String get aiAppliedToast => 'Edición de IA aplicada — recuperable con Deshacer';
   @override

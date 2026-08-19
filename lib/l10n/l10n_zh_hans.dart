@@ -131,6 +131,8 @@ class L10nZhHans extends L10n {
   @override
   String get titleHint => '标题（自动）';
   @override
+  String get titleTapHint => '输入标题';
+  @override
   String get sourceNone => '无来源';
   @override
   String get sourceOther => '其他';
@@ -343,19 +345,17 @@ class L10nZhHans extends L10n {
   @override
   String appliedPrefix(String what) => '已应用 · $what';
   @override
-  String unknownPrefix(String what) => '无法解析为规则 · $what';
+  String unknownPrefix(String what) => '交给 AI 处理 · $what';
   @override
   String get aiKeyPromo => '在设置中填入 AI API 密钥后，这类自由编辑指令也能处理。';
   @override
-  String get aiRunUnknown => '用 AI 执行无法解析的指令';
-  @override
   String get aiBusyLabel => 'AI 编辑中…';
+  @override
+  String get aiWorking => 'AI 正在读取指令并编辑…';
   @override
   String get aiEmptyResponse => '空响应';
   @override
   String aiCallFailed(String error) => 'AI 调用失败: $error';
-  @override
-  String get aiApplyResult => '应用 AI 结果';
   @override
   String get aiAppliedToast => '已应用 AI 编辑 — 可通过撤销恢复';
   @override
