@@ -314,6 +314,38 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 `skybluenote://note?homeWidget=1&id=…` 꼴이다. 안드로이드는 인텐트 action 으로
 가리므로 열쇠말이 필요 없다 — 두 쪽 규칙이 다르다는 것을 여기 적어 둔다.
 
+### 아이패드에서만 위젯이 안 보이던 일 (2026-08-19 저녁, ver.1.9.1.119)
+
+소유자 신고: 아이폰(iOS 26)에서는 나오는데 **아이패드(iPadOS 17.7.1)에서는
+갤러리에서 검색해도 안 나온다.**
+
+**까닭.** iOS 17 부터 위젯은 `containerBackground(_:for:)` 를 반드시 써야 하고,
+안 쓴 위젯은 **아이패드 홈 화면 갤러리에 아예 안 나온다**(아이폰은 봐준다).
+그래서 정확히 한쪽만 안 보였다.
+
+우리는 그걸 쓰긴 썼는데 `if #available(iOS 17.0, *)` 로 감싸 뒀다. 앱 전체가
+iOS 15 까지 받으니 아래 판을 배려한 것이었다. **그 배려가 원인이었다** — 갈래가
+붙어 있는 한 시스템은 이 위젯을 '배경을 안 쓴 위젯'으로 셈한다.
+
+**고친 것.** 위젯 확장 **하나만** 배포 대상을 17.0 으로 올리고 갈래를 걷어냈다
+(`_patch/ios/bump_widget_min.rb`). 앱(Runner)과 ShareExtension 은 15.0 그대로다.
+잃는 것: iOS 15·16 기기에서 위젯이 안 생긴다. 앱은 그대로 깔리고 돌아가며
+확장만 무시된다.
+
+**진단에 쓴 것** — 다음에 같은 일이 생기면 이 순서로 좁혀라:
+- `xcrun devicectl device info apps --device <udid>` 로 설치된 판 확인
+- 빌드 산출물의 `Runner.app/PlugIns/*.appex` 존재 · Info.plist 의
+  `CFBundleVersion`·`CFBundleShortVersionString` 이 앱과 **같은지**(다르면 iOS가
+  확장을 통째로 무시한다) · `UIDeviceFamily` 에 2(아이패드)가 있는지
+- `codesign -d --entitlements :-` 로 권한, `security cms -D -i embedded.mobileprovision`
+  으로 그 기기 일련번호가 프로파일에 있는지
+- `xcrun devicectl device info processes --device <udid>` 로 다른 앱의 위젯
+  확장은 도는데 우리 것만 안 도는지 (= 시스템이 아직 모르거나 걸러 냈다는 뜻)
+- `--domain-type systemCrashLogs` 로 확장이 죽은 기록이 있는지 (없으면 깨진 게
+  아니라 **걸러진 것**이다 — 그때가 바로 위 규칙을 의심할 자리)
+- macOS 의 `log stream` 은 `--device-udid` 를 더 이상 안 받는다. 기기 로그를
+  뒤지려 시간 쓰지 마라.
+
 ### 아직 안 한 것
 
 - 위젯 갤러리에 뜨는 이름·설명(`configurationDisplayName`, `description`)이

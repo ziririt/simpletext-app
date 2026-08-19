@@ -7,6 +7,24 @@
 //
 //  잠긴 메모는 여기까지 오지 않는다. 위젯은 잠금 화면에도 뜨므로 거르는
 //  일은 넘기기 전에 끝나 있어야 한다(HANDOVER 8-3절).
+//
+//  ## 이 확장만 iOS 17 부터인 까닭
+//
+//  소유자 신고(2026-08-19 저녁): 아이폰(iOS 26)에서는 위젯이 나오는데
+//  아이패드(iPadOS 17.7.1)에서는 갤러리에서 검색해도 안 나온다.
+//
+//  iOS 17 부터 위젯은 containerBackground 를 반드시 써야 하고, **안 쓴
+//  위젯은 아이패드 홈 화면 갤러리에 아예 안 나온다.** 아이폰은 봐주고
+//  아이패드만 막는다 — 그래서 한쪽만 안 보였다.
+//
+//  처음엔 `if #available(iOS 17.0, *)` 로 감싸서 15.0 을 지켰다. 그런데
+//  이 앱은 배포 대상이 15.0 이라, 그 갈래가 붙어 있는 한 시스템이 이
+//  위젯을 '배경을 안 쓴 위젯'으로 셈했다. 확장 하나만 17.0 으로 올리고
+//  갈래를 없앤다.
+//
+//  잃는 것: iOS 15·16 기기에서는 위젯이 안 생긴다. 앱은 그대로 깔리고
+//  그대로 돌아간다 — 확장만 무시된다. 어차피 그 판들은 아이패드 갤러리에
+//  못 올라가므로, 반쪽으로 사는 것보다 낫다.
 
 import SwiftUI
 import WidgetKit
@@ -105,7 +123,17 @@ struct SBWidgetView: View {
       : Color(red: 0x00 / 255, green: 0x70 / 255, blue: 0xBE / 255)
   }
 
-  private var maxRows: Int { family == .systemLarge ? 6 : 3 }
+  private var maxRows: Int {
+    switch family {
+    case .systemSmall: return 2
+    case .systemLarge: return 6
+    default: return 3
+    }
+  }
+
+  /// 작은 판에서는 미리보기를 뺀다. 2x2 칸에 제목과 미리보기를 다 넣으면
+  /// 둘 다 반 줄씩 잘려서 어느 쪽도 안 읽힌다.
+  private var showsPreview: Bool { family != .systemSmall }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -139,9 +167,9 @@ struct SBWidgetView: View {
           Link(destination: sbURL(host: "note", id: it.id)) {
             VStack(alignment: .leading, spacing: 1) {
               Text(it.title)
-                .font(.system(size: 14, weight: .semibold))
-                .lineLimit(1)
-              if !it.preview.isEmpty {
+                .font(.system(size: showsPreview ? 14 : 13, weight: .semibold))
+                .lineLimit(showsPreview ? 1 : 2)
+              if showsPreview && !it.preview.isEmpty {
                 Text(it.preview)
                   .font(.system(size: 12))
                   .foregroundColor(.secondary)
@@ -182,16 +210,14 @@ struct SkyblueWidget: Widget {
 
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: SBProvider()) { entry in
-      if #available(iOS 17.0, *) {
-        SBWidgetView(entry: entry)
-          .padding(14)
-          .containerBackground(.background, for: .widget)
-      } else {
-        SBWidgetView(entry: entry).padding(14)
-      }
+      // 갈래(#available)를 걷어냈다. 이 확장은 배포 대상이 17.0 이라
+      // 늘 붙는다 — 파일 머리말의 까닭을 볼 것.
+      SBWidgetView(entry: entry)
+        .padding(14)
+        .containerBackground(.background, for: .widget)
     }
     .configurationDisplayName("Skyblue Note")
     .description("최근 메모")
-    .supportedFamilies([.systemMedium, .systemLarge])
+    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }
 }
