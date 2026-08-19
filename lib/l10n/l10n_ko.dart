@@ -544,6 +544,15 @@ class L10nKo extends L10n {
   @override
   String get syncSoon =>
       '준비 중';
+
+  @override
+  String get driveSignInFailed => '구글 계정에 연결하지 못했습니다';
+
+  @override
+  String get driveNeedsSignIn => '구글 계정 연결이 필요합니다';
+
+  @override
+  String get driveSignedInAs => '연결됨';
   @override
   String get syncSectionState =>
       '지금 상태';

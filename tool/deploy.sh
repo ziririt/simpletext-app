@@ -44,6 +44,31 @@ else
 fi
 
 IPHONE=00008140-000C11100113001C   # Ziririt iPhone 16
+
+# 구글 로그인에 쓰는 클라이언트 아이디 — 저장소 밖에서 읽는다.
+#
+# 2026-08-20. 이 아이디는 비밀이 아니다(앱 안에 어차피 들어간다).
+# 그래도 공개 저장소에는 안 넣는다. 저장소를 그대로 복사한 사람이
+# 형님 계정의 이름표를 달고 다니게 되고, 구글 쪽 사용량과 경고가
+# 형님 앞으로 온다. **비밀이 아닌 것과 남에게 줘도 되는 것은 다르다.**
+#
+# 파일이 없으면 없는 대로 짓는다. 그렇게 지은 판은 구글 로그인만
+# 안 되고 나머지는 다 된다 — 짓기 자체가 멈추는 것보다 낫다.
+DEFINES=""
+KEYS="$HOME/development/_patch/skyblue_keys.env"
+if [ -f "$KEYS" ]; then
+  # shellcheck source=/dev/null
+  . "$KEYS"
+  for k in GOOGLE_WEB_CLIENT_ID GOOGLE_IOS_CLIENT_ID; do
+    v=$(eval "printf %s \"\${$k:-}\"")
+    if [ -n "$v" ]; then DEFINES="$DEFINES --dart-define=$k=$v"; fi
+  done
+fi
+if [ -z "$DEFINES" ]; then
+  echo "[구글] 클라이언트 아이디가 없다 — 구글 드라이브 로그인은 안 되는 판이 된다"
+else
+  echo "[구글] 클라이언트 아이디를 실었다"
+fi
 IPAD=00008027-001A64441107002E     # 김성동의 iPad pro (12.9 3세대)
 WHAT="${1:-all}"
 
@@ -51,7 +76,7 @@ log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
 if [ "$WHAT" = "all" ] || [ "$WHAT" = "iphone" ] || [ "$WHAT" = "ipad" ]; then
   log "iOS 서명 빌드…"
-  if ! flutter build ios --release > /tmp/dep_ios.log 2>&1; then
+  if ! flutter build ios --release $DEFINES > /tmp/dep_ios.log 2>&1; then
     log "iOS 빌드 실패 — /tmp/dep_ios.log 확인"; tail -20 /tmp/dep_ios.log; exit 1
   fi
   log "iOS 빌드 완료"
@@ -178,7 +203,7 @@ if [ "$WHAT" = "all" ] || [ "$WHAT" = "android" ]; then
   T=$(bash tool/android_target.sh 2>/dev/null)
   if [ -z "${T:-}" ]; then
     log "안드로이드 기기를 못 찾았다 — 건너뛴다"
-  elif ! flutter build apk --release > /tmp/dep_apk.log 2>&1; then
+  elif ! flutter build apk --release $DEFINES > /tmp/dep_apk.log 2>&1; then
     log "APK 빌드 실패 — /tmp/dep_apk.log 확인"; tail -20 /tmp/dep_apk.log
   else
     "$ADB" -s "$T" install -r build/app/outputs/flutter-apk/app-release.apk \
@@ -200,7 +225,7 @@ fi
 
 if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
   log "맥 빌드…"
-  if flutter build macos --release > /tmp/dep_mac.log 2>&1; then
+  if flutter build macos --release $DEFINES > /tmp/dep_mac.log 2>&1; then
     pkill -f "Products/Release/Skyblue Note.app" >/dev/null 2>&1
     sleep 1
     # 따옴표를 뺀 채로 두면 'Skyblue' 와 'Note.app' 두 조각으로 갈라진다.

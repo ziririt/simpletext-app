@@ -545,6 +545,15 @@ class L10nEs extends L10n {
   @override
   String get syncSoon =>
       'En preparación';
+
+  @override
+  String get driveSignInFailed => 'No se pudo conectar tu cuenta de Google';
+
+  @override
+  String get driveNeedsSignIn => 'Primero conecta una cuenta de Google';
+
+  @override
+  String get driveSignedInAs => 'Conectada';
   @override
   String get syncSectionState =>
       'Estado actual';

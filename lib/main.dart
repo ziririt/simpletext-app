@@ -55,6 +55,7 @@ import 'import_service.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
 import 'share_intake.dart';
+import 'sync/drive_auth.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -1926,6 +1927,19 @@ void _toastUndo(BuildContext context, String msg, VoidCallback onUndo) {
 /// 글자를 읽고 손을 올리기에 짧다.
 const Duration _kToastUndo = Duration(seconds: 5);
 
+/// 고른 창고에 맞는 통로를 끼운다.
+///
+/// 2026-08-20. 이 일을 하는 자리를 **하나로 못 박는다.** 설정에서 고를 때와
+/// 앱을 켤 때, 두 군데서 같은 판단을 하게 두면 한쪽만 고치는 날이 온다 —
+/// 그날의 증상은 '설정에서는 구글이라는데 실제로는 아이클라우드로 오간다'이고,
+/// 그건 아무도 못 알아챈다.
+Future<void> applySyncBackend() async {
+  ICloudSync.instance.useBackend(
+    Store.instance.settings.syncBackend,
+    driveToken: DriveAuth.supported ? DriveAuth.instance.token : null,
+  );
+}
+
 void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -2536,10 +2550,20 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
   Future<void> _pick(String v) async {
     final s = store.settings;
     if (s.syncBackend == v) return;
+    // 구글 드라이브는 **붙고 나서** 고른 것으로 친다. 먼저 골라 놓고 로그인에
+    // 실패하면, 화면은 '구글 드라이브'라고 말하는데 실제로는 아무 데도 안
+    // 오가는 상태가 된다. 그 상태를 사람은 못 알아챈다.
+    if (v == 'gdrive' && !DriveAuth.instance.signedIn) {
+      final ok = await DriveAuth.instance.signIn();
+      if (!ok) {
+        if (mounted) _toast(context, L10n.of(context).driveSignInFailed);
+        return;
+      }
+    }
     setState(() => s.syncBackend = v);
-    ICloudSync.instance.paused = v == 'none';
+    await applySyncBackend();
     await store.persistSettings();
-    if (v == 'icloud') unawaited(ICloudSync.instance.recheck());
+    if (v != 'none') unawaited(ICloudSync.instance.recheck());
   }
 
   String _when(int ms) {
@@ -2576,11 +2600,16 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                   enabled: isApplePlatform,
                   badge: isApplePlatform ? null : l.syncAppleOnly),
               _sep(),
-              // 구글 드라이브는 아직 문만 내 두었다. 반쯤 붙은 창고를
-              // 고르게 하면 노트가 엉킨다 — 고를 수 없게 잠가 둔다.
+              // 2026-08-20 — 문을 열었다. 다만 **아무 데서나 열지는
+              // 않는다.** 구글 로그인 플러그인이 안 받는 자리(윈도우·리눅스)와
+              // 클라이언트 아이디를 안 넣고 빌드한 판에서는 눌러도 아무 일이
+              // 안 일어나는 단추가 된다. DriveAuth.supported 가 그 둘을 다 본다.
               _radioRow(s.syncBackend, 'gdrive', l.syncBackendGdrive,
-                  l.syncBackendGdriveSub,
-                  enabled: false, badge: l.syncSoon),
+                  DriveAuth.instance.signedIn && s.syncBackend == 'gdrive'
+                      ? '${l.syncBackendGdriveSub} · ${l.driveSignedInAs} ${DriveAuth.instance.email}'
+                      : l.syncBackendGdriveSub,
+                  enabled: DriveAuth.supported,
+                  badge: DriveAuth.supported ? null : l.syncSoon),
             ]),
 
             // ② 지금 상태
@@ -3191,8 +3220,16 @@ class _HomeScreenState extends State<HomeScreen>
     store.load().then((_) {
       // 저장된 창고 고르기를 켜자마자 스위치에 옮긴다. 이걸 빠뜨리면
       // '동기화 안 함'으로 두고 앱을 껐다 켠 사람의 노트가 다시 오간다.
-      ICloudSync.instance.paused = store.settings.syncBackend == 'none';
-      ICloudSync.instance.boot();
+      // 구글을 고른 사람은 조용히 다시 붙어 본다. 실패해도 아무 말 안 한다 —
+      // 앱을 켤 때마다 로그인 창이 뜨는 것은 동기화가 아니라 검문이다.
+      // 붙든 못 붙든 통로는 끼운다. 못 붙었으면 토큰이 null 이라 이번
+      // 차례를 거르고, 설정 화면이 '로그인 필요'로 알려 준다.
+      final wantDrive = store.settings.syncBackend == 'gdrive';
+      (wantDrive ? DriveAuth.instance.resume() : Future<bool>.value(false))
+          .then((_) async {
+        await applySyncBackend();
+        ICloudSync.instance.boot();
+      });
     });
     // 다른 앱에서 보낸 글 받기(2026-08-17). 목록 화면이 살아 있는 동안
     // 계속 듣는다.

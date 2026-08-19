@@ -340,6 +340,9 @@ abstract class L10n {
   String get syncBackendGdrive;
   String get syncBackendGdriveSub;
   String get syncSoon;
+  String get driveSignInFailed;
+  String get driveNeedsSignIn;
+  String get driveSignedInAs;
   String get syncSectionState;
   String get syncNowAction;
   String get syncLastNever;
@@ -820,6 +823,9 @@ abstract class L10n {
         'syncBackendGdrive': syncBackendGdrive,
         'syncBackendGdriveSub': syncBackendGdriveSub,
         'syncSoon': syncSoon,
+        'driveSignInFailed': driveSignInFailed,
+        'driveNeedsSignIn': driveNeedsSignIn,
+        'driveSignedInAs': driveSignedInAs,
         'syncSectionState': syncSectionState,
         'syncNowAction': syncNowAction,
         'syncLastNever': syncLastNever,

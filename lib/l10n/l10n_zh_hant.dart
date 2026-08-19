@@ -544,6 +544,15 @@ class L10nZhHant extends L10n {
   @override
   String get syncSoon =>
       '準備中';
+
+  @override
+  String get driveSignInFailed => '無法連接你的 Google 帳號';
+
+  @override
+  String get driveNeedsSignIn => '需要先連接 Google 帳號';
+
+  @override
+  String get driveSignedInAs => '已連接';
   @override
   String get syncSectionState =>
       '目前狀態';

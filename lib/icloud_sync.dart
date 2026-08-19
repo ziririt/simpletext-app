@@ -40,6 +40,7 @@ import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
 import 'core/sync_merge.dart';
 import 'core/sync_transport.dart';
+import 'sync/gdrive_transport.dart';
 import 'sync/icloud_transport.dart';
 // CustomRule은 main.dart가 아니라 엔진 쪽에 산다(2026-08-16에 여기서 한 번
 // 틀렸다 — analyze가 undefined_method로 잡아 줬다).
@@ -82,6 +83,24 @@ class ICloudSync {
   /// 시험과 앞으로 붙을 창고를 위한 문.
   @visibleForTesting
   set transport(SyncTransport t) => _t = t;
+
+  /// 고른 창고에 맞는 통로를 끼운다.
+  ///
+  /// 2026-08-20. 이 판단을 **엔진 안에** 둔다. 밖에 두면 설정 화면이
+  /// 통로를 직접 갈아 끼워야 하고, 그러면 화면이 채널 이름과 통로 종류를
+  /// 알아야 한다. 어느 통로로 오갈지는 원래 엔진이 알 일이다.
+  ///
+  /// [driveToken] 이 없으면 구글을 골랐어도 애플 통로로 떨어진다 —
+  /// 토큰을 못 구하는 판에서 구글 통로를 끼우면 조용히 아무 데도 안
+  /// 오간다. 그럴 바에는 원래 쓰던 곳으로 돌려 두는 편이 정직하다.
+  void useBackend(String backend, {DriveToken? driveToken}) {
+    paused = backend == 'none';
+    if (backend == 'gdrive' && driveToken != null) {
+      _t = GDriveTransport(driveToken);
+    } else {
+      _t = const IcloudTransport(_ch);
+    }
+  }
 
   /// 애플 기기에서만 돈다. 안드로이드·윈도우는 파일 백업/복원으로 간다.
   static bool get supported =>

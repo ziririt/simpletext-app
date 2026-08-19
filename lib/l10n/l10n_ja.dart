@@ -544,6 +544,15 @@ class L10nJa extends L10n {
   @override
   String get syncSoon =>
       '準備中';
+
+  @override
+  String get driveSignInFailed => 'Googleアカウントに接続できませんでした';
+
+  @override
+  String get driveNeedsSignIn => 'Googleアカウントの接続が必要です';
+
+  @override
+  String get driveSignedInAs => '接続済み';
   @override
   String get syncSectionState =>
       'いまの状態';

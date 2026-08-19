@@ -546,6 +546,15 @@ class L10nFr extends L10n {
   @override
   String get syncSoon =>
       'Bientôt';
+
+  @override
+  String get driveSignInFailed => 'Impossible de connecter votre compte Google';
+
+  @override
+  String get driveNeedsSignIn => 'Connectez d\'abord un compte Google';
+
+  @override
+  String get driveSignedInAs => 'Connecté';
   @override
   String get syncSectionState =>
       'État actuel';
