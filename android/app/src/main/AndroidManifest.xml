@@ -52,6 +52,19 @@
                 <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
+        <!-- 홈 화면 위젯 (2026-08-19). 갱신은 앱이 저장할 때마다 직접
+             부른다 — updatePeriodMillis 는 0 이다(res/xml 주석 참고). -->
+        <receiver
+            android:name=".SkyblueWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/skyblue_widget_info" />
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -815,6 +815,12 @@ class L10nJa extends L10n {
   String get historyWhyRestore => '復元の直前';
 
   @override
+  String get widgetEmpty => 'メモがありません';
+
+  @override
+  String get widgetAllLocked => 'ロック中のメモはウィジェットに出ません';
+
+  @override
   String historyUnknownTime(int n) => '以前の版 $n';
 
   @override

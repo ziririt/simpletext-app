@@ -815,6 +815,12 @@ class L10nZhHant extends L10n {
   String get historyWhyRestore => '回復前';
 
   @override
+  String get widgetEmpty => '還沒有筆記';
+
+  @override
+  String get widgetAllLocked => '已鎖定的筆記不會顯示在小工具中';
+
+  @override
   String historyUnknownTime(int n) => '先前版本 $n';
 
   @override

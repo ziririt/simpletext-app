@@ -815,6 +815,12 @@ class L10nZhHans extends L10n {
   String get historyWhyRestore => '还原前';
 
   @override
+  String get widgetEmpty => '还没有笔记';
+
+  @override
+  String get widgetAllLocked => '已锁定的笔记不会显示在小组件中';
+
+  @override
   String historyUnknownTime(int n) => '早前版本 $n';
 
   @override

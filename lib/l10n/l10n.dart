@@ -466,6 +466,8 @@ abstract class L10n {
   String get historyWhyReplace;
   String get historyWhyRevert;
   String get historyWhyRestore;
+  String get widgetEmpty;
+  String get widgetAllLocked;
   String historyUnknownTime(int n);
   String get selUnitSentence;
   String get selUnitLine;
@@ -884,6 +886,8 @@ abstract class L10n {
         'historyWhyReplace': historyWhyReplace,
         'historyWhyRevert': historyWhyRevert,
         'historyWhyRestore': historyWhyRestore,
+        'widgetEmpty': widgetEmpty,
+        'widgetAllLocked': widgetAllLocked,
         'selUnitSentence': selUnitSentence,
         'selUnitLine': selUnitLine,
         'selUnitPara': selUnitPara,

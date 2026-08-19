@@ -819,6 +819,12 @@ class L10nDe extends L10n {
   String get historyWhyRestore => 'Vor dem Wiederherstellen';
 
   @override
+  String get widgetEmpty => 'Noch keine Notizen';
+
+  @override
+  String get widgetAllLocked => 'Gesperrte Notizen erscheinen nicht im Widget';
+
+  @override
   String historyUnknownTime(int n) => 'Frühere Version $n';
 
   @override

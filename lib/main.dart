@@ -45,6 +45,7 @@ import 'core/usage_gate.dart';
 import 'core/wizard.dart';
 import 'export_service.dart';
 import 'pdf_service.dart';
+import 'widget_bridge.dart';
 import 'import_service.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
@@ -87,6 +88,9 @@ void main() {
     systemNavigationBarIconBrightness: Brightness.light,
     systemNavigationBarContrastEnforced: false,
   ));
+  // 홈 화면 위젯 자리 잡기(아이폰·안드로이드에서만). 목록을 실제로 보내는
+  // 것은 화면이 말을 알려 준 뒤다 — 위젯에 쓸 글자를 다트가 담아 보내므로.
+  unawaited(WidgetBridge.init());
   // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
   AdsService.instance.boot();
   runApp(const SimpleTextApp());
@@ -1618,6 +1622,9 @@ class Store extends ChangeNotifier {
 
   Future<void> persist() async {
     await persistLocalOnly();
+    // 홈 화면 위젯도 같이 따라간다. 저장은 글자를 칠 때마다 일어나므로
+    // 안에서 2초를 모았다가 한 번만 보낸다 — 바로 아래 scheduleUp 과 같다.
+    WidgetBridge.schedule();
     // 저장은 글자를 칠 때마다 일어난다. scheduleUp이 3초 모았다가 한 번만
     // 올린다 — 여기서 곧바로 올리면 파일을 초당 몇 번씩 쓴다.
     ICloudSync.instance.scheduleUp();
@@ -3342,6 +3349,15 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
+    // 위젯에 쓸 말을 알려 준다. 아홉 언어짜리 말 뭉치를 코틀린·스위프트에
+    // 또 두지 않기 위해서다(widget_bridge.dart 머리말). 바뀐 게 없으면
+    // 아무 일도 안 하므로 여기서 매번 불러도 된다.
+    WidgetBridge.words(WidgetWords(
+      title: l.appTitle,
+      untitled: l.untitled,
+      empty: l.widgetEmpty,
+      allLocked: l.widgetAllLocked,
+    ));
     final s = store.settings;
     final q = query.trim();
     final filtered = store.notes.where((n) {

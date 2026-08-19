@@ -815,6 +815,12 @@ class L10nKo extends L10n {
   String get historyWhyRestore => '되살리기 직전';
 
   @override
+  String get widgetEmpty => '메모가 없습니다';
+
+  @override
+  String get widgetAllLocked => '잠긴 메모는 위젯에 나오지 않습니다';
+
+  @override
   String historyUnknownTime(int n) => '이전 판 $n';
 
   @override

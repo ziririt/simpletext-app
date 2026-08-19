@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 위젯 색. 앱 테마(ThemeExtension AppC)의 라이트 값과 같은 값을 손으로
+     옮겨 적은 것이다 — 위젯은 플러터가 그리지 않으므로 테마를 물려받을 수
+     없다. 앱 색을 바꾸면 여기와 values-night 도 같이 고칠 것. -->
+<resources>
+    <color name="widget_bg">#FFFFFFFF</color>
+    <color name="widget_ink">#FF1C1C1E</color>
+    <color name="widget_sub">#FF8A8A8E</color>
+    <color name="widget_line">#FFE9E9EE</color>
+    <color name="widget_accent">#FF0070BE</color>
+</resources>

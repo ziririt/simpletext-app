@@ -218,6 +218,55 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 - 잠금을 바꾸면 `updatedAt` 을 올린다. 안 올리면 다음 동기화에서 구름의 옛 판이
   이겨 자물쇠가 조용히 풀린다.
 
+## 8-4. 홈 화면 위젯 — 2026-08-19 (ver.1.8.0.116, 안드로이드만 살아 있음)
+
+### 지금 상태
+
+- **안드로이드: 됨.** `android/app/src/main/kotlin/.../SkyblueWidgetProvider.kt`
+  + `res/layout/widget_skyblue.xml` + `res/xml/skyblue_widget_info.xml`.
+- **아이폰: 코드 자리만 잡아 뒀고 위젯은 아직 없다.** WidgetKit 확장은 Xcode에서
+  타겟을 새로 만들어야 하고, 그건 사람이 눌러야 한다. 아래 '남은 한 걸음' 참고.
+- 맥·윈도우·웹은 해당 없음(`WidgetBridge.supported`가 막는다).
+
+### 규칙 셋 (바꾸기 전에 읽을 것)
+
+1. **잠긴 메모는 위젯에 안 나간다.** 위젯은 잠금 화면에도 뜬다. 제목만 내보내는
+   길도 있었지만 안 골랐다 — 이 앱의 제목은 대개 본문 첫 줄에서 자동으로 뽑은
+   것이라, 제목만 내보내는 것이 곧 본문 첫 줄을 내보내는 것이다.
+   그래서 **위젯은 앱 목록의 거울이 아니라 지름길이다.**
+2. **글자는 다트가 담아 보낸다.** 위젯에 쓸 말('제목 없음', '메모가 없습니다')을
+   코틀린·스위프트 문자열 자원에 각각 두면 아홉 언어짜리 말 뭉치가 세 군데로
+   갈라진다. `WidgetBridge.words()`가 화면에서 받아 payload에 실어 보낸다.
+   덤으로 위젯이 기기 언어가 아니라 **앱에서 고른 언어**를 따라간다.
+3. **무엇을 어떤 차례로 보낼지는 `lib/core/widget_feed.dart` 한 곳에서 정한다.**
+   순수 함수 + 시험 아홉. 안드로이드와 아이폰이 서로 다른 규칙으로 고르기
+   시작하면 한쪽만 고치는 사고가 반드시 난다.
+
+### 목록을 ListView 로 안 만든 까닭
+
+줄 다섯을 미리 깔아 두고 남는 것을 감춘다. RemoteViewsService + Factory 로
+가면 코드가 세 배가 되고, 조용히 안 그려질 때 까닭을 찾기가 매우 어렵다.
+다섯 줄이면 4x2 위젯을 채우고 4x4에서도 허전하지 않다. 더 필요해지면 그때
+어댑터로 옮긴다.
+
+### 남은 한 걸음 — 아이폰 위젯 (소유자가 Xcode에서 눌러야 함)
+
+App Group `group.com.ziririt.simpletext` 는 이미 ios/Runner.entitlements 에 있다.
+그 위에 Widget Extension 타겟만 얹으면 된다.
+
+  1. Xcode 에서 `ios/Runner.xcworkspace` 를 연다.
+  2. File → New → Target… → **Widget Extension**.
+     Product Name: `SkyblueWidget`, "Include Live Activity"·"Include Configuration
+     App Intent" 는 **끈다**. Activate 를 묻거든 Activate.
+  3. 새로 생긴 SkyblueWidget 타겟 → Signing & Capabilities →
+     **+ Capability → App Groups** → `group.com.ziririt.simpletext` 체크.
+  4. 그다음 Swift 파일을 채우는 것은 코드 쪽 일이다.
+     읽을 것: UserDefaults(suiteName: "group.com.ziririt.simpletext")
+     의 `feed` 키(문자열, JSON). 모양은 widget_feed.dart 의 `widgetPayload`.
+
+이 셋을 하기 전에는 `WidgetBridge` 의 iOS 갱신 호출이 조용히 아무것도 안 한다
+(오류는 안 난다).
+
 ## 8-0. 지금 열려 있는 항목 (2026-08-14, 클라우드 코드 세션 → 맥 코워크 인계)
 
 이 두 가지는 **기기 화면을 보면서 만져야** 풀린다. 클라우드 세션에서 추측으로

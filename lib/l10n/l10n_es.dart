@@ -818,6 +818,12 @@ class L10nEs extends L10n {
   String get historyWhyRestore => 'Antes de restaurar';
 
   @override
+  String get widgetEmpty => 'Aún no hay notas';
+
+  @override
+  String get widgetAllLocked => 'Las notas bloqueadas no aparecen en el widget';
+
+  @override
   String historyUnknownTime(int n) => 'Versión anterior $n';
 
   @override

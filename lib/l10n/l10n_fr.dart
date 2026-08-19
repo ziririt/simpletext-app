@@ -819,6 +819,12 @@ class L10nFr extends L10n {
   String get historyWhyRestore => 'Avant la restauration';
 
   @override
+  String get widgetEmpty => 'Pas encore de notes';
+
+  @override
+  String get widgetAllLocked => 'Les notes verrouillées n\'apparaissent pas dans le widget';
+
+  @override
   String historyUnknownTime(int n) => 'Version précédente $n';
 
   @override
