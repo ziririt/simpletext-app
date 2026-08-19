@@ -92,8 +92,12 @@
 	<true/>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<!-- 앱의 짧은 이름. 2026-08-20 — 여기에 옛 가제 simpletext 가 남아
+	     있었다. 구글 로그인 창에서 사장님이 그 이름을 보셨다. 이름을
+	     바꾼 날 고친 곳은 CFBundleDisplayName 하나뿐이었고, 짧은 이름은
+	     아무도 안 봐서 그대로 있었다 — 이름이 두 군데에 적혀 있었다. -->
 	<key>CFBundleName</key>
-	<string>simpletext</string>
+	<string>Skyblue Note</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
