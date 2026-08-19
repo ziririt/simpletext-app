@@ -351,7 +351,7 @@ class L10nZhHans extends L10n {
   @override
   String get aiBusyLabel => 'AI 编辑中…';
   @override
-  String get aiWorking => 'AI 正在读取指令并编辑…';
+  String get aiWorking => 'AI 正在按你的指示编辑。这需要一点时间…';
   @override
   String get aiEmptyResponse => '空响应';
   @override

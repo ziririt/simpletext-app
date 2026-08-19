@@ -352,7 +352,7 @@ class L10nPt extends L10n {
   @override
   String get aiBusyLabel => 'IA editando…';
   @override
-  String get aiWorking => 'A IA está lendo sua instrução e editando…';
+  String get aiWorking => 'A IA está editando conforme suas instruções. Pode demorar um pouco…';
   @override
   String get aiEmptyResponse => 'Resposta vazia';
   @override

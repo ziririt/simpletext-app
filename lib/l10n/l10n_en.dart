@@ -352,7 +352,7 @@ class L10nEn extends L10n {
   @override
   String get aiBusyLabel => 'AI editing…';
   @override
-  String get aiWorking => 'The AI is reading your instruction and editing…';
+  String get aiWorking => 'The AI is editing as you asked. This can take a little while…';
   @override
   String get aiEmptyResponse => 'Empty response';
   @override

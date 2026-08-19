@@ -351,7 +351,7 @@ class L10nJa extends L10n {
   @override
   String get aiBusyLabel => 'AI編集中…';
   @override
-  String get aiWorking => 'AI が指示を読んで編集しています…';
+  String get aiWorking => 'AIが指示どおりに編集しています。少し時間がかかります…';
   @override
   String get aiEmptyResponse => '空の応答';
   @override

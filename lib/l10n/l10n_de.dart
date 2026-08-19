@@ -353,7 +353,7 @@ class L10nDe extends L10n {
   @override
   String get aiBusyLabel => 'KI bearbeitet…';
   @override
-  String get aiWorking => 'Die KI liest Ihre Anweisung und bearbeitet…';
+  String get aiWorking => 'Die KI bearbeitet den Text wie gewünscht. Das kann einen Moment dauern…';
   @override
   String get aiEmptyResponse => 'Leere Antwort';
   @override

@@ -351,7 +351,7 @@ class L10nKo extends L10n {
   @override
   String get aiBusyLabel => 'AI 편집 중…';
   @override
-  String get aiWorking => 'AI가 지시를 읽고 편집하고 있습니다…';
+  String get aiWorking => 'AI가 지시대로 편집하고 있습니다. 편집에 시간이 좀 걸립니다…';
   @override
   String get aiEmptyResponse => '빈 응답';
   @override

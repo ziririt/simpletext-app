@@ -353,7 +353,7 @@ class L10nFr extends L10n {
   @override
   String get aiBusyLabel => 'L\'IA édite…';
   @override
-  String get aiWorking => 'L\'IA lit votre consigne et modifie le texte…';
+  String get aiWorking => 'L\'IA modifie le texte selon vos instructions. Cela peut prendre un moment…';
   @override
   String get aiEmptyResponse => 'Réponse vide';
   @override
