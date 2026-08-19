@@ -505,7 +505,14 @@ class L10nEs extends L10n {
 
   @override
   String get syncScopeShared =>
-      'Sincronizado entre dispositivos Apple: notas, reglas de limpieza, reglas de reemplazo añadidas, carpetas, instrucciones de IA guardadas';
+      'Sincronizado entre tus dispositivos: notas, reglas de limpieza, reglas de reemplazo añadidas, carpetas, instrucciones de IA guardadas';
+
+  @override
+  String get syncStateOffGdrive => 'Vuelve a iniciar sesión en tu cuenta de Google';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      'El almacén de Google Drive lo comparten iPhone, iPad, Mac y Android. Instala esta app e inicia sesión con la misma cuenta de Google';
 
   @override
   String get syncScopeDevice =>
@@ -520,7 +527,7 @@ class L10nEs extends L10n {
 
   @override
   String get syncScopeNever =>
-      'La clave de API de IA no se sube a iCloud, así que debe introducirse en cada dispositivo';
+      'La clave de API de IA no se sube a ninguna nube, así que debe introducirse en cada dispositivo';
   @override
   String get syncWhereTitle =>
       'Dónde guardarlo';
@@ -573,16 +580,16 @@ class L10nEs extends L10n {
   String syncLastAt(String when) => 'Última sincronización: $when';
 
   @override
-  String get syncStateOn => 'Las mismas notas en iPhone, iPad y Mac';
+  String syncStateOn(String where) => 'Guardado en $where: las mismas notas en todos los dispositivos con esta app';
 
   @override
   String get syncStateOff => 'Activa iCloud Drive en los ajustes del dispositivo';
 
   @override
-  String get syncStateSyncing => 'Conectando con iCloud… tarda de unos segundos a un minuto';
+  String syncStateSyncing(String where) => 'Sincronizando con $where… tarda de unos segundos a un minuto';
 
   @override
-  String get aiKeyNotSynced => 'Tus notas se sincronizan en todos tus dispositivos mediante iCloud. Tu clave API no: introdúcela en cada dispositivo.';
+  String get aiKeyNotSynced => 'Tus notas se sincronizan en todos tus dispositivos mediante el almacén que elijas. Tu clave API no: introdúcela en cada dispositivo.';
 
   @override
   String get autoTagTitle => 'Etiquetar automáticamente';

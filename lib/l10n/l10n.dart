@@ -359,9 +359,18 @@ abstract class L10n {
 
   /// 설정에서 한 뎁스 들어가는 글자 설정 (2026-08-18).
   String get typographyTitle;
-  String get syncStateOn;
+  /// 지금 고른 창고 이름을 넣어서 말한다. 창고가 둘이 된 뒤로
+  /// 이 자리에 "iCloud"를 박아 두면 화면이 거짓말을 한다.
+  String syncStateOn(String where);
   String get syncStateOff;
-  String get syncStateSyncing;
+
+  /// 구글 쪽이 막혔을 때. 아이클라우드와 할 일이 다르다 —
+  /// 저쪽은 기기 설정을 켜라는 말이고, 이쪽은 다시 로그인하라는 말이다.
+  String get syncStateOffGdrive;
+
+  /// 구글 창고를 골랐을 때의 닿는 범위.
+  String get syncScopePlatformGdrive;
+  String syncStateSyncing(String where);
   String get aiKeyNotSynced;
 
   /// 조용한 자동 태그 (2026-08-18).
@@ -833,9 +842,9 @@ abstract class L10n {
         'syncTroubleNote': syncTroubleNote,
         'syncScopePlatform': syncScopePlatform,
         'typographyTitle': typographyTitle,
-        'syncStateOn': syncStateOn,
         'syncStateOff': syncStateOff,
-        'syncStateSyncing': syncStateSyncing,
+        'syncStateOffGdrive': syncStateOffGdrive,
+        'syncScopePlatformGdrive': syncScopePlatformGdrive,
         'aiKeyNotSynced': aiKeyNotSynced,
         'autoTagTitle': autoTagTitle,
         'autoTagSub': autoTagSub,

@@ -504,7 +504,14 @@ class L10nKo extends L10n {
 
   @override
   String get syncScopeShared =>
-      '애플 기기 동기화 : 메모, 정리 규칙, 수동으로 추가한 바꾸기 규칙, 폴더, 자주 쓰는 AI편집 지시문';
+      '함께 오가는 것 : 메모, 정리 규칙, 수동으로 추가한 바꾸기 규칙, 폴더, 자주 쓰는 AI편집 지시문';
+
+  @override
+  String get syncStateOffGdrive => '구글 계정에 다시 로그인해 주세요';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      '구글 드라이브 창고는 아이폰·아이패드·맥·안드로이드가 함께 씁니다. 이 앱을 깔고 같은 구글 계정으로 들어가면 됩니다';
 
   @override
   String get syncScopeDevice =>
@@ -519,7 +526,7 @@ class L10nKo extends L10n {
 
   @override
   String get syncScopeNever =>
-      'AI API KEY는 iCloud에 올라가지 않으니, 기기마다 입력해야 합니다';
+      'AI API KEY는 어느 창고에도 올라가지 않으니, 기기마다 입력해야 합니다';
   @override
   String get syncWhereTitle =>
       '어디에 둘까';
@@ -572,16 +579,16 @@ class L10nKo extends L10n {
   String syncLastAt(String when) => '마지막으로 맞춘 때 · $when';
 
   @override
-  String get syncStateOn => '아이폰·아이패드·맥에서 같은 메모를 봅니다';
+  String syncStateOn(String where) => '$where에 올려 두고, 이 앱을 깐 기기에서 같은 메모를 봅니다';
 
   @override
   String get syncStateOff => '기기 설정에서 iCloud Drive를 켜 주세요';
 
   @override
-  String get syncStateSyncing => 'iCloud 연동 중… 몇 초에서 몇십 초 걸립니다';
+  String syncStateSyncing(String where) => '$where와 맞추는 중… 몇 초에서 몇십 초 걸립니다';
 
   @override
-  String get aiKeyNotSynced => '메모는 iCloud로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
+  String get aiKeyNotSynced => '메모는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
 
   @override
   String get autoTagTitle => '태그 자동으로 붙이기';

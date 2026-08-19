@@ -505,7 +505,14 @@ class L10nEn extends L10n {
 
   @override
   String get syncScopeShared =>
-      'Synced across Apple devices: notes, tidy rules, custom replace rules, folders, saved AI prompts';
+      'Synced across your devices: notes, tidy rules, custom replace rules, folders, saved AI prompts';
+
+  @override
+  String get syncStateOffGdrive => 'Please sign in to your Google account again';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      'The Google Drive store is shared by iPhone, iPad, Mac and Android. Install this app and sign in with the same Google account';
 
   @override
   String get syncScopeDevice =>
@@ -520,7 +527,7 @@ class L10nEn extends L10n {
 
   @override
   String get syncScopeNever =>
-      'Your AI API key is not uploaded to iCloud, so enter it on each device';
+      'Your AI API key is never uploaded to any cloud, so enter it on each device';
   @override
   String get syncWhereTitle =>
       'Where to keep it';
@@ -573,16 +580,16 @@ class L10nEn extends L10n {
   String syncLastAt(String when) => 'Last synced $when';
 
   @override
-  String get syncStateOn => 'The same notes on iPhone, iPad and Mac';
+  String syncStateOn(String where) => 'Kept in $where — the same notes on every device with this app';
 
   @override
   String get syncStateOff => 'Turn on iCloud Drive in your device settings';
 
   @override
-  String get syncStateSyncing => 'Connecting to iCloud… this takes a few seconds to a minute';
+  String syncStateSyncing(String where) => 'Syncing with $where… this takes a few seconds to a minute';
 
   @override
-  String get aiKeyNotSynced => 'Your notes sync to all your devices through iCloud. Your API key does not — enter it separately on each device.';
+  String get aiKeyNotSynced => 'Your notes sync to all your devices through the store you chose. Your API key does not — enter it separately on each device.';
 
   @override
   String get autoTagTitle => 'Tag notes automatically';

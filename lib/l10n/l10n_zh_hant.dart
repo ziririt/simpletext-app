@@ -504,7 +504,14 @@ class L10nZhHant extends L10n {
 
   @override
   String get syncScopeShared =>
-      'Apple 裝置間同步：備忘錄、整理規則、手動新增的取代規則、資料夾、常用 AI 編輯指令';
+      '裝置間同步：備忘錄、整理規則、手動新增的取代規則、資料夾、常用 AI 編輯指令';
+
+  @override
+  String get syncStateOffGdrive => '請重新登入你的 Google 帳號';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      'Google 雲端硬碟的存放處由 iPhone、iPad、Mac 和 Android 共用。裝上本應用並用同一個 Google 帳號登入即可';
 
   @override
   String get syncScopeDevice =>
@@ -519,7 +526,7 @@ class L10nZhHant extends L10n {
 
   @override
   String get syncScopeNever =>
-      'AI API 金鑰不會上傳到 iCloud，需要在每台裝置分別輸入';
+      'AI API 金鑰不會上傳到任何雲端，需要在每台裝置分別輸入';
   @override
   String get syncWhereTitle =>
       '放在哪裡';
@@ -572,16 +579,16 @@ class L10nZhHant extends L10n {
   String syncLastAt(String when) => '上次同步 $when';
 
   @override
-  String get syncStateOn => '在 iPhone、iPad 和 Mac 上看到相同的備忘錄';
+  String syncStateOn(String where) => '存放在 $where，裝有本應用的裝置都看到同樣的備忘錄';
 
   @override
   String get syncStateOff => '請在裝置設定中開啟 iCloud 雲碟';
 
   @override
-  String get syncStateSyncing => '正在連接 iCloud… 需要幾秒到幾十秒';
+  String syncStateSyncing(String where) => '正在與 $where 同步… 需要幾秒到幾十秒';
 
   @override
-  String get aiKeyNotSynced => '備忘會透過 iCloud 同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
+  String get aiKeyNotSynced => '備忘會透過所選的存放處同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
 
   @override
   String get autoTagTitle => '自動加入標籤';

@@ -506,7 +506,14 @@ class L10nDe extends L10n {
 
   @override
   String get syncScopeShared =>
-      'Zwischen Apple-Geräten synchronisiert: Notizen, Aufräumregeln, selbst angelegte Ersetzungsregeln, Ordner, gespeicherte KI-Anweisungen';
+      'Zwischen Ihren Geräten synchronisiert: Notizen, Aufräumregeln, selbst angelegte Ersetzungsregeln, Ordner, gespeicherte KI-Anweisungen';
+
+  @override
+  String get syncStateOffGdrive => 'Bitte melden Sie sich erneut in Ihrem Google-Konto an';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      'Der Google-Drive-Speicher wird von iPhone, iPad, Mac und Android gemeinsam genutzt. Installieren Sie diese App und melden Sie sich mit demselben Google-Konto an';
 
   @override
   String get syncScopeDevice =>
@@ -521,7 +528,7 @@ class L10nDe extends L10n {
 
   @override
   String get syncScopeNever =>
-      'Der KI-API-Schlüssel wird nicht in iCloud gesichert und muss auf jedem Gerät eingegeben werden';
+      'Der KI-API-Schlüssel wird in keiner Cloud gesichert und muss auf jedem Gerät eingegeben werden';
   @override
   String get syncWhereTitle =>
       'Wo aufbewahren';
@@ -574,16 +581,16 @@ class L10nDe extends L10n {
   String syncLastAt(String when) => 'Zuletzt abgeglichen: $when';
 
   @override
-  String get syncStateOn => 'Dieselben Notizen auf iPhone, iPad und Mac';
+  String syncStateOn(String where) => 'In $where abgelegt — dieselben Notizen auf jedem Gerät mit dieser App';
 
   @override
   String get syncStateOff => 'Aktiviere iCloud Drive in den Geräteeinstellungen';
 
   @override
-  String get syncStateSyncing => 'Verbindung mit iCloud… das dauert einige Sekunden bis eine Minute';
+  String syncStateSyncing(String where) => 'Wird mit $where abgeglichen… das dauert einige Sekunden bis eine Minute';
 
   @override
-  String get aiKeyNotSynced => 'Ihre Notizen werden über iCloud auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
+  String get aiKeyNotSynced => 'Ihre Notizen werden über den gewählten Speicher auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
 
   @override
   String get autoTagTitle => 'Automatisch verschlagworten';

@@ -1942,6 +1942,39 @@ const Duration _kToastUndo = Duration(seconds: 5);
 /// 창고가 하나라도 있으면 보여 준다. 여기 한 곳만 본다.
 bool get syncVisible => ICloudSync.supported || DriveAuth.supported;
 
+/// 동기화 상태를 사람 말로 옮기는 자리 — **한 곳뿐이다.**
+///
+/// 2026-08-20 아침. 사장님이 아이폰에서 구글 드라이브로 바꾸고 로그인에
+/// 성공했는데, 바로 아래 줄이 "iCloud 연동 중…"이라고 했다. 창고는 옮겨
+/// 갔는데 말이 안 따라갔다.
+///
+/// 게다가 그 판단이 **두 군데**에 똑같이 적혀 있었다(설정 → 동기화,
+/// 설정 첫 화면). 한쪽만 고쳤으면 두 화면이 서로 다른 말을 했을 것이다.
+/// 오늘만 아홉 번째다. 그래서 문구를 고치는 김에 여기로 모은다.
+class SyncSay {
+  const SyncSay(this.title, this.sub);
+  final String title;
+  final String? sub;
+
+  factory SyncSay.of(L10n l, SyncState st, {bool paused = false}) {
+    final gdrive = Store.instance.settings.syncBackend == 'gdrive';
+    final where = gdrive ? l.syncBackendGdrive : l.syncBackendIcloud;
+    if (paused) return SyncSay(l.syncBackendNone, l.syncBackendNoneSub);
+    switch (st) {
+      case SyncState.ok:
+        return SyncSay(l.syncOnTitle, l.syncStateOn(where));
+      case SyncState.running:
+        return SyncSay(l.syncStateSyncing(where), null);
+      case SyncState.signedOut:
+        return SyncSay(l.syncSignedOutTitle, l.syncStateSignedOut);
+      case SyncState.off:
+      case SyncState.unsupported:
+        return SyncSay(l.syncOffTitle,
+            gdrive ? l.syncStateOffGdrive : l.syncStateOff);
+    }
+  }
+}
+
 Future<void> applySyncBackend() async {
   ICloudSync.instance.useBackend(
     Store.instance.settings.syncBackend,
@@ -2463,7 +2496,11 @@ Widget _syncScopeBody(BuildContext context, L10n l) {
       line(l.syncScopeShared),
       line(l.syncScopeDevice),
       line(l.syncScopeNever),
-      line(l.syncScopePlatform),
+      // 닿는 범위는 창고마다 다르다. 애플 것을 그대로 두면 구글을 골라
+      // 놓고도 "안드로이드는 백업 내보내기를 쓰세요"라고 말하게 된다.
+      line(Store.instance.settings.syncBackend == 'gdrive'
+          ? l.syncScopePlatformGdrive
+          : l.syncScopePlatform),
     ]),
   );
 }
@@ -2630,20 +2667,9 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                   builder: (_, st, __) {
                     final ok = st == SyncState.ok;
                     final busy = st == SyncState.running;
-                    final title = ok
-                        ? l.syncOnTitle
-                        : busy
-                            ? l.syncStateSyncing
-                            : st == SyncState.signedOut
-                                ? l.syncSignedOutTitle
-                                : l.syncOffTitle;
-                    final sub = busy
-                        ? null
-                        : ok
-                            ? l.syncStateOn
-                            : st == SyncState.signedOut
-                                ? l.syncStateSignedOut
-                                : l.syncStateOff;
+                    final say = SyncSay.of(l, st);
+                    final title = say.title;
+                    final sub = say.sub;
                     final row = Padding(
                       padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
                       child: Row(children: [
@@ -10118,24 +10144,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                   final paused = s2.syncBackend == 'none';
                   final ok = !paused && st == SyncState.ok;
                   final busy = !paused && st == SyncState.running;
-                  final title = paused
-                      ? l.syncBackendNone
-                      : ok
-                          ? l.syncOnTitle
-                          : busy
-                              ? l.syncStateSyncing
-                              : st == SyncState.signedOut
-                                  ? l.syncSignedOutTitle
-                                  : l.syncOffTitle;
-                  final sub = paused
-                      ? l.syncBackendNoneSub
-                      : busy
-                          ? null
-                          : ok
-                              ? l.syncStateOn
-                              : st == SyncState.signedOut
-                                  ? l.syncStateSignedOut
-                                  : l.syncStateOff;
+                  final say = SyncSay.of(l, st, paused: paused);
+                  final title = say.title;
+                  final sub = say.sub;
                   return InkWell(
                     onTap: () async {
                       await Navigator.push(

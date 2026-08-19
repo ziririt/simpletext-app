@@ -505,7 +505,14 @@ class L10nPt extends L10n {
 
   @override
   String get syncScopeShared =>
-      'Sincronizado entre dispositivos Apple: notas, regras de organização, regras de substituição adicionadas, pastas, instruções de IA salvas';
+      'Sincronizado entre seus aparelhos: notas, regras de organização, regras de substituição adicionadas, pastas, instruções de IA salvas';
+
+  @override
+  String get syncStateOffGdrive => 'Entre novamente na sua conta do Google';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      'O armazém do Google Drive é compartilhado por iPhone, iPad, Mac e Android. Instale este app e entre com a mesma conta do Google';
 
   @override
   String get syncScopeDevice =>
@@ -520,7 +527,7 @@ class L10nPt extends L10n {
 
   @override
   String get syncScopeNever =>
-      'A chave de API de IA não é enviada ao iCloud, portanto digite-a em cada dispositivo';
+      'A chave de API de IA não é enviada a nenhuma nuvem, portanto digite-a em cada dispositivo';
   @override
   String get syncWhereTitle =>
       'Onde guardar';
@@ -573,16 +580,16 @@ class L10nPt extends L10n {
   String syncLastAt(String when) => 'Última sincronização: $when';
 
   @override
-  String get syncStateOn => 'As mesmas notas no iPhone, iPad e Mac';
+  String syncStateOn(String where) => 'Guardado no $where: as mesmas notas em todos os aparelhos com este app';
 
   @override
   String get syncStateOff => 'Ative o iCloud Drive nos ajustes do dispositivo';
 
   @override
-  String get syncStateSyncing => 'Conectando ao iCloud… leva de alguns segundos a um minuto';
+  String syncStateSyncing(String where) => 'Sincronizando com o $where… leva de alguns segundos a um minuto';
 
   @override
-  String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus dispositivos pelo iCloud. Sua chave de API não: informe-a em cada dispositivo.';
+  String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus aparelhos pelo armazém escolhido. Sua chave de API não: informe-a em cada aparelho.';
 
   @override
   String get autoTagTitle => 'Marcar automaticamente';

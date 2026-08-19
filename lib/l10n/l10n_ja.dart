@@ -504,7 +504,14 @@ class L10nJa extends L10n {
 
   @override
   String get syncScopeShared =>
-      'Apple デバイス間で同期: メモ、整形ルール、手動で追加した置換ルール、フォルダ、よく使うAI編集の指示';
+      '端末間で同期: メモ、整形ルール、手動で追加した置換ルール、フォルダ、よく使うAI編集の指示';
+
+  @override
+  String get syncStateOffGdrive => 'Google アカウントにもう一度ログインしてください';
+
+  @override
+  String get syncScopePlatformGdrive =>
+      'Google ドライブの置き場は iPhone・iPad・Mac・Android で共通です。このアプリを入れて同じ Google アカウントでログインしてください';
 
   @override
   String get syncScopeDevice =>
@@ -519,7 +526,7 @@ class L10nJa extends L10n {
 
   @override
   String get syncScopeNever =>
-      'AI の API キーは iCloud に保存されないため、端末ごとに入力が必要です';
+      'AI の API キーはどの保管先にも保存されないため、端末ごとに入力が必要です';
   @override
   String get syncWhereTitle =>
       'どこに置くか';
@@ -572,16 +579,16 @@ class L10nJa extends L10n {
   String syncLastAt(String when) => '最後の同期 $when';
 
   @override
-  String get syncStateOn => 'iPhone・iPad・Mac で同じメモを見られます';
+  String syncStateOn(String where) => '$where に置いて、このアプリを入れた端末で同じメモを見られます';
 
   @override
   String get syncStateOff => '端末の設定で iCloud Drive をオンにしてください';
 
   @override
-  String get syncStateSyncing => 'iCloud に接続中… 数秒から数十秒かかります';
+  String syncStateSyncing(String where) => '$where と同期中… 数秒から数十秒かかります';
 
   @override
-  String get aiKeyNotSynced => 'メモは iCloud で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
+  String get aiKeyNotSynced => 'メモは選んだ保管先で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
 
   @override
   String get autoTagTitle => 'タグを自動で付ける';
