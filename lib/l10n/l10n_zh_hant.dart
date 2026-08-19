@@ -724,6 +724,18 @@ class L10nZhHant extends L10n {
       '輸出失敗';
 
   @override
+  String get printAction =>
+      '列印';
+
+  @override
+  String get exportPdf =>
+      '匯出為 PDF';
+
+  @override
+  String get pdfFailed =>
+      '無法產生 PDF';
+
+  @override
   String get exportEmpty =>
       '沒有可輸出的備忘';
 

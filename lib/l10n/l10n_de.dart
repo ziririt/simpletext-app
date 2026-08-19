@@ -728,6 +728,18 @@ class L10nDe extends L10n {
       'Export fehlgeschlagen';
 
   @override
+  String get printAction =>
+      'Drucken';
+
+  @override
+  String get exportPdf =>
+      'Als PDF exportieren';
+
+  @override
+  String get pdfFailed =>
+      'PDF konnte nicht erstellt werden';
+
+  @override
   String get exportEmpty =>
       'Es gibt keine Notizen zum Exportieren';
 

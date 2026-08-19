@@ -42,6 +42,7 @@ import 'core/trash.dart';
 import 'core/usage_gate.dart';
 import 'core/wizard.dart';
 import 'export_service.dart';
+import 'pdf_service.dart';
 import 'import_service.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
@@ -4511,6 +4512,18 @@ class _EditorScreenState extends State<EditorScreen>
   ///
   /// 12시간제/24시간제는 언어가 아니라 기기 설정을 따른다(맥 캡처가 17:53로
   /// 나온 이유). MediaQuery가 그 설정을 그대로 넘겨 준다.
+  /// 종이 머리에 적을 날짜 한 줄. 화면의 날짜 줄과 같은 규칙을 쓰되
+  /// 위젯이 아니라 글자를 돌려준다 — 종이에는 시계 설정이 없으니 24시간제로.
+  String _pdfDate(int ms) {
+    final t = DateTime.fromMillisecondsSinceEpoch(ms);
+    final tag = Localizations.localeOf(context).toLanguageTag();
+    try {
+      return '${DateFormat.yMMMMd(tag).format(t)}  ${DateFormat.Hm(tag).format(t)}';
+    } catch (_) {
+      return '${DateFormat.yMMMMd().format(t)}  ${DateFormat.Hm().format(t)}';
+    }
+  }
+
   Widget _dateLine(int ms) {
     final t = DateTime.fromMillisecondsSinceEpoch(ms);
     final tag = Localizations.localeOf(context).toLanguageTag();
@@ -6610,6 +6623,17 @@ static const int kTagScanChars = 3000;
                   }
                   return;
                 }
+                if (v == 'pdf' || v == 'print') {
+                  final ok = v == 'print'
+                      ? await PdfService.printNote(note,
+                          dateLabel: _pdfDate(note.updatedAt))
+                      : await PdfService.sharePdf(note,
+                          dateLabel: _pdfDate(note.updatedAt));
+                  if (!ok && mounted) {
+                    _toast(context, L10n.of(context).pdfFailed);
+                  }
+                  return;
+                }
                 if (v != 'delete') return;
                 final ok = await confirmDialog(context,
                     title: L10n.of(context).deleteConfirmTitle,
@@ -6689,6 +6713,11 @@ static const int kTagScanChars = 3000;
                   act('append', CupertinoIcons.paperclip, lm.importAppend),
                   act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
                   act('export', CupertinoIcons.square_arrow_up, lm.exportNote),
+                  // 2026-08-19 — 종이. '내보내기'가 마크다운 파일을
+                  // 건네는 일이라면 이 둘은 **다 그려진 결과**를 건네는
+                  // 일이다. 받는 사람이 이 앱을 안 써도 그대로 읽힌다.
+                  act('pdf', CupertinoIcons.doc_richtext, lm.exportPdf),
+                  act('print', CupertinoIcons.printer, lm.printAction),
                   const PopupMenuDivider(height: 9),
                   // 버전 기록과 원본 복귀는 붙여 둔다. 되돌린 뒤 마음이
                   // 바뀌면 바로 위 줄에서 되찾을 수 있다는 것이 눈에

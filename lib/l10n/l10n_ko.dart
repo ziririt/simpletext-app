@@ -724,6 +724,18 @@ class L10nKo extends L10n {
       '내보내기에 실패했습니다';
 
   @override
+  String get printAction =>
+      '인쇄';
+
+  @override
+  String get exportPdf =>
+      'PDF로 내보내기';
+
+  @override
+  String get pdfFailed =>
+      'PDF를 만들지 못했습니다';
+
+  @override
   String get exportEmpty =>
       '내보낼 메모가 없습니다';
 

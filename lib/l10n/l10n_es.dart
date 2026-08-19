@@ -727,6 +727,18 @@ class L10nEs extends L10n {
       'No se pudo exportar';
 
   @override
+  String get printAction =>
+      'Imprimir';
+
+  @override
+  String get exportPdf =>
+      'Exportar como PDF';
+
+  @override
+  String get pdfFailed =>
+      'No se pudo crear el PDF';
+
+  @override
   String get exportEmpty =>
       'No hay notas para exportar';
 

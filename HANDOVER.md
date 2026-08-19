@@ -78,6 +78,12 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   순수 함수. 화면을 모른다 → 테스트로 지킨다(test/core/mono_spans_test.dart)
 - lib/core/mono_controller.dart — 그 구간에만 D2Coding을 입히는 TextEditingController.
   줄글은 기기 기본 글꼴 그대로. 한글 IME 조합 밑줄도 같이 살린다
+- lib/core/print_blocks.dart — 종이(PDF·인쇄)로 나갈 때 글을 덩어리로 나누는 순수
+  함수. 화면의 rich_spans.dart와 짝이되 **표시를 걷어내고 뜻만 남긴다**(종이엔 커서가
+  없다). 시험: test/core/print_blocks_test.dart
+- lib/pdf_service.dart — 그 덩어리를 A4 위에 앉히고 운영체제 인쇄·공유 화면에 넘긴다.
+  PDF는 기기 글꼴을 못 빌리므로 Noto Sans KR(OFL, 한자 뺀 subset)을 앱에 심어 두고,
+  한자·가나는 D2Coding으로 받친다. 글꼴을 갈아 끼울 땐 assets/fonts/ 와 pubspec 양쪽
 - lib/l10n/ — 다국어. l10n.dart(추상 L10n + 로케일 해석 + all 맵) + 언어별 9파일.
   UI 문자열은 반드시 여기에만 추가(9개 언어 전부). 검사: tool/l10n_check.py, test/l10n/
 - lib/main.dart — 전체 UI: Store(shared_preferences, 스키마 v2 {v,notes,tombstones}),
@@ -151,6 +157,32 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
 아이패드·맥, 안드로이드는 따로, 윈도우는 따로), 문안도 그 기기에서 참인
 것만 적어야 한다. `isApplePlatform` 과 `lockVendor` 가 lib/main.dart 위쪽에
 이미 있으니 그걸 쓴다.
+
+## 8-2. 첨부 칸(attachments) 설계 — 2026-08-19 소유자 확정
+
+아직 코드는 0줄이다. 만들기 전에 **다음 세션이 이 결정을 다시 묻지 않도록** 적어 둔다.
+소유자 지시 원문: "이 기기에서만 첨부파일을 볼 수 있게 하고, 동기화는 안되게 하되,
+다른 기기에서 안내만 해주자."
+
+- **무엇을 붙이나** — 이미지만이 아니라 **파일 전반**. 사진·PDF·문서·음성 다 받는다.
+- **어디에 두나** — 붙인 **그 기기 안에만** 둔다. 앱 문서 폴더 아래 `attach/<노트id>/`.
+- **동기화** — 파일의 알맹이(blob)는 **절대 올리지 않는다.** 아이클라우드·구글
+  드라이브 어느 쪽으로도 나가지 않는다.
+- **대신 오가는 것** — 이름·크기·붙인 시각·**어느 기기에서 붙였는가**만 메모 본문의
+  메타데이터로 함께 동기화한다.
+- **다른 기기에서 보이는 모양** —
+  `첨부파일 : 아이폰 노트에 결산표.pdf(1.2MB)가 첨부되어 있음 (해당 기기에서만 확인)`
+  누르면 열리지 않고, 왜 못 여는지만 알려 준다.
+
+### 왜 이렇게 정했나
+
+동기화 그릇이 문제다. 아이클라우드 Documents도 구글 드라이브 appDataFolder도 용량이
+사용자 계정에서 나간다. 메모 한 통은 몇 KB지만 첨부는 한 장에 수 MB다 — 무료 15GB를
+우리가 말없이 갉아먹는 앱이 되면, 그 순간 지워진다. 그리고 5절 병합 규칙(updatedAt
+최신 승리)은 텍스트를 전제로 만든 것이라 큰 바이너리에는 그대로 못 쓴다.
+
+**막는 것이 아니라 미루는 것이다.** 위 메타데이터만 있으면 나중에 유료 층에서
+"첨부도 동기화"를 켜는 날, 저장 형식을 바꾸지 않고 알맹이만 실어 보내면 된다.
 
 ## 8-0. 지금 열려 있는 항목 (2026-08-14, 클라우드 코드 세션 → 맥 코워크 인계)
 

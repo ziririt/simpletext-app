@@ -724,6 +724,18 @@ class L10nJa extends L10n {
       '書き出しに失敗しました';
 
   @override
+  String get printAction =>
+      '印刷';
+
+  @override
+  String get exportPdf =>
+      'PDFで書き出す';
+
+  @override
+  String get pdfFailed =>
+      'PDFを作成できませんでした';
+
+  @override
   String get exportEmpty =>
       '書き出すメモがありません';
 

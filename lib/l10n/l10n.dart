@@ -441,6 +441,9 @@ abstract class L10n {
   String get exportBackup;
   String get exportBackupSub;
   String get exportFailed;
+  String get printAction;
+  String get exportPdf;
+  String get pdfFailed;
   String get exportEmpty;
   String get choosePreset;
   String get importFiles;
@@ -844,6 +847,9 @@ abstract class L10n {
         'exportBackup': exportBackup,
         'exportBackupSub': exportBackupSub,
         'exportFailed': exportFailed,
+        'printAction': printAction,
+        'exportPdf': exportPdf,
+        'pdfFailed': pdfFailed,
         'exportEmpty': exportEmpty,
         'choosePreset': choosePreset,
         'importFiles': importFiles,

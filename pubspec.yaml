@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.4.1+111
+version: 1.5.0+112
 
 environment:
   sdk: ^3.12.2
@@ -52,6 +52,13 @@ dependencies:
   local_auth: ^3.0.2
   flutter_secure_storage: ^10.3.1
 
+  # 종이로 나가는 길(2026-08-19). pdf는 문서를 짜고, printing은 그것을
+  # 각 운영체제의 인쇄·공유 화면에 넘긴다. 애플·안드로이드·맥·윈도우가
+  # 모두 그 화면에서 'PDF로 저장'을 같이 내준다 — 우리가 저장 화면을
+  # 따로 만들면 그중 하나만 되는 더 나쁜 물건이 된다.
+  pdf: ^3.11.3
+  printing: ^5.14.2
+
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_test:
@@ -85,6 +92,16 @@ flutter:
     - family: D2Coding
       fonts:
         - asset: assets/fonts/D2Coding.ttf
+
+  # PDF에 심는 본문 글꼴(Noto Sans KR, OFL). 화면과 달리 PDF는 기기의
+  # 글꼴을 빌려 쓰지 못한다 — 파일 안에 글자 모양이 없으면 받는 쪽에서
+  # 네모(두부)로 나온다. 한글·라틴·가나까지만 남기고 한자는 뺐다
+  # (넣으면 앱이 12MB 무거워진다). 한자는 D2Coding이 받친다.
+  # 화면 글꼴로는 안 쓰므로 fonts: 가 아니라 assets: 로 넣는다.
+  assets:
+    - assets/fonts/NotoSansKR-Regular.ttf
+    - assets/fonts/NotoSansKR-Bold.ttf
+    - assets/fonts/D2Coding.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
