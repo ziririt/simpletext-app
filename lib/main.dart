@@ -1893,15 +1893,38 @@ Future<bool> toggleNoteLock(BuildContext context, Note n) async {
 /// 그건 단추가 아니라 놀리는 것이다.
 void _toastUndo(BuildContext context, String msg, VoidCallback onUndo) {
   final l = L10n.of(context);
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      content: Text(msg),
-      duration: const Duration(seconds: 6),
-      behavior: SnackBarBehavior.floating,
-      action: SnackBarAction(label: l.undoTip, onPressed: onUndo),
-    ));
+  final m = ScaffoldMessenger.of(context);
+  m.hideCurrentSnackBar();
+  final bar = m.showSnackBar(SnackBar(
+    content: Text(msg),
+    duration: _kToastUndo,
+    behavior: SnackBarBehavior.floating,
+    action: SnackBarAction(label: l.undoTip, onPressed: onUndo),
+  ));
+
+  // 시계를 우리가 직접 건다.
+  //
+  // 2026-08-19 소유자 신고 — "원본 복귀하고 나면 뜨는 하단의 토스트가 5초
+  // 정도 후에 자동으로 사라지게 해줘. 지금은 계속 남아있어서 거슬린다."
+  //
+  // duration 을 줬는데도 안 사라진다. 플러터는 **손잡이가 달린 알림**에는
+  // 조건에 따라 시계를 아예 안 건다 — 읽고 누를 시간을 뺏지 않으려는
+  // 배려다. 배려가 이번에도 원인이었다(아이패드 위젯과 같은 모양의 일).
+  //
+  // 이미 닫힌 알림을 또 닫으면 **다음 알림**을 닫아 버린다. 그래서 닫혔는지
+  // 먼저 보고 건다.
+  var gone = false;
+  bar.closed.then((_) => gone = true);
+  Timer(_kToastUndo, () {
+    if (!gone) bar.close();
+  });
 }
+
+/// 되돌릴 수 있는 알림이 화면에 머무는 시간.
+///
+/// 다섯. 여섯은 이미 읽고 판단이 끝난 사람에게 길고, 넷은 '실행 취소'라는
+/// 글자를 읽고 손을 올리기에 짧다.
+const Duration _kToastUndo = Duration(seconds: 5);
 
 void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
