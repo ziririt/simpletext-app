@@ -80,7 +80,7 @@ class _Timed extends http.BaseClient {
   void close() => _inner.close();
 }
 
-class GDriveTransport implements SyncTransport {
+class GDriveTransport extends SyncTransport {
   GDriveTransport(this._token, {http.Client? client})
       : _http = _Timed(client ?? http.Client(), _wait);
 
@@ -119,6 +119,19 @@ class GDriveTransport implements SyncTransport {
   final Map<String, String> _at = <String, String>{};
   final Map<String, Map<String, dynamic>> _body =
       <String, Map<String, dynamic>>{};
+
+  /// 파일 아이디 → 어느 방. 방을 다시 훑을 때 **그 방 것만** 잊기 위해서다.
+  ///
+  /// 2026-08-20 밤에 찾은 사고: readDir 끝의 청소가 '이번 목록에 없는
+  /// 것'을 전부 지웠는데, 목록은 그 방 것뿐이다. notes 를 훑으면 tombs 의
+  /// 기억이 지워지고 tombs 를 훑으면 notes 가 지워졌다 — 툼스톤이 하나라도
+  /// 있으면 30초마다 전부 다시 받고 있었던 것이다. '안 바뀐 것은 안
+  /// 받는다'는 시험은 방을 하나만 써서 이걸 못 잡았다.
+  final Map<String, String> _dirOf = <String, String>{};
+
+  /// 파일 아이디 → 딱지에 적힌 시각(없으면 null). 목록에서 본 것을 들고
+  /// 있다가, 딱지 없는 옛 파일을 받았을 때 달아 줄지 판단하는 데 쓴다.
+  final Map<String, int?> _upSeen = <String, int?>{};
 
   @override
   String get id => 'gdrive';
@@ -211,6 +224,129 @@ class GDriveTransport implements SyncTransport {
   }
 
   @override
+  Future<List<RemoteMeta>?> listMeta(String dir) async {
+    final h = await _head();
+    if (h == null) return null;
+    final q = "trashed = false and "
+        "appProperties has { key = 'dir' and value = '${_q(dir)}' }";
+    final u = Uri.parse('$_api?spaces=appDataFolder'
+        '&q=${Uri.encodeQueryComponent(q)}'
+        '&fields=files(id,name,modifiedTime,appProperties)&pageSize=1000');
+    try {
+      final r = await _http.get(u, headers: h);
+      if (r.statusCode != 200) return null;
+      final j = jsonDecode(r.body);
+      final f = (j is Map) ? j['files'] : null;
+      if (f is! List) return null;
+      final out = <RemoteMeta>[];
+      final alive = <String>{};
+      for (final e in f) {
+        if (e is! Map) continue;
+        final fid = e['id'] as String?;
+        final name = e['name'] as String?;
+        if (fid == null || name == null || !name.endsWith('.json')) continue;
+        alive.add(fid);
+        _ids[dir.isEmpty ? name : '$dir/$name'] = fid;
+        _dirOf[fid] = dir;
+        final props = e['appProperties'];
+        final up = (props is Map) ? int.tryParse('${props['up']}') : null;
+        _upSeen[fid] = up;
+        out.add(RemoteMeta(name.substring(0, name.length - 5), up));
+      }
+      _forgetDeadIn(dir, alive);
+      return out;
+    } catch (_) {
+      // 목록을 못 받았으면 모른다고 말한다 — 부르는 쪽이 옛길로 간다.
+      return null;
+    }
+  }
+
+  /// 그 방에서 없어진 파일의 기억만 지운다. 다른 방 것은 남긴다.
+  void _forgetDeadIn(String dir, Set<String> alive) {
+    final dead = [
+      for (final e in _dirOf.entries)
+        if (e.value == dir && !alive.contains(e.key)) e.key
+    ];
+    for (final fid in dead) {
+      _at.remove(fid);
+      _body.remove(fid);
+      _upSeen.remove(fid);
+      _dirOf.remove(fid);
+    }
+  }
+
+  @override
+  Future<Map<String, ReadResult>> readMany(List<String> paths) async {
+    final out = <String, ReadResult>{};
+    final h = await _head();
+    if (h == null) return out;
+    const int lanes = 8;
+    for (var i = 0; i < paths.length; i += lanes) {
+      final slice = paths.skip(i).take(lanes).toList();
+      await Future.wait(slice.map((p) async {
+        final r = await _readOne(p, h);
+        if (r != null) out[p] = r;
+      }));
+    }
+    return out;
+  }
+
+  /// 한 파일. null 은 "이번에 답을 못 들었다"(그물이 끊겼다)는 뜻이다.
+  ///
+  /// 404 와 깨진 JSON 은 missing 으로 준다 — 부르는 쪽이 덮어써서 고칠
+  /// 수 있는 상태다. 401·429·5xx 와 시간 초과는 null 이다 — 파일의
+  /// 잘못이 아니니 덮어쓰면 안 된다.
+  Future<ReadResult?> _readOne(String path, Map<String, String> h) async {
+    final fid = _ids[path] ?? await _find(path);
+    if (fid == null) return ReadResult.missing;
+    try {
+      final r = await _http.get(Uri.parse('$_api/$fid?alt=media'), headers: h);
+      if (r.statusCode == 404) return ReadResult.missing;
+      if (r.statusCode != 200) return null;
+      final j = jsonDecode(utf8.decode(r.bodyBytes));
+      if (j is! Map<String, dynamic>) return ReadResult.missing;
+      // 딱지 없는 옛 파일이면 지금 안다 — 다음 목록부터는 안 열어 봐도
+      // 되게 딱지를 달아 둔다. 실패해도 조용히 넘어간다(다음에 또 기회).
+      if (_upSeen[fid] == null) {
+        final stamp = _stampIn(j);
+        if (stamp != null) await _tag(fid, path, stamp, h);
+      }
+      return ReadResult(ReadState.ok, j);
+    } on FormatException {
+      return ReadResult.missing;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 본문에서 '언제 고쳤나'를 찾는다. 노트는 updatedAt, 툼스톤은
+  /// deletedAt, 설정 종류는 stamp 다. 이 셋을 아는 곳은 여기 하나다.
+  static int? _stampIn(Map<String, dynamic> body) {
+    final v = body['updatedAt'] ?? body['deletedAt'] ?? body['stamp'];
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return null;
+  }
+
+  /// 딱지에 시각을 적는다. 내용을 얹은 **뒤에** 불러야 한다 — 딱지가
+  /// 내용보다 새것이 되면 남이 새 내용인 줄 알고 옛 내용을 받아 간다.
+  /// 반대쪽(딱지가 옛것)은 안전하다: 한 번 더 열어 볼 뿐이다.
+  Future<void> _tag(
+      String fid, String path, int stamp, Map<String, String> h) async {
+    final (dir, _) = _split(path);
+    try {
+      final r = await _http.patch(
+        Uri.parse('$_api/$fid'),
+        headers: {...h, 'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({
+          'appProperties': {'dir': dir, 'up': '$stamp'}
+        }),
+      );
+      if (r.statusCode == 200) _upSeen[fid] = stamp;
+    } catch (_) {}
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> readDir(String path) async {
     final out = <Map<String, dynamic>>[];
     final h = await _head();
@@ -241,6 +377,7 @@ class GDriveTransport implements SyncTransport {
       if (fid == null || name == null || !name.endsWith('.json')) continue;
       alive.add(fid);
       _ids[path.isEmpty ? name : '$path/$name'] = fid;
+      _dirOf[fid] = path;
 
       // 언제 고쳤는지가 그대로면 내용도 그대로다. 안 받는다.
       final at = e['modifiedTime'] as String?;
@@ -273,9 +410,10 @@ class GDriveTransport implements SyncTransport {
         if (g != null) out.add(g);
       }
     }
-    // 없어진 파일까지 붙들고 있으면 지운 메모가 되살아난다.
-    _at.removeWhere((k, _) => !alive.contains(k));
-    _body.removeWhere((k, _) => !alive.contains(k));
+    // 없어진 파일의 기억을 지운다 — **이 방 것만.** 전부 지우면 notes 를
+    // 훑을 때 tombs 의 기억이 지워져, 툼스톤이 하나라도 있는 창고는
+    // 30초마다 전부 다시 받는다(2026-08-20 밤에 실제로 그랬다).
+    _forgetDeadIn(path, alive);
     return out;
   }
 
@@ -312,7 +450,7 @@ class GDriveTransport implements SyncTransport {
       }
     }
     try {
-      await _http.patch(
+      final r = await _http.patch(
         Uri.parse('$_upload/$fid?uploadType=media'),
         headers: {...h, 'Content-Type': 'application/json; charset=UTF-8'},
         body: utf8.encode(text),
@@ -321,6 +459,15 @@ class GDriveTransport implements SyncTransport {
       // 받는다. 안 버리면 '내가 쓴 것'과 '창고에 있는 것'이 갈라진다.
       _at.remove(fid);
       _body.remove(fid);
+      _dirOf[fid] = _split(path).$1;
+      // 내용이 실제로 실렸을 때만 딱지를 단다(순서가 값이다 — _tag 참고).
+      // 시각이 없는 본문은 안 단다: 딱지 없는 파일은 늘 열어 보므로 해가
+      // 없고, 여기서 억지로 달면 거짓 시각이 생긴다.
+      if (r.statusCode == 200) {
+        _upSeen[fid] = null;
+        final stamp = _stampIn(body);
+        if (stamp != null) await _tag(fid, path, stamp, h);
+      }
     } catch (_) {}
   }
 
@@ -333,6 +480,8 @@ class GDriveTransport implements SyncTransport {
     if (fid == null) return;
     _at.remove(fid);
     _body.remove(fid);
+    _dirOf.remove(fid);
+    _upSeen.remove(fid);
     try {
       await _http.delete(Uri.parse('$_api/$fid'), headers: h);
     } catch (_) {}
@@ -343,5 +492,7 @@ class GDriveTransport implements SyncTransport {
     _ids.clear();
     _at.clear();
     _body.clear();
+    _dirOf.clear();
+    _upSeen.clear();
   }
 }

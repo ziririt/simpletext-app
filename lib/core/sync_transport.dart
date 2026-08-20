@@ -52,7 +52,22 @@ class ReadResult {
   bool get ok => state == ReadState.ok;
 }
 
+/// 방 목록의 한 줄 — 본문 없이 아는 것들.
+///
+/// [up] 은 파일 딱지(appProperties)에 적어 둔 '언제 고쳤나'다. 노트는
+/// updatedAt, 툼스톤은 deletedAt, 설정 종류는 stamp 가 그 값이다.
+/// 옛 파일에는 딱지가 없어서 null 이다 — 그때는 열어 봐야 안다.
+class RemoteMeta {
+  const RemoteMeta(this.id, this.up);
+
+  /// 파일 이름에서 .json 을 뗀 것. 노트·툼스톤에서는 노트 아이디다.
+  final String id;
+  final int? up;
+}
+
 abstract class SyncTransport {
+  const SyncTransport();
+
   /// 'icloud' · 'gdrive'. 기록과 화면에 쓴다.
   String get id;
 
@@ -74,4 +89,25 @@ abstract class SyncTransport {
 
   /// 없어도 조용히 넘어간다.
   Future<void> remove(String path);
+
+  /// 방 안의 목록만 — 본문 없이 (이름표, 딱지의 시각).
+  ///
+  /// null 은 "이 통로는 딱지를 모른다"는 뜻이다. 그때 부르는 쪽은
+  /// 예전처럼 readDir 로 통째로 읽는다. 아이클라우드가 그쪽이다 —
+  /// 파일 읽기가 공짜라 딱지가 필요 없다.
+  Future<List<RemoteMeta>?> listMeta(String dir) async => null;
+
+  /// 여러 파일을 읽는다. 답은 (경로 → 결과) 지도다.
+  ///
+  /// **지도에 없는 경로는 "이번에 답을 못 들었다"는 뜻이다** — 없는
+  /// 것(missing)과 다르다. 부르는 쪽은 그 경로를 이번 차례에서 걸러야
+  /// 한다. 기본은 하나씩 차례로 읽는다. 왕복이 비싼 통로(드라이브)는
+  /// 겹쳐 받도록 덮어쓴다.
+  Future<Map<String, ReadResult>> readMany(List<String> paths) async {
+    final out = <String, ReadResult>{};
+    for (final p in paths) {
+      out[p] = await read(p);
+    }
+    return out;
+  }
 }

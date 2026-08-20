@@ -39,6 +39,7 @@ import 'package:flutter/services.dart';
 import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
 import 'core/sync_merge.dart';
+import 'core/sync_plan.dart';
 import 'core/sync_transport.dart';
 import 'sync/gdrive_transport.dart';
 import 'sync/icloud_transport.dart';
@@ -413,21 +414,102 @@ class ICloudSync {
 
     // --- 원격 읽기 ---
     //
-    // 2026-08-18 — 아직 안 내려온 파일을 알아채고 당겨 오라고 이르는 일은
-    // 통로가 맡는다. 그건 아이클라우드만의 사정이라, 여기서 알고 있으면
-    // 구글 드라이브를 붙일 때 이 코드를 또 고쳐야 한다.
+    // 두 길이 있다.
+    //
+    // **딱지 길(구글 드라이브).** 목록 한 번이면 파일마다 '언제 고쳤나'가
+    // 딱지로 온다(sync/gdrive_transport.dart). 그 딱지를 이 기기의 시각과
+    // 견줘 **바뀐 것만** 받는다(core/sync_plan.dart). 예전에는 어느 노트가
+    // 바뀌었는지 알 길이 본문을 열어 보는 것뿐이라 켤 때마다 전부 다시
+    // 받았고, 그 몇 분 동안 화면이 '맞추는 중'이었다(2026-08-20).
+    //
+    // **옛길(아이클라우드).** 파일 읽기가 공짜라 딱지가 필요 없다.
+    // listMeta 가 null 이면 예전처럼 통째로 읽는다. 아직 안 내려온 파일을
+    // 당겨 오라고 이르는 일은 통로가 맡는다(2026-08-18) — 아이클라우드만의
+    // 사정을 여기서 알면 통로를 갈 때마다 이 코드를 또 고쳐야 한다.
     final remoteNotes = <Note>[];
-    for (final f in await _t.readDir(notesDir)) {
-      try {
-        remoteNotes.add(Note.fromJson(f));
-      } catch (_) {
-        // 다른 판이 쓴 파일이거나 쓰다 만 파일. 통째로 죽지 말고 건너뛴다.
-      }
-    }
     final remoteTombs = <Map<String, dynamic>>[];
-    for (final f in await _t.readDir(tombsDir)) {
-      final id = f['id'];
-      if (id is String && id.isNotEmpty) remoteTombs.add(f);
+    // 저쪽에 있는 모든 아이디 — 본문을 안 받은 것도 여기에는 있다.
+    Set<String> remoteIds;
+    Set<String> remoteTombIds;
+    // 저쪽 것의 시각. 딱지로 알았든 본문으로 알았든. 없으면 모르는 것이다.
+    final remoteStamp = <String, int>{};
+    // 열어 봤는데 읽을 수 없던 자리 — 덮어써서 고친다.
+    final corrupt = <String>{};
+
+    final noteMetas = await _t.listMeta(notesDir);
+    final tombMetas = noteMetas == null ? null : await _t.listMeta(tombsDir);
+
+    if (noteMetas == null || tombMetas == null) {
+      for (final f in await _t.readDir(notesDir)) {
+        try {
+          remoteNotes.add(Note.fromJson(f));
+        } catch (_) {
+          // 다른 판이 쓴 파일이거나 쓰다 만 파일. 통째로 죽지 말고 건너뛴다.
+        }
+      }
+      for (final f in await _t.readDir(tombsDir)) {
+        final id = f['id'];
+        if (id is String && id.isNotEmpty) remoteTombs.add(f);
+      }
+      remoteIds = {for (final n in remoteNotes) n.id};
+      remoteTombIds = {for (final t in remoteTombs) t['id'] as String};
+      for (final n in remoteNotes) {
+        remoteStamp[n.id] = n.updatedAt;
+      }
+    } else {
+      remoteIds = {for (final m in noteMetas) m.id};
+      remoteTombIds = {for (final m in tombMetas) m.id};
+      for (final m in noteMetas) {
+        if (m.up != null) remoteStamp[m.id] = m.up!;
+      }
+      final need = pickFetch(
+        localStamp: {for (final n in store.notes) n.id: n.updatedAt},
+        metas: noteMetas,
+      );
+      final got =
+          await _t.readMany([for (final id in need) '$notesDir/$id.json']);
+      for (final id in need) {
+        final r = got['$notesDir/$id.json'];
+        if (r == null) {
+          // 답을 못 들었다(그물이 끊겼다). 받지도 올리지도 않는다 —
+          // 시각을 지워 두면 아래 올리기 셈이 이번 차례를 거른다.
+          remoteStamp.remove(id);
+          continue;
+        }
+        if (r.ok) {
+          try {
+            final n = Note.fromJson(r.body!);
+            remoteNotes.add(n);
+            // 본문이 딱지보다 참이다 — 딱지 달기가 실패한 적이 있으면
+            // 둘이 어긋날 수 있다.
+            remoteStamp[n.id] = n.updatedAt;
+          } catch (_) {
+            corrupt.add(id);
+            remoteStamp.remove(id);
+          }
+        } else {
+          // 없거나 깨졌다 — 덮어써서 고친다. 옛길도 이렇게 스스로 나았다.
+          corrupt.add(id);
+          remoteStamp.remove(id);
+        }
+      }
+      // 툼스톤은 딱지가 곧 내용이다({id, deletedAt}). 딱지가 있으면 열어
+      // 보지 않고 그대로 만들고, 없는 옛 툼스톤만 받아 본다.
+      final tombNeed = <String>[];
+      for (final m in tombMetas) {
+        if (m.up != null) {
+          remoteTombs.add(<String, dynamic>{'id': m.id, 'deletedAt': m.up});
+        } else {
+          tombNeed.add(m.id);
+        }
+      }
+      final tgot =
+          await _t.readMany([for (final id in tombNeed) '$tombsDir/$id.json']);
+      for (final r in tgot.values) {
+        if (!r.ok) continue;
+        final id = r.body!['id'];
+        if (id is String && id.isNotEmpty) remoteTombs.add(r.body!);
+      }
     }
 
     // --- 합치기 (규칙은 core/sync_merge.dart) ---
@@ -451,28 +533,25 @@ class ICloudSync {
       store.tombstones = merged.tombstones;
     }
 
-    // --- 아이클라우드에 반영 ---
-    final remoteById = {for (final n in remoteNotes) n.id: n};
+    // --- 창고에 반영 ---
     for (final n in merged.notes) {
-      final r = remoteById[n.id];
-      if (r == null || r.updatedAt < n.updatedAt) {
+      // 올릴지는 딱지 셈이 정한다(core/sync_plan.dart). 핵심 하나 —
+      // **모르면 안 올린다.** 있는 건 아는데 얼마나 새것인지 모르는
+      // 판에서 올리면, 남이 방금 고친 것을 이쪽의 옛것으로 덮는다.
+      if (shouldUpload(
+        exists: remoteIds.contains(n.id),
+        corrupt: corrupt.contains(n.id),
+        remoteStamp: remoteStamp[n.id],
+        localStamp: n.updatedAt,
+      )) {
         await _t.write('$notesDir/${n.id}.json', n.toJson());
       }
     }
     final liveIds = {for (final n in merged.notes) n.id};
     final tombIds = <String>{};
-    // 2026-08-20 — 여기서 툼스톤마다 exists() 를 물었다. 아이클라우드에서는
-    // 파일이 있나 보는 것이라 공짜였지만, 드라이브에서는 **한 번마다 검색
-    // 왕복 한 번**이다. 게다가 아직 없는 것은 캐시에 안 남아서, 없는 툼스톤은
-    // 30초마다 영원히 다시 묻는다. 첫 맞추기가 몇 분씩 걸리고 화면이 계속
-    // '맞추는 중'이던 까닭이 여기 있다.
-    //
-    // 그런데 우리는 이미 답을 들고 있었다 — 위에서 readDir 로 받아 둔
-    // remoteTombs 가 그것이다. **물어볼 필요가 없는 것을 물었다.**
-    final remoteTombIds = {
-      for (final t in remoteTombs)
-        if (t['id'] is String) t['id'] as String,
-    };
+    // 원격 툼스톤 아이디는 위의 목록 읽기가 이미 안다(remoteTombIds).
+    // 예전에 여기서 exists() 를 하나씩 묻던 사고는 08-20 아침에 고쳤고,
+    // 딱지 길에서는 목록 자체가 그 답이다.
     for (final t in merged.tombstones) {
       final id = t['id'] as String;
       tombIds.add(id);
@@ -484,7 +563,7 @@ class ICloudSync {
       //
       // 다만 **저쪽에 있는 것만** 치운다. 없는 것을 지우라고 시키면 그것도
       // 왕복이고, 지운 메모 수만큼 매번 되풀이된다.
-      if (!liveIds.contains(id) && remoteById.containsKey(id)) {
+      if (!liveIds.contains(id) && remoteIds.contains(id)) {
         await _t.remove('$notesDir/$id.json');
       }
     }

@@ -60,6 +60,10 @@ class FakeDrive {
                       'id': e.key,
                       'name': e.value['name'],
                       'modifiedTime': e.value['at'],
+                      'appProperties': {
+                        'dir': e.value['dir'],
+                        if (e.value['up'] != null) 'up': e.value['up'],
+                      },
                     }
                 ]
               }),
@@ -87,6 +91,19 @@ class FakeDrive {
           if (f == null) return http.Response('', 404);
           f['body'] = req.body;
           f['at'] = '${++_clock}';
+          return http.Response(jsonEncode({'id': id}), 200);
+        }
+
+        // 딱지 고치기: PATCH /drive/v3/files/{id} (얹기 호스트가 아닌 쪽)
+        if (req.method == 'PATCH' && !path.contains('/upload/')) {
+          final id = path.split('/').last;
+          final f = files[id];
+          if (f == null) return http.Response('', 404);
+          final j = jsonDecode(req.body) as Map<String, dynamic>;
+          final props = j['appProperties'];
+          if (props is Map && props['up'] != null) {
+            f['up'] = '${props['up']}';
+          }
           return http.Response(jsonEncode({'id': id}), 200);
         }
 
@@ -151,6 +168,66 @@ void main() {
       drive.files.clear();
       expect(await t.readDir('notes'), isEmpty,
           reason: '없어진 것을 붙들고 있으면 지운 메모가 되살아난다');
+    });
+
+    test('쓰면 딱지에 시각이 남는다', () async {
+      await t.write('notes/a.json', {'id': 'a', 'updatedAt': 7});
+      expect(drive.files.values.single['up'], '7');
+    });
+
+    test('목록만으로 딱지를 읽는다 — 내려받기 없이', () async {
+      await t.write('notes/a.json', {'id': 'a', 'updatedAt': 7});
+      final before = drive.downloads;
+      final metas = await t.listMeta('notes');
+      expect(metas, isNotNull);
+      expect(metas!.single.id, 'a');
+      expect(metas.single.up, 7);
+      expect(drive.downloads, before, reason: '목록은 본문을 안 받는다');
+    });
+
+    test('딱지 없는 옛 파일은 up 이 null — 받고 나면 딱지가 달린다', () async {
+      // 옛 판이 만든 파일 흉내: 딱지 없이 직접 심는다.
+      drive.files['old1'] = {
+        'name': 'a.json',
+        'dir': 'notes',
+        'body': '{"id":"a","updatedAt":3}',
+        'at': 'x',
+      };
+      final metas = await t.listMeta('notes');
+      expect(metas!.single.up, isNull);
+
+      final got = await t.readMany(['notes/a.json']);
+      expect(got['notes/a.json']!.ok, isTrue);
+      expect(drive.files['old1']!['up'], '3',
+          reason: '한 번 받으면 딱지를 달아, 다음부터는 목록만으로 안다');
+      expect((await t.listMeta('notes'))!.single.up, 3);
+    });
+
+    test('깨진 파일은 missing — 덮어써서 고칠 수 있는 상태', () async {
+      drive.files['bad'] = {
+        'name': 'a.json',
+        'dir': 'notes',
+        'body': '이건 JSON 이 아니다',
+        'at': 'x',
+      };
+      await t.listMeta('notes');
+      final got = await t.readMany(['notes/a.json']);
+      expect(got['notes/a.json']!.state, ReadState.missing);
+    });
+
+    test('다른 방을 훑어도 이 방의 기억은 남는다', () async {
+      // 2026-08-20 밤에 찾은 사고. 청소가 이번 목록에 없는 것을 전부
+      // 지워서, notes 를 훑으면 tombs 의 기억이 지워졌다. 툼스톤이
+      // 하나라도 있으면 30초마다 전부 다시 받고 있었던 것이다.
+      await t.write('notes/a.json', {'id': 'a'});
+      await t.write('tombs/t.json', {'id': 't', 'deletedAt': 1});
+      await t.readDir('notes');
+      await t.readDir('tombs');
+      final after = drive.downloads;
+      await t.readDir('notes');
+      await t.readDir('tombs');
+      expect(drive.downloads, after,
+          reason: '방을 번갈아 훑어도 다시 안 받는다');
     });
 
     test('이름표는 gdrive', () {

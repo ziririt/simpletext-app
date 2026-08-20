@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:simpletext/core/sync_transport.dart';
 
 /// 머릿속에만 있는 통로. 시험과 문서를 겸한다.
-class MemoryTransport implements SyncTransport {
+class MemoryTransport extends SyncTransport {
   final Map<String, Map<String, dynamic>> files = {};
   final Set<String> dirs = {};
 

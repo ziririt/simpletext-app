@@ -20,7 +20,7 @@ import '../core/sync_transport.dart';
 /// 아이클라우드가 안 내려받은 파일에 붙이는 꼬리.
 const String _kPlaceholderTail = '.icloud';
 
-class IcloudTransport implements SyncTransport {
+class IcloudTransport extends SyncTransport {
   const IcloudTransport(this._ch);
 
   final MethodChannel _ch;
