@@ -3544,6 +3544,19 @@ class _HomeScreenState extends State<HomeScreen>
   ///
   /// 공유 받기와 똑같이 **두 길**을 다 받는다. 앱이 켜져 있으면 흐름으로
   /// 오고, 꺼져 있었으면 켜지면서 한 번 온다.
+  /// 목록을 아래로 당겼을 때. 지금 맞춘다.
+  ///
+  /// 창고가 없거나 꺼져 있으면 맞출 것도 없다. 그때는 빙글이만 잠깐 돌고
+  /// 만다 — 여기서 '동기화가 꺼져 있습니다' 같은 것을 띄우면 당길 때마다
+  /// 잔소리를 듣는 셈이 된다. **물어본 것에 대답만 하고 훈수는 안 둔다.**
+  Future<void> _pullSync() async {
+    final sync = ICloudSync.instance;
+    if (!sync.active || sync.paused) {
+      await Future<void>.delayed(const Duration(milliseconds: 320));
+      return;
+    }
+    await sync.recheck();
+  }
   void _wireWidget() {
     if (!WidgetBridge.supported) return;
     WidgetBridge.clicks.listen(_openFromWidget);
@@ -3653,7 +3666,26 @@ class _HomeScreenState extends State<HomeScreen>
                 Expanded(
                   child: Stack(children: [
                     Positioned.fill(
-                      child: CustomScrollView(
+                      // 2026-08-20 소유자 요청 — "노트 목록 페이지에서 위에서
+                      // 아래로 잡아당기면 업데이트(동기화)되게 하면 좋겠다."
+                      //
+                      // 목록은 사람이 '지금 맞았나?'를 묻는 자리다. 그런데
+                      // 그 물음에 답하려면 설정 → 동기화까지 두 번 들어가야
+                      // 했다. 당기는 손짓은 그 물음의 가장 짧은 모양이다.
+                      //
+                      // edgeOffset 에 유리 머리 높이를 준다. 안 주면 빙글이가
+                      // 머리 뒤에 숨어서, 당겼는데 아무 일도 안 일어난 것처럼
+                      // 보인다.
+                      child: RefreshIndicator(
+                        onRefresh: _pullSync,
+                        edgeOffset: kHomeHeaderH,
+                        displacement: 28,
+                        color: context.c.accent,
+                        backgroundColor: context.c.panel,
+                        child: CustomScrollView(
+              // 내용이 짧아도 당길 수 있어야 한다. 이게 없으면 메모가 몇 개
+              // 없는 사람은 이 손짓을 아예 못 만난다.
+              physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 // 유리 머리 높이만큼 비워서 목록이 그 밑으로 흘러 들어간다.
                 const SliverToBoxAdapter(child: SizedBox(height: kHomeHeaderH)),
@@ -3735,6 +3767,7 @@ class _HomeScreenState extends State<HomeScreen>
                 SliverToBoxAdapter(
                     child: SizedBox(height: 104 + sysBottom(context))),
               ],
+                      ),
                       ),
                     ),
                     // 떠 있는 유리 머리 — 목록이 이 밑으로 비쳐 흐른다.
