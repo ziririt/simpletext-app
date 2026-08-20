@@ -57,11 +57,12 @@ import 'mac_menu.dart';
 import 'share_intake.dart';
 import 'sync/drive_auth.dart';
 import 'sync/google_button.dart';
+import 'web_font.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 앱이 뒤로 갈 때 모아 둔 저장을 즉시 비운다.
@@ -95,6 +96,9 @@ void main() {
       WidgetsBinding.instance.platformDispatcher.platformBrightness));
   // 홈 화면 위젯 자리 잡기(아이폰·안드로이드에서만). 목록을 실제로 보내는
   // 것은 화면이 말을 알려 준 뒤다 — 위젯에 쓸 글자를 다트가 담아 보내므로.
+  // 웹에서만 한글 글꼴을 심는다. 다른 판에서는 곧바로 돌아온다.
+  // 앱이 뜨기 전에 기다리는 까닭: 뜬 뒤에 바뀌면 글자가 한 번 출렁인다.
+  await loadWebFont();
   unawaited(WidgetBridge.init());
   // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
   AdsService.instance.boot();
@@ -251,9 +255,18 @@ const Color kOnAccentSoft = Color(0xFF0B3B63);
 const _sky = Color(0xFF3FB2F0);
 
 /// 애플 기기인가 — 아이클라우드가 있는 자리인지를 가르는 기준.
+///
+/// 2026-08-20 — **웹을 먼저 묻는다.** defaultTargetPlatform 은 웹에서
+/// 브라우저를 돌리는 컴퓨터의 운영체제를 답한다. 맥에서 크롬을 열면
+/// macOS 라고 하는데, 그 자리에 아이클라우드는 없다. 그래서 웹 설정의
+/// iCloud 칸이 고를 수 있게 열려 있었다.
+///
+/// core/key_vault.dart 에서 같은 함정을 이미 밟고 주석까지 적어 뒀는데
+/// 이 함수는 안 고쳤다. 같은 판단이 두 군데 있으면 한 군데를 빠뜨린다.
 bool get isApplePlatform =>
-    defaultTargetPlatform == TargetPlatform.iOS ||
-    defaultTargetPlatform == TargetPlatform.macOS;
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS);
 
 /// 이 기기가 자기 잠금을 부르는 이름 — 'apple' · 'android' · 'windows'.
 ///
@@ -964,8 +977,24 @@ class SimpleTextApp extends StatelessWidget {
       extensions: [c],
     );
     return base.copyWith(
-      textTheme: base.textTheme.apply(fontFamilyFallback: _hangulFallback),
-      primaryTextTheme: base.primaryTextTheme.apply(fontFamilyFallback: _hangulFallback),
+      // 웹에서는 우리가 심은 글꼴을 **주 글꼴로** 세운다.
+      //
+      // fontFamilyFallback 만으로는 안 된다. 그건 '주 글꼴에 없는 글자를
+      // 어디서 찾을까'이고, 웹의 주 글꼴은 CanvasKit 의 로보토다. 로보토에
+      // 라틴이 다 있으니 라틴은 끝까지 로보토로 그려지고, 한글만 넘어간다.
+      // **섞이는 것 자체가 문제**였으므로 주 글꼴을 갈아야 한다.
+      //
+      // 폰·맥·안드로이드에서는 null 이다. 그 기기들의 시스템 글꼴이
+      // 이미 그 자리에 맞는 답이고, 우리가 고른 글꼴로 덮으면 오히려
+      // 그 기기에서 낯설어진다.
+      textTheme: base.textTheme.apply(
+        fontFamily: kIsWeb ? kWebFontFamily : null,
+        fontFamilyFallback: _hangulFallback,
+      ),
+      primaryTextTheme: base.primaryTextTheme.apply(
+        fontFamily: kIsWeb ? kWebFontFamily : null,
+        fontFamilyFallback: _hangulFallback,
+      ),
     );
   }
 }
@@ -1697,6 +1726,9 @@ class Store extends ChangeNotifier {
     // 남는다. 그릇이 멀쩡하면 두 값이 같으므로 덮어써도 달라지는 것이 없다.
     final keptBackend = (await KeyVault.readBackend()).trim();
     if (keptBackend.isNotEmpty) settings.syncBackend = keptBackend;
+    // 창고 이름을 이 기기에서 말이 되게 고친다. 한 곳에서만 한다 —
+    // 화면마다 고치면 다음에 만드는 화면에서 또 빠진다.
+    settings.syncBackend = fitBackend(settings.syncBackend);
 
     final fromPrefs = settings.aiKey.trim();
     final fromVault = (await KeyVault.read()).trim();
@@ -2086,6 +2118,23 @@ const Duration _kToastUndo = Duration(seconds: 5);
 /// 구글 드라이브를 붙여 놓고 **그걸 고를 화면을 가려 놨었다.**
 ///
 /// 창고가 하나라도 있으면 보여 준다. 여기 한 곳만 본다.
+/// 이 기기에서 말이 되는 창고로 고쳐 준다.
+///
+/// 2026-08-20 소유자 지적(웹) — "아이클라우드가 아니라 구글 로그인만
+/// 가능한 거 아닌가?" 맞다. 그런데 웹 설정에는 "기기 설정에서 iCloud
+/// Drive를 켜 주세요"가 떠 있었다. 브라우저에 그런 설정은 없다.
+///
+/// 처음 값이 'icloud' 인데 그 창고는 애플 기기에만 있다. 아무것도 안
+/// 고른 사람은 **못 쓰는 창고를 고른 상태**로 앱을 켜고, 화면은 그
+/// 창고를 켜라고 한다. 안드로이드도 소유자가 손으로 구글 드라이브를
+/// 고르기 전까지 같은 그림이었다 — 아무도 그 화면을 안 봤을 뿐이다.
+///
+/// 구글로 대신 바꿔 주지 않는다. 못 고르는 것을 대신 골라 주는 것보다,
+/// **안 고른 채로 두고 사람이 고르게** 하는 편이 정직하다. 화면은
+/// '동기화 안 함'이라고 말하고, 고르는 자리는 한 번 누르면 나온다.
+String fitBackend(String b) =>
+    (b == 'icloud' && !ICloudSync.supported) ? 'none' : b;
+
 bool get syncVisible => ICloudSync.supported || DriveAuth.supported;
 
 /// 이 기기에서 앱 잠금을 걸 수 있는가.

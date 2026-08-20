@@ -14,13 +14,13 @@ class L10nKo extends L10n {
   String get versionLabel => '버전';
 
   @override
-  String get homeTitle => '메모';
+  String get homeTitle => '노트';
   @override
   String get settingsTooltip => '정리 규칙 설정';
   @override
   String get searchHint => '검색';
   @override
-  String get emptyList => '메모가 없습니다.\n"붙여넣고 정리"로 시작해 보세요.';
+  String get emptyList => '노트가 없습니다.\n"붙여넣고 정리"로 시작해 보세요.';
   @override
   String get pinnedLabel => '고정됨';
   @override
@@ -36,7 +36,7 @@ class L10nKo extends L10n {
   @override
   String get untitled => '제목 없음';
   @override
-  String get deleteConfirmTitle => '이 메모를 삭제할까요?';
+  String get deleteConfirmTitle => '이 노트를 삭제할까요?';
   @override
   String get cancel => '취소';
   @override
@@ -153,7 +153,7 @@ class L10nKo extends L10n {
   @override
   String get bodyHint => '여기에 붙여넣거나 입력하세요';
   @override
-  String get noteNotFound => '메모를 찾을 수 없습니다';
+  String get noteNotFound => '노트를 찾을 수 없습니다';
   @override
   String get revertedToast => '원본으로 되돌렸습니다 · 직전 글은 버전기록에 있습니다';
 
@@ -326,7 +326,7 @@ class L10nKo extends L10n {
   String get undoAction => '되돌리기';
 
   @override
-  String get noTablesFound => '이 메모에서 표를 찾지 못했습니다';
+  String get noTablesFound => '이 노트에서 표를 찾지 못했습니다';
   @override
   String tableInfo(int n, int cols, int rows) => '표 $n — $cols열 × $rows행';
   @override
@@ -416,7 +416,7 @@ class L10nKo extends L10n {
   @override
   String get tidyCopy => '정리해서 복사';
   @override
-  String get tidyCopySub => '메모는 그대로 두고, 정리된 결과만 복사';
+  String get tidyCopySub => '노트는 그대로 두고, 정리된 결과만 복사';
   @override
   String tidyCopied(String summary) => '정리해서 복사했습니다 — $summary';
   @override
@@ -504,7 +504,7 @@ class L10nKo extends L10n {
 
   @override
   String get syncScopeShared =>
-      '함께 오가는 것 : 메모, 정리 규칙, 수동으로 추가한 바꾸기 규칙, 폴더, 자주 쓰는 AI편집 지시문';
+      '함께 오가는 것 : 노트, 정리 규칙, 수동으로 추가한 바꾸기 규칙, 폴더, 자주 쓰는 AI편집 지시문';
 
   @override
   String get syncStateOffGdrive => '구글 계정에 다시 로그인해 주세요';
@@ -582,7 +582,7 @@ class L10nKo extends L10n {
   String syncLastAt(String when) => '마지막으로 맞춘 때 · $when';
 
   @override
-  String syncStateOn(String where) => '$where에 올려 두고, 이 앱을 설치한 기기에서 같은 메모를 봅니다';
+  String syncStateOn(String where) => '$where에 올려 두고, 이 앱을 설치한 기기에서 같은 노트를 봅니다';
 
   @override
   String get syncStateOff => '기기 설정에서 iCloud Drive를 켜 주세요';
@@ -591,11 +591,11 @@ class L10nKo extends L10n {
   String syncStateSyncing(String where) => '$where와 맞추는 중… 몇 초에서 몇십 초 걸립니다';
 
   @override
-  String get aiKeyNotSynced => '메모는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
+  String get aiKeyNotSynced => '노트는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
   @override
   String get aiKeySyncTitle => 'API키도 동기화';
   @override
-  String get aiKeySyncSubApple => 'iCloud 키체인으로 옮깁니다. 메모가 가는 길과 다른 길이고, 열쇠를 내 기기만 가지므로 애플도 그 값을 읽지 못합니다.';
+  String get aiKeySyncSubApple => 'iCloud 키체인으로 옮깁니다. 노트가 가는 길과 다른 길이고, 열쇠를 내 기기만 가지므로 애플도 그 값을 읽지 못합니다.';
   @override
   String get aiKeySyncSubGdrive => '구글 드라이브에 있는 API키 보안은 이용자의 몫입니다.';
 
@@ -684,7 +684,7 @@ class L10nKo extends L10n {
   String get aiErrNetwork => '인터넷에 닿지 못했습니다. 연결을 확인하고 다시 해 주세요.';
 
   @override
-  String get multiSelectStart => '선택 메모 한번에 삭제';
+  String get multiSelectStart => '선택 노트 한번에 삭제';
 
   @override
   String get selectAllTooltip => '전체 선택 / 해제';
@@ -696,16 +696,16 @@ class L10nKo extends L10n {
   String get deleteSelectedDone => '삭제완료';
 
   @override
-  String get deleteSelectedConfirm => '선택한 메모를 정말로 삭제할까요?';
+  String get deleteSelectedConfirm => '선택한 노트를 정말로 삭제할까요?';
 
   @override
-  String deleteSelectedBody(int n) => '메모 $n개가 휴지통으로 갑니다. 30일 안에는 되살릴 수 있습니다.';
+  String deleteSelectedBody(int n) => '노트 $n개가 휴지통으로 갑니다. 30일 안에는 되살릴 수 있습니다.';
 
   @override
   String get trashTitle => '휴지통';
 
   @override
-  String get trashSubtitle => '지운 메모는 30일 동안 보관됩니다';
+  String get trashSubtitle => '지운 노트는 30일 동안 보관됩니다';
 
   @override
   String get trashEmpty => '휴지통이 비어 있습니다';
@@ -734,15 +734,15 @@ class L10nKo extends L10n {
 
   @override
   String get exportSubtitle =>
-      '메모는 언제든 꺼낼 수 있습니다. 마크다운으로 나가면 애플 메모·옵시디언·노션 어디로든 들어갑니다.';
+      '노트는 언제든 꺼낼 수 있습니다. 마크다운으로 나가면 애플 메모·옵시디언·노션 어디로든 들어갑니다.';
 
   @override
   String get exportNote =>
-      '이 메모 내보내기';
+      '이 노트 내보내기';
 
   @override
   String get exportAllMd =>
-      '메모 전체 내보내기';
+      '노트 전체 내보내기';
 
   @override
   String get exportAllMdSub =>
@@ -774,7 +774,7 @@ class L10nKo extends L10n {
 
   @override
   String get exportEmpty =>
-      '내보낼 메모가 없습니다';
+      '내보낼 노트가 없습니다';
 
   @override
   String get choosePreset => '정리 방식 고르기';
@@ -785,7 +785,7 @@ class L10nKo extends L10n {
 
   @override
   String get importFilesSub =>
-      '마크다운·텍스트 파일을 메모로. 백업 파일도 여기서 되돌립니다';
+      '마크다운·텍스트 파일을 노트로. 백업 파일도 여기서 되돌립니다';
 
   @override
   String get importAppend =>
@@ -796,13 +796,13 @@ class L10nKo extends L10n {
       '가져온 파일이 없습니다';
 
   @override
-  String importDone(int n) => '메모 $n개를 가져왔습니다';
+  String importDone(int n) => '노트 $n개를 가져왔습니다';
 
   @override
   String get sourceGuessSuffix => '(추정)';
 
   @override
-  String get splitEmpty => '왼쪽에서 메모를 고르세요';
+  String get splitEmpty => '왼쪽에서 노트를 고르세요';
 
   @override
   String get historyTitle =>
@@ -840,10 +840,10 @@ class L10nKo extends L10n {
   String get historyWhyRestore => '되살리기 직전';
 
   @override
-  String get widgetEmpty => '메모가 없습니다';
+  String get widgetEmpty => '노트가 없습니다';
 
   @override
-  String get widgetAllLocked => '잠긴 메모는 위젯에 나오지 않습니다';
+  String get widgetAllLocked => '잠긴 노트는 위젯에 나오지 않습니다';
 
   @override
   String get attachTitle => '첨부';
@@ -982,7 +982,7 @@ class L10nKo extends L10n {
           : '이 기기에서는 Face ID·Touch ID나 기기 암호를 쓸 수 없습니다.';
 
   @override
-  String get lockReasonOpen => '메모를 열려면 확인이 필요합니다';
+  String get lockReasonOpen => '노트를 열려면 확인이 필요합니다';
 
   @override
   String get lockReasonOn => '잠금을 켜려면 확인이 필요합니다';
@@ -991,22 +991,22 @@ class L10nKo extends L10n {
   String get lockReasonOff => '잠금을 끄려면 확인이 필요합니다';
 
   @override
-  String get noteLock => '이 메모 잠그기';
+  String get noteLock => '이 노트 잠그기';
 
   @override
-  String get noteUnlock => '이 메모 잠금 풀기';
+  String get noteUnlock => '이 노트 잠금 풀기';
 
   @override
-  String get noteLocked => '잠긴 메모';
+  String get noteLocked => '잠긴 노트';
 
   @override
-  String get lockReasonNote => '잠긴 메모를 엽니다';
+  String get lockReasonNote => '잠긴 노트를 엽니다';
 
   @override
-  String get noteLockDone => '이 메모를 잠갔습니다';
+  String get noteLockDone => '이 노트를 잠갔습니다';
 
   @override
-  String get noteUnlockDone => '이 메모의 잠금을 풀었습니다';
+  String get noteUnlockDone => '이 노트의 잠금을 풀었습니다';
 
   @override
   String get syncDiagSignedOut => '이 기기가 iCloud에 로그인되어 있지 않습니다. 먼저 로그인해 주십시오.';
@@ -1064,7 +1064,7 @@ class L10nKo extends L10n {
   @override
   String get syncHelpStepsGdrive => '1. 아래 단추를 눌러 구글 계정을 고릅니다\n2. 드라이브 접근을 허용합니다\n3. 곧바로 맞추기가 시작됩니다';
   @override
-  String get syncHelpNoteGdrive => '메모는 드라이브에 그대로 있습니다. 다시 로그인하면 돌아옵니다.';
+  String get syncHelpNoteGdrive => '노트는 드라이브에 그대로 있습니다. 다시 로그인하면 돌아옵니다.';
   @override
   String get syncDiagSignedOutGdrive => '이 기기가 구글 계정에 로그인되어 있지 않습니다.';
   @override
@@ -1072,9 +1072,9 @@ class L10nKo extends L10n {
   @override
   String get syncAllowDrive => '드라이브 접근 허용';
   @override
-  String get syncDiagPreparingGdrive => '로그인은 되었습니다. 드라이브에서 메모를 받아오는 중입니다.';
+  String get syncDiagPreparingGdrive => '로그인은 되었습니다. 드라이브에서 노트를 받아오는 중입니다.';
   @override
-  String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 메모가 많으면 첫 맞추기는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
+  String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 노트가 많으면 첫 맞추기는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
 
   @override
   String pastedFrom(String src, String date) =>
@@ -1279,5 +1279,5 @@ class L10nKo extends L10n {
   String get addRule => '규칙 추가';
   @override
   String get settingsFooter =>
-      '설정은 저장 즉시 반영되며, 이후 "정리"를 실행할 때부터 적용됩니다. 이미 정리해 둔 메모는 소급해서 바뀌지 않습니다.';
+      '설정은 저장 즉시 반영되며, 이후 "정리"를 실행할 때부터 적용됩니다. 이미 정리해 둔 노트는 소급해서 바뀌지 않습니다.';
 }
