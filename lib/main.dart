@@ -2478,7 +2478,18 @@ class _DustPainter extends CustomPainter {
 /// SafeArea 안이면 이미 깎여 있어 0이 더해진다. 밖이면 실제 값이 더해진다.
 /// 어느 쪽이든 맞으므로 부르는 자리마다 따지지 않아도 된다.
 EdgeInsets scrollPad(BuildContext c, {double top = 0, double bottom = 40}) =>
-    EdgeInsets.only(top: top, bottom: bottom + MediaQuery.paddingOf(c).bottom);
+    EdgeInsets.only(top: top, bottom: bottom + sysBottom(c));
+
+/// 시스템 막대(안드로이드 물리키 자리)의 높이.
+///
+/// 2026-08-20 소유자 추가 신고 — "편집 화면은 물리키와 확실히 구분되어
+/// 있는데, 목록과 설정은 그 영역 구분이 없어서 겹친다."
+///
+/// 편집 화면은 SafeArea 안에 있어서 프레임워크가 알아서 깎아 준다. 목록은
+/// 유리 머리 밑으로 흘러 들어가야 해서 SafeArea 를 안 쓰고, 그래서 이 값을
+/// 손으로 챙겨야 한다. **한 화면이 예외라는 것은 그 화면만 다르게 짰다는
+/// 뜻이고, 다르게 짠 화면은 반드시 한 번 잊힌다.**
+double sysBottom(BuildContext c) => MediaQuery.paddingOf(c).bottom;
 
 /// ---------------- 홈 화면 ----------------
 /// 목록 행의 "카드 안쪽 왼쪽 여백".
@@ -3718,7 +3729,11 @@ class _HomeScreenState extends State<HomeScreen>
                 // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
                 // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
                 // 떠 있는 단추(56)에 위아래 여백을 더한 높이.
-                const SliverToBoxAdapter(child: SizedBox(height: 104)),
+                // 목록 맨 끝의 빈 칸. 104는 떠 있는 단추를 비켜 주는 값이고,
+                // 거기에 물리키 자리를 더한다. 이걸 빼먹으면 마지막 메모가
+                // 물리키 밑에 깔린다(2026-08-20 신고).
+                SliverToBoxAdapter(
+                    child: SizedBox(height: 104 + sysBottom(context))),
               ],
                       ),
                     ),
