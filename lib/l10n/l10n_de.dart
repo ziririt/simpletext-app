@@ -510,6 +510,8 @@ class L10nDe extends L10n {
 
   @override
   String get syncStateOffGdrive => 'Bitte melden Sie sich erneut in Ihrem Google-Konto an';
+  @override
+  String get syncStateExpiredGdrive => 'Ihr Konto ist weiterhin verbunden, aber die Berechtigung für Drive ist abgelaufen. Einmal tippen, um sie zu erneuern.';
 
   @override
   String get syncScopePlatformGdrive =>

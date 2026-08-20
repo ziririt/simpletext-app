@@ -2196,6 +2196,14 @@ class SyncSay {
         return SyncSay(l.syncSignedOutTitle, l.syncStateSignedOut);
       case SyncState.off:
       case SyncState.unsupported:
+        // 계정은 붙어 있는데 허락만 끊긴 판을 따로 말한다. 예전에는
+        // 이 자리에서도 "다시 로그인"이라고 해서, 멀쩡한 계정을 두고
+        // 로그인이 풀렸다고 읽히게 만들었다.
+        if (gdrive &&
+            DriveAuth.instance.signedIn &&
+            DriveAuth.instance.authExpired) {
+          return SyncSay(l.syncOffTitle, l.syncStateExpiredGdrive);
+        }
         return SyncSay(l.syncOffTitle,
             gdrive ? l.syncStateOffGdrive : l.syncStateOff);
     }
@@ -9585,9 +9593,15 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
     // 구글은 물어볼 것이 하나뿐이다 — 붙었는가. 애플처럼 '자리를
     // 받았는가'가 따로 없다(드라이브의 방은 계정에 딸려 온다).
     if (_gdrive) {
-      return DriveAuth.instance.signedIn
-          ? (l.syncDiagPreparingGdrive, Icons.hourglass_bottom)
-          : (l.syncDiagSignedOutGdrive, Icons.person_off_outlined);
+      if (!DriveAuth.instance.signedIn) {
+        return (l.syncDiagSignedOutGdrive, Icons.person_off_outlined);
+      }
+      // 붙어 있는데 허락이 끊긴 자리. '받아오는 중'이라고 하면 기다리면
+      // 되는 줄 알고 계속 기다리게 된다 — 눌러야 풀리는 것이다.
+      if (DriveAuth.instance.authExpired) {
+        return (l.syncStateExpiredGdrive, Icons.lock_clock_outlined);
+      }
+      return (l.syncDiagPreparingGdrive, Icons.hourglass_bottom);
     }
     final sync = ICloudSync.instance;
     // 2026-08-17 — 순서를 뒤집었다.

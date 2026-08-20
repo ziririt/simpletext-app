@@ -509,6 +509,8 @@ class L10nPt extends L10n {
 
   @override
   String get syncStateOffGdrive => 'Entre novamente na sua conta do Google';
+  @override
+  String get syncStateExpiredGdrive => 'Sua conta continua conectada, mas a permissão para usar o Drive expirou. Toque uma vez para renovar.';
 
   @override
   String get syncScopePlatformGdrive =>

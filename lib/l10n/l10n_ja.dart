@@ -508,6 +508,8 @@ class L10nJa extends L10n {
 
   @override
   String get syncStateOffGdrive => 'Google アカウントにもう一度ログインしてください';
+  @override
+  String get syncStateExpiredGdrive => 'アカウントはつながっていますが、ドライブの利用許可が期限切れです。一度押して更新してください';
 
   @override
   String get syncScopePlatformGdrive =>

@@ -203,16 +203,38 @@ class DriveAuth {
   /// **여기서는 사람에게 안 묻는다**(promptIfNecessary 를 안 쓴다). 동기화는
   /// 뒤에서 조용히 도는 일이라, 3초마다 도는 그 자리에서 창을 띄우면
   /// 글 쓰다 말고 로그인 창을 보게 된다. 권한이 없으면 이번 차례를 거른다.
+  /// 계정은 붙어 있는데 **드라이브 사용 허락만** 끊긴 상태인가.
+  ///
+  /// 2026-08-20 소유자 신고(웹) — 한 화면은 '연결됨', 다른 화면은
+  /// '꺼짐'. 둘 다 사실인데 모순으로 읽힌다.
+  ///
+  /// 구글 로그인은 두 겹이다 — '누구인가'(signedIn)와 '드라이브를
+  /// 만져도 되는가'(token). 코드는 갈라 놓았는데 화면은 안 갈랐다.
+  /// 그래서 꺼진 까닭을 "구글 계정에 다시 로그인해 주세요"라고 말했다.
+  /// 계정이 멀쩡한데 그렇게 말하면 로그인이 풀린 줄 안다.
+  ///
+  /// 브라우저에서 사용 허락은 한 시간짜리고, 조용한 갱신이 쿠키 정책에
+  /// 막히는 일이 잦다. 폰·맥에서는 드물지만 없지는 않다.
+  bool authExpired = false;
+
   Future<String?> token() async {
     if (!supported) return null;
     try {
       await _init();
       final u = _user;
-      if (u == null) return null;
+      if (u == null) {
+        authExpired = false;
+        return null;
+      }
+      // 이 부름 자체가 **조용한 갱신 시도**다. 30초마다 도는 자리에서
+      // 이미 하고 있으므로 따로 더 시도할 자리를 만들지 않는다.
       final a = await u.authorizationClient
           .authorizationForScopes(const <String>[kDriveScope]);
-      return a?.accessToken;
+      final t = a?.accessToken;
+      authExpired = t == null || t.isEmpty;
+      return t;
     } catch (_) {
+      authExpired = true;
       return null;
     }
   }

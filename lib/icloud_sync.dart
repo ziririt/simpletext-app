@@ -356,10 +356,33 @@ class ICloudSync {
       // 모든 기다림에 바닥이 있다.
       started = true;
       final work = _run(root);
-      unawaited(work.then((_) {}, onError: (Object _) {}).whenComplete(free));
-      await work.timeout(lastSyncMs.value == 0 ? _firstPass : _pass);
-      lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
-      state.value = SyncState.ok;
+
+      // **결과는 일 쪽이 정한다.**
+      //
+      // 2026-08-20 소유자 신고 — "금방 되었다가 또 금방 꺼지고", 그리고
+      // "앱을 계속 켜놓으니까 금방 저절로 켜짐 상태가 되었다."
+      //
+      // 저절로 돌아온다는 말이 답이었다. 로그인이 풀린 것이라면 저절로
+      // 돌아올 수 없다. 어떤 바퀴는 제때 끝나고 어떤 바퀴는 안 끝나는데,
+      // 우리가 **안 끝난 바퀴를 '꺼짐'이라고 불렀다.**
+      //
+      // 시간이 넘은 것과 일이 실패한 것을 한 통에 담았던 것이다. 시간
+      // 제한은 '얼마나 기다렸다가 화면에 말할까'를 정하는 것이라고 바로
+      // 위에 적어 놓고도, 정작 그 말을 '꺼짐'으로 했다.
+      unawaited(work.then((_) {
+        lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
+        state.value = SyncState.ok;
+      }, onError: (Object _) {
+        state.value = SyncState.off;
+      }).whenComplete(free));
+
+      try {
+        await work.timeout(lastSyncMs.value == 0 ? _firstPass : _pass);
+      } on TimeoutException {
+        // 오래 걸리는 것은 실패가 아니다. 일은 계속 돈다 — 끝나면 위의
+        // then 이 '켜짐'으로 바꾼다. 여기서는 기다리기만 그만둔다.
+        state.value = SyncState.running;
+      }
     } catch (_) {
       // 동기화 실패로 앱이 멈추면 안 된다. 다음 차례에 다시 해 본다.
       //

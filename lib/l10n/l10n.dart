@@ -370,6 +370,10 @@ abstract class L10n {
   /// 저쪽은 기기 설정을 켜라는 말이고, 이쪽은 다시 로그인하라는 말이다.
   String get syncStateOffGdrive;
 
+  /// 계정은 붙어 있는데 드라이브 사용 허락만 끊긴 자리.
+  /// 'ㄹ로그인하라'와 다른 말이어야 한다 — 로그인은 멀쩡하다.
+  String get syncStateExpiredGdrive;
+
   /// 구글 창고를 골랐을 때의 닿는 범위.
   String get syncScopePlatformGdrive;
   String syncStateSyncing(String where);
@@ -871,6 +875,7 @@ abstract class L10n {
         'typographyTitle': typographyTitle,
         'syncStateOff': syncStateOff,
         'syncStateOffGdrive': syncStateOffGdrive,
+        'syncStateExpiredGdrive': syncStateExpiredGdrive,
         'syncScopePlatformGdrive': syncScopePlatformGdrive,
         'aiKeyNotSynced': aiKeyNotSynced,
         'aiKeySyncTitle': aiKeySyncTitle,

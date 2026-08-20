@@ -508,6 +508,8 @@ class L10nKo extends L10n {
 
   @override
   String get syncStateOffGdrive => '구글 계정에 다시 로그인해 주세요';
+  @override
+  String get syncStateExpiredGdrive => '계정은 연결돼 있는데 드라이브 사용 허락이 만료됐습니다. 한 번 눌러 다시 켜 주세요';
 
   @override
   String get syncScopePlatformGdrive =>

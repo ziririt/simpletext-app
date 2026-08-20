@@ -508,6 +508,8 @@ class L10nZhHant extends L10n {
 
   @override
   String get syncStateOffGdrive => '請重新登入你的 Google 帳號';
+  @override
+  String get syncStateExpiredGdrive => '帳號仍已連接，但雲端硬碟的使用授權已過期。點一次即可重新授權';
 
   @override
   String get syncScopePlatformGdrive =>
