@@ -5583,6 +5583,30 @@ class _EditorScreenState extends State<EditorScreen>
     return found;
   }
 
+  /// 편집 메뉴를 띄운다 — **돋보기를 먼저 끄고.**
+  ///
+  /// 2026-08-20 소유자 신고 — "돋보기가 특정 위치에 고정 맞춰져있는
+  /// 버그." 사진 두 장에서 돋보기가 화면의 똑같은 자리에 떠 있었다.
+  ///
+  /// 자리 셈은 멀쩡했다(test 로 세 가지 모양을 재 봤고 소수점까지
+  /// 같았다). 문제는 **끄는 자리**였다.
+  ///
+  /// 플러터는 메뉴를 띄울 때 반드시 돋보기를 먼저 끈다 — 둘이 같이
+  /// 떠 있으면 안 되기 때문이다. 그런데 이 앱은 showToolbar() 를
+  /// **손짓 바깥에서** 두 곳에서 부르면서 그 짝을 안 지었다. 길게
+  /// 눌러 돋보기가 떠 있는 동안 이 길로 들어오면 메뉴는 뜨고 돋보기는
+  /// 마지막 자리에 남는다. 그 뒤로는 아무도 끄지 않는다 — 그것을 켠
+  /// 손짓이 이미 끝났기 때문이다.
+  ///
+  /// 붙어 있는 게 아니라 **꺼지지 않은 것**이었다.
+  ///
+  /// 그래서 부르는 자리를 하나로 모은다. 두 군데에 각각 적어 두면
+  /// 세 번째 자리가 생기는 날 또 빠뜨린다.
+  void _showMenu(EditableTextState st) {
+    st.hideMagnifier();
+    st.showToolbar();
+  }
+
   /// 손가락이 닿은 그 한 번에 편집 메뉴를 띄운다.
   ///
   /// 2026-08-18 소유자 지시 — "아무데나 터치를 하면 (…) 한번만에 안 나온다.
@@ -5615,7 +5639,8 @@ class _EditorScreenState extends State<EditorScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future<void>.delayed(const Duration(milliseconds: 60));
       if (!mounted) return;
-      _editableState()?.showToolbar();
+      final st = _editableState();
+      if (st != null) _showMenu(st);
     });
   }
 
@@ -5663,7 +5688,7 @@ class _EditorScreenState extends State<EditorScreen>
     }
 
     // 이미 떠 있으면 false를 돌려주고 아무 일도 안 한다 — 깜빡이지 않는다.
-    st.showToolbar();
+    _showMenu(st);
   }
 
   void _measureHead() {
