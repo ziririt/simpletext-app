@@ -16,10 +16,17 @@ import 'package:simpletext/sync/gdrive_transport.dart';
 
 /// 아주 작은 가짜 드라이브. 파일마다 (이름, 방, 내용)을 들고 있다.
 class FakeDrive {
-  final Map<String, Map<String, dynamic>> files = {}; // id -> {name,dir,body}
+  final Map<String, Map<String, dynamic>> files = {}; // id -> {name,dir,body,at}
   int _n = 0;
   int calls = 0;
   int uploads = 0;
+
+  /// 내용을 실제로 내려받은 횟수. 통로가 '안 바뀐 것은 안 받는다'를
+  /// 지키는지 세는 자리다(2026-08-20).
+  int downloads = 0;
+
+  /// 파일을 고칠 때마다 오르는 시계. 진짜 드라이브의 modifiedTime 노릇.
+  int _clock = 0;
 
   http.Client client() => MockClient((req) async {
         calls++;
@@ -28,6 +35,7 @@ class FakeDrive {
 
         // 내용 받기: /drive/v3/files/{id}?alt=media
         if (req.method == 'GET' && u.queryParameters['alt'] == 'media') {
+          downloads++;
           final id = path.split('/').last;
           final f = files[id];
           if (f == null) return http.Response('', 404);
@@ -47,7 +55,12 @@ class FakeDrive {
           return http.Response(
               jsonEncode({
                 'files': [
-                  for (final e in hit) {'id': e.key, 'name': e.value['name']}
+                  for (final e in hit)
+                    {
+                      'id': e.key,
+                      'name': e.value['name'],
+                      'modifiedTime': e.value['at'],
+                    }
                 ]
               }),
               200);
@@ -61,6 +74,7 @@ class FakeDrive {
             'name': j['name'],
             'dir': (j['appProperties'] as Map)['dir'],
             'body': '{}',
+            'at': '${++_clock}',
           };
           return http.Response(jsonEncode({'id': id}), 200);
         }
@@ -72,6 +86,7 @@ class FakeDrive {
           final f = files[id];
           if (f == null) return http.Response('', 404);
           f['body'] = req.body;
+          f['at'] = '${++_clock}';
           return http.Response(jsonEncode({'id': id}), 200);
         }
 
@@ -93,6 +108,49 @@ void main() {
     setUp(() {
       drive = FakeDrive();
       t = GDriveTransport(() async => 'tok', client: drive.client());
+    });
+
+    test('안 바뀐 메모는 다시 안 받는다', () async {
+      // 2026-08-20 소유자 신고 — "마지막으로 맞춘 때가 방금 전 시각이면
+      // 동기화된 거 아니니? 계속 맞추는 중으로 나오는데 이게 맞니?"
+      //
+      // 30초마다 메모를 전부 다시 내려받고 있었다. 이 시험이 그 자리를
+      // 못으로 박는다. 아이클라우드 쪽은 파일 읽기라 공짜였던 것이,
+      // 드라이브에서는 줄마다 왕복 한 번이 된다.
+      await t.write('notes/a.json', {'id': 'a'});
+      await t.write('notes/b.json', {'id': 'b'});
+
+      final first = await t.readDir('notes');
+      expect(first.length, 2);
+      final after1 = drive.downloads;
+      expect(after1, greaterThanOrEqualTo(2));
+
+      final second = await t.readDir('notes');
+      expect(second.length, 2, reason: '내용은 그대로 나와야 한다');
+      expect(drive.downloads, after1, reason: '한 번도 다시 안 받는다');
+    });
+
+    test('바뀐 메모는 다시 받는다', () async {
+      await t.write('notes/a.json', {'id': 'a', 'v': 1});
+      await t.readDir('notes');
+      final before = drive.downloads;
+
+      // 다른 기기가 고친 셈 치고 창고 쪽을 직접 바꾼다.
+      final id = drive.files.keys.first;
+      drive.files[id]!['body'] = '{"id":"a","v":2}';
+      drive.files[id]!['at'] = 'nova';
+
+      final again = await t.readDir('notes');
+      expect(drive.downloads, before + 1, reason: '바뀐 것 하나만 받는다');
+      expect(again.single['v'], 2);
+    });
+
+    test('지운 메모는 들고 있던 것에서도 빠진다', () async {
+      await t.write('notes/a.json', {'id': 'a'});
+      await t.readDir('notes');
+      drive.files.clear();
+      expect(await t.readDir('notes'), isEmpty,
+          reason: '없어진 것을 붙들고 있으면 지운 메모가 되살아난다');
     });
 
     test('이름표는 gdrive', () {

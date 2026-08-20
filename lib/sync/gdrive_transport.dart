@@ -64,6 +64,24 @@ class GDriveTransport implements SyncTransport {
   /// 붙들고 있으면 그다음부터는 덮어쓴다.
   final Map<String, String> _ids = <String, String>{};
 
+  /// 한 번 받은 것은 들고 있는다 — 파일 아이디 → (언제 고쳤나, 내용).
+  ///
+  /// 2026-08-20 소유자 신고 — "계속 맞추는 중으로 나오는데 이게 맞니?"
+  /// 30초마다 메모를 전부 다시 내려받고 있었다. 백 개면 30초마다 백 번을
+  /// 오간다. 한 바퀴가 30초를 넘으면 다음 바퀴가 곧바로 이어지니 화면은
+  /// 영원히 '맞추는 중'이 된다.
+  ///
+  /// 까닭은 통로를 옮겨 심으면서 **비용이 다르다는 것을 안 봤다**는 것이다.
+  /// 아이클라우드 쪽 readDir 은 그냥 파일 읽기라 공짜였다. 같은 모양을
+  /// 드라이브로 옮기면 한 줄마다 왕복 한 번이 된다. 모양은 옮겼는데 값은
+  /// 안 옮겼다.
+  ///
+  /// 드라이브는 목록만 줘도 modifiedTime 을 같이 준다. 그 값이 그대로면
+  /// 내용도 그대로다.
+  final Map<String, String> _at = <String, String>{};
+  final Map<String, Map<String, dynamic>> _body =
+      <String, Map<String, dynamic>>{};
+
   @override
   String get id => 'gdrive';
 
@@ -143,7 +161,7 @@ class GDriveTransport implements SyncTransport {
         "appProperties has { key = 'dir' and value = '${_q(path)}' }";
     final u = Uri.parse('$_api?spaces=appDataFolder'
         '&q=${Uri.encodeQueryComponent(q)}'
-        '&fields=files(id,name)&pageSize=1000');
+        '&fields=files(id,name,modifiedTime)&pageSize=1000');
     List<dynamic> files;
     try {
       final r = await _http.get(u, headers: h);
@@ -155,19 +173,40 @@ class GDriveTransport implements SyncTransport {
     } catch (_) {
       return out;
     }
+    final alive = <String>{};
     for (final e in files) {
       if (e is! Map) continue;
       final fid = e['id'] as String?;
       final name = e['name'] as String?;
       if (fid == null || name == null || !name.endsWith('.json')) continue;
+      alive.add(fid);
       _ids[path.isEmpty ? name : '$path/$name'] = fid;
+
+      // 언제 고쳤는지가 그대로면 내용도 그대로다. 안 받는다.
+      final at = e['modifiedTime'] as String?;
+      final kept = _body[fid];
+      if (at != null && kept != null && _at[fid] == at) {
+        out.add(kept);
+        continue;
+      }
       try {
         final r = await _http.get(Uri.parse('$_api/$fid?alt=media'), headers: h);
         if (r.statusCode != 200) continue;
         final j = jsonDecode(utf8.decode(r.bodyBytes));
-        if (j is Map<String, dynamic>) out.add(j);
+        if (j is Map<String, dynamic>) {
+          out.add(j);
+          // 시각을 안 주는 판(옛 가짜 드라이브 따위)에서는 안 들고 있는다.
+          // 들고 있으면 영영 안 새로 받는 길이 생긴다.
+          if (at != null) {
+            _at[fid] = at;
+            _body[fid] = j;
+          }
+        }
       } catch (_) {}
     }
+    // 없어진 파일까지 붙들고 있으면 지운 메모가 되살아난다.
+    _at.removeWhere((k, _) => !alive.contains(k));
+    _body.removeWhere((k, _) => !alive.contains(k));
     return out;
   }
 
@@ -209,6 +248,10 @@ class GDriveTransport implements SyncTransport {
         headers: {...h, 'Content-Type': 'application/json; charset=UTF-8'},
         body: utf8.encode(text),
       );
+      // 우리가 고쳤으니 들고 있던 것은 낡았다. 버려야 다음 바퀴에 새로
+      // 받는다. 안 버리면 '내가 쓴 것'과 '창고에 있는 것'이 갈라진다.
+      _at.remove(fid);
+      _body.remove(fid);
     } catch (_) {}
   }
 
@@ -219,11 +262,17 @@ class GDriveTransport implements SyncTransport {
     final fid = await _find(path);
     _ids.remove(path);
     if (fid == null) return;
+    _at.remove(fid);
+    _body.remove(fid);
     try {
       await _http.delete(Uri.parse('$_api/$fid'), headers: h);
     } catch (_) {}
   }
 
   /// 시험과 로그아웃에서 쓴다. 들고 있던 아이디를 버린다.
-  void forget() => _ids.clear();
+  void forget() {
+    _ids.clear();
+    _at.clear();
+    _body.clear();
+  }
 }
