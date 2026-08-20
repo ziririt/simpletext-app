@@ -2752,25 +2752,39 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                 // 마지막으로 맞춘 때. 이것 하나가 '되고 있나?'라는 물음에
                 // 상태 문구보다 정확히 답한다 — 켜짐이라고 써 있어도 두
                 // 시간 전이 마지막이면 뭔가 잘못된 것이다.
-                ValueListenableBuilder<int>(
-                  valueListenable: sync.lastSyncMs,
-                  builder: (_, ms, __) => Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-                    child: Row(children: [
-                      Expanded(
-                        child: Text(
-                            ms == 0 ? l.syncLastNever : l.syncLastAt(_when(ms)),
-                            style: TextStyle(
-                                fontSize: 13.5, color: context.c.sub)),
-                      ),
-                      TextButton(
-                        onPressed: () => unawaited(sync.syncNow()),
-                        child: Text(l.syncNowAction,
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                      ),
-                    ]),
-                  ),
+                // 2026-08-20 소유자 지적 — "동기화하고 있는데 '지금 맞추기'
+                // 단추는 없어야 하지 않니?" 맞다. 맞추는 중에 눌러도
+                // syncNow() 가 _busy 에서 그대로 되돌아간다. **아무 일도 안
+                // 하는 단추는 없는 것보다 나쁘다** — 눌러 본 사람은 앱이
+                // 고장 났다고 읽는다.
+                //
+                // 그래서 시각(lastSyncMs)만 듣던 것을 상태(state)도 함께
+                // 듣게 바꾼다. 예전에는 이 줄이 시각만 알아서, 맞추는 중인지
+                // 아닌지를 몰랐다.
+                ListenableBuilder(
+                  listenable: Listenable.merge([sync.lastSyncMs, sync.state]),
+                  builder: (_, __) {
+                    final ms = sync.lastSyncMs.value;
+                    final busy = sync.state.value == SyncState.running;
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, busy ? 16 : 8, 12),
+                      child: Row(children: [
+                        Expanded(
+                          child: Text(
+                              ms == 0 ? l.syncLastNever : l.syncLastAt(_when(ms)),
+                              style: TextStyle(
+                                  fontSize: 13.5, color: context.c.sub)),
+                        ),
+                        if (!busy)
+                          TextButton(
+                            onPressed: () => unawaited(sync.syncNow()),
+                            child: Text(l.syncNowAction,
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w700)),
+                          ),
+                      ]),
+                    );
+                  },
                 ),
               ]),
             ],
