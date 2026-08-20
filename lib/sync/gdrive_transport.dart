@@ -175,6 +175,26 @@ class GDriveTransport implements SyncTransport {
   @override
   Future<bool> exists(String path) async => await _find(path) != null;
 
+  /// 파일 하나를 받아 온다. 실패는 null 이다 — 하나가 안 와도 나머지는 와야 한다.
+  Future<Map<String, dynamic>?> _fetch(
+      String fid, String? at, Map<String, String> h) async {
+    try {
+      final r = await _http.get(Uri.parse('$_api/$fid?alt=media'), headers: h);
+      if (r.statusCode != 200) return null;
+      final j = jsonDecode(utf8.decode(r.bodyBytes));
+      if (j is! Map<String, dynamic>) return null;
+      // 시각을 안 주는 판에서는 안 들고 있는다. 들고 있으면 영영
+      // 안 새로 받는 길이 생긴다.
+      if (at != null) {
+        _at[fid] = at;
+        _body[fid] = j;
+      }
+      return j;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<ReadResult> read(String path) async {
     final h = await _head();
@@ -212,6 +232,8 @@ class GDriveTransport implements SyncTransport {
       return out;
     }
     final alive = <String>{};
+    // 받아야 할 것만 모았다가 한꺼번에 간다. (fid, 고친 시각)
+    final need = <MapEntry<String, String?>>[];
     for (final e in files) {
       if (e is! Map) continue;
       final fid = e['id'] as String?;
@@ -227,20 +249,29 @@ class GDriveTransport implements SyncTransport {
         out.add(kept);
         continue;
       }
-      try {
-        final r = await _http.get(Uri.parse('$_api/$fid?alt=media'), headers: h);
-        if (r.statusCode != 200) continue;
-        final j = jsonDecode(utf8.decode(r.bodyBytes));
-        if (j is Map<String, dynamic>) {
-          out.add(j);
-          // 시각을 안 주는 판(옛 가짜 드라이브 따위)에서는 안 들고 있는다.
-          // 들고 있으면 영영 안 새로 받는 길이 생긴다.
-          if (at != null) {
-            _at[fid] = at;
-            _body[fid] = j;
-          }
-        }
-      } catch (_) {}
+      need.add(MapEntry(fid, at));
+    }
+
+    // 2026-08-20 소유자 신고 — "로그인한지 4분 넘어도 이러네."
+    //
+    // 여기서 파일을 **한 줄로 하나씩** 받고 있었다. 메모가 백 개면 왕복
+    // 백 번을 차례로 기다린다. 하나에 0.2초만 잡아도 20초다.
+    //
+    // 아이클라우드에서는 이 자리가 그냥 파일 읽기라 공짜였다. 통로를
+    // 옮기면서 모양은 가져왔는데 **값이 달라졌다는 것**을 또 안 봤다.
+    // 오늘 아침에 '30초마다 전부 다시 받던' 것을 고치면서 다시 받는
+    // 횟수는 줄였지만, 한 번에 하나씩은 그대로 뒀다.
+    //
+    // 여덟씩 묶는다. 더 늘리면 구글이 429(너무 잦다)를 던지기 시작하고,
+    // 그러면 빨라지기는커녕 다시 받느라 느려진다.
+    const int lanes = 8;
+    for (var i = 0; i < need.length; i += lanes) {
+      final slice = need.skip(i).take(lanes).toList();
+      final got =
+          await Future.wait(slice.map((n) => _fetch(n.key, n.value, h)));
+      for (final g in got) {
+        if (g != null) out.add(g);
+      }
     }
     // 없어진 파일까지 붙들고 있으면 지운 메모가 되살아난다.
     _at.removeWhere((k, _) => !alive.contains(k));

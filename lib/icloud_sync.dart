@@ -303,9 +303,30 @@ class ICloudSync {
   /// 한 바퀴에 허락하는 시간. 30초 시계보다 짧아야 한다.
   static const Duration _pass = Duration(seconds: 25);
 
+  /// **첫** 바퀴에만 주는 시간.
+  ///
+  /// 2026-08-20 소유자 신고 — "로그인한지 4분 넘어도 이러네."
+  ///
+  /// 첫 바퀴는 창고에 있는 것을 **다 가져오는** 일이고, 그다음부터는
+  /// 달라진 것만 보는 일이다. 하는 일이 다른데 같은 잣대를 댔다.
+  /// 25초로는 메모가 많은 사람의 첫 맞추기가 매번 끊기고, 끊기면
+  /// '꺼짐'이라고 말한다 — 되고 있는데 안 된다고 말하는 셈이다.
+  static const Duration _firstPass = Duration(seconds: 120);
+
   Future<void> syncNow() async {
     if (!active || paused || _busy) return;
     _busy = true;
+    // 빗장을 푸는 자리를 하나로 모은다. 아래에서 '일이 끝나는 자리'와
+    // '기다림이 끝나는 자리'가 갈라지므로, 두 번 풀리는 일이 없게 한다.
+    var freed = false;
+    void free() {
+      if (freed) return;
+      freed = true;
+      _busy = false;
+    }
+
+    // _run 을 실제로 시작했는가. 시작했으면 빗장은 그쪽이 푼다.
+    var started = false;
     try {
       final root = await _rootPath();
       if (root == null) {
@@ -324,14 +345,31 @@ class ICloudSync {
       // 여기서 던지는 TimeoutException 은 아래 catch 가 받아 '꺼짐'으로
       // 두고, finally 가 빗장을 푼다. **빗장이 반드시 풀리는 것**이
       // 이 줄의 진짜 목적이다 — 안 풀리면 그다음 모든 바퀴가 죽는다.
-      await _run(root).timeout(_pass);
+      // 2026-08-20 — **Future.timeout 은 일을 멈추지 않는다.** 기다림만
+      // 끊는다. 그런데 여기서 빗장까지 풀고 있었다. 버려진 바퀴가 계속
+      // 도는 채로 다음 바퀴가 시작되고, 30초마다 한 겹씩 쌓인다.
+      // 같은 창고를 여럿이 동시에 읽고 쓰면 서로를 밀어낸다.
+      //
+      // 빗장은 **진짜 일이 끝날 때** 푼다. 시간 제한은 이제 '얼마나
+      // 기다렸다가 화면에 말할까'만 정한다. 일이 영영 안 끝날 걱정은
+      // 없다 — 왕복 하나하나에 12초가 걸려 있으므로(gdrive_transport.dart)
+      // 모든 기다림에 바닥이 있다.
+      started = true;
+      final work = _run(root);
+      unawaited(work.then((_) {}, onError: (Object _) {}).whenComplete(free));
+      await work.timeout(lastSyncMs.value == 0 ? _firstPass : _pass);
       lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
       state.value = SyncState.ok;
     } catch (_) {
       // 동기화 실패로 앱이 멈추면 안 된다. 다음 차례에 다시 해 본다.
+      //
+      // 여기서 빗장을 안 푼다. 시간 제한으로 왔다면 일은 아직 돌고 있고,
+      // 진짜 실패로 왔다면 위의 whenComplete 이 이미 풀었다.
       state.value = SyncState.off;
     } finally {
-      _busy = false;
+      // _rootPath() 에서 일찍 나간 길만 여기서 푼다. 그때는 _run 이
+      // 시작도 안 했으므로 풀 사람이 여기밖에 없다.
+      if (!started) free();
     }
   }
 

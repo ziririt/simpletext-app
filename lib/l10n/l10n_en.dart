@@ -1072,6 +1072,10 @@ class L10nEn extends L10n {
   String get syncDiagSignedOutGdrive => 'This device is not signed in to a Google account.';
   @override
   String get syncSignInGoogle => 'Sign in with Google';
+  @override
+  String get syncDiagPreparingGdrive => 'Signed in. Fetching your notes from Drive.';
+  @override
+  String get syncRecheckStillGdrive => 'Not everything is here yet. The first sync takes a moment when you have many notes \u2014 it keeps going after you close this.';
 
   @override
   String pastedFrom(String src, String date) =>

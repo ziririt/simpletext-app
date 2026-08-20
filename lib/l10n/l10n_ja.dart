@@ -1069,6 +1069,10 @@ class L10nJa extends L10n {
   String get syncDiagSignedOutGdrive => 'この端末は Google アカウントにログインしていません。';
   @override
   String get syncSignInGoogle => 'Google アカウントでログイン';
+  @override
+  String get syncDiagPreparingGdrive => 'ログインできました。ドライブからメモを取得しています。';
+  @override
+  String get syncRecheckStillGdrive => 'まだ全部は届いていません。メモが多いと最初の同期に少し時間がかかります \u2014 この画面を閉じても続きます。';
 
   @override
   String pastedFrom(String src, String date) =>

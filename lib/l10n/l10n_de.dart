@@ -1073,6 +1073,10 @@ class L10nDe extends L10n {
   String get syncDiagSignedOutGdrive => 'Dieses Gerät ist bei keinem Google-Konto angemeldet.';
   @override
   String get syncSignInGoogle => 'Mit Google anmelden';
+  @override
+  String get syncDiagPreparingGdrive => 'Angemeldet. Ihre Notizen werden von Drive geholt.';
+  @override
+  String get syncRecheckStillGdrive => 'Noch nicht alles da. Der erste Abgleich dauert etwas, wenn Sie viele Notizen haben \u2014 er läuft weiter, auch wenn Sie schließen.';
 
   @override
   String pastedFrom(String src, String date) =>

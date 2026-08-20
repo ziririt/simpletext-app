@@ -1069,6 +1069,10 @@ class L10nZhHant extends L10n {
   String get syncDiagSignedOutGdrive => '此裝置尚未登入 Google 帳號。';
   @override
   String get syncSignInGoogle => '使用 Google 帳號登入';
+  @override
+  String get syncDiagPreparingGdrive => '已登入。正在從雲端硬碟取回備忘。';
+  @override
+  String get syncRecheckStillGdrive => '尚未全部取回。備忘較多時首次同步需要一點時間 \u2014 關閉此視窗後仍會繼續。';
 
   @override
   String pastedFrom(String src, String date) =>

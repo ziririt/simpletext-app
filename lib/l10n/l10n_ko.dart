@@ -1069,6 +1069,10 @@ class L10nKo extends L10n {
   String get syncDiagSignedOutGdrive => '이 기기가 구글 계정에 로그인되어 있지 않습니다.';
   @override
   String get syncSignInGoogle => '구글 계정으로 로그인';
+  @override
+  String get syncDiagPreparingGdrive => '로그인은 되었습니다. 드라이브에서 메모를 받아오는 중입니다.';
+  @override
+  String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 메모가 많으면 첫 맞추기는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
 
   @override
   String pastedFrom(String src, String date) =>

@@ -1072,6 +1072,10 @@ class L10nPt extends L10n {
   String get syncDiagSignedOutGdrive => 'Este aparelho não está conectado a uma conta Google.';
   @override
   String get syncSignInGoogle => 'Entrar com o Google';
+  @override
+  String get syncDiagPreparingGdrive => 'Conectado. Buscando suas notas no Drive.';
+  @override
+  String get syncRecheckStillGdrive => 'Ainda não chegou tudo. A primeira sincronização demora um pouco quando há muitas notas \u2014 ela continua depois que você fechar.';
 
   @override
   String pastedFrom(String src, String date) =>

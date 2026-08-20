@@ -569,6 +569,8 @@ abstract class L10n {
   String get syncHelpNoteGdrive;
   String get syncDiagSignedOutGdrive;
   String get syncSignInGoogle;
+  String get syncDiagPreparingGdrive;
+  String get syncRecheckStillGdrive;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -1004,6 +1006,8 @@ abstract class L10n {
         'syncHelpNoteGdrive': syncHelpNoteGdrive,
         'syncDiagSignedOutGdrive': syncDiagSignedOutGdrive,
         'syncSignInGoogle': syncSignInGoogle,
+        'syncDiagPreparingGdrive': syncDiagPreparingGdrive,
+        'syncRecheckStillGdrive': syncRecheckStillGdrive,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

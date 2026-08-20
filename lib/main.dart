@@ -9355,6 +9355,38 @@ class SyncHelpSheet extends StatefulWidget {
 class _SyncHelpSheetState extends State<SyncHelpSheet> {
   bool _checking = false;
 
+  /// 2026-08-20 소유자 신고 — "로그인한지 4분 넘어도 이러네."
+  ///
+  /// 아래 알림 상자는 **단추를 누른 그 순간의 답**이었고 그 뒤로 안
+  /// 바뀌었다. 뒤에서 잘 맞춰지고 있어도 화면은 계속 안 된다고 말한다.
+  /// 4분 동안 그대로인 것이 아니라 4분 전 것이 그대로 떠 있었던 것이다.
+  ///
+  /// **말이 사실을 안 따라가면 그 말은 거짓말이 된다.** 상태를 듣는다.
+  @override
+  void initState() {
+    super.initState();
+    ICloudSync.instance.state.addListener(_onSyncState);
+  }
+
+  @override
+  void dispose() {
+    ICloudSync.instance.state.removeListener(_onSyncState);
+    super.dispose();
+  }
+
+  void _onSyncState() {
+    if (!mounted) return;
+    if (ICloudSync.instance.state.value != SyncState.ok) return;
+    setState(() {
+      _checking = false;
+      _saidBad = false;
+      _said = L10n.of(context).syncRecheckOk;
+    });
+    Future<void>.delayed(const Duration(milliseconds: 900)).then((_) {
+      if (mounted) Navigator.pop(context);
+    });
+  }
+
   /// 지금 고른 창고가 구글인가.
   ///
   /// 2026-08-20 소유자 신고 — "구글 로그인 버튼을 누르니 아이클라우드
@@ -9430,7 +9462,9 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
     setState(() {
       _checking = false;
       _saidBad = !ok;
-      _said = ok ? l.syncRecheckOk : l.syncRecheckStill;
+      _said = ok
+          ? l.syncRecheckOk
+          : (_gdrive ? l.syncRecheckStillGdrive : l.syncRecheckStill);
     });
     if (!ok) return;
     await Future<void>.delayed(const Duration(milliseconds: 1100));
@@ -9462,7 +9496,7 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
     // 받았는가'가 따로 없다(드라이브의 방은 계정에 딸려 온다).
     if (_gdrive) {
       return DriveAuth.instance.signedIn
-          ? (l.syncDiagPreparing, Icons.hourglass_bottom)
+          ? (l.syncDiagPreparingGdrive, Icons.hourglass_bottom)
           : (l.syncDiagSignedOutGdrive, Icons.person_off_outlined);
     }
     final sync = ICloudSync.instance;
