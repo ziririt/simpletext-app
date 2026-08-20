@@ -386,14 +386,32 @@ class ICloudSync {
     }
     final liveIds = {for (final n in merged.notes) n.id};
     final tombIds = <String>{};
+    // 2026-08-20 — 여기서 툼스톤마다 exists() 를 물었다. 아이클라우드에서는
+    // 파일이 있나 보는 것이라 공짜였지만, 드라이브에서는 **한 번마다 검색
+    // 왕복 한 번**이다. 게다가 아직 없는 것은 캐시에 안 남아서, 없는 툼스톤은
+    // 30초마다 영원히 다시 묻는다. 첫 맞추기가 몇 분씩 걸리고 화면이 계속
+    // '맞추는 중'이던 까닭이 여기 있다.
+    //
+    // 그런데 우리는 이미 답을 들고 있었다 — 위에서 readDir 로 받아 둔
+    // remoteTombs 가 그것이다. **물어볼 필요가 없는 것을 물었다.**
+    final remoteTombIds = {
+      for (final t in remoteTombs)
+        if (t['id'] is String) t['id'] as String,
+    };
     for (final t in merged.tombstones) {
       final id = t['id'] as String;
       tombIds.add(id);
-      final tf = '$tombsDir/$id.json';
-      if (!await _t.exists(tf)) await _t.write(tf, t);
+      if (!remoteTombIds.contains(id)) {
+        await _t.write('$tombsDir/$id.json', t);
+      }
       // 지워진 메모의 본문 파일은 치운다. 안 그러면 툼스톤이 만료된 뒤에
       // 그 파일이 '새 메모'로 되살아난다.
-      if (!liveIds.contains(id)) await _t.remove('$notesDir/$id.json');
+      //
+      // 다만 **저쪽에 있는 것만** 치운다. 없는 것을 지우라고 시키면 그것도
+      // 왕복이고, 지운 메모 수만큼 매번 되풀이된다.
+      if (!liveIds.contains(id) && remoteById.containsKey(id)) {
+        await _t.remove('$notesDir/$id.json');
+      }
     }
     // 만료된 툼스톤 파일 치우기
     for (final t in remoteTombs) {
