@@ -1607,6 +1607,11 @@ class Store extends ChangeNotifier {
     // 옛 판이 JSON에 넣어 둔 키가 있으면 여기서 한 번 옮기고, 옛 자리의
     // 사본은 지운다. 두 군데 있으면 어느 쪽이 참인지 알 수 없게 되고,
     // 그런 물건은 반드시 어긋난 뒤에야 발견된다.
+    // 창고 고르기는 **키체인이 참이다.** 자료 그릇이 새로 파여도 여기만은
+    // 남는다. 그릇이 멀쩡하면 두 값이 같으므로 덮어써도 달라지는 것이 없다.
+    final keptBackend = (await KeyVault.readBackend()).trim();
+    if (keptBackend.isNotEmpty) settings.syncBackend = keptBackend;
+
     final fromPrefs = settings.aiKey.trim();
     final fromVault = (await KeyVault.read()).trim();
     if (fromVault.isNotEmpty) {
@@ -1657,6 +1662,9 @@ class Store extends ChangeNotifier {
     final m = settings.toJson()..remove('aiKey');
     await prefs.setString(_settingsKey, jsonEncode(m));
     await KeyVault.write(settings.aiKey);
+    // 창고 고르기도 같이 남긴다. 여기 한 자리에서 쓰므로, 설정을 저장하는
+    // 길이 여럿이어도 빠뜨릴 자리가 없다.
+    await KeyVault.writeBackend(settings.syncBackend);
     notifyListeners();
   }
 

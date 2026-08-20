@@ -31,6 +31,7 @@ class KeyVault {
 
   static const String _k = 'aiKey';
   static const String _kDevice = 'deviceKey';
+  static const String _kBackend = 'syncBackend';
   static const FlutterSecureStorage _s = FlutterSecureStorage();
 
   /// 없으면 빈 문자열. 키체인이 없는 자리(웹 등)에서도 앱은 떠야 하므로
@@ -74,6 +75,40 @@ class KeyVault {
     } catch (_) {
       return '';
     }
+  }
+
+  /// 어느 창고를 쓰기로 했나. **앱을 지웠다 깔아도 남는다.**
+  ///
+  /// 2026-08-20 — 하루에 여덟 번, 사장님이 고른 '구글 드라이브'가 지워졌다.
+  /// 새 판을 기기에 넣을 때마다 앱의 자료 그릇이 새로 파이고 그 안의
+  /// SharedPreferences 가 통째로 사라지기 때문이다. 글자 크기와 배경은 구름에서
+  /// 되살아나는데 창고 고르기만은 구름에 안 올린다 — 그건 기기마다 다른
+  /// 선택이라서다. 그래서 **그것 하나만** 못 돌아왔다.
+  ///
+  /// 실사용자도 앱을 지웠다 깔면 같은 일을 겪는다. 그리고 안드로이드에서는
+  /// 그 순간 동기화가 통째로 멈춘다 — 기본값 icloud 는 안드로이드에서 안 돈다.
+  /// **조용히 멈추는 고장은 사용자가 못 알아챈다.**
+  ///
+  /// 비밀이 아닌 값을 비밀 창고에 두는 것이 어색하긴 하다. 다만 아이폰에서
+  /// 앱을 지워도 남는 자리는 여기뿐이고, 우리는 이미 이 창고를 두 가지로
+  /// 쓰고 있다(AI 키, 기기 이름표). **새 창고를 여는 대신 열려 있는 창고를
+  /// 쓴다** — deviceKey 를 여기 둔 것과 같은 까닭이다.
+  static Future<String> readBackend() async {
+    try {
+      return (await _s.read(key: _kBackend)) ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  static Future<void> writeBackend(String v) async {
+    try {
+      if (v.trim().isEmpty) {
+        await _s.delete(key: _kBackend);
+      } else {
+        await _s.write(key: _kBackend, value: v);
+      }
+    } catch (_) {}
   }
 
   /// 빈 값을 쓰면 지운다. 빈 문자열을 남겨 두면 '지운 것'과 '안 넣은 것'이
