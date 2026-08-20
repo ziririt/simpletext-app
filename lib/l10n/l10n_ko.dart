@@ -567,6 +567,9 @@ class L10nKo extends L10n {
   String get syncNowAction =>
       '지금 맞추기';
   @override
+  String get syncNowBusy => '맞추는 중…';
+
+  @override
   String get syncLastNever =>
       '아직 한 번도 못 맞췄습니다';
   @override

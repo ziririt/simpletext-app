@@ -568,6 +568,9 @@ class L10nPt extends L10n {
   String get syncNowAction =>
       'Sincronizar agora';
   @override
+  String get syncNowBusy => 'Sincronizando…';
+
+  @override
   String get syncLastNever =>
       'Ainda não sincronizou';
   @override

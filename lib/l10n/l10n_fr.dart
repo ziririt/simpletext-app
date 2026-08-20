@@ -569,6 +569,9 @@ class L10nFr extends L10n {
   String get syncNowAction =>
       'Synchroniser maintenant';
   @override
+  String get syncNowBusy => 'Synchronisation…';
+
+  @override
   String get syncLastNever =>
       'Jamais synchronisé';
   @override

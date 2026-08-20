@@ -569,6 +569,9 @@ class L10nDe extends L10n {
   String get syncNowAction =>
       'Jetzt abgleichen';
   @override
+  String get syncNowBusy => 'Wird abgeglichen…';
+
+  @override
   String get syncLastNever =>
       'Noch nie abgeglichen';
   @override

@@ -567,6 +567,9 @@ class L10nZhHant extends L10n {
   String get syncNowAction =>
       '立即同步';
   @override
+  String get syncNowBusy => '正在同步…';
+
+  @override
   String get syncLastNever =>
       '還沒有同步過';
   @override

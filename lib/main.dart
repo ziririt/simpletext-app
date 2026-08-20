@@ -1994,7 +1994,14 @@ class SyncSay {
   final String title;
   final String? sub;
 
-  factory SyncSay.of(L10n l, SyncState st, {bool paused = false}) {
+  /// [everSynced] — 한 번이라도 맞춘 적이 있는가.
+  ///
+  /// 2026-08-20 소유자 지적 — "'마지막 맞춘 때' 시각은 1분 전인데 아직
+  /// 맞추고 있다고 나오는 건 모순." 맞다. 그리고 둘 다 사실이었다 —
+  /// 한 바퀴가 끝났고 30초 뒤 다음 바퀴가 시작됐을 뿐이다.
+  /// **둘 다 사실인데 나란히 놓으니 거짓이 됐다.**
+  factory SyncSay.of(L10n l, SyncState st,
+      {bool paused = false, bool everSynced = false}) {
     final gdrive = Store.instance.settings.syncBackend == 'gdrive';
     final where = gdrive ? l.syncBackendGdrive : l.syncBackendIcloud;
     if (paused) return SyncSay(l.syncBackendNone, l.syncBackendNoneSub);
@@ -2002,7 +2009,12 @@ class SyncSay {
       case SyncState.ok:
         return SyncSay(l.syncOnTitle, l.syncStateOn(where));
       case SyncState.running:
-        return SyncSay(l.syncStateSyncing(where), null);
+        // 한 번이라도 맞춘 뒤라면 도는 것은 30초마다 일어나는 정상이지
+        // 사건이 아니다. 큰 글씨는 '켜짐'으로 두고, 지금 도는 중이라는
+        // 것은 아래 짧은 줄이 말한다.
+        return everSynced
+            ? SyncSay(l.syncOnTitle, l.syncStateOn(where))
+            : SyncSay(l.syncStateSyncing(where), null);
       case SyncState.signedOut:
         return SyncSay(l.syncSignedOutTitle, l.syncStateSignedOut);
       case SyncState.off:
@@ -2731,7 +2743,8 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                   builder: (_, st, __) {
                     final ok = st == SyncState.ok;
                     final busy = st == SyncState.running;
-                    final say = SyncSay.of(l, st);
+                    final say = SyncSay.of(l, st,
+                        everSynced: sync.lastSyncMs.value > 0);
                     final title = say.title;
                     final sub = say.sub;
                     final row = Padding(
@@ -2807,7 +2820,14 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                       child: Row(children: [
                         Expanded(
                           child: Text(
-                              ms == 0 ? l.syncLastNever : l.syncLastAt(_when(ms)),
+                              // 도는 중이면 시각 대신 '지금 어떤가'를 말한다.
+                              // 시각과 '맞추는 중'을 함께 놓으면 두 줄이 서로
+                              // 다른 순간을 가리켜 모순으로 읽힌다.
+                              busy
+                                  ? l.syncNowBusy
+                                  : ms == 0
+                                      ? l.syncLastNever
+                                      : l.syncLastAt(_when(ms)),
                               style: TextStyle(
                                   fontSize: 13.5, color: context.c.sub)),
                         ),
@@ -10259,7 +10279,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                   final paused = s2.syncBackend == 'none';
                   final ok = !paused && st == SyncState.ok;
                   final busy = !paused && st == SyncState.running;
-                  final say = SyncSay.of(l, st, paused: paused);
+                  final say = SyncSay.of(l, st,
+                      paused: paused,
+                      everSynced: ICloudSync.instance.lastSyncMs.value > 0);
                   final title = say.title;
                   final sub = say.sub;
                   return InkWell(

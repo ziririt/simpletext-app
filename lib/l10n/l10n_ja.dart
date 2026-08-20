@@ -567,6 +567,9 @@ class L10nJa extends L10n {
   String get syncNowAction =>
       'いま同期する';
   @override
+  String get syncNowBusy => '同期中…';
+
+  @override
   String get syncLastNever =>
       'まだ一度も同期していません';
   @override

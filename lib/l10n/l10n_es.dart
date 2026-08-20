@@ -568,6 +568,9 @@ class L10nEs extends L10n {
   String get syncNowAction =>
       'Sincronizar ahora';
   @override
+  String get syncNowBusy => 'Sincronizando…';
+
+  @override
   String get syncLastNever =>
       'Aún no se ha sincronizado';
   @override

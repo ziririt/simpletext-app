@@ -345,6 +345,8 @@ abstract class L10n {
   String get driveSignedInAs;
   String get syncSectionState;
   String get syncNowAction;
+  /// 목록 아래의 짧은 줄. 큰 글씨가 상태라면 이 줄은 지금 벌어지는 일이다.
+  String get syncNowBusy;
   String get syncLastNever;
   String get syncTroubleTitle;
   String get syncTroubleNote;
@@ -837,6 +839,7 @@ abstract class L10n {
         'driveSignedInAs': driveSignedInAs,
         'syncSectionState': syncSectionState,
         'syncNowAction': syncNowAction,
+        'syncNowBusy': syncNowBusy,
         'syncLastNever': syncLastNever,
         'syncTroubleTitle': syncTroubleTitle,
         'syncTroubleNote': syncTroubleNote,
