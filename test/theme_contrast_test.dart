@@ -57,7 +57,7 @@ void main() {
             greaterThanOrEqualTo(4.5));
       });
 
-      test('보조 글자도 읽어야 하는 글자다 (작은 글자라 AAA 7:1)', () {
+      test('보조 글자는 본문만큼 진하다 (10:1)', () {
         // 2026-08-20 소유자 신고 — "그렇게 옅은 회색은 사용금지 css다."
         //
         // **이 시험이 바로 그 옅은 회색을 지켜 주고 있었다.** 예전 문턱은
@@ -70,9 +70,12 @@ void main() {
         //
         // 읽으라고 쓴 글자는 전부 4.5:1이다. 조작점 기준(3:1)은 손잡이와
         // 테두리처럼 **읽는 것이 아닌 것**에만 댄다.
-        // 4.5:1은 본문 크기 전제다. 이 색은 14~15px에 붙으므로 AAA(7:1)를 댄다.
-        expect(contrastRatio(_v(c.sub), _v(c.bg)), greaterThanOrEqualTo(7.0));
-        expect(contrastRatio(_v(c.sub), _v(c.panel)), greaterThanOrEqualTo(7.0));
+        // 2026-08-20 소유자 — "블랙에 가깝게. 난 연회색은 싫다."
+        // 4.5(AA)도 7(AAA)도 아닌 10:1을 문턱으로 삼는다. 기준이 아니라
+        // **읽는 사람이 정한 값**이다. 기준은 최소치일 뿐, 이 앱이 어디까지
+        // 갈지는 이 앱을 쓰는 사람이 정한다.
+        expect(contrastRatio(_v(c.sub), _v(c.bg)), greaterThanOrEqualTo(10.0));
+        expect(contrastRatio(_v(c.sub), _v(c.panel)), greaterThanOrEqualTo(10.0));
       });
 
       test('선택 손잡이가 보인다 (조작점 3:1)', () {
