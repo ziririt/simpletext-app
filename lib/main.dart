@@ -39,7 +39,8 @@ import 'core/lock.dart';
 import 'core/mono_controller.dart';
 import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
-import 'core/sync_plan.dart' show EditorRefresh, editorRefresh;
+import 'core/sync_plan.dart'
+    show EditorRefresh, editorRefresh, SyncBanner, syncBanner;
 import 'core/mru.dart';
 import 'core/note_lock.dart';
 import 'core/paper.dart';
@@ -3901,6 +3902,7 @@ class _HomeScreenState extends State<HomeScreen>
               bottom: false,
               child: Column(children: [
                 if (!widget.embedded) const TopBannerBar(),
+                const SyncNapBanner(),
                 Expanded(
                   child: Stack(children: [
                     Positioned.fill(
@@ -5971,6 +5973,10 @@ class _EditorScreenState extends State<EditorScreen>
     bodyCtl.addListener(_onSelectionChanged);
     // 동기화가 이 노트의 새 판을 받아 오면 화면도 따라 그린다.
     store.addListener(_onStoreChanged);
+    // 그리고 여는 순간 조용히 한 바퀴 맞춘다. "이 글이 최신인가"가
+    // 궁금해지는 때가 바로 여는 때다. 받아 오면 위의 듣기가 화면을
+    // 따라 그린다. (소유자 제안 2026-08-20 — 편집 화면 당기기 대신)
+    ICloudSync.instance.scheduleUp();
     if (widget.showMeta) _showMeta = true;
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
@@ -9446,6 +9452,104 @@ class _PaperPainter extends CustomPainter {
 /// 설정 화면은 '이 앱의 설정' 페이지 하나뿐이다. iCloud 항목으로 직접 뛰는
 /// 주소(prefs:root=CASTLE)는 비공개 API라 쓰면 심사에서 반려된다. 그래서
 /// 열어 줄 수 있는 데까지 열고, 그 다음 길은 순서대로 적어 준다.
+/// 동기화가 잠들었을 때 목록 맨 위에 눕는 안내 띠.
+///
+/// 언제 보일지는 core/sync_plan.dart의 syncBanner가 정한다(시험으로
+/// 못 박혀 있다). 여기는 그 결정을 그리고, 누름을 받는 것만 한다.
+///
+/// wake(허락 만료)일 때 누르면 그 자리에서 허락 창을 띄운다 — 누름
+/// 자체가 브라우저가 요구하는 사용자의 손짓이라 이것이 가능하다.
+/// 실패하면 동기화 시트를 열어 긴 안내로 넘긴다.
+class SyncNapBanner extends StatefulWidget {
+  const SyncNapBanner({super.key});
+
+  @override
+  State<SyncNapBanner> createState() => _SyncNapBannerState();
+}
+
+class _SyncNapBannerState extends State<SyncNapBanner> {
+  /// 허락 창이 떠 있는 동안 또 누르는 것을 막는다.
+  bool _busy = false;
+
+  Future<void> _wake() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final ok = await DriveAuth.instance.authorizeDrive();
+    if (ok) {
+      await applySyncBackend();
+      await ICloudSync.instance.rebind();
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!ok) _sheet();
+  }
+
+  void _sheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const SyncHelpSheet(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<SyncState>(
+      valueListenable: ICloudSync.instance.state,
+      builder: (context, st, _) => ValueListenableBuilder<int>(
+        valueListenable: DriveAuth.instance.revision,
+        builder: (context, _, __) {
+          final auth = DriveAuth.instance;
+          final need = syncBanner(
+            gdrive: Store.instance.settings.syncBackend == 'gdrive',
+            healthy: st == SyncState.ok || st == SyncState.running,
+            signedIn: auth.signedIn,
+            authExpired: auth.authExpired,
+          );
+          if (need == SyncBanner.none) return const SizedBox.shrink();
+          final l = L10n.of(context);
+          final c = context.c;
+          final wake = need == SyncBanner.wake;
+          return Material(
+            color: c.panel,
+            child: InkWell(
+              onTap: _busy ? null : (wake ? _wake : _sheet),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+                child: Row(children: [
+                  Icon(
+                    wake
+                        ? Icons.lock_clock_outlined
+                        : Icons.cloud_off_outlined,
+                    size: 18,
+                    color: c.accent,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      wake ? l.syncStateExpiredGdrive : l.syncStateOffGdrive,
+                      style: TextStyle(
+                          fontSize: 13, height: 1.3, color: c.guideInk),
+                    ),
+                  ),
+                  if (_busy)
+                    const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                  else
+                    Icon(Icons.chevron_right, size: 18, color: c.sub),
+                ]),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class SyncHelpSheet extends StatefulWidget {
   const SyncHelpSheet({super.key});
 

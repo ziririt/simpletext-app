@@ -23,4 +23,56 @@ void main() {
     expect(editorRefresh(sameObject: false, editing: true),
         EditorRefresh.assertMine);
   });
+
+  group('잠든 동기화 안내 띠', () {
+    test('정상이면 띠 없음 — 멀쩡한 날에 띠가 누워 있으면 그게 고장이다', () {
+      expect(
+          syncBanner(
+              gdrive: true,
+              healthy: true,
+              signedIn: true,
+              authExpired: false),
+          SyncBanner.none);
+    });
+
+    test('구글 창고가 아니면 어떤 상태여도 띠 없음', () {
+      expect(
+          syncBanner(
+              gdrive: false,
+              healthy: false,
+              signedIn: false,
+              authExpired: true),
+          SyncBanner.none);
+    });
+
+    test('계정은 붙어 있는데 허락만 만료 — 누르면 바로 켜는 띠', () {
+      expect(
+          syncBanner(
+              gdrive: true,
+              healthy: false,
+              signedIn: true,
+              authExpired: true),
+          SyncBanner.wake);
+    });
+
+    test('로그인이 풀림 — 시트로 안내하는 띠', () {
+      expect(
+          syncBanner(
+              gdrive: true,
+              healthy: false,
+              signedIn: false,
+              authExpired: false),
+          SyncBanner.signIn);
+    });
+
+    test('붙어 있고 허락도 멀쩡한데 아직 안 맞춘 판 — 띠 없음(곧 돈다)', () {
+      expect(
+          syncBanner(
+              gdrive: true,
+              healthy: false,
+              signedIn: true,
+              authExpired: false),
+          SyncBanner.none);
+    });
+  });
 }

@@ -90,3 +90,36 @@ EditorRefresh editorRefresh({
   if (sameObject) return EditorRefresh.keep;
   return editing ? EditorRefresh.assertMine : EditorRefresh.adopt;
 }
+
+/// 동기화가 잠들었을 때 목록 위에 눕는 안내 띠 — 무엇을 보일까.
+///
+/// 2026-08-20 소유자 지적: 허락이 만료된 사실을 설정 구석에서 기다리게
+/// 하면 안 된다. 일반 이용자는 설정에 가지 않는다 — 글은 쓰이는데
+/// 소리 없이 안 올라가는 상태를 본인만 모른 채 지나간다. 알림은
+/// 사용자가 있는 자리(목록 맨 위)에서 해야 한다.
+///
+/// 브라우저 규칙상 드라이브 허락은 사용자의 손짓으로만 다시 받을 수
+/// 있다. 띠를 누르는 것이 바로 그 손짓이 된다.
+enum SyncBanner {
+  /// 정상이거나 구글 창고가 아니다 — 띠 없음(0px).
+  none,
+
+  /// 계정은 붙어 있는데 허락만 만료 — 누르면 바로 허락 창.
+  wake,
+
+  /// 로그인이 풀렸다 — 누르면 동기화 시트(웹 로그인 단추는 구글이
+  /// 그리는 것이라 시트 안에만 있다).
+  signIn,
+}
+
+SyncBanner syncBanner({
+  required bool gdrive,
+  required bool healthy,
+  required bool signedIn,
+  required bool authExpired,
+}) {
+  if (!gdrive || healthy) return SyncBanner.none;
+  if (signedIn && authExpired) return SyncBanner.wake;
+  if (!signedIn) return SyncBanner.signIn;
+  return SyncBanner.none;
+}
