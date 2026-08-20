@@ -17,6 +17,10 @@
 #   bash tool/deploy.sh ipad
 #   bash tool/deploy.sh android
 #   bash tool/deploy.sh mac
+#   bash tool/deploy.sh web      # ezlong.com/skybluenote/web/ 자리로
+#
+# web 은 'all' 에 안 들어간다. 나머지 넷은 내 기기에 개발판을 넣는
+# 일이지만 web 은 **남이 보는 자리로 나가는 일**이다. 무게가 다르다.
 set -u
 export PATH="$HOME/development/flutter/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 cd ~/development/simpletext_app || exit 1
@@ -259,6 +263,28 @@ if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
     fi
   else
     log "맥 빌드 실패 — /tmp/dep_mac.log 확인"; tail -20 /tmp/dep_mac.log
+  fi
+fi
+
+if [ "$WHAT" = "web" ]; then
+  # 웹은 어디에 얹히는지를 빌드할 때 정해야 한다. ezlong.com 은 이 앱을
+  # /skybluenote/web/ 아래에 둔다. 이 값이 틀리면 화면은 뜨는데 글꼴과
+  # 그림만 404 가 난다 — 고장 난 줄도 모르고 지나치기 좋은 모양이다.
+  log "웹 빌드…"
+  if flutter build web --release --base-href /skybluenote/web/ $DEFINES \
+      > /tmp/dep_web.log 2>&1; then
+    OUT="$HOME/Developer/ezlong/skybluenote/web"
+    if [ -d "$OUT" ]; then
+      # --delete 를 주는 까닭: 플러터는 빌드마다 파일 이름이 바뀐다.
+      # 지우지 않으면 옛 조각이 남아 어느 것이 지금 것인지 알 수 없게 된다.
+      rsync -a --delete build/web/ "$OUT/"
+      log "웹 올림: $(cat "$OUT/version.json" 2>/dev/null)"
+      log "  ↑ 아직 사이트에는 안 나갔다. ezlong 저장소에 커밋·푸시해야 한다."
+    else
+      log "웹 — ezlong 자리가 없다($OUT). 짓기만 하고 안 옮겼다"
+    fi
+  else
+    log "웹 빌드 실패 — /tmp/dep_web.log 확인"; tail -20 /tmp/dep_web.log
   fi
 fi
 

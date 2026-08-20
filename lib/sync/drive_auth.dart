@@ -45,8 +45,29 @@ class DriveAuth {
   /// 플러그인이 받는 자리인가, 그리고 그 자리에 맞는 아이디를 넣고
   /// 빌드했는가 — 둘 다 참이어야 한다. 아이디 없이 켜 두면 눌러도 아무
   /// 일이 안 일어나는 단추가 된다.
+  /// 웹 로그인 길이 났는가.
+  ///
+  /// 2026-08-20 — 웹 빌드를 tool/deploy.sh 안으로 들이면서 클라이언트
+  /// 아이디가 처음으로 웹 판에 실렸다. 그 순간 supported 가 참이 되어
+  /// 설정에 '구글 드라이브'가 나타났다 — 그런데 눌러도 아무 일이
+  /// 안 일어난다.
+  ///
+  /// 웹은 authenticate() 를 안 받는다(supportsAuthenticate() 가 거짓).
+  /// 구글이 그린 단추 위젯으로만 로그인하고, 드라이브 권한도 사람이
+  /// 누른 그 자리에서 창을 띄워야 브라우저가 안 막는다. 화면이 하나
+  /// 더 필요한 일이지 아이디 한 줄로 되는 일이 아니다.
+  ///
+  /// 소유자가 바로 앞 지시에서 말했다 — "되는 척 하지 말아라."
+  /// 길이 나면 여기 한 곳만 true 로 바꾼다.
+  ///
+  /// 그때 준비되어 있어야 하는 것이 하나 더 있다: 구글 클라우드 콘솔의
+  /// 이 웹 클라이언트에 **승인된 자바스크립트 원본**으로
+  /// https://ezlong.com 이 등록되어 있어야 한다. 없으면 단추가 origin
+  /// 오류로 뜨지도 않는다.
+  static const bool webReady = false;
+
   static bool get supported {
-    if (kIsWeb) return webClientId.isNotEmpty;
+    if (kIsWeb) return webReady && webClientId.isNotEmpty;
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         // 안드로이드는 서명(SHA-1)으로 알아보므로 아이디가 없어도 로그인
@@ -70,8 +91,19 @@ class DriveAuth {
 
   Future<void> _init() async {
     if (_ready) return;
+    // 어느 아이디를 주는가는 **자리마다 다르다.**
+    //   웹    — 웹 클라이언트 아이디. 브라우저가 직접 구글에 말을 건다.
+    //   애플  — iOS 갈래 아이디. 사파리로 나갔다 돌아오는 길이 그것이다.
+    //   안드로이드 — 서명(SHA-1)으로 알아보므로 clientId 는 안 쓰고,
+    //          serverClientId 로 '어느 프로젝트 것인가'만 밝힌다.
+    //
+    // 여태 웹에도 iOS 아이디를 주고 있었다. 웹 판에 아이디 자체가 안
+    // 실려 있어서 드러나지 않았을 뿐이다 — 안 도는 코드는 틀려도 조용하다.
+    final id = kIsWeb
+        ? webClientId
+        : (iosClientId.isEmpty ? null : iosClientId);
     await GoogleSignIn.instance.initialize(
-      clientId: iosClientId.isEmpty ? null : iosClientId,
+      clientId: (id == null || id.isEmpty) ? null : id,
       serverClientId: webClientId.isEmpty ? null : webClientId,
     );
     _ready = true;
