@@ -56,6 +56,7 @@ import 'lock_service.dart';
 import 'mac_menu.dart';
 import 'share_intake.dart';
 import 'sync/drive_auth.dart';
+import 'sync/google_button.dart';
 import 'icloud_sync.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
@@ -2808,6 +2809,16 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
     //
     // 그래서 '붙었는가'를 '골랐는가'보다 먼저 본다.
     if (v == 'gdrive' && !DriveAuth.instance.signedIn) {
+      // 웹은 여기서 붙일 수 없다 — 구글이 그린 단추를 사람이 눌러야만
+      // 창이 열린다. 고르기만 하고, 붙는 일은 상태 줄의 안내 창이 맡는다.
+      // 화면은 '꺼짐 · 로그인 필요'라고 정직하게 말한다.
+      if (kIsWeb) {
+        setState(() => s.syncBackend = v);
+        await applySyncBackend();
+        await store.persistSettings();
+        unawaited(ICloudSync.instance.rebind());
+        return;
+      }
       final ok = await DriveAuth.instance.signIn();
       if (!mounted) return;
       if (!ok) {
@@ -9366,11 +9377,19 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
   void initState() {
     super.initState();
     ICloudSync.instance.state.addListener(_onSyncState);
+    // 웹에서는 로그인 결과가 스트림으로 온다. 구글 단추를 누른 뒤
+    // 화면이 저절로 다음 걸음으로 바뀌어야 한다.
+    DriveAuth.instance.revision.addListener(_onDriveState);
+  }
+
+  void _onDriveState() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     ICloudSync.instance.state.removeListener(_onSyncState);
+    DriveAuth.instance.revision.removeListener(_onDriveState);
     super.dispose();
   }
 
@@ -9429,6 +9448,28 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
   /// 아이클라우드 쪽의 '설정 앱 열기'와 자리는 같지만 하는 일이 다르다.
   /// 애플 쪽은 우리가 켜 줄 수 없어 길만 적어 주는 것이고, 구글 쪽은
   /// **여기서 바로 붙일 수 있다.** 길을 적어 줄 이유가 없다.
+  /// 웹의 두 번째 걸음 — 드라이브 권한.
+  Future<void> _allowDrive() async {
+    setState(() {
+      _checking = true;
+      _said = null;
+    });
+    final ok = await DriveAuth.instance.authorizeDrive();
+    if (!mounted) return;
+    if (!ok) {
+      setState(() {
+        _checking = false;
+        _saidBad = true;
+        _said = L10n.of(context).driveSignInFailed;
+      });
+      return;
+    }
+    await applySyncBackend();
+    await ICloudSync.instance.rebind();
+    if (!mounted) return;
+    await _report();
+  }
+
   Future<void> _googleIn() async {
     setState(() {
       _checking = true;
@@ -9581,16 +9622,28 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
               Text(_gdrive ? l.syncHelpStepsGdrive : l.syncHelpSteps,
                   style: TextStyle(fontSize: 15.5, height: 1.75, color: c.guideInk)),
               const SizedBox(height: 16),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)),
+              // 웹은 두 걸음이다. 구글이 그린 단추로 계정을 고르고,
+              // 그다음 우리 단추로 드라이브 권한을 받는다. 권한 창은
+              // **사람이 누른 그 자리**에서만 열린다 — 붙자마자 우리가
+              // 알아서 열면 브라우저가 팝업 차단으로 막는다.
+              if (kIsWeb && _gdrive && !DriveAuth.instance.signedIn)
+                Center(child: googleSignInButton())
+              else
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13)),
+                  ),
+                  onPressed: _checking
+                      ? null
+                      : (_gdrive ? (kIsWeb ? _allowDrive : _googleIn) : _open),
+                  child: Text(
+                      _gdrive
+                          ? (kIsWeb ? l.syncAllowDrive : l.syncSignInGoogle)
+                          : l.syncOpenSettings,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
                 ),
-                onPressed: _checking ? null : (_gdrive ? _googleIn : _open),
-                child: Text(_gdrive ? l.syncSignInGoogle : l.syncOpenSettings,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-              ),
               const SizedBox(height: 9),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(

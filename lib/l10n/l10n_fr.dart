@@ -1074,6 +1074,8 @@ class L10nFr extends L10n {
   @override
   String get syncSignInGoogle => 'Se connecter avec Google';
   @override
+  String get syncAllowDrive => 'Autoriser Drive';
+  @override
   String get syncDiagPreparingGdrive => 'Connecté. Récupération de vos notes depuis Drive.';
   @override
   String get syncRecheckStillGdrive => 'Tout n\u2019est pas encore arrivé. La première synchronisation prend un moment si vous avez beaucoup de notes \u2014 elle continue après la fermeture.';

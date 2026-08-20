@@ -23,6 +23,8 @@
 /// 안 넣고 빌드해도 앱은 그냥 돈다. 구글 드라이브만 못 고른다.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -64,7 +66,7 @@ class DriveAuth {
   /// 이 웹 클라이언트에 **승인된 자바스크립트 원본**으로
   /// https://ezlong.com 이 등록되어 있어야 한다. 없으면 단추가 origin
   /// 오류로 뜨지도 않는다.
-  static const bool webReady = false;
+  static const bool webReady = true;
 
   static bool get supported {
     if (kIsWeb) return webReady && webClientId.isNotEmpty;
@@ -85,6 +87,19 @@ class DriveAuth {
 
   bool _ready = false;
   GoogleSignInAccount? _user;
+  StreamSubscription<GoogleSignInAuthenticationEvent>? _events;
+
+  /// 붙었는지가 바뀔 때마다 하나씩 오른다. 화면이 이걸 듣는다.
+  ///
+  /// 웹에서는 로그인 결과가 **함수의 반환값으로 안 온다.** 구글이 그린
+  /// 단추를 누르면 결과가 스트림으로 흘러들어온다. 부르는 쪽이 기다릴
+  /// 자리가 없으니, 바뀌었다는 것을 우리가 알려 줘야 한다.
+  final ValueNotifier<int> revision = ValueNotifier<int>(0);
+
+  void _mark(GoogleSignInAccount? u) {
+    _user = u;
+    revision.value++;
+  }
 
   bool get signedIn => _user != null;
   String get email => _user?.email ?? '';
@@ -102,6 +117,16 @@ class DriveAuth {
     final id = kIsWeb
         ? webClientId
         : (iosClientId.isEmpty ? null : iosClientId);
+    // 로그인 소식을 듣는 자리. 웹에서는 이 길이 **유일한** 길이고,
+    // 다른 판에서는 있으나 없으나지만 해가 없다 — 같은 코드를 판마다
+    // 다르게 두면 웹만 고치는 날 나머지가 어긋난다.
+    _events ??= GoogleSignIn.instance.authenticationEvents.listen((e) {
+      if (e is GoogleSignInAuthenticationEventSignIn) {
+        _mark(e.user);
+      } else if (e is GoogleSignInAuthenticationEventSignOut) {
+        _mark(null);
+      }
+    }, onError: (Object _) {});
     await GoogleSignIn.instance.initialize(
       clientId: (id == null || id.isEmpty) ? null : id,
       serverClientId: webClientId.isEmpty ? null : webClientId,
@@ -117,7 +142,7 @@ class DriveAuth {
     if (!supported) return false;
     try {
       await _init();
-      _user = await GoogleSignIn.instance.attemptLightweightAuthentication();
+      _mark(await GoogleSignIn.instance.attemptLightweightAuthentication());
       return _user != null;
     } catch (_) {
       return false;
@@ -133,14 +158,35 @@ class DriveAuth {
         // 웹은 단추 위젯으로만 로그인한다. 그쪽 길은 아직 안 냈다.
         return false;
       }
-      _user = await GoogleSignIn.instance.authenticate();
+      _mark(await GoogleSignIn.instance.authenticate());
       // 로그인과 권한은 다른 일이다. 붙기만 하고 권한을 안 받으면 토큰이
       // 없어서 다음 동기화가 조용히 아무 일도 안 한다.
       final a = await _user!.authorizationClient
           .authorizeScopes(const <String>[kDriveScope]);
       return a.accessToken.isNotEmpty;
     } catch (_) {
-      _user = null;
+      _mark(null);
+      return false;
+    }
+  }
+
+  /// 드라이브 권한을 받는다 — **사람이 누른 그 자리에서** 불러야 한다.
+  ///
+  /// 웹에서는 권한 창이 팝업으로 열린다. 로그인 직후 우리가 알아서
+  /// 부르면 브라우저가 '사람이 안 눌렀는데 열린 창'으로 보고 막는다.
+  /// 그래서 이것만 따로 떼어 단추 하나를 더 뒀다.
+  ///
+  /// 폰·맥에서는 signIn() 안에서 이미 하므로 부를 일이 없다.
+  Future<bool> authorizeDrive() async {
+    final u = _user;
+    if (u == null) return false;
+    try {
+      final a = await u.authorizationClient
+          .authorizeScopes(const <String>[kDriveScope]);
+      final ok = a.accessToken.isNotEmpty;
+      if (ok) revision.value++;
+      return ok;
+    } catch (_) {
       return false;
     }
   }
@@ -149,7 +195,7 @@ class DriveAuth {
     try {
       await GoogleSignIn.instance.signOut();
     } catch (_) {}
-    _user = null;
+    _mark(null);
   }
 
   /// 통로가 부르는 자리. 지금 쓸 수 있는 토큰, 없으면 null.

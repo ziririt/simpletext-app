@@ -569,6 +569,8 @@ abstract class L10n {
   String get syncHelpNoteGdrive;
   String get syncDiagSignedOutGdrive;
   String get syncSignInGoogle;
+  /// 웹의 두 번째 걸음. 폰·맥에는 이 걸음이 없다 — 로그인 안에서 함께 받는다.
+  String get syncAllowDrive;
   String get syncDiagPreparingGdrive;
   String get syncRecheckStillGdrive;
   String pastedFrom(String src, String date);
@@ -1006,6 +1008,7 @@ abstract class L10n {
         'syncHelpNoteGdrive': syncHelpNoteGdrive,
         'syncDiagSignedOutGdrive': syncDiagSignedOutGdrive,
         'syncSignInGoogle': syncSignInGoogle,
+        'syncAllowDrive': syncAllowDrive,
         'syncDiagPreparingGdrive': syncDiagPreparingGdrive,
         'syncRecheckStillGdrive': syncRecheckStillGdrive,
         'importNone': importNone,

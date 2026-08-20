@@ -1074,6 +1074,8 @@ class L10nDe extends L10n {
   @override
   String get syncSignInGoogle => 'Mit Google anmelden';
   @override
+  String get syncAllowDrive => 'Zugriff auf Drive erlauben';
+  @override
   String get syncDiagPreparingGdrive => 'Angemeldet. Ihre Notizen werden von Drive geholt.';
   @override
   String get syncRecheckStillGdrive => 'Noch nicht alles da. Der erste Abgleich dauert etwas, wenn Sie viele Notizen haben \u2014 er läuft weiter, auch wenn Sie schließen.';

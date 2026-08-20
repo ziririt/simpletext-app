@@ -1073,6 +1073,8 @@ class L10nPt extends L10n {
   @override
   String get syncSignInGoogle => 'Entrar com o Google';
   @override
+  String get syncAllowDrive => 'Permitir acesso ao Drive';
+  @override
   String get syncDiagPreparingGdrive => 'Conectado. Buscando suas notas no Drive.';
   @override
   String get syncRecheckStillGdrive => 'Ainda não chegou tudo. A primeira sincronização demora um pouco quando há muitas notas \u2014 ela continua depois que você fechar.';

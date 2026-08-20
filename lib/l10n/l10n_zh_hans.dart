@@ -1070,6 +1070,8 @@ class L10nZhHans extends L10n {
   @override
   String get syncSignInGoogle => '使用 Google 账号登录';
   @override
+  String get syncAllowDrive => '允许访问云端硬盘';
+  @override
   String get syncDiagPreparingGdrive => '已登录。正在从云端硬盘取回备忘。';
   @override
   String get syncRecheckStillGdrive => '还没全部取回。备忘较多时首次同步需要一点时间 \u2014 关闭此窗口后仍会继续。';

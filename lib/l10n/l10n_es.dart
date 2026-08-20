@@ -1073,6 +1073,8 @@ class L10nEs extends L10n {
   @override
   String get syncSignInGoogle => 'Iniciar sesión con Google';
   @override
+  String get syncAllowDrive => 'Permitir el acceso a Drive';
+  @override
   String get syncDiagPreparingGdrive => 'Sesión iniciada. Trayendo tus notas desde Drive.';
   @override
   String get syncRecheckStillGdrive => 'Todavía no está todo. La primera sincronización tarda un poco si tienes muchas notas \u2014 continúa aunque cierres esto.';
