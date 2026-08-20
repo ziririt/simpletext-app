@@ -39,6 +39,7 @@ import 'core/lock.dart';
 import 'core/mono_controller.dart';
 import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
+import 'core/sync_plan.dart' show EditorRefresh, editorRefresh;
 import 'core/mru.dart';
 import 'core/note_lock.dart';
 import 'core/paper.dart';
@@ -5968,6 +5969,8 @@ class _EditorScreenState extends State<EditorScreen>
     // 선택 범위가 바뀌는 것을 지켜본다. 글자가 바뀔 때(onChanged)와는
     // 다른 일이라 컨트롤러에 직접 붙는다.
     bodyCtl.addListener(_onSelectionChanged);
+    // 동기화가 이 노트의 새 판을 받아 오면 화면도 따라 그린다.
+    store.addListener(_onStoreChanged);
     if (widget.showMeta) _showMeta = true;
     if (widget.autoTidy) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
@@ -5977,6 +5980,7 @@ class _EditorScreenState extends State<EditorScreen>
   @override
   void dispose() {
     _unbindStatusBarTap();
+    store.removeListener(_onStoreChanged);
     _tagTimer?.cancel();
     bodyCtl.removeListener(_onSelectionChanged);
     _bodyScroll.dispose();
@@ -6232,6 +6236,35 @@ static const int kTagScanChars = 3000;
     if (!note.tagsAuto) return;
     note.taggedLen = len;
     await _commitTags(got.join(','), clear: false);
+  }
+
+  /// 저장소가 바뀔 때마다 온다. 이 노트의 **객체 자체**가 바뀌었으면
+  /// 동기화가 새 판을 꽂은 것이다. 판단 셈은 core/sync_plan.dart의
+  /// editorRefresh — 갈래마다 왜 그런지는 그쪽 주석에 있다.
+  void _onStoreChanged() {
+    if (!mounted) return;
+    final i = store.notes.indexWhere((n) => n.id == note.id);
+    // 다른 기기에서 지워졌다. 이 화면은 그대로 둔다 — 보던 글이 눈앞에서
+    // 사라지는 것보다, 나가면서 자연히 정리되는 쪽이 덜 놀랍다.
+    if (i < 0) return;
+    final fresh = store.notes[i];
+    switch (editorRefresh(
+      sameObject: identical(fresh, note),
+      editing: _bodyTouched,
+    )) {
+      case EditorRefresh.keep:
+        return;
+      case EditorRefresh.adopt:
+        note = fresh;
+        _lastBody = fresh.body;
+        if (bodyCtl.text != fresh.body) bodyCtl.text = fresh.body;
+        if (titleCtl.text != fresh.title) titleCtl.text = fresh.title;
+        setState(() {});
+      case EditorRefresh.assertMine:
+        note = fresh;
+        unawaited(_save());
+        setState(() {});
+    }
   }
 
   Future<void> _save() async {

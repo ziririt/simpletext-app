@@ -57,3 +57,36 @@ bool shouldUpload({
   if (remoteStamp == null) return false;
   return remoteStamp < localStamp;
 }
+
+/// 편집 화면 밑으로 새 판이 도착했을 때 화면이 할 일.
+///
+/// 합치기는 원격이 이기면 저장소 목록에 **원격 인스턴스를 꽂는다**
+/// (core/sync_merge.dart). 그 순간 열려 있는 편집 화면이 물고 있는 옛
+/// 객체는 목록에서 떨어져 나간다. 화면이 이를 모르면 두 가지가 생긴다.
+///
+///   1) 낡은 글을 계속 보여준다 — "기기마다 글이 다르다"로 보인다
+///      (2026-08-20 저녁, 맥·안드로이드·웹 세 곳에서 실제로 겪었다).
+///   2) 그 화면에서 한 글자라도 치면 낡은 글에 새 도장이 찍혀
+///      남의 최신 수정을 덮는다.
+///
+/// 그래서 화면은 저장소 변화를 듣다가 이 셈에 따라 움직인다.
+enum EditorRefresh {
+  /// 같은 객체다 — 내 손이 만졌거나 남의 일이다. 할 일 없다.
+  keep,
+
+  /// 새 판이 왔고 이 화면에서 치던 글이 없다 — 갈아 그린다.
+  adopt,
+
+  /// 새 판이 왔는데 이 화면에서 치던 중이다 — 눈앞의 글이 이긴다.
+  /// 사람이 지금 보면서 만지는 글을 소리 없이 갈아치우는 것이
+  /// 가장 나쁘기 때문이다. 새 객체에 화면의 글을 도장 찍어 되쓴다.
+  assertMine,
+}
+
+EditorRefresh editorRefresh({
+  required bool sameObject,
+  required bool editing,
+}) {
+  if (sameObject) return EditorRefresh.keep;
+  return editing ? EditorRefresh.assertMine : EditorRefresh.adopt;
+}
