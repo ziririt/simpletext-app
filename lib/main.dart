@@ -317,7 +317,17 @@ class AppC extends ThemeExtension<AppC> {
     // #4B5762 — 흰 바탕 7.4:1, 앱 바탕(#EFF6FB) 6.8:1. 파랑 기운은 그대로다.
     // 이 색은 부제·설명·시각·구역 제목에 쓴다. 본문(guideInk 11.4:1)과는
     // 여전히 층이 갈리므로 화면이 납작해지지 않는다.
-    sub: Color(0xFF4B5762),
+    // 2026-08-20 두 번째 지시 — 7.4:1로 올린 것을 보고도 "너무 연하다.
+    // 대비가 낮아서 저시력자 문제"라고 하셨다. 맞는 말이다. 대비 수치는
+    // 이미 AAA(7:1)를 넘었는데도 연해 보이는 까닭은 **이 글자가 14~15px
+    // 이기 때문**이다. WCAG의 4.5:1과 7:1은 '본문 크기'를 전제로 한 값이고,
+    // 애플이 아이폰 본문으로 쓰는 크기는 17pt다. 작은 글자에 문턱만 겨우
+    // 맞추는 것은 숫자를 만족시키는 것이지 읽히게 하는 것이 아니다.
+    //
+    // #37434E — 흰 바탕 10.1:1, 앱 바탕 9.3:1. 본문 잉크(11.4:1)와 거의
+    // 같은 무게다. 층은 색이 아니라 크기와 굵기로 낸다 — 원래 그렇게
+    // 하는 것이 맞고, 색으로 층을 내려다 읽히지 않게 된 것이 이 사고다.
+    sub: Color(0xFF37434E),
     accent: _accent,
     field: Color(0xFFDEEAF3),
     toolbar: Color(0xFFEEF5FA),
@@ -368,7 +378,8 @@ class AppC extends ThemeExtension<AppC> {
     // 패널(#15191D) 위에서 6.3:1로 이미 읽혔지만, 밝은 쪽을 7.4:1로
     // 올린 김에 여기도 맞춘다 — 두 모드가 다른 세기로 말하면 안 된다.
     // #9FAAB4 on #15191D 7.5:1
-    sub: Color(0xFF9FAAB4),
+    // 어두운 쪽도 같은 세기로. #C3CCD4 on #15191D 10.9:1
+    sub: Color(0xFFC3CCD4),
     // 다크 강조는 하늘색을 밝힌 톤 — 어두운 바탕에 쨍한 원색은 눈을
     // 찌른다(소유자: 밤에 눈부시지 않게). 다만 옛 #6FC4F4는 채도가
     // 모자라 흐릿했다. #4FC3F7은 같은 밝기에 채도만 올린 값이라 밤에
@@ -2500,8 +2511,10 @@ Widget _syncScopeBody(BuildContext context, L10n l) {
           Text('· ', style: TextStyle(fontSize: 14, color: context.c.sub)),
           Expanded(
             child: Text(text,
+                // 2026-08-20 — 읽으라고 쓴 안내문이 14px이었다. 대비만
+                // 올리고 크기를 그대로 두면 절반만 고친 것이다.
                 style: TextStyle(
-                    fontSize: 14, height: 1.45, color: context.c.sub)),
+                    fontSize: 15, height: 1.5, color: context.c.sub)),
           ),
         ]),
       );
