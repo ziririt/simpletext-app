@@ -143,6 +143,49 @@ void main() {
 /// 막대 색은 투명이다. 검정으로 칠하는 길은 15에서 사라졌고, 14 이하에서는
 /// 검정 막대 위에 라이트 테마의 검은 아이콘이 얹혀 같은 사고가 난다.
 /// 투명 + 시스템 판이 어느 판에서나 성립하는 하나의 답이다.
+/// 안드로이드 소프트키 자리를 우리 색으로 덮는다.
+///
+/// 2026-08-20 소유자 신고 **네 번째** — "소프트키랑 설정 및 노트
+/// 리스트페이지 하단이 겹쳐서 여전히 자세히 봐야만 보인다."
+///
+/// 앞의 세 번은 전부 **시스템에게 부탁하는 방식**이었다. 아래 여백을
+/// 늘리고(scrollPad), 아이콘 밝기를 맞추고, 시스템의 대비 판을 다시 켰다.
+/// 그 부탁이 먹히는지는 안드로이드 판·제조사 껍데기·손짓 방식에 따라
+/// 달라지고, 우리는 그중 어느 것도 기기 없이 확인할 수 없다.
+///
+/// 그래서 부탁을 그만둔다. 키가 놓이는 딱 그 높이만큼 **불투명한 띠**를
+/// 깐다. 그러면 그 자리에 우리 글이 지나갈 수 없고, 키는 언제나 한 가지
+/// 색 위에 놓인다. 판이 무엇을 하든 결과가 안 달라진다.
+///
+/// **여백과 띠는 다르다.** 여백은 '글이 거기까지 안 가도록' 부탁하는
+/// 것이라 굴리는 동안에는 소용이 없다 — 소유자가 "스크롤하면서도
+/// 마찬가지"라고 한 것이 그 지점이다. 띠는 굴리든 말든 늘 거기 있다.
+///
+/// 안드로이드에서만. 아이폰의 홈 인디케이터 자리는 글이 비쳐 지나가는
+/// 편이 낫고(애플 메모도 그렇다) 신고도 없었다.
+///
+/// IgnorePointer 를 두는 까닭: 이 띠는 보이기만 할 뿐 아무것도 안 받는다.
+/// 안 그러면 그 자리에서 시작한 굴리기가 막힌다.
+Widget navBarPlate(BuildContext ctx, Widget child) {
+  if (defaultTargetPlatform != TargetPlatform.android) return child;
+  final h = MediaQuery.paddingOf(ctx).bottom;
+  if (h <= 0) return child;
+  final c = Theme.of(ctx).extension<AppC>();
+  final color = c?.bg ?? Theme.of(ctx).scaffoldBackgroundColor;
+  return Stack(
+    children: [
+      child,
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: h,
+        child: IgnorePointer(child: ColoredBox(color: color)),
+      ),
+    ],
+  );
+}
+
 SystemUiOverlayStyle systemBars(Brightness b) {
   final dark = b == Brightness.dark;
   return SystemUiOverlayStyle(
@@ -770,6 +813,7 @@ class SimpleTextApp extends StatelessWidget {
             child: w,
           );
         }
+        w = navBarPlate(ctx, w);
         // 잠금은 제일 바깥이다. 앱 안의 어느 화면이 열려 있든 한 장이 덮는다.
         return LockGate(child: w);
       },
