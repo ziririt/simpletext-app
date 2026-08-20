@@ -50,9 +50,47 @@ typedef DriveToken = Future<String?> Function();
 const String _api = 'https://www.googleapis.com/drive/v3/files';
 const String _upload = 'https://www.googleapis.com/upload/drive/v3/files';
 
+/// 나가는 왕복마다 같은 시간 제한을 거는 껍데기.
+///
+/// 2026-08-20 소유자 신고 — "당겼다 놓으면 업데이트되는 동그라미가
+/// 2분이 넘도록 계속 돌고 있다."
+///
+/// 이 파일의 왕복 일곱 곳 어디에도 시간 제한이 없었다. 요청 하나가
+/// 멈추면(와이파이↔LTE 전환, 신호 약한 자리) 그 자리에서 **영영**
+/// 기다린다. 동그라미는 그 기다림을 정직하게 보여 주고 있었다.
+///
+/// 더 나쁜 것은 그다음이다. 멈춘 채로 있으면 syncNow() 의 빗장
+/// (_busy) 이 풀릴 자리가 안 온다. 그때부터 30초마다 도는 자동
+/// 동기화가 전부 문 앞에서 되돌아간다 — 앱을 껐다 켜기 전까지
+/// 동기화가 죽는다.
+///
+/// 부르는 자리마다 .timeout 을 붙일 수도 있었다. 그러면 같은 판단이
+/// 일곱 군데에 적히고, 여덟 번째 왕복을 만드는 날 반드시 하나를
+/// 빠뜨린다. **나가는 문을 하나로 두고 거기에 건다.**
+class _Timed extends http.BaseClient {
+  _Timed(this._inner, this._wait);
+  final http.Client _inner;
+  final Duration _wait;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) =>
+      _inner.send(request).timeout(_wait);
+
+  @override
+  void close() => _inner.close();
+}
+
 class GDriveTransport implements SyncTransport {
   GDriveTransport(this._token, {http.Client? client})
-      : _http = client ?? http.Client();
+      : _http = _Timed(client ?? http.Client(), _wait);
+
+  /// 왕복 하나에 허락하는 시간.
+  ///
+  /// 30초마다 한 바퀴가 도는데 그보다 길게 잡으면 다음 바퀴가 밀린다.
+  /// 짧게 잡으면 신호가 약한 데서 멀쩡한 요청을 끊는다. 12초는 그
+  /// 사이다 — 한 바퀴에 왕복이 두어 번 겹쳐도 25초(icloud_sync.dart의
+  /// 한 바퀴 제한) 안에 든다.
+  static const Duration _wait = Duration(seconds: 12);
 
   final DriveToken _token;
   final http.Client _http;

@@ -300,6 +300,9 @@ class ICloudSync {
 
   // -------------------------------------------------------------- 본체
 
+  /// 한 바퀴에 허락하는 시간. 30초 시계보다 짧아야 한다.
+  static const Duration _pass = Duration(seconds: 25);
+
   Future<void> syncNow() async {
     if (!active || paused || _busy) return;
     _busy = true;
@@ -310,7 +313,18 @@ class ICloudSync {
         return;
       }
       state.value = SyncState.running;
-      await _run(root);
+      // 한 바퀴에 허락하는 시간.
+      //
+      // 왕복마다 12초를 걸어 뒀지만(sync/gdrive_transport.dart) 그것만
+      // 으로는 모자란다. 메모가 백 개면 왕복도 여러 번이고, 하나하나
+      // 는 제때 끝나면서 전체가 한없이 길어질 수 있다.
+      //
+      // 30초 시계보다 짧게 둔다. 그래야 두 바퀴가 겹치지 않는다.
+      //
+      // 여기서 던지는 TimeoutException 은 아래 catch 가 받아 '꺼짐'으로
+      // 두고, finally 가 빗장을 푼다. **빗장이 반드시 풀리는 것**이
+      // 이 줄의 진짜 목적이다 — 안 풀리면 그다음 모든 바퀴가 죽는다.
+      await _run(root).timeout(_pass);
       lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
       state.value = SyncState.ok;
     } catch (_) {

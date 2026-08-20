@@ -36,7 +36,11 @@ import 'main.dart' show Note;
 class _Ink {
   static const body = PdfColor.fromInt(0xFF1C1C1E);
   static const head = PdfColor.fromInt(0xFF000000);
-  static const sub = PdfColor.fromInt(0xFF8A8A8E);
+  // 2026-08-20 — #8A8A8E 는 흰 종이에서 3.0:1 이었다. 화면에서 연회색을
+  // 세 번 걷어내는 동안 여기는 아무도 안 봤다. 인쇄물은 화면보다
+  // 사정이 나쁘다 — 잉크가 마르면 더 옅어지고, 복사하면 한 번 더
+  // 날아간다. 앱의 보조 글자색을 그대로 쓴다(#26313A).
+  static const sub = PdfColor.fromInt(0xFF26313A);
   static const line = PdfColor.fromInt(0xFFE1E1E6);
   static const accent = PdfColor.fromInt(0xFF0070BE);
   static const codeBg = PdfColor.fromInt(0xFFF5F5F7);

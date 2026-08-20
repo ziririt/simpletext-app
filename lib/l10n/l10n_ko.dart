@@ -582,7 +582,7 @@ class L10nKo extends L10n {
   String syncLastAt(String when) => '마지막으로 맞춘 때 · $when';
 
   @override
-  String syncStateOn(String where) => '$where에 올려 두고, 이 앱을 깐 기기에서 같은 메모를 봅니다';
+  String syncStateOn(String where) => '$where에 올려 두고, 이 앱을 설치한 기기에서 같은 메모를 봅니다';
 
   @override
   String get syncStateOff => '기기 설정에서 iCloud Drive를 켜 주세요';

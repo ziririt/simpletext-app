@@ -13,7 +13,7 @@ import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
 // material.dart는 defaultTargetPlatform을 내보내지 않는다(TargetPlatform은 내보낸다).
 // 2026-08-14에 이걸 몰라서 analyze가 undefined_identifier로 잡았다.
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart' show openFiles, XFile;
@@ -704,8 +704,8 @@ class SimpleTextApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: L10n.supportedLocales,
-      theme: _theme(Brightness.light, AppC.light),
-      darkTheme: _theme(Brightness.dark, AppC.dark),
+      theme: buildTheme(Brightness.light, AppC.light),
+      darkTheme: buildTheme(Brightness.dark, AppC.dark),
       // 2026-08-16 소유자 신고 — 맥 앱 글자가 애플 메모장보다 훨씬 크다.
       // 모바일 크기(본문 17 등)를 그대로 데스크톱에 내보내고 있었다.
       // 애플 메모장 맥판 본문은 13~14 상당 — 데스크톱 전체를 0.8배로 줄이면
@@ -774,7 +774,13 @@ class SimpleTextApp extends StatelessWidget {
     'Malgun Gothic', // Windows
   ];
 
-  static ThemeData _theme(Brightness b, AppC c) {
+  /// 화면 색표를 만든다.
+  ///
+  /// 2026-08-20 — 밖으로 연 이유는 시험 때문이다. 우리가 **안 적어 준**
+  /// 자리에 머티리얼이 무슨 색을 꺼내 쓰는지는 완성된 색표를 봐야
+  /// 알 수 있다. AppC 만 봐서는 안 보인다 — 연회색이 네 번이나 살아
+  /// 남은 까닭이 그것이었다(test/scheme_ink_test.dart).
+  static ThemeData buildTheme(Brightness b, AppC c) {
     // 채운 단추는 라이트든 다크든 **밝은 하늘 바탕에 진한 남색 글자**다
     // (kAccentFill / kOnAccentFill). 2026-08-18에 라이트도 그쪽으로 맞췄다.
 
@@ -801,6 +807,34 @@ class SimpleTextApp extends StatelessWidget {
       // 카드가 미묘하게 하늘 기운을 띤다 — 색을 더 쓰되 시끄럽지 않게.
       surfaceTint: c.accent,
       error: c.danger,
+      // 2026-08-20 소유자 지시(**네 번째**) — "제발 좀 연회색 폰트
+      // 사용 금지. 진회색이나 연블랙, 또는 블랙 폰트로."
+      //
+      // 우리 색은 이미 다 내려놨는데도 화면에 연회색이 남아 있었다.
+      // 세 번을 고치고도 또 나왔으면 고치는 자리가 틀린 것이다.
+      // 짐작을 그만두고 머티리얼 기본 색표를 **실제로 재 봤다**:
+      //   onSurfaceVariant  #41484D   흰 판에서  9.30:1
+      //   outline           #71787E   흰 판에서  4.48:1
+      //   (다크) onSurfaceVariant #C1C7CE, outline #8B9198
+      //
+      // 우리 보조 글자는 #26313A(13.3:1)다. 숫자로만 보면 9.3:1도
+      // AAA를 넘지만, **같은 화면에서 나란히 놓이면 눈에 띄게 연하다.**
+      // 대비는 배경과의 관계지, 옆 글자와의 관계가 아니다. 사람 눈은
+      // 옆을 본다.
+      //
+      // 그리고 저 색이 나오는 자리는 전부 **우리가 색을 안 적어 준**
+      // 자리다 — ListTile 부제, 드롭다운 글자, 입력칸 이름표, 메뉴,
+      // 슬라이더 눈금. 화면을 하나하나 찾아다니며 색을 적는 것은 또
+      // 같은 판단을 여러 군데에 적는 짓이고, 그러면 다음에 만드는
+      // 화면에서 다시 연회색이 나온다.
+      //
+      // **연회색을 색표에서 지운다.** 꺼낼 자리가 없으면 안 나온다.
+      onSurface: c.guideInk,
+      onSurfaceVariant: c.sub,
+      outline: c.sub,
+      // 선은 글자가 아니다. 여기까지 잉크색으로 만들면 화면이 격자가
+      // 된다. 우리가 쓰던 선 색을 그대로 준다.
+      outlineVariant: c.line,
     );
 
     final base = ThemeData(
@@ -1999,6 +2033,26 @@ const Duration _kToastUndo = Duration(seconds: 5);
 ///
 /// 창고가 하나라도 있으면 보여 준다. 여기 한 곳만 본다.
 bool get syncVisible => ICloudSync.supported || DriveAuth.supported;
+
+/// 이 기기에서 앱 잠금을 걸 수 있는가.
+///
+/// 2026-08-20 소유자 지시 — "웹앱 앱 잠금 : 되는 척 하지말고 설정에서
+/// 빼라."
+///
+/// local_auth 는 안드로이드·애플·윈도우만 받는다(pubspec.lock 에
+/// local_auth_android · local_auth_darwin · local_auth_windows 만
+/// 있다). 브라우저에는 얼굴이나 지문을 물을 자리가 아예 없다.
+///
+/// 그런데 설정 화면에는 스위치가 그대로 떠 있었다. 누르면 "이 기기
+/// 에서는 쓸 수 없습니다" 알림만 떴다. **못 하는 일을 할 수 있는
+/// 것처럼 보여 준 것**이다. 동기화 칸은 syncVisible 로 가려 놓고
+/// 잠금 칸은 안 가렸다 — 같은 판단을 한 군데만 적은 자리다.
+bool get lockVisible =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.windows);
 
 /// 동기화 상태를 사람 말로 옮기는 자리 — **한 곳뿐이다.**
 ///
@@ -3595,7 +3649,17 @@ class _HomeScreenState extends State<HomeScreen>
       await Future<void>.delayed(const Duration(milliseconds: 320));
       return;
     }
-    await sync.recheck();
+    // 동그라미는 **손짓을 받았다**는 표시지 일이 끝났다는 표시가 아니다.
+    //
+    // 2026-08-20 소유자 신고 — "2분이 넘도록 계속 돌고 있다. 몇 초만
+    // 돌다가 사라져야 하는 거 아닌가?" 맞는 말이다. 손짓에 대한 답은
+    // 즉시 와야 하고, 오래 걸리는 일을 보고하는 자리는 따로 있다 —
+    // 설정의 동기화 줄이 '맞추는 중'으로 계속 알린다.
+    //
+    // 8초가 지나면 동그라미만 걷는다. 동기화는 그대로 돈다.
+    await sync
+        .recheck()
+        .timeout(const Duration(seconds: 8), onTimeout: () {});
   }
   void _wireWidget() {
     if (!WidgetBridge.supported) return;
@@ -10412,9 +10476,11 @@ class _SettingsScreenState extends State<SettingsScreen>
             _sep(),
             KeyedSubtree(key: _anchors['paper'], child: _paperBlock(l, s)),
           ]),
-          KeyedSubtree(
-              key: _anchors['lock'], child: _secHeader(l.lockSectionTitle)),
-          _card([
+          if (lockVisible)
+            KeyedSubtree(
+                key: _anchors['lock'], child: _secHeader(l.lockSectionTitle)),
+          if (lockVisible)
+            _card([
             // _switchRow를 안 쓴다. 그건 값을 바로 바꾸고 저장하는데,
             // 잠금은 **확인을 받은 뒤에만** 바뀌어야 한다. 확인이 안 되면
             // 스위치가 원래 자리로 돌아와야 하고, 그러려면 값을 우리가
