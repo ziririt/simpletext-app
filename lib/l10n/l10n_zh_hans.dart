@@ -1059,6 +1059,16 @@ class L10nZhHans extends L10n {
 
   @override
   String get syncSignedOutTitle => '需要登录';
+  @override
+  String get syncHelpTitleGdrive => '重新连接 Google 云端硬盘';
+  @override
+  String get syncHelpStepsGdrive => '1. 点击下方按钮，选择您的 Google 账号\n2. 允许访问云端硬盘\n3. 随即开始同步';
+  @override
+  String get syncHelpNoteGdrive => '备忘仍在云端硬盘中。重新登录后就会回来。';
+  @override
+  String get syncDiagSignedOutGdrive => '此设备尚未登录 Google 账号。';
+  @override
+  String get syncSignInGoogle => '使用 Google 账号登录';
 
   @override
   String pastedFrom(String src, String date) =>

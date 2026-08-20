@@ -559,6 +559,16 @@ abstract class L10n {
   String get syncOnTitle;
   String get syncOffTitle;
   String get syncSignedOutTitle;
+
+  /// 2026-08-20 — 안내 창이 통째로 아이클라우드 전용이었다. 창고를
+  /// 둘로 늘리면서 이 창을 안 따라 고쳤다. 애플 쪽은 우리가 켜 줄 수
+  /// 없어 길만 적어 주지만, 구글 쪽은 그 자리에서 바로 붙일 수 있다 —
+  /// 하는 일이 다르니 말도 달라야 한다.
+  String get syncHelpTitleGdrive;
+  String get syncHelpStepsGdrive;
+  String get syncHelpNoteGdrive;
+  String get syncDiagSignedOutGdrive;
+  String get syncSignInGoogle;
   String pastedFrom(String src, String date);
   String pastedOn(String date);
   String staleWarn(int days);
@@ -989,6 +999,11 @@ abstract class L10n {
         'syncOnTitle': syncOnTitle,
         'syncOffTitle': syncOffTitle,
         'syncSignedOutTitle': syncSignedOutTitle,
+        'syncHelpTitleGdrive': syncHelpTitleGdrive,
+        'syncHelpStepsGdrive': syncHelpStepsGdrive,
+        'syncHelpNoteGdrive': syncHelpNoteGdrive,
+        'syncDiagSignedOutGdrive': syncDiagSignedOutGdrive,
+        'syncSignInGoogle': syncSignInGoogle,
         'importNone': importNone,
         'settingsSecView': settingsSecView,
         'settingsSecTidy': settingsSecTidy,

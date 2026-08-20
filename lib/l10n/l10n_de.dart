@@ -1063,6 +1063,16 @@ class L10nDe extends L10n {
 
   @override
   String get syncSignedOutTitle => 'Anmeldung nötig';
+  @override
+  String get syncHelpTitleGdrive => 'Google Drive neu verbinden';
+  @override
+  String get syncHelpStepsGdrive => '1. Tippen Sie unten und wählen Sie Ihr Google-Konto\n2. Erlauben Sie den Zugriff auf Drive\n3. Der Abgleich startet sofort';
+  @override
+  String get syncHelpNoteGdrive => 'Ihre Notizen liegen weiterhin auf Drive. Nach der Anmeldung sind sie wieder da.';
+  @override
+  String get syncDiagSignedOutGdrive => 'Dieses Gerät ist bei keinem Google-Konto angemeldet.';
+  @override
+  String get syncSignInGoogle => 'Mit Google anmelden';
 
   @override
   String pastedFrom(String src, String date) =>

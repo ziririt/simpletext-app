@@ -1062,6 +1062,16 @@ class L10nPt extends L10n {
 
   @override
   String get syncSignedOutTitle => 'Falta iniciar sessão';
+  @override
+  String get syncHelpTitleGdrive => 'Reconectar o Google Drive';
+  @override
+  String get syncHelpStepsGdrive => '1. Toque no botão abaixo e escolha sua conta Google\n2. Permita o acesso ao Drive\n3. A sincronização começa em seguida';
+  @override
+  String get syncHelpNoteGdrive => 'Suas notas continuam no Drive. Elas voltam assim que você entrar.';
+  @override
+  String get syncDiagSignedOutGdrive => 'Este aparelho não está conectado a uma conta Google.';
+  @override
+  String get syncSignInGoogle => 'Entrar com o Google';
 
   @override
   String pastedFrom(String src, String date) =>

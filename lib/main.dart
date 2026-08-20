@@ -88,12 +88,10 @@ void main() {
   // 첫 화면이 그려지기 전, 그리고 전체 화면으로 뜨는 판들.
   //
   // 그 짧은 순간에 밝은 회색이 번쩍했다 사라지는 것은 고장으로 보인다.
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.black,
-    systemNavigationBarDividerColor: Colors.black,
-    systemNavigationBarIconBrightness: Brightness.light,
-    systemNavigationBarContrastEnforced: false,
-  ));
+  // 아직 테마가 없는 순간이라 기기 설정을 그대로 따른다. 첫 프레임이
+  // 그려지면 AppBarTheme 이 같은 함수로 다시 정한다.
+  SystemChrome.setSystemUIOverlayStyle(systemBars(
+      WidgetsBinding.instance.platformDispatcher.platformBrightness));
   // 홈 화면 위젯 자리 잡기(아이폰·안드로이드에서만). 목록을 실제로 보내는
   // 것은 화면이 말을 알려 준 뒤다 — 위젯에 쓸 글자를 다트가 담아 보내므로.
   unawaited(WidgetBridge.init());
@@ -128,6 +126,36 @@ void main() {
 // 명암비는 전부 계산으로 검증했다(값을 바꾸면 반드시 재계산). 이제
 // test/theme_contrast_test.dart가 이걸 자동으로 지킨다 — 색을 손대면
 // 테스트가 먼저 알려 준다.
+/// 시스템 막대(위 상태 막대·아래 소프트키)를 어떻게 그릴지 — **한 곳에서.**
+///
+/// 2026-08-20 소유자 신고 — "안드로이드 소프트 물리키 찾기가 어려울 정도다."
+///
+/// 이 값이 두 군데에 적혀 있었다. main() 과 AppBarTheme. 아침에 AppBar 쪽만
+/// 고쳤고 main() 쪽은 아이콘 밝기가 Brightness.light 로 박힌 채였다.
+/// 같은 판단을 두 군데 적으면 반드시 한 군데를 빠뜨린다.
+///
+/// contrastEnforced 를 다시 켠다. 이게 켜져 있으면 안드로이드가 소프트키
+/// 뒤에 옅은 판을 깔아 어떤 배경 위에서도 키가 보이게 해 준다. 2026-08-18에
+/// 껐던 까닭은 '우리가 칠한 검정을 시스템이 덮어쓴다'였는데, 안드로이드 15
+/// 부터는 그 검정 자체가 무시된다. **지키려던 것은 이미 없고 대가만 남아
+/// 있었다.**
+///
+/// 막대 색은 투명이다. 검정으로 칠하는 길은 15에서 사라졌고, 14 이하에서는
+/// 검정 막대 위에 라이트 테마의 검은 아이콘이 얹혀 같은 사고가 난다.
+/// 투명 + 시스템 판이 어느 판에서나 성립하는 하나의 답이다.
+SystemUiOverlayStyle systemBars(Brightness b) {
+  final dark = b == Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+    statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+    systemNavigationBarContrastEnforced: true,
+  );
+}
+
 const _accent = Color(0xFF0070BE);
 
 /// 하늘색 위에 얹는 글자·아이콘 색(다크). 브랜드 '딥'이다.
@@ -857,45 +885,8 @@ class SimpleTextApp extends StatelessWidget {
         foregroundColor: c.guideInk,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        // 2026-08-18 소유자 지시 — "안드로이드 기기의 소프트 물리키 컬러가
-        // 밝은 회색인데, 이거 블랙으로."
-        //
-        // 이 값을 여기 두는 까닭: 화면마다 SystemChrome 을 부를 수도 있지만,
-        // AppBar 는 프레임마다 자기 값으로 시스템 막대를 **덮어쓴다.**
-        // 그래서 다른 데서 아무리 정해 놔도 AppBar 가 있는 화면에서는
-        // AppBar 가 이긴다. 이길 쪽에 적는다.
-        //
-        // systemNavigationBarContrastEnforced: false 가 핵심이다. 이게
-        // true(기본값)면 안드로이드가 '글씨가 안 보일까 봐' 제 판단으로
-        // 반투명 판을 하나 더 깔고, 우리가 고른 검정이 그 판에 덮인다.
-        // 우리가 색을 정했다고 말해도 시스템이 안 믿는 상태다.
-        //
-        // 색과 아이콘 밝기를 둘 다 준다. 안드로이드 15부터는 색이
-        // 무시되고 아이콘 밝기만 먹히는데(가장자리까지 그리기 강제),
-        // 그 아래 판에서는 색이 먹힌다. 한 줄로 둘 다 되는 길이 없다.
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness:
-              b == Brightness.dark ? Brightness.light : Brightness.dark,
-          statusBarBrightness:
-              b == Brightness.dark ? Brightness.dark : Brightness.light,
-          systemNavigationBarColor: Colors.black,
-          systemNavigationBarDividerColor: Colors.black,
-          // 2026-08-20 소유자 신고 — "안드로이드 물리 소프트키가 너무
-          // 투명하다. 본문과 겹쳐져서 보이지 않는 문제."
-          //
-          // 여기 Brightness.light 가 박혀 있었다. 위에 적어 둔 대로 막대를
-          // 검정으로 칠할 수 있던 시절에는 맞는 값이었다. 그런데 안드로이드
-          // 15부터 색이 무시되면서 막대가 투명해졌고, 그러자 **밝은 앱 배경
-          // 위에 흰 아이콘**이 되었다. 안 보이는 게 당연하다.
-          //
-          // 색을 못 정하게 됐으면 아이콘 밝기는 우리가 아는 것을 따라야
-          // 한다 — 그 자리 뒤에 있는 것은 우리 배경이다. 바로 위 상태
-          // 막대가 이미 그렇게 하고 있었는데, 아래쪽만 옛 값에 남아 있었다.
-          systemNavigationBarIconBrightness:
-              b == Brightness.dark ? Brightness.light : Brightness.dark,
-          systemNavigationBarContrastEnforced: false,
-        ),
+        // 위·아래 시스템 막대는 systemBars() 한 곳에서 정한다.
+        systemOverlayStyle: systemBars(b),
       ),
       // 떠 있는 둥근 버튼. 기본값은 primaryContainer(연한 판)라서
       // 다크에서 '칙칙한 남색 판에 옅은 글자'가 됐다 — 신고된 그림이다.
@@ -2763,17 +2754,29 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
 
   Future<void> _pick(String v) async {
     final s = store.settings;
-    if (s.syncBackend == v) return;
-    // 구글 드라이브는 **붙고 나서** 고른 것으로 친다. 먼저 골라 놓고 로그인에
-    // 실패하면, 화면은 '구글 드라이브'라고 말하는데 실제로는 아무 데도 안
-    // 오가는 상태가 된다. 그 상태를 사람은 못 알아챈다.
+    // 2026-08-20 소유자 신고 — "동기화 자동으로 해제 문제. 왜 이렇지?"
+    //
+    // 이 줄이 맨 앞에 있었다: `if (s.syncBackend == v) return;`
+    // 뜻은 '같은 걸 또 고르면 헛일'이었는데, **고른 것과 붙은 것은
+    // 다른 일**이라는 걸 빠뜨렸다. 구글이 이미 골라져 있고 로그인만
+    // 풀린 판에서 'Google Drive' 를 누르면 아무 일도 안 일어난다 —
+    // 로그인도 안 하고 말도 안 한다. 되돌아갈 문이 없었다.
+    //
+    // 그래서 '붙었는가'를 '골랐는가'보다 먼저 본다.
     if (v == 'gdrive' && !DriveAuth.instance.signedIn) {
       final ok = await DriveAuth.instance.signIn();
+      if (!mounted) return;
       if (!ok) {
-        if (mounted) _toast(context, L10n.of(context).driveSignInFailed);
+        _toast(context, L10n.of(context).driveSignInFailed);
         return;
       }
+      setState(() => s.syncBackend = v);
+      await applySyncBackend();
+      await store.persistSettings();
+      unawaited(ICloudSync.instance.rebind());
+      return;
     }
+    if (s.syncBackend == v) return;
     setState(() => s.syncBackend = v);
     await applySyncBackend();
     await store.persistSettings();
@@ -9308,6 +9311,16 @@ class SyncHelpSheet extends StatefulWidget {
 class _SyncHelpSheetState extends State<SyncHelpSheet> {
   bool _checking = false;
 
+  /// 지금 고른 창고가 구글인가.
+  ///
+  /// 2026-08-20 소유자 신고 — "구글 로그인 버튼을 누르니 아이클라우드
+  /// 안내가 나온다." 이 창은 통째로 아이클라우드 전용이었다. 제목도
+  /// '아이클라우드 켜는 법', 단추도 '설정 앱 열기'.
+  ///
+  /// 창고를 둘로 늘리면서 **이 창을 안 따라 고쳤다.** 창고를 아는
+  /// 자리가 늘 때마다 빠뜨린 자리가 하나씩 나온다.
+  bool get _gdrive => Store.instance.settings.syncBackend == 'gdrive';
+
   /// 마지막으로 확인한 결과를 사람 말로 적어 둔 것. 비어 있으면 아직
   /// 아무것도 안 눌렀다는 뜻이다.
   ///
@@ -9330,17 +9343,52 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
       sync.recheck(),
       Future<void>.delayed(const Duration(milliseconds: 650)),
     ]);
+    // 됐다는 말을 읽을 틈을 준 뒤에 닫는다. 곧바로 닫으면 무엇이 바뀌었는지
+    // 모른 채 창만 사라진다 — 그것도 '무반응'으로 느껴진다.
+    await _report();
+  }
+
+  /// 구글 계정에 다시 붙는다.
+  ///
+  /// 아이클라우드 쪽의 '설정 앱 열기'와 자리는 같지만 하는 일이 다르다.
+  /// 애플 쪽은 우리가 켜 줄 수 없어 길만 적어 주는 것이고, 구글 쪽은
+  /// **여기서 바로 붙일 수 있다.** 길을 적어 줄 이유가 없다.
+  Future<void> _googleIn() async {
+    setState(() {
+      _checking = true;
+      _said = null;
+    });
+    final ok = await DriveAuth.instance.signIn();
+    if (!mounted) return;
+    if (!ok) {
+      setState(() {
+        _checking = false;
+        _saidBad = true;
+        _said = L10n.of(context).driveSignInFailed;
+      });
+      return;
+    }
+    // 붙었으면 통로를 새 토큰으로 갈아 끼우고 처음부터 다시 맞춘다.
+    await applySyncBackend();
+    await ICloudSync.instance.rebind();
+    if (!mounted) return;
+    await _report();
+  }
+
+  /// 확인한 결과를 사람 말로 알리고, 됐으면 창을 닫는다.
+  ///
+  /// 다시 확인과 구글 로그인이 같은 말을 해야 한다. 두 벌 적어 두면
+  /// 한쪽만 고치는 날이 온다.
+  Future<void> _report() async {
     if (!mounted) return;
     final l = L10n.of(context);
-    final ok = sync.state.value == SyncState.ok;
+    final ok = ICloudSync.instance.state.value == SyncState.ok;
     setState(() {
       _checking = false;
       _saidBad = !ok;
       _said = ok ? l.syncRecheckOk : l.syncRecheckStill;
     });
     if (!ok) return;
-    // 됐다는 말을 읽을 틈을 준 뒤에 닫는다. 곧바로 닫으면 무엇이 바뀌었는지
-    // 모른 채 창만 사라진다 — 그것도 '무반응'으로 느껴진다.
     await Future<void>.delayed(const Duration(milliseconds: 1100));
     if (mounted) Navigator.pop(context);
   }
@@ -9366,6 +9414,13 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
   /// 절차만 여섯 줄 늘어놓고 "안 되면 알아서 하세요"는 안내가 아니다.
   /// 기기에 물어본 사실 그대로를 먼저 말해 준다.
   (String, IconData) _diagnosis(L10n l) {
+    // 구글은 물어볼 것이 하나뿐이다 — 붙었는가. 애플처럼 '자리를
+    // 받았는가'가 따로 없다(드라이브의 방은 계정에 딸려 온다).
+    if (_gdrive) {
+      return DriveAuth.instance.signedIn
+          ? (l.syncDiagPreparing, Icons.hourglass_bottom)
+          : (l.syncDiagSignedOutGdrive, Icons.person_off_outlined);
+    }
     final sync = ICloudSync.instance;
     // 2026-08-17 — 순서를 뒤집었다.
     //
@@ -9416,7 +9471,7 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                 ),
               ),
               const SizedBox(height: 14),
-              Text(l.syncHelpTitle,
+              Text(_gdrive ? l.syncHelpTitleGdrive : l.syncHelpTitle,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
               const SizedBox(height: 14),
@@ -9445,7 +9500,7 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                 );
               }),
               const SizedBox(height: 14),
-              Text(l.syncHelpSteps,
+              Text(_gdrive ? l.syncHelpStepsGdrive : l.syncHelpSteps,
                   style: TextStyle(fontSize: 15.5, height: 1.75, color: c.guideInk)),
               const SizedBox(height: 16),
               FilledButton(
@@ -9454,8 +9509,8 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(13)),
                 ),
-                onPressed: _open,
-                child: Text(l.syncOpenSettings,
+                onPressed: _checking ? null : (_gdrive ? _googleIn : _open),
+                child: Text(_gdrive ? l.syncSignInGoogle : l.syncOpenSettings,
                     style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 9),
@@ -9476,9 +9531,10 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
               // 버튼 이름만 보고는 무슨 일이 일어나는지 알 수 없다.
               // 눌렀을 때 실제로 하는 일을 그대로 적는다.
               const SizedBox(height: 6),
-              Text(l.syncRecheckWhat,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, height: 1.4, color: c.sub)),
+              if (!_gdrive)
+                Text(l.syncRecheckWhat,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, height: 1.4, color: c.sub)),
               // 눌렀으면 반드시 무언가 대답한다.
               if (_said != null) ...[
                 const SizedBox(height: 12),
@@ -9514,7 +9570,7 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
               // 제 몫을 했으니 내린다. 값 자체(ICloudSync.facts)는 남겨
               // 둔다 — 다음에 또 막히면 한 줄만 도로 붙이면 된다.
               const SizedBox(height: 12),
-              Text(l.syncHelpNote,
+              Text(_gdrive ? l.syncHelpNoteGdrive : l.syncHelpNote,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13.5, height: 1.45, color: c.sub)),
             ],

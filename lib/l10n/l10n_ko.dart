@@ -1059,6 +1059,16 @@ class L10nKo extends L10n {
 
   @override
   String get syncSignedOutTitle => '로그인 필요';
+  @override
+  String get syncHelpTitleGdrive => '구글 드라이브 다시 연결하기';
+  @override
+  String get syncHelpStepsGdrive => '1. 아래 단추를 눌러 구글 계정을 고릅니다\n2. 드라이브 접근을 허용합니다\n3. 곧바로 맞추기가 시작됩니다';
+  @override
+  String get syncHelpNoteGdrive => '메모는 드라이브에 그대로 있습니다. 다시 로그인하면 돌아옵니다.';
+  @override
+  String get syncDiagSignedOutGdrive => '이 기기가 구글 계정에 로그인되어 있지 않습니다.';
+  @override
+  String get syncSignInGoogle => '구글 계정으로 로그인';
 
   @override
   String pastedFrom(String src, String date) =>

@@ -1063,6 +1063,16 @@ class L10nFr extends L10n {
 
   @override
   String get syncSignedOutTitle => 'Connexion requise';
+  @override
+  String get syncHelpTitleGdrive => 'Reconnecter Google Drive';
+  @override
+  String get syncHelpStepsGdrive => '1. Touchez le bouton ci-dessous et choisissez votre compte Google\n2. Autorisez Drive\n3. La synchronisation démarre aussitôt';
+  @override
+  String get syncHelpNoteGdrive => 'Vos notes sont toujours sur Drive. Elles reviennent dès la connexion.';
+  @override
+  String get syncDiagSignedOutGdrive => 'Aucun compte Google sur cet appareil.';
+  @override
+  String get syncSignInGoogle => 'Se connecter avec Google';
 
   @override
   String pastedFrom(String src, String date) =>
