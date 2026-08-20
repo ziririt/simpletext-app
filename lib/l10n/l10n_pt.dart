@@ -593,6 +593,12 @@ class L10nPt extends L10n {
 
   @override
   String get aiKeyNotSynced => 'Suas notas sincronizam entre todos os seus aparelhos pelo armazém escolhido. Sua chave de API não: informe-a em cada aparelho.';
+  @override
+  String get aiKeySyncTitle => 'Levar também a chave de API entre aparelhos';
+  @override
+  String get aiKeySyncSubApple => 'Viaja pelo Chaveiro do iCloud, um caminho diferente do das suas notas. Só os seus aparelhos têm a chave, então nem a Apple consegue lê-la.';
+  @override
+  String get aiKeySyncSubGdrive => 'Fica em texto puro na pasta privada deste app no Google Drive. O Google pode ler esse arquivo, e uma chave vazada pode gerar custos.';
 
   @override
   String get autoTagTitle => 'Marcar automaticamente';

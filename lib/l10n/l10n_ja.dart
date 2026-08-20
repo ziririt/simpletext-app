@@ -592,6 +592,12 @@ class L10nJa extends L10n {
 
   @override
   String get aiKeyNotSynced => 'メモは選んだ保管先で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
+  @override
+  String get aiKeySyncTitle => 'API キーも端末間で持ち運ぶ';
+  @override
+  String get aiKeySyncSubApple => 'iCloud キーチェーンで運びます。メモとは別の経路で、鍵はご自分の端末だけが持つため Apple もその値を読めません。';
+  @override
+  String get aiKeySyncSubGdrive => 'Google ドライブのこのアプリ専用フォルダにそのまま保存します。Google はそのファイルを読むことができ、キーが漏れると料金が発生する恐れがあります。';
 
   @override
   String get autoTagTitle => 'タグを自動で付ける';

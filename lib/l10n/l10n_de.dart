@@ -594,6 +594,12 @@ class L10nDe extends L10n {
 
   @override
   String get aiKeyNotSynced => 'Ihre Notizen werden über den gewählten Speicher auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
+  @override
+  String get aiKeySyncTitle => 'API-Schlüssel zwischen Geräten mitnehmen';
+  @override
+  String get aiKeySyncSubApple => 'Er reist über den iCloud-Schlüsselbund — ein anderer Weg als der Ihrer Notizen. Nur Ihre Geräte besitzen den Schlüssel, nicht einmal Apple kann ihn lesen.';
+  @override
+  String get aiKeySyncSubGdrive => 'Er liegt im Klartext im privaten Ordner dieser App auf Google Drive. Google kann diese Datei lesen, und ein abhandengekommener Schlüssel kann Geld kosten.';
 
   @override
   String get autoTagTitle => 'Automatisch verschlagworten';

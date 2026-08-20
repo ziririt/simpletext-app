@@ -24,6 +24,8 @@ library;
 
 import 'dart:math';
 
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class KeyVault {
@@ -34,14 +36,62 @@ class KeyVault {
   static const String _kBackend = 'syncBackend';
   static const FlutterSecureStorage _s = FlutterSecureStorage();
 
+  /// 애플 기기인가. 키체인의 '함께 다니는 칸'은 여기에만 있다.
+  ///
+  /// kIsWeb 을 먼저 보는 까닭: 웹에서 defaultTargetPlatform 은 브라우저를
+  /// 돌리는 컴퓨터의 운영체제를 답한다. 맥에서 크롬을 열면 macOS 라고
+  /// 하는데, 그 자리에 키체인은 없다.
+  static bool get _apple =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.macOS);
+
+  /// 아이클라우드 키체인을 타는 칸.
+  ///
+  /// 2026-08-20 소유자 지시 — "최소한 아이클라우드는 하자."
+  ///
+  /// 이 길이 iCloud Drive(메모가 가는 길)보다 나은 까닭은 **종단간
+  /// 암호화**다. 열쇠를 사용자의 기기들만 갖는다. 애플 서버에는 열지
+  /// 못하는 덩어리만 지나간다. 그래서 '애플을 믿는다'가 아니라 '애플이
+  /// 볼 수 있는 구조가 아니다'가 된다.
+  ///
+  /// accessibility 는 기본값(unlocked)을 그대로 둔다. *_this_device 로
+  /// 두면 새 기기로 안 넘어가는데, 그러면 켜 놓고도 안 옮겨진다.
+  static const IOSOptions _roamIos = IOSOptions(synchronizable: true);
+  static const MacOsOptions _roamMac = MacOsOptions(synchronizable: true);
+  static const IOSOptions _hereIos = IOSOptions();
+  static const MacOsOptions _hereMac = MacOsOptions();
+
   /// 없으면 빈 문자열. 키체인이 없는 자리(웹 등)에서도 앱은 떠야 하므로
   /// 실패를 밖으로 던지지 않는다 — 키가 없는 것과 같이 다룬다.
+  /// 두 칸을 다 본다. 함께 다니는 칸이 먼저다.
+  ///
+  /// 키체인은 synchronizable 값이 **찾는 조건의 일부**다. true 로 넣은
+  /// 것은 false 로 찾으면 안 나온다 — 같은 이름인데도 없는 것처럼 보인다.
+  /// 그래서 스위치를 켜고 끌 때 키가 사라진 것처럼 보이는 사고가 난다.
+  ///
+  /// 읽을 때 두 칸을 다 보면 그 사고가 원리적으로 안 난다. 스위치가
+  /// 지금 어느 쪽인지 **읽는 쪽은 알 필요가 없다** — 아는 곳이 늘면
+  /// 어긋날 곳도 는다.
   static Future<String> read() async {
-    try {
-      return (await _s.read(key: _k)) ?? '';
-    } catch (_) {
-      return '';
+    if (!_apple) {
+      try {
+        return (await _s.read(key: _k)) ?? '';
+      } catch (_) {
+        return '';
+      }
     }
+    for (final roam in const [true, false]) {
+      try {
+        final got = await _s.read(
+          key: _k,
+          iOptions: roam ? _roamIos : _hereIos,
+          mOptions: roam ? _roamMac : _hereMac,
+        );
+        if (got != null && got.isNotEmpty) return got;
+      } catch (_) {}
+    }
+    return '';
   }
 
   /// 이 기기의 이름표. **앱을 지웠다 깔아도 같은 값이 나온다.**
@@ -113,13 +163,48 @@ class KeyVault {
 
   /// 빈 값을 쓰면 지운다. 빈 문자열을 남겨 두면 '지운 것'과 '안 넣은 것'이
   /// 구별되지 않는다.
-  static Future<void> write(String v) async {
+  /// 어느 칸에 쓸지는 **부르는 쪽이 정한다.**
+  ///
+  /// 창고가 스스로 설정을 들여다보게 만들 수도 있었다. 그러면 설정을
+  /// 아는 곳이 두 군데가 된다 — 오늘 열한 번 겪은 그 병이다.
+  /// 창고는 시키는 대로만 한다.
+  ///
+  /// 쓰면서 **반대쪽 칸을 지운다.** 두 칸에 다 남아 있으면 어느 것이
+  /// 참인지 알 수 없고, 그런 물건은 반드시 어긋난 뒤에야 발견된다.
+  ///
+  /// 애플이 아닌 자리에서는 칸이 하나뿐이다. 거기서 '반대쪽을 지운다'를
+  /// 그대로 하면 **방금 쓴 것을 지운다** — 안드로이드에서 키가
+  /// 사라지는 사고가 정확히 그 모양이다.
+  static Future<void> write(String v, {bool roam = false}) async {
+    final gone = v.trim().isEmpty;
+    if (!_apple) {
+      try {
+        if (gone) {
+          await _s.delete(key: _k);
+        } else {
+          await _s.write(key: _k, value: v);
+        }
+      } catch (_) {}
+      return;
+    }
     try {
-      if (v.trim().isEmpty) {
-        await _s.delete(key: _k);
-      } else {
-        await _s.write(key: _k, value: v);
+      if (gone) {
+        // 지울 때는 두 칸을 다 지운다.
+        await _s.delete(key: _k, iOptions: _roamIos, mOptions: _roamMac);
+        await _s.delete(key: _k, iOptions: _hereIos, mOptions: _hereMac);
+        return;
       }
+      await _s.write(
+        key: _k,
+        value: v,
+        iOptions: roam ? _roamIos : _hereIos,
+        mOptions: roam ? _roamMac : _hereMac,
+      );
+      await _s.delete(
+        key: _k,
+        iOptions: roam ? _hereIos : _roamIos,
+        mOptions: roam ? _hereMac : _roamMac,
+      );
     } catch (_) {}
   }
 }

@@ -375,6 +375,16 @@ abstract class L10n {
   String syncStateSyncing(String where);
   String get aiKeyNotSynced;
 
+  /// 2026-08-20 소유자 지시 — "api키 동기화 : 최소한 아이클라우드는
+  /// 하자. 구글 드라이브도 하자."
+  ///
+  /// 설명을 둘로 나눈 까닭: 두 길은 성질이 다르다. 애플은 종단간
+  /// 암호화라 애플도 못 읽고, 구글은 평문이라 구글이 읽는다. 같은
+  /// 문장으로 덮으면 둘 중 하나는 거짓말이 된다.
+  String get aiKeySyncTitle;
+  String get aiKeySyncSubApple;
+  String get aiKeySyncSubGdrive;
+
   /// 조용한 자동 태그 (2026-08-18).
   String get autoTagTitle;
   String get autoTagSub;
@@ -849,6 +859,9 @@ abstract class L10n {
         'syncStateOffGdrive': syncStateOffGdrive,
         'syncScopePlatformGdrive': syncScopePlatformGdrive,
         'aiKeyNotSynced': aiKeyNotSynced,
+        'aiKeySyncTitle': aiKeySyncTitle,
+        'aiKeySyncSubApple': aiKeySyncSubApple,
+        'aiKeySyncSubGdrive': aiKeySyncSubGdrive,
         'autoTagTitle': autoTagTitle,
         'autoTagSub': autoTagSub,
         'syncStateSignedOut': syncStateSignedOut,

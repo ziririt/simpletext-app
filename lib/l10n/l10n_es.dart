@@ -593,6 +593,12 @@ class L10nEs extends L10n {
 
   @override
   String get aiKeyNotSynced => 'Tus notas se sincronizan en todos tus dispositivos mediante el almacén que elijas. Tu clave API no: introdúcela en cada dispositivo.';
+  @override
+  String get aiKeySyncTitle => 'Llevar también la clave API entre dispositivos';
+  @override
+  String get aiKeySyncSubApple => 'Viaja por el Llavero de iCloud, una vía distinta a la de tus notas. Solo tus dispositivos tienen la llave, así que ni Apple puede leerla.';
+  @override
+  String get aiKeySyncSubGdrive => 'Se guarda en texto plano en la carpeta privada de esta app en Google Drive. Google puede leer ese archivo y una clave filtrada puede costarte dinero.';
 
   @override
   String get autoTagTitle => 'Etiquetar automáticamente';

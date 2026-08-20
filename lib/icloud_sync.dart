@@ -435,6 +435,7 @@ class ICloudSync {
     }
 
     await _syncRules(root);
+    await _syncAiKey(root);
   }
 
   // ------------------------------------------------------ 규칙·체험 맞추기
@@ -714,6 +715,83 @@ class ICloudSync {
           await store.persistSettingsLocalOnly();
         }
         await _t.write(f, {..._prefsBody(store), 'stamp': s.prefsStamp});
+      case RulesMove.nothing:
+        break;
+    }
+  }
+
+  /// AI 키를 구글 드라이브의 우리 칸에 맞춘다.
+  ///
+  /// 2026-08-20 소유자 지시 — "구글 드라이브도 하자."
+  ///
+  /// **애플에서는 아무 일도 안 한다.** 그쪽은 키체인이 나르는데(core/
+  /// key_vault.dart) 그 길은 종단간 암호화라 애플조차 못 읽는다. 이미
+  /// 더 나은 길이 있는데 평문 파일을 하나 더 만들면 위험만 는다.
+  ///
+  /// 끄면 올려 뒀던 파일을 **치운다.** 껐는데도 남의 서버에 그대로
+  /// 있으면 그 스위치는 거짓말이다. 한 번만 치우면 되므로 도장(stamp)을
+  /// 0으로 되돌려 두 번 안 하게 한다.
+  Future<void> _syncAiKey(String root) async {
+    if (_viaApple) return;
+    final store = Store.instance;
+    final s = store.settings;
+    final dir = '\$root/secret';
+    final f = '\$dir/ai.json';
+
+    if (!s.aiKeySync) {
+      if (s.aiKeyStamp == 0) return;
+      await _t.remove(f);
+      s.aiKeyStamp = 0;
+      s.aiKeySig = '';
+      await store.persistSettingsLocalOnly();
+      return;
+    }
+
+    if (!await _t.ensureDir(dir)) return;
+
+    final localBody = <String, dynamic>{'key': s.aiKey};
+    final localSig = _sig(localBody);
+    final firstRun = s.aiKeyStamp == 0;
+
+    if (!firstRun && localSig != s.aiKeySig) {
+      s.aiKeySig = localSig;
+      s.aiKeyStamp = DateTime.now().millisecondsSinceEpoch;
+      await store.persistSettingsLocalOnly();
+    }
+
+    final got = await _t.read(f);
+    if (got.state == ReadState.notReady) return;
+    final remote = got.body;
+    final remoteStamp = (remote?['stamp'] as int?) ?? -1;
+
+    switch (rulesMove(
+      firstRun: firstRun,
+      hasRemote: remote != null,
+      remoteStamp: remoteStamp,
+      localStamp: s.aiKeyStamp,
+    )) {
+      case RulesMove.takeRemote:
+        final k = remote!['key'];
+        // 빈 값을 받아 멀쩡한 키를 지우지 않는다. 옛 판이 쓴 파일이나
+        // 쓰다 만 파일이 그렇게 생겼다.
+        if (k is! String || k.trim().isEmpty) return;
+        s.aiKey = k;
+        s.aiKeyStamp = remoteStamp > 0
+            ? remoteStamp
+            : DateTime.now().millisecondsSinceEpoch;
+        s.aiKeySig = _sig(<String, dynamic>{'key': s.aiKey});
+        await store.persistSettingsLocalOnly();
+        store.bump();
+      case RulesMove.pushLocal:
+        // 아직 키를 안 넣은 기기가 빈 값을 올려 다른 기기 것을 지우는
+        // 일이 없게 한다. 올릴 것이 없으면 안 올린다.
+        if (s.aiKey.trim().isEmpty) break;
+        if (firstRun) {
+          s.aiKeyStamp = DateTime.now().millisecondsSinceEpoch;
+          s.aiKeySig = localSig;
+          await store.persistSettingsLocalOnly();
+        }
+        await _t.write(f, {'key': s.aiKey, 'stamp': s.aiKeyStamp});
       case RulesMove.nothing:
         break;
     }

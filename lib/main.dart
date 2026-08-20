@@ -1234,6 +1234,16 @@ class AppSettings {
   // 이 앱의 핵심이 표라서 기본값을 켜는 쪽이 맞다(CotEditor도 등폭이 기본).
   bool monoEditor = true;
 
+  /// AI 키를 기기끼리 옮길지. 기본은 끔.
+  ///
+  /// 2026-08-20 소유자 지시로 길을 냈다. 기본값을 꺼 두는 까닭은
+  /// 소유자를 못 믿어서가 아니라, 이 앱을 쓸 **다른 사람의 키까지**
+  /// 우리가 대신 정해서 남의 서버에 올릴 수는 없기 때문이다.
+  /// 켜는 데는 기기마다 한 번이면 된다.
+  bool aiKeySync = false;
+  int aiKeyStamp = 0;
+  String aiKeySig = '';
+
   /// 정리 결과를 먼저 보여 줄지.
   ///
   /// 2026-08-17 소유자 지적 — "정리하기 하면 왜 미리보기를 거치나? 이유가
@@ -1419,6 +1429,9 @@ class AppSettings {
         'prefsStamp': prefsStamp,
         'prefsSig': prefsSig,
         'aiKey': aiKey,
+        'aiKeySync': aiKeySync,
+        'aiKeyStamp': aiKeyStamp,
+        'aiKeySig': aiKeySig,
         'aiProvider': aiProvider,
         'aiModel': aiModel,
         'aiModels': aiModels,
@@ -1528,6 +1541,9 @@ class AppSettings {
     s.prefsStamp = (j['prefsStamp'] ?? s.prefsStamp) as int;
     s.prefsSig = (j['prefsSig'] ?? s.prefsSig) as String;
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;
+    s.aiKeySync = (j['aiKeySync'] ?? s.aiKeySync) as bool;
+    s.aiKeyStamp = (j['aiKeyStamp'] ?? s.aiKeyStamp) as int;
+    s.aiKeySig = (j['aiKeySig'] ?? s.aiKeySig) as String;
     s.aiProvider = (j['aiProvider'] ?? s.aiProvider) as String;
     s.aiModel = (j['aiModel'] ?? s.aiModel) as String;
     s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
@@ -1651,7 +1667,7 @@ class Store extends ChangeNotifier {
     if (fromVault.isNotEmpty) {
       settings.aiKey = fromVault;
     } else if (fromPrefs.isNotEmpty) {
-      await KeyVault.write(fromPrefs);
+      await KeyVault.write(fromPrefs, roam: settings.aiKeySync);
     }
     if (fromPrefs.isNotEmpty) {
       await persistSettingsLocalOnly(); // 옛 사본 지우기
@@ -1695,7 +1711,9 @@ class Store extends ChangeNotifier {
     // 앱을 지웠다 깔아도 남아야 한다.
     final m = settings.toJson()..remove('aiKey');
     await prefs.setString(_settingsKey, jsonEncode(m));
-    await KeyVault.write(settings.aiKey);
+    // 어느 칸에 둘지는 여기 한 곳에서만 정한다. 설정을 저장하는 길이
+    // 여럿이어도 이 줄을 지나므로 빠뜨릴 자리가 없다.
+    await KeyVault.write(settings.aiKey, roam: settings.aiKeySync);
     // 창고 고르기도 같이 남긴다. 여기 한 자리에서 쓰므로, 설정을 저장하는
     // 길이 여럿이어도 빠뜨릴 자리가 없다.
     await KeyVault.writeBackend(settings.syncBackend);
@@ -10608,7 +10626,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 2026-08-16 소유자 요청 — 메모는 동기화되는데 키는 안 된다는 것을
           // 여기서 분명히 말해 준다. 말 안 하면 사용자는 다른 기기에서 키가
           // 비어 있는 것을 '버그'로 읽는다. 실제로는 우리가 일부러 안 보낸다.
-          if (syncVisible)
+          if (syncVisible && !s.aiKeySync)
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 0, 16, 8),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -10626,6 +10644,22 @@ class _SettingsScreenState extends State<SettingsScreen>
             // 다시 뽑는다. 남의 API 요금을 쓰는 일이라 끄는 길을 둔다.
             _switchRow(l.autoTagTitle, l.autoTagSub, s.autoTagAi,
                 (v) => s.autoTagAi = v),
+            // 2026-08-20 소유자 지시 — "api키 동기화 : 최소한 아이클라우드는
+            // 하자. 구글 드라이브도 하자."
+            //
+            // 설명이 창고에 따라 달라진다. 두 길은 성질이 다르기 때문이다 —
+            // 애플은 애플도 못 읽고, 구글은 구글이 읽는다. 한 문장으로
+            // 덮으면 둘 중 하나는 거짓말이 된다.
+            if (syncVisible) ...[
+              _sep(),
+              _switchRow(
+                  l.aiKeySyncTitle,
+                  s.syncBackend == 'gdrive'
+                      ? l.aiKeySyncSubGdrive
+                      : l.aiKeySyncSubApple,
+                  s.aiKeySync,
+                  (v) => s.aiKeySync = v),
+            ],
             _sep(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
