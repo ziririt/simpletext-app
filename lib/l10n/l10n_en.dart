@@ -594,11 +594,11 @@ class L10nEn extends L10n {
   @override
   String get aiKeyNotSynced => 'Your notes sync to all your devices through the store you chose. Your API key does not — enter it separately on each device.';
   @override
-  String get aiKeySyncTitle => 'Carry the API key between devices';
+  String get aiKeySyncTitle => 'Sync the API key too';
   @override
   String get aiKeySyncSubApple => 'It travels through the iCloud Keychain — a different road from your notes. Only your devices hold the key, so not even Apple can read it.';
   @override
-  String get aiKeySyncSubGdrive => 'It is stored as plain text in the private folder of this app on Google Drive. Google can read that file, and a leaked key can cost you money.';
+  String get aiKeySyncSubGdrive => 'Once it is on Google Drive, keeping the API key safe is your own responsibility.';
 
   @override
   String get autoTagTitle => 'Tag notes automatically';

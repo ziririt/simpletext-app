@@ -595,11 +595,11 @@ class L10nFr extends L10n {
   @override
   String get aiKeyNotSynced => 'Vos notes sont synchronisées sur tous vos appareils via le stockage choisi. Pas votre clé API — saisissez-la sur chaque appareil.';
   @override
-  String get aiKeySyncTitle => 'Emporter aussi la clé API entre les appareils';
+  String get aiKeySyncTitle => 'Synchroniser aussi la clé API';
   @override
   String get aiKeySyncSubApple => 'Elle passe par le trousseau iCloud, une voie différente de celle de vos notes. Seuls vos appareils détiennent la clé : même Apple ne peut pas la lire.';
   @override
-  String get aiKeySyncSubGdrive => 'Elle est stockée en clair dans le dossier privé de cette app sur Google Drive. Google peut lire ce fichier, et une clé divulguée peut vous coûter cher.';
+  String get aiKeySyncSubGdrive => 'Une fois sur Google Drive, la sécurité de la clé API relève de chacun.';
 
   @override
   String get autoTagTitle => 'Étiqueter automatiquement';

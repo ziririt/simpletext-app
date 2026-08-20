@@ -593,11 +593,11 @@ class L10nKo extends L10n {
   @override
   String get aiKeyNotSynced => '메모는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
   @override
-  String get aiKeySyncTitle => 'API 키도 기기끼리 옮기기';
+  String get aiKeySyncTitle => 'API키도 동기화';
   @override
   String get aiKeySyncSubApple => 'iCloud 키체인으로 옮깁니다. 메모가 가는 길과 다른 길이고, 열쇠를 내 기기만 가지므로 애플도 그 값을 읽지 못합니다.';
   @override
-  String get aiKeySyncSubGdrive => '구글 드라이브의 이 앱 전용 칸에 그대로 올립니다. 구글은 그 파일을 읽을 수 있고, 키가 새면 요금이 나갈 수 있습니다.';
+  String get aiKeySyncSubGdrive => '구글 드라이브에 있는 API키 보안은 이용자의 몫입니다.';
 
   @override
   String get autoTagTitle => '태그 자동으로 붙이기';

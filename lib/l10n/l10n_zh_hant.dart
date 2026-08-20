@@ -593,11 +593,11 @@ class L10nZhHant extends L10n {
   @override
   String get aiKeyNotSynced => '備忘會透過所選的存放處同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
   @override
-  String get aiKeySyncTitle => '讓 API 金鑰也在裝置間同步';
+  String get aiKeySyncTitle => 'API 金鑰也同步';
   @override
   String get aiKeySyncSubApple => '透過 iCloud 鑰匙圈傳輸，與備忘的通道不同。只有您的裝置持有金鑰，因此連 Apple 也無法讀取。';
   @override
-  String get aiKeySyncSubGdrive => '以明文儲存在 Google 雲端硬碟的本應用專屬資料夾中。Google 可以讀取該檔案，金鑰一旦外洩可能產生費用。';
+  String get aiKeySyncSubGdrive => '存放在 Google 雲端硬碟上的 API 金鑰，安全由各自負責。';
 
   @override
   String get autoTagTitle => '自動加入標籤';

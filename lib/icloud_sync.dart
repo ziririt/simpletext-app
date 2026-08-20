@@ -627,6 +627,19 @@ class ICloudSync {
       'bulletIndent': s.bulletIndent,
       'removeCitations': s.removeCitations,
       'favPrompts': s.favPrompts,
+      // 2026-08-20 소유자 신고 — "'API키도 기기끼리 옮기기'를 켰는데도
+      // 안드로이드폰에서는 동기화 안 된 듯."
+      //
+      // 이 스위치를 '이 기기만의 값'으로 뒀던 것이 잘못이다. 소유자는
+      // "동기화하자"고 했지 "기기마다 각각 켜겠다"고 한 적이 없다.
+      //
+      // 여기(규칙)로 옮기는 까닭: 규칙은 '어느 기기에서 하든 같은 결과가
+      // 나와야 하는 것'이다. 키를 창고에 둘지 말지는 기기의 취향이 아니라
+      // **사람의 결정**이라 이쪽이 맞다.
+      //
+      // 끄는 것도 함께 건너간다. 한 기기에서 껐다는 것은 '내 키를 더는
+      // 드라이브에 두지 않겠다'는 뜻이지 '이 기기만 빠지겠다'가 아니다.
+      'aiKeySync': s.aiKeySync,
       // 2026-08-17 — 만들어 두었지만 아직 메모가 없는 폴더. 메모가 든
       // 폴더는 메모와 함께 건너가지만, 빈 폴더는 여기 없으면 다른 기기에
       // 안 나타난다.
@@ -854,6 +867,9 @@ class ICloudSync {
     s.headingPadBelow = pick('headingPadBelow', s.headingPadBelow);
     s.bulletIndent = pick('bulletIndent', s.bulletIndent);
     s.removeCitations = pick('removeCitations', s.removeCitations);
+    // 2026-08-20 — 키를 창고에 둘지 말지는 기기의 취향이 아니라
+    // 사람의 결정이다. 그래서 규칙과 함께 건너간다.
+    s.aiKeySync = pick('aiKeySync', s.aiKeySync);
     final fd = j['folders'];
     if (fd is List) {
       s.folders = fd.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
