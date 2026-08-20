@@ -835,7 +835,19 @@ class SimpleTextApp extends StatelessWidget {
               b == Brightness.dark ? Brightness.dark : Brightness.light,
           systemNavigationBarColor: Colors.black,
           systemNavigationBarDividerColor: Colors.black,
-          systemNavigationBarIconBrightness: Brightness.light,
+          // 2026-08-20 소유자 신고 — "안드로이드 물리 소프트키가 너무
+          // 투명하다. 본문과 겹쳐져서 보이지 않는 문제."
+          //
+          // 여기 Brightness.light 가 박혀 있었다. 위에 적어 둔 대로 막대를
+          // 검정으로 칠할 수 있던 시절에는 맞는 값이었다. 그런데 안드로이드
+          // 15부터 색이 무시되면서 막대가 투명해졌고, 그러자 **밝은 앱 배경
+          // 위에 흰 아이콘**이 되었다. 안 보이는 게 당연하다.
+          //
+          // 색을 못 정하게 됐으면 아이콘 밝기는 우리가 아는 것을 따라야
+          // 한다 — 그 자리 뒤에 있는 것은 우리 배경이다. 바로 위 상태
+          // 막대가 이미 그렇게 하고 있었는데, 아래쪽만 옛 값에 남아 있었다.
+          systemNavigationBarIconBrightness:
+              b == Brightness.dark ? Brightness.light : Brightness.dark,
           systemNavigationBarContrastEnforced: false,
         ),
       ),
@@ -2455,6 +2467,19 @@ class _DustPainter extends CustomPainter {
   bool shouldRepaint(_DustPainter old) => old.t != t || old.c != c;
 }
 
+/// 스크롤 화면의 아래 여백 — 시스템 막대(안드로이드 물리키 자리)만큼 더.
+///
+/// 2026-08-20 소유자 신고 — 설정 화면 맨 아래 글자가 물리키와 겹쳐 안 읽힌다.
+///
+/// 안드로이드 15부터는 앱이 화면 가장자리까지 그리는 것이 강제라, 우리가
+/// 정한 막대 색이 무시된다. **색으로 가리려던 길이 막혔으면 남은 길은
+/// 하나뿐이다 — 그 자리에 글자를 안 두는 것.**
+///
+/// SafeArea 안이면 이미 깎여 있어 0이 더해진다. 밖이면 실제 값이 더해진다.
+/// 어느 쪽이든 맞으므로 부르는 자리마다 따지지 않아도 된다.
+EdgeInsets scrollPad(BuildContext c, {double top = 0, double bottom = 40}) =>
+    EdgeInsets.only(top: top, bottom: bottom + MediaQuery.paddingOf(c).bottom);
+
 /// ---------------- 홈 화면 ----------------
 /// 목록 행의 "카드 안쪽 왼쪽 여백".
 ///
@@ -2661,7 +2686,7 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
       body: narrowBody(
         context,
         ListView(
-          padding: const EdgeInsets.only(top: 6, bottom: 40),
+          padding: scrollPad(context, top: 6),
           children: [
             // ① 어디에 둘까
             _secHeader(l.syncWhereTitle),
@@ -8508,7 +8533,7 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
               ),
               Expanded(
                 child: ReorderableListView.builder(
-                  padding: const EdgeInsets.only(bottom: 40),
+                  padding: scrollPad(context),
                   itemCount: names.length,
                   onReorder: (from, to) async {
                     HapticFeedback.selectionClick();
@@ -9567,7 +9592,7 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
       ),
       body: ListView(
-        padding: const EdgeInsets.only(top: 6, bottom: 40),
+        padding: scrollPad(context, top: 6),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 0, 16, 12),
@@ -10810,7 +10835,7 @@ class _TypographyScreenState extends State<TypographyScreen> {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
           child: ListView(
-            padding: const EdgeInsets.only(top: 14, bottom: 40),
+            padding: scrollPad(context, top: 14),
             children: [
               _card([_block(l, s)]),
               const SizedBox(height: 14),
@@ -10970,7 +10995,7 @@ class _RulesScreenState extends State<RulesScreen> {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
           child: ListView(
-            padding: const EdgeInsets.only(bottom: 40),
+            padding: scrollPad(context),
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
