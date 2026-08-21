@@ -26,6 +26,8 @@ MergeResult<_N> run({
   List<Map<String, dynamic>> remoteTombs = const [],
   int nowMs = 2000000,
   int keepDays = 180,
+  String Function(_N)? bodyOf,
+  int syncedBeforeMs = 0,
 }) =>
     mergeNotes<_N>(
       local: local,
@@ -36,6 +38,8 @@ MergeResult<_N> run({
       stampOf: (n) => n.at,
       nowMs: nowMs,
       keepDays: keepDays,
+      bodyOf: bodyOf,
+      syncedBeforeMs: syncedBeforeMs,
     );
 
 Map<String, _N> byId(List<_N> ns) => {for (final n in ns) n.id: n};
@@ -284,6 +288,51 @@ void main() {
         remote: const [_N('seed-1755400000000', 700, '시드')],
       );
       expect(r.notes.length, 2);
+    });
+  });
+
+  group('지는 판 백업 (2026-08-21 자정 사건)', () {
+    test('구름에 못 올라간 수정이 지면 백업 목록에 담긴다', () {
+      final r = run(
+        local: [const _N('a', 900, '여섯 줄')],
+        remote: [const _N('a', 950, '다섯 줄')],
+        bodyOf: (n) => n.text,
+        syncedBeforeMs: 800,
+      );
+      expect(r.notes.single.text, '다섯 줄');
+      expect(r.backups.single.text, '여섯 줄');
+    });
+
+    test('이미 맞춘 적 있는 옛 판이 지는 것은 정상 배달 — 백업하지 않는다', () {
+      final r = run(
+        local: [const _N('a', 700, '옛것')],
+        remote: [const _N('a', 950, '새것')],
+        bodyOf: (n) => n.text,
+        syncedBeforeMs: 800,
+      );
+      expect(r.backups, isEmpty);
+    });
+
+    test('알맹이가 같으면 도장만 진 것 — 백업하지 않는다', () {
+      final r = run(
+        local: [const _N('a', 900, '같다')],
+        remote: [const _N('a', 950, '같다')],
+        bodyOf: (n) => n.text,
+        syncedBeforeMs: 800,
+      );
+      expect(r.backups, isEmpty);
+    });
+
+    test('남의 툼스톤에 밀려 지워질 때도 못 올라간 수정은 백업한다', () {
+      final r = run(
+        local: [const _N('a', 900, '쓰던 글')],
+        remoteTombs: [
+          {'id': 'a', 'deletedAt': 950}
+        ],
+        syncedBeforeMs: 800,
+      );
+      expect(r.notes, isEmpty);
+      expect(r.backups.single.text, '쓰던 글');
     });
   });
 }

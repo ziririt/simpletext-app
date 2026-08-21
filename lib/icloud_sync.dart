@@ -35,6 +35,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
@@ -130,6 +131,32 @@ class ICloudSync {
   /// 마지막으로 맞춘 시각(밀리초). 0이면 아직 한 번도 못 맞췄다.
   final ValueNotifier<int> lastSyncMs = ValueNotifier<int>(0);
 
+  /// 마지막으로 **끝까지** 맞춘 시각 — 기기에 남는다(앱을 껐다 켜도).
+  ///
+  /// 병합에서 "지는 로컬의 이 수정이 구름에 올라간 적 있는가"를 가르는
+  /// 기준이다. 이 시각보다 새 도장의 로컬이 지면 휴지통에 백업한다.
+  /// 값을 아직 못 읽었으면 0 — 백업이 더 후해질 뿐, 잃는 쪽으로는
+  /// 절대 틀리지 않는다.
+  int _syncedUpTo = 0;
+  bool _syncedUpToLoaded = false;
+
+  Future<void> _loadSyncedUpTo() async {
+    if (_syncedUpToLoaded) return;
+    _syncedUpToLoaded = true;
+    try {
+      final p = await SharedPreferences.getInstance();
+      _syncedUpTo = p.getInt('syncedUpTo') ?? 0;
+    } catch (_) {}
+  }
+
+  Future<void> _saveSyncedUpTo(int ms) async {
+    _syncedUpTo = ms;
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setInt('syncedUpTo', ms);
+    } catch (_) {}
+  }
+
   /// 사람이 설정에서 '동기화 안 함'을 골랐는가.
   ///
   /// 2026-08-19 — 창고 고르기(설정 → 동기화)의 뒷면이다. 여기 **한 곳만**
@@ -177,6 +204,7 @@ class ICloudSync {
 
   /// 앱이 켜질 때 한 번 부른다.
   Future<void> boot() async {
+    await _loadSyncedUpTo();
     if (!active) {
       state.value = SyncState.unsupported;
       return;
@@ -372,6 +400,7 @@ class ICloudSync {
       // 위에 적어 놓고도, 정작 그 말을 '꺼짐'으로 했다.
       unawaited(work.then((_) {
         lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
+        unawaited(_saveSyncedUpTo(lastSyncMs.value));
         state.value = SyncState.ok;
       }, onError: (Object _) {
         state.value = SyncState.off;
@@ -522,9 +551,16 @@ class ICloudSync {
       idOf: (n) => n.id,
       stampOf: (n) => n.updatedAt,
       nowMs: now,
+      bodyOf: (n) => n.body,
+      syncedBeforeMs: _syncedUpTo,
     );
 
     // --- 기기에 반영 ---
+    // 지는 판에 아직 구름에 못 올라간 수정이 있었다면 휴지통에 백업한다.
+    // 글이 소리 없이 사라지는 일만은 없어야 한다 — 휴지통은 신뢰다.
+    for (final b in merged.backups) {
+      store.trash.insert(0, {'note': b.toJson(), 'deletedAt': now});
+    }
     if (!merged.localUnchanged) {
       store.notes = merged.notes;
       store.tombstones = merged.tombstones;

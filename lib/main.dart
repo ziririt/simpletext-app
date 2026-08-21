@@ -270,6 +270,20 @@ bool get isApplePlatform =>
     (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS);
 
+/// 아이폰·아이패드에서 "밖에서 가져온 API 키로 기능을 여는 장치"를
+/// 보여도 되는가.
+///
+/// 2026-08-21 앱스토어 거절(지침 3.1.1) — 키 입력칸·키 안내문·AI 단추가
+/// 그 '장치'다. 애플 판에서는 인앱 구매로 살 수 없는 열쇠를 앱 안에서
+/// 받으면 안 된다. 그래서 아이폰·아이패드에서는 키가 이미 있을 때만
+/// (다른 기기에서 넣어 동기화로 들어온 경우) AI 자리를 보인다.
+/// 맥 앱스토어에 낼 때도 같은 지침이 적용되므로 iOS만 따로 보지 않고
+/// 애플 모바일 판 전체(iOS = 아이폰·아이패드)를 본다.
+bool aiUiVisible() =>
+    kIsWeb ||
+    defaultTargetPlatform != TargetPlatform.iOS ||
+    Store.instance.settings.aiKey.trim().isNotEmpty;
+
 /// 이 기기가 자기 잠금을 부르는 이름 — 'apple' · 'android' · 'windows'.
 ///
 /// 2026-08-19 소유자 신고(안드로이드 폰) — "안드로이드폰에서는 터치아이디
@@ -7071,7 +7085,10 @@ static const int kTagScanChars = 3000;
                         child: Text(l.unknownPrefix(unknown.join(' ')),
                             style: TextStyle(color: context.c.sub, fontSize: 12.5)),
                       ),
-                    if (!aiBusy && unknown.isNotEmpty && store.settings.aiKey.isEmpty)
+                    if (!aiBusy &&
+                        unknown.isNotEmpty &&
+                        store.settings.aiKey.isEmpty &&
+                        aiUiVisible())
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(l.aiKeyPromo,
@@ -7880,6 +7897,8 @@ static const int kTagScanChars = 3000;
                   const Spacer(),
                   // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
                   // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
+                  // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 숨긴다.
+                  if (aiUiVisible())
                   TextButton.icon(
                     onPressed: _tagAiBusy ? null : _autoTags,
                     icon: _tagAiBusy
@@ -9511,35 +9530,45 @@ class _SyncNapBannerState extends State<SyncNapBanner> {
           final l = L10n.of(context);
           final c = context.c;
           final wake = need == SyncBanner.wake;
+          // 2026-08-21 소유자 지시 — "확실히 눈에 띄어야 하니까. 아주
+          // 눈에 띄게 해줘." 회색 띠는 안내가 아니라 배경이었다. 브랜드
+          // 색을 통째로 깔고 글씨를 키운다. 정상일 땐 여전히 0px라서
+          // 요란해도 되는 자리다 — 이 띠가 보이는 날은 눌러야 하는 날이다.
+          final dark = Theme.of(context).brightness == Brightness.dark;
+          final ink = dark ? Colors.black : Colors.white;
           return Material(
-            color: c.panel,
+            color: c.accent,
             child: InkWell(
               onTap: _busy ? null : (wake ? _wake : _sheet),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+                padding: const EdgeInsets.fromLTRB(16, 13, 14, 13),
                 child: Row(children: [
                   Icon(
                     wake
                         ? Icons.lock_clock_outlined
                         : Icons.cloud_off_outlined,
-                    size: 18,
-                    color: c.accent,
+                    size: 22,
+                    color: ink,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       wake ? l.syncStateExpiredGdrive : l.syncStateOffGdrive,
                       style: TextStyle(
-                          fontSize: 13, height: 1.3, color: c.guideInk),
+                          fontSize: 14.5,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                          color: ink),
                     ),
                   ),
                   if (_busy)
-                    const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                    SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: ink))
                   else
-                    Icon(Icons.chevron_right, size: 18, color: c.sub),
+                    Icon(Icons.chevron_right, size: 22, color: ink),
                 ]),
               ),
             ),
@@ -11028,6 +11057,9 @@ class _SettingsScreenState extends State<SettingsScreen>
               },
             ),
           ]),
+          // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 이 구역
+          // 전체(키 입력·안내·자동 태그 스위치·모델 고르기)가 없다.
+          if (aiUiVisible()) ...[
           KeyedSubtree(
               key: _anchors['ai'], child: _secHeader(l.aiSectionTitle)),
           Padding(
@@ -11294,6 +11326,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 겪은 한국 사용자는 더 그렇다. 그건 기능이 아니라 약속이다.
           // 약속은 그대로 두고 자리만 옮겼다.
 
+          ],
           // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로
           // 느끼게 하는 여섯 원인 중 하나로 나왔다. 애플 메모 30일, 구글 킵
           // 7일이 관습이라 30일을 따랐다(독자 설계 금지).

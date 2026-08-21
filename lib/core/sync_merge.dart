@@ -46,12 +46,18 @@ class MergeResult<T> {
   /// 이번 병합으로 로컬에서 사라진 메모 수.
   final int removed;
 
+  /// 지면서 **아직 구름에 못 올라간 수정**을 품고 있던 로컬 판들.
+  /// 부르는 쪽이 휴지통에 넣는다 — 글이 소리 없이 사라지면 안 된다
+  /// (2026-08-21 자정, 웹의 6번 줄이 실제로 그렇게 사라졌다).
+  final List<T> backups;
+
   const MergeResult({
     required this.notes,
     required this.tombstones,
     required this.pulled,
     required this.pushed,
     required this.removed,
+    this.backups = const [],
   });
 
   /// 로컬에 바꿀 게 하나도 없었나. 화면을 흔들지 말지 판단하는 데 쓴다.
@@ -104,6 +110,8 @@ MergeResult<T> mergeNotes<T>({
   required int Function(T) stampOf,
   required int nowMs,
   int keepDays = 180,
+  String Function(T)? bodyOf,
+  int syncedBeforeMs = 0,
 }) {
   final tombs = foldTombstones([...localTombs, ...remoteTombs]);
 
@@ -119,6 +127,7 @@ MergeResult<T> mergeNotes<T>({
   final ids = <String>{...localById.keys, ...remoteById.keys};
 
   final notes = <T>[];
+  final backups = <T>[];
   var pulled = 0, pushed = 0, removed = 0;
 
   for (final id in ids) {
@@ -136,7 +145,11 @@ MergeResult<T> mergeNotes<T>({
     // — 지우는 행동은 고치는 행동보다 뒤에 오는 게 보통이고, 되살아나는
     // 쪽이 사람을 더 놀라게 하기 때문이다.
     if (deletedAt != null && deletedAt >= newest) {
-      if (l != null) removed++;
+      if (l != null) {
+        removed++;
+        // 지워지는 로컬에 아직 구름에 안 올라간 수정이 있으면 백업.
+        if (stampOf(l) > syncedBeforeMs) backups.add(l);
+      }
       continue;
     }
 
@@ -151,6 +164,13 @@ MergeResult<T> mergeNotes<T>({
       if (rs > ls) {
         notes.add(r);
         pulled++;
+        // 로컬이 지는데, 마지막으로 끝까지 맞춘 뒤에 고친 수정이고
+        // 알맹이도 다르다 — 구름에 올라간 적 없는 글일 수 있다. 백업.
+        if (bodyOf != null &&
+            ls > syncedBeforeMs &&
+            bodyOf(l) != bodyOf(r)) {
+          backups.add(l);
+        }
       } else if (ls > rs) {
         notes.add(l);
         pushed++;
@@ -167,6 +187,7 @@ MergeResult<T> mergeNotes<T>({
     pulled: pulled,
     pushed: pushed,
     removed: removed,
+    backups: backups,
   );
 }
 
