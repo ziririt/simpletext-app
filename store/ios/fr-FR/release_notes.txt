@@ -1,3 +1,1 @@
-Première version.
-
-Collez une réponse d’IA : les marques Markdown et les formules de politesse disparaissent, les tableaux décalés sont réparés. Ce qui est nettoyé reste sous forme de note, et iCloud garde votre iPhone et votre iPad au même point.
+Tous vos appareils voient désormais les mêmes notes. Connectez-vous avec Google pour synchroniser iPhone, iPad, Mac, Android, Windows et le web — ou choisissez iCloud si vous n’utilisez que des appareils Apple. Les notes ouvertes suivent aussitôt les modifications des autres appareils, et les modifications en conflit sont sauvegardées dans la corbeille : rien ne se perd en silence.

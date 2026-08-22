@@ -1,3 +1,1 @@
-Primeira versão.
-
-Cole uma resposta de IA: as marcas de Markdown e as introduções desaparecem, e as tabelas desalinhadas são reparadas. O que foi limpo fica como nota, e com o iCloud o seu iPhone e o seu iPad veem o mesmo.
+Agora todos os seus dispositivos veem as mesmas notas. Inicie sessão com o Google para sincronizar iPhone, iPad, Mac, Android, Windows e a web — ou escolha o iCloud se só usa Apple. As notas abertas acompanham de imediato as edições de outros dispositivos, e as edições em conflito são guardadas no lixo: nada se perde em silêncio.

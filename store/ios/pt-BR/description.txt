@@ -20,10 +20,7 @@ A limpeza é aplicada assim que você toca. Se não gostar, basta desfazer uma v
 SUAS REGRAS
 Escolha se o destaque vira aspas ou desaparece, qual marcador e qual recuo usar, quanto espaço deixar em volta dos subtítulos. A próxima colagem segue as mesmas regras.
 
-A EDIÇÃO POR IA É OPCIONAL
-Você também pode pedir algo livre, como reescrever em tom formal. Isso só funciona com uma chave de API fornecida por você, a chave fica no aparelho, e o resultado é conferido em busca de números e datas alterados antes de aparecer.
-
 TAMBÉM É O SEU CADERNO
-O que você limpou fica como nota. Dá para fixar, marcar com etiquetas e buscar. Com o iCloud, seu iPhone e seu iPad veem as mesmas notas. O app pode ser trancado com Face ID, e você escolhe o papel em que escreve: creme, pautado de caligrafia ou quadriculado.
+O que você limpou fica como nota. Dá para fixar, marcar com etiquetas e buscar. Entre com sua conta Google e o iPhone, o iPad, o Mac, o celular Android, o PC com Windows e o navegador veem as mesmas notas. Se você só usa aparelhos Apple, pode escolher a sincronização com o iCloud. As notas ficam apenas no seu iCloud ou no seu Google Drive — não temos servidor. O app pode ser trancado com Face ID, e você escolhe o papel em que escreve: creme, pautado de caligrafia ou quadriculado.
 
 Ajustado para respostas do ChatGPT, Claude, Gemini, Grok e Perplexity.

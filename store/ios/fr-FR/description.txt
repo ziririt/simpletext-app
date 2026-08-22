@@ -20,10 +20,7 @@ Le nettoyage s’applique dès que vous appuyez. Si le résultat ne vous plaît 
 VOS RÈGLES
 Choisissez si la mise en évidence devient des guillemets ou disparaît, quelle puce et quel retrait utiliser, quel espacement autour des sous-titres. Le collage suivant suivra les mêmes règles.
 
-L’ÉDITION PAR IA EST FACULTATIVE
-Vous pouvez demander autre chose, par exemple une réécriture dans un ton formel. Cela ne fonctionne qu’avec une clé d’API que vous fournissez, la clé reste sur l’appareil, et le résultat est vérifié pour repérer les nombres et les dates modifiés avant affichage.
-
 C’EST AUSSI VOTRE CARNET
-Ce que vous avez nettoyé reste sous forme de note. Épinglez, étiquetez, cherchez. Avec iCloud, votre iPhone et votre iPad voient les mêmes notes. L’app se verrouille avec Face ID, et vous choisissez le papier sur lequel vous écrivez : crème, réglure d’écriture ou quadrillage.
+Ce que vous avez nettoyé reste sous forme de note. Épinglez, étiquetez, cherchez. Connectez-vous avec Google, et votre iPhone, iPad, Mac, téléphone Android, PC Windows et navigateur web voient les mêmes notes. Si vous n’utilisez que des appareils Apple, vous pouvez choisir la synchronisation iCloud. Les notes ne vivent que dans votre iCloud ou votre Google Drive — nous n’avons aucun serveur. L’app se verrouille avec Face ID, et vous choisissez le papier sur lequel vous écrivez : crème, réglure d’écriture ou quadrillage.
 
 Ajusté pour les réponses de ChatGPT, Claude, Gemini, Grok et Perplexity.

@@ -1,3 +1,1 @@
-Erste Fassung.
-
-Fügen Sie eine KI-Antwort ein: Markdown-Zeichen und Floskeln verschwinden, verrutschte Tabellen werden repariert. Das Aufgeräumte bleibt als Notiz, und mit iCloud sehen iPhone und iPad dieselben Notizen.
+Alle Geräte sehen jetzt dieselben Notizen. Mit Google-Anmeldung synchronisieren iPhone, iPad, Mac, Android, Windows und Web — wer nur Apple nutzt, kann iCloud wählen. Geöffnete Notizen übernehmen Änderungen anderer Geräte sofort, und kollidierende Änderungen werden im Papierkorb gesichert, damit nie etwas stillschweigend verloren geht.

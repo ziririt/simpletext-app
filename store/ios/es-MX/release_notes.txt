@@ -1,3 +1,1 @@
-Primera versión.
-
-Pega una respuesta de IA: las marcas de Markdown y los preámbulos desaparecen, y las tablas descuadradas se reparan. Lo limpiado se queda como nota, y con iCloud tu iPhone y tu iPad ven lo mismo.
+Ahora todos tus dispositivos ven las mismas notas. Inicia sesión con Google para sincronizar iPhone, iPad, Mac, Android, Windows y la web, o elige iCloud si solo usas Apple. Las notas abiertas siguen al momento los cambios de otros dispositivos, y los cambios en conflicto se guardan en la papelera: nada se pierde en silencio.

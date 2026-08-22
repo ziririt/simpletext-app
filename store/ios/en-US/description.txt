@@ -20,10 +20,7 @@ Cleanup applies the moment you tap. If you do not like it, one undo puts it back
 YOUR RULES
 Decide whether emphasis becomes quotes or disappears, pick your bullet character and indent, set the spacing around subheadings. Your choices carry over to the next paste.
 
-AI EDITING IS OPTIONAL
-Ask for something freeform, like rewriting in a formal tone. It only runs with an API key you supply, the key stays on your device, and the result is checked for changed numbers and dates before you see it.
-
 IT IS ALSO YOUR NOTEBOOK
-What you clean up stays as a note. Pin it, tag it, search it. Turn on iCloud and your iPhone and iPad see the same notes. Lock the app with Face ID, and pick the paper you write on: cream, manuscript grid or graph.
+What you clean up stays as a note. Pin it, tag it, search it. Sign in with Google and your iPhone, iPad, Mac, Android phone, Windows PC and web browser all see the same notes. Apple-only households can choose iCloud sync instead. Notes live only in your iCloud or your Google Drive — there is no server of ours. Lock the app with Face ID, and pick the paper you write on: cream, manuscript grid or graph.
 
 Tuned for answers from ChatGPT, Claude, Gemini, Grok and Perplexity.
