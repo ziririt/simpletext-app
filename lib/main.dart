@@ -1637,6 +1637,13 @@ class AppSettings {
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.bodyLineHeight =
         ((j['bodyLineHeight'] ?? s.bodyLineHeight) as num).toDouble();
+    // 2026-08-24 — 기본값을 클로드 앱 실측(16 / 1.5)에 맞추면서, 옛 기본값
+    // (17 / 1.6)을 손대지 않고 쓰던 기기는 새 기본값으로 옮긴다. 두 값이
+    // 동시에 옛 기본값일 때만 건드리므로, 직접 고른 크기·줄간은 그대로다.
+    if (s.bodyFontSize == 17 && s.bodyLineHeight == 1.6) {
+      s.bodyFontSize = MonoTextController.defaultBodyFontSize;
+      s.bodyLineHeight = MonoTextController.bodyHeight;
+    }
     s.prefsStamp = (j['prefsStamp'] ?? s.prefsStamp) as int;
     s.prefsSig = (j['prefsSig'] ?? s.prefsSig) as String;
     s.aiKey = (j['aiKey'] ?? s.aiKey) as String;

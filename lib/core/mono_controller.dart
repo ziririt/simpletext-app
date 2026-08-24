@@ -51,10 +51,13 @@ class MonoTextController extends TextEditingController {
   /// 한 번 고칠 때마다 빌드→설치→확인 왕복이 생겨 소유자가 쓰는 다른 앱과
   /// 맞추기가 어려웠다. 그래서 고정값을 버리고 설정에서 직접 고르게 한다.
   /// (CotEditor·Xcode 같은 편집기도 글자 크기를 사용자가 정한다)
-  static const double defaultBodyFontSize = 17;
+  /// 2026-08-24: 소유자가 클로드 앱과 같아 보이기를 원해서, 크롬으로
+  /// claude.ai 응답 본문을 실측했다 — 16px, 줄간 1.5(24px), 자간 0,
+  /// 장평 100%. 기본값을 그 값에 맞춘다.
+  static const double defaultBodyFontSize = 16;
   static const double minBodyFontSize = 13;
   static const double maxBodyFontSize = 24;
-  static const double bodyHeight = 1.6;
+  static const double bodyHeight = 1.5; // 클로드 앱 실측(24px/16px)
 
   /// 줄 간격의 폭. 2026-08-18 소유자 지시 — "'본문 줄 간격(행 간격)' 설정도
   /// 될까? 기본값이 좋은 사람이 있겠지만, 더 좁게 또는 더 넓게 쓸 사람들이
@@ -69,7 +72,7 @@ class MonoTextController extends TextEditingController {
   double bodyFontSize = defaultBodyFontSize;
 
   /// 등폭 구간 크기. 표가 가로로 덜 넘치도록 본문보다 조금 작게 쓴다.
-  /// 본문 크기를 바꾸면 같은 비율로 따라간다(17일 때 14.5).
+  /// 본문 크기를 바꾸면 같은 비율로 따라간다(기본 크기일 때 14.5).
   static const double _monoRatio = 14.5 / defaultBodyFontSize;
   double get monoFontSize => bodyFontSize * _monoRatio;
 
