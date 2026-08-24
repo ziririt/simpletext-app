@@ -8189,6 +8189,12 @@ static const int kTagScanChars = 3000;
                   style: TextStyle(
                       fontSize: store.settings.bodyFontSize,
                       height: store.settings.bodyLineHeight,
+                      // 자간 0 (2026-08-24 소유자 신고 "클로드 앱 폰트가
+                      // 좋은데 다르다"). 글꼴은 이미 시스템 것이었고,
+                      // 다른 건 머티리얼 기본 자간 +0.5였다 — 영문 SF용
+                      // 값이라 한글에 얹으면 벌어져 보인다. 애플 메모도
+                      // 클로드 앱도 한글 본문 자간은 0이다.
+                      letterSpacing: 0,
                       // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
                       // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
                       // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
