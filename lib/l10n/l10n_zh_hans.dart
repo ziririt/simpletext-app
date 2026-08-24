@@ -388,6 +388,12 @@ class L10nZhHans extends L10n {
   @override
   String get saveAsRuleSub => '此后每次"整理"时始终应用';
   @override
+  String get ruleScopeAll => '应用于所有笔记';
+  @override
+  String get ruleScopeNote => '仅应用于此笔记';
+  @override
+  String get noteRules => '此笔记的规则';
+  @override
   String get invalidRegex => '正则表达式不正确';
   @override
   String get noMatches => '没有匹配的内容';

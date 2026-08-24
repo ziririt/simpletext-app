@@ -389,6 +389,12 @@ class L10nEn extends L10n {
   @override
   String get saveAsRuleSub => 'Always applied on every future "Tidy"';
   @override
+  String get ruleScopeAll => 'Apply to all notes';
+  @override
+  String get ruleScopeNote => 'Apply to this note only';
+  @override
+  String get noteRules => 'Rules for this note';
+  @override
   String get invalidRegex => 'Invalid regular expression';
   @override
   String get noMatches => 'No matches found';

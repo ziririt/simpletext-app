@@ -390,6 +390,12 @@ class L10nFr extends L10n {
   @override
   String get saveAsRuleSub => 'Toujours appliquée à chaque « Nettoyer » futur';
   @override
+  String get ruleScopeAll => 'Appliquer à toutes les notes';
+  @override
+  String get ruleScopeNote => 'Appliquer à cette note uniquement';
+  @override
+  String get noteRules => 'Règles de cette note';
+  @override
   String get invalidRegex => 'Expression régulière invalide';
   @override
   String get noMatches => 'Aucune correspondance';

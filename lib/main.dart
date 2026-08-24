@@ -1035,6 +1035,12 @@ class Note {
   /// 기기였는가 넷뿐이다. 규칙과 까닭은 core/attach_meta.dart 머리말.
   List<Attach> attachments;
 
+  /// 이 노트에만 적용되는 자동 바꾸기 규칙 (2026-08-24 소유자 지시 —
+  /// "문서 편집 시에도 규칙 추가, 이 문서만/전체 옵션").
+  /// 전체 규칙은 설정(customRules)에, 이 노트 전용은 여기에 산다.
+  /// 노트 JSON에 실려 동기화를 따라가고, 옛 판 앱에서는 extra가 보존한다.
+  List<CustomRule> rules;
+
   /// 이 메모 하나만 잠갔는가. 2026-08-19 소유자 확정.
   ///
   /// **잠금은 화면만 가린다.** 본문은 지금처럼 그대로 저장되고
@@ -1125,13 +1131,15 @@ class Note {
     this.taggedLen = -1,
     this.locked = false,
     List<Attach>? attachments,
+    List<CustomRule>? rules,
     Map<String, dynamic>? extra,
   })  : extra = extra ?? const <String, dynamic>{},
         tags = tags ?? [],
         history = history ?? [],
         historyAt = historyAt ?? [],
         historyWhy = historyWhy ?? [],
-        attachments = attachments ?? [];
+        attachments = attachments ?? [],
+        rules = rules ?? [];
 
   factory Note.fresh({String body = ''}) {
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -1152,7 +1160,7 @@ class Note {
     'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
     'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
     'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder', 'taggedLen',
-    'locked', 'historyWhy', 'attach',
+    'locked', 'historyWhy', 'attach', 'rules',
   };
 
   /// 기록에 남길 수 있는 최대 판 수.
@@ -1223,6 +1231,9 @@ class Note {
         'taggedLen': taggedLen,
         'locked': locked,
         'attach': attachments.map((e) => e.toJson()).toList(),
+        'rules': rules
+            .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
+            .toList(),
       };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
@@ -1255,6 +1266,13 @@ class Note {
         attachments: ((j['attach'] ?? const []) as List)
             .map(Attach.fromJson)
             .whereType<Attach>()
+            .toList(),
+        rules: ((j['rules'] ?? const []) as List)
+            .map((e) => CustomRule(
+                  find: (e['find'] ?? '') as String,
+                  replace: (e['replace'] ?? '') as String,
+                  regex: (e['regex'] ?? false) as bool,
+                ))
             .toList(),
         extra: {
           for (final e in j.entries)
@@ -1935,13 +1953,14 @@ class Store extends ChangeNotifier {
   }
 
   /// 프리셋 + 사용자 설정 병합 (웹의 effOpts와 동일 규칙)
-  TidyOptions effOpts(Preset p) {
+  TidyOptions effOpts(Preset p, {List<CustomRule> noteRules = const []}) {
     final s = settings;
     final o = p.opts.copyWith();
     // 자동 바꾸기 규칙은 사람이 자기 글을 두고 적어 둔 것이라 어느 방식을
-    // 골라도 따라간다.
+    // 골라도 따라간다. 합치는 순서와 까닭은 core/tidy_engine.dart의
+    // mergeRules에 있다.
     if (o.stripEmphasis) {
-      o.customRules = s.customRules.where((r) => r.find.isNotEmpty).toList();
+      o.customRules = mergeRules(s.customRules, noteRules);
     }
     // 2026-08-18 — 여기서부터는 '기본 정리'에만 씌운다. 까닭은
     // core/tidy_engine.dart 의 Preset.userMarks 에 적었다.
@@ -6609,7 +6628,7 @@ static const int kTagScanChars = 3000;
       {bool forcePreview = false}) async {
     if (await _blockedByLimit(wizard: false)) return;
     await _save();
-    final r = tidy(note.body, store.effOpts(preset));
+    final r = tidy(note.body, store.effOpts(preset, noteRules: note.rules));
     if (!mounted) return;
     final l = L10n.of(context);
     // 미리보기를 끈 사람은 바로 적용된다. 되돌리기가 있으니 안전하다
@@ -7230,6 +7249,7 @@ static const int kTagScanChars = 3000;
     final withCtl = TextEditingController();
     bool useRegex = false;
     bool saveRule = false;
+    bool ruleForAll = true;
     await showAdaptiveDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -7255,6 +7275,54 @@ static const int kTagScanChars = 3000;
                   value: saveRule,
                   onChanged: (v) => setD(() => saveRule = v ?? false),
                 ),
+                // 2026-08-24 소유자 지시 — 저장할 때 범위를 고른다.
+                if (saveRule) ...[
+                  RadioListTile<bool>(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(l.ruleScopeAll,
+                        style: const TextStyle(fontSize: 13)),
+                    value: true,
+                    groupValue: ruleForAll,
+                    onChanged: (v) => setD(() => ruleForAll = v ?? true),
+                  ),
+                  RadioListTile<bool>(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(l.ruleScopeNote,
+                        style: const TextStyle(fontSize: 13)),
+                    value: false,
+                    groupValue: ruleForAll,
+                    onChanged: (v) => setD(() => ruleForAll = v ?? true),
+                  ),
+                ],
+                // 이 노트 전용 규칙 목록. 지우는 길이 여기 하나뿐이므로
+                // 목록 없이 저장만 되게 두면 규칙이 유령이 된다.
+                if (note.rules.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(l.noteRules,
+                      style: TextStyle(
+                          fontSize: 12, color: Theme.of(ctx).hintColor)),
+                  for (int i = 0; i < note.rules.length; i++)
+                    Row(children: [
+                      Expanded(
+                        child: Text(
+                          '${note.rules[i].find} → ${note.rules[i].replace}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.close, size: 16),
+                        onPressed: () {
+                          note.rules.removeAt(i);
+                          unawaited(_save());
+                          setD(() {});
+                        },
+                      ),
+                    ]),
+                ],
               ],
             ),
             actions: [
@@ -7295,8 +7363,16 @@ static const int kTagScanChars = 3000;
                   note.pushHistory(bodyCtl.text, why: 'replace');
                   bodyCtl.text = result;
                   if (saveRule) {
-                    store.settings.customRules.add(CustomRule(find: find, replace: rawRepl, regex: useRegex));
-                    await store.persistSettings();
+                    final rule = CustomRule(
+                        find: find, replace: rawRepl, regex: useRegex);
+                    if (ruleForAll) {
+                      store.settings.customRules.add(rule);
+                      await store.persistSettings();
+                    } else {
+                      // 노트 전용 — 아래 _save()가 도장 찍어 저장하고
+                      // 동기화가 노트와 함께 나른다.
+                      note.rules.add(rule);
+                    }
                   }
                   await _save();
                   if (mounted) {
@@ -7346,7 +7422,8 @@ static const int kTagScanChars = 3000;
         }),
         _wayTile(ctx, l.tidyCopy, l.tidyCopySub,
             tidy(sample, store.effOpts(buildPresets().first)).text, () {
-          final r = tidy(bodyCtl.text, store.effOpts(buildPresets().first));
+          final r = tidy(bodyCtl.text,
+              store.effOpts(buildPresets().first, noteRules: note.rules));
           Clipboard.setData(ClipboardData(text: r.text));
           Navigator.pop(ctx);
           _toast(context, L10n.of(context).tidyCopied(r.summary));

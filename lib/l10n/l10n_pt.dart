@@ -389,6 +389,12 @@ class L10nPt extends L10n {
   @override
   String get saveAsRuleSub => 'Sempre aplicada em cada "Organizar" futuro';
   @override
+  String get ruleScopeAll => 'Aplicar a todas as notas';
+  @override
+  String get ruleScopeNote => 'Aplicar somente a esta nota';
+  @override
+  String get noteRules => 'Regras desta nota';
+  @override
   String get invalidRegex => 'Expressão regular inválida';
   @override
   String get noMatches => 'Nenhuma correspondência encontrada';

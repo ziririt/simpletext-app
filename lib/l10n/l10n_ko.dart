@@ -388,6 +388,12 @@ class L10nKo extends L10n {
   @override
   String get saveAsRuleSub => '이후 "정리"할 때마다 항상 적용';
   @override
+  String get ruleScopeAll => '모든 노트에 적용';
+  @override
+  String get ruleScopeNote => '이 노트에서만 적용';
+  @override
+  String get noteRules => '이 노트의 규칙';
+  @override
   String get invalidRegex => '정규식이 올바르지 않습니다';
   @override
   String get noMatches => '일치하는 내용이 없습니다';

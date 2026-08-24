@@ -390,6 +390,12 @@ class L10nDe extends L10n {
   @override
   String get saveAsRuleSub => 'Wird künftig bei jedem „Aufräumen" angewendet';
   @override
+  String get ruleScopeAll => 'Auf alle Notizen anwenden';
+  @override
+  String get ruleScopeNote => 'Nur auf diese Notiz anwenden';
+  @override
+  String get noteRules => 'Regeln dieser Notiz';
+  @override
   String get invalidRegex => 'Ungültiger regulärer Ausdruck';
   @override
   String get noMatches => 'Keine Treffer gefunden';

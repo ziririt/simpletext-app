@@ -232,6 +232,11 @@ abstract class L10n {
   String get regexLabel;
   String get saveAsRule;
   String get saveAsRuleSub;
+
+  /// 규칙 저장 범위 — 2026-08-24 소유자 지시.
+  String get ruleScopeAll;
+  String get ruleScopeNote;
+  String get noteRules;
   String get invalidRegex;
   String get noMatches;
   String replacedCount(int count);
@@ -818,6 +823,9 @@ abstract class L10n {
         'regexLabel': regexLabel,
         'saveAsRule': saveAsRule,
         'saveAsRuleSub': saveAsRuleSub,
+        'ruleScopeAll': ruleScopeAll,
+        'ruleScopeNote': ruleScopeNote,
+        'noteRules': noteRules,
         'invalidRegex': invalidRegex,
         'noMatches': noMatches,
         'savedRuleSuffix': savedRuleSuffix,

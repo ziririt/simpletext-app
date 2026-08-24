@@ -15,6 +15,16 @@ class CustomRule {
   const CustomRule({required this.find, this.replace = '', this.regex = false});
 }
 
+/// 전체 규칙과 노트 전용 규칙을 합친다.
+///
+/// 2026-08-24 소유자 지시 — 규칙을 "모든 노트"와 "이 노트만"으로 나눠
+/// 갖게 됐다. 전체 규칙이 먼저, 노트 규칙이 나중에 돈다 — 노트에서
+/// 정한 것이 그 노트의 마지막 손질이 되게 하기 위해서다. 빈 찾기는
+/// 아직 쓰다 만 규칙이므로 거른다.
+List<CustomRule> mergeRules(
+        List<CustomRule> global, List<CustomRule> note) =>
+    [...global, ...note].where((r) => r.find.isNotEmpty).toList();
+
 class TidyOptions {
   bool stripHeadings;
   bool stripEmphasis;

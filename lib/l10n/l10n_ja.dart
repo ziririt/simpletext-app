@@ -388,6 +388,12 @@ class L10nJa extends L10n {
   @override
   String get saveAsRuleSub => '以後「整理」のたびに常に適用';
   @override
+  String get ruleScopeAll => 'すべてのノートに適用';
+  @override
+  String get ruleScopeNote => 'このノートだけに適用';
+  @override
+  String get noteRules => 'このノートのルール';
+  @override
   String get invalidRegex => '正規表現が正しくありません';
   @override
   String get noMatches => '一致する内容がありません';

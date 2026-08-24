@@ -389,6 +389,12 @@ class L10nEs extends L10n {
   @override
   String get saveAsRuleSub => 'Se aplicará siempre en cada "Ordenar" futuro';
   @override
+  String get ruleScopeAll => 'Aplicar a todas las notas';
+  @override
+  String get ruleScopeNote => 'Aplicar solo a esta nota';
+  @override
+  String get noteRules => 'Reglas de esta nota';
+  @override
   String get invalidRegex => 'La expresión regular no es válida';
   @override
   String get noMatches => 'No hay coincidencias';
