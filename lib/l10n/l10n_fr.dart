@@ -50,6 +50,13 @@ class L10nFr extends L10n {
   @override
   String get seedTag => 'Mode d\'emploi';
   @override
+  String get shareAppTitle => "Partager l'app";
+  @override
+  String get rateAppTitle => 'Évaluez-nous';
+  @override
+  String get shareAppMsg =>
+      'Skyblue Note — une app de notes légère et rapide, synchronisée sur tous vos appareils.';
+  @override
   String get seedBody => [
         'Bonjour ! 😊 Voici le résumé que vous avez demandé[1][2].',
         '',

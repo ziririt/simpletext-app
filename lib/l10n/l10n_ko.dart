@@ -50,6 +50,13 @@ class L10nKo extends L10n {
   @override
   String get seedTag => '사용법';
   @override
+  String get shareAppTitle => '앱 공유';
+  @override
+  String get rateAppTitle => '평가해 주세요';
+  @override
+  String get shareAppMsg =>
+      '스카이블루 노트 — 가볍고 빠른 노트, 모든 기기에서 동기화됩니다.';
+  @override
   String get seedBody => [
         '안녕하세요! 😊 요청하신 내용을 아래와 같이 정리해 드렸습니다[1][2].',
         '',

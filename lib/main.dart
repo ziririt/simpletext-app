@@ -22,6 +22,8 @@ import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams;
+import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
+import 'core/store_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
@@ -11425,6 +11427,44 @@ class _SettingsScreenState extends State<SettingsScreen>
           // 것인가 의심한다. 자주 여는 쪽(목록)에 남긴다.
           _secHeader(l.settingsSecInfo),
           _card([
+            // 2026-08-24 소유자 지시 — "다른 앱들처럼 앱공유와
+            // 평가해주세요를 설정 하단에 만들어줘."
+            //
+            // 공유는 웹만 뺀다 — 브라우저의 공유 시트는 기기마다 있고
+            // 없고가 갈려서, 안 되는 단추를 보여 주느니 뺀다.
+            // 평가는 스토어 등록 페이지가 있는 iOS·iPadOS에서만 보인다.
+            // 맥 직배포판과 안드로이드 테스트판에는 아직 리뷰 쓸 곳이
+            // 없다 — 문을 열어 줬는데 빈 벽이면 앱이 미완성으로 보인다.
+            if (!kIsWeb) ...[
+              ListTile(
+                leading: Icon(
+                    isApplePlatform ? Icons.ios_share : Icons.share_outlined,
+                    color: context.c.sub),
+                title: Text(l.shareAppTitle,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
+                onTap: () => unawaited(SharePlus.instance.share(ShareParams(
+                    text: l.shareAppMsg +
+                        '\n' +
+                        shareUrl(
+                            isIOS: !kIsWeb &&
+                                defaultTargetPlatform ==
+                                    TargetPlatform.iOS)))),
+              ),
+              _sep(),
+            ],
+            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ...[
+              ListTile(
+                leading: Icon(Icons.star_outline, color: context.c.sub),
+                title: Text(l.rateAppTitle,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
+                onTap: () => unawaited(launchUrl(
+                    Uri.parse(appStoreReviewUrl()),
+                    mode: LaunchMode.externalApplication)),
+              ),
+              _sep(),
+            ],
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
               child: Text(l.settingsFooter,

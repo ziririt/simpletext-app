@@ -50,6 +50,13 @@ class L10nZhHans extends L10n {
   @override
   String get seedTag => '使用方法';
   @override
+  String get shareAppTitle => '分享应用';
+  @override
+  String get rateAppTitle => '给我们评分';
+  @override
+  String get shareAppMsg =>
+      'Skyblue Note — 轻快的笔记应用，在所有设备间同步。';
+  @override
   String get seedBody => [
         '您好！😊 以下是您要的整理结果[1][2]。',
         '',

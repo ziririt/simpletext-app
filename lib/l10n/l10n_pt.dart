@@ -50,6 +50,13 @@ class L10nPt extends L10n {
   @override
   String get seedTag => 'Como usar';
   @override
+  String get shareAppTitle => 'Compartilhar o app';
+  @override
+  String get rateAppTitle => 'Avalie-nos';
+  @override
+  String get shareAppMsg =>
+      'Skyblue Note — um app de notas leve e rápido que sincroniza em todos os seus dispositivos.';
+  @override
   String get seedBody => [
         'Olá! 😊 Segue o resumo que você pediu[1][2].',
         '',

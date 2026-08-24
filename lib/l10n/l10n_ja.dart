@@ -50,6 +50,13 @@ class L10nJa extends L10n {
   @override
   String get seedTag => '使い方';
   @override
+  String get shareAppTitle => 'アプリを共有';
+  @override
+  String get rateAppTitle => '評価してください';
+  @override
+  String get shareAppMsg =>
+      'Skyblue Note — 軽くて速いメモアプリ。すべての端末で同期します。';
+  @override
   String get seedBody => [
         'こんにちは！😊 ご依頼の内容を以下のとおり整理しました[1][2]。',
         '',

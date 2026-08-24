@@ -64,6 +64,9 @@ abstract class L10n {
   // ---------------- 시드 메모 ----------------
   String get seedTitle;
   String get seedTag;
+  String get shareAppTitle;
+  String get rateAppTitle;
+  String get shareAppMsg;
   String get seedBody;
 
   // ---------------- 에디터 ----------------
@@ -719,6 +722,9 @@ abstract class L10n {
         'delete': delete,
         'seedTitle': seedTitle,
         'seedTag': seedTag,
+        'shareAppTitle': shareAppTitle,
+        'rateAppTitle': rateAppTitle,
+        'shareAppMsg': shareAppMsg,
         'seedBody': seedBody,
         'done': done,
         'bodyFontSizeTitle': bodyFontSizeTitle,

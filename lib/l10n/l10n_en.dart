@@ -50,6 +50,13 @@ class L10nEn extends L10n {
   @override
   String get seedTag => 'How to use';
   @override
+  String get shareAppTitle => 'Share the app';
+  @override
+  String get rateAppTitle => 'Rate us';
+  @override
+  String get shareAppMsg =>
+      'Skyblue Note — a light, fast notes app that syncs across all your devices.';
+  @override
   String get seedBody => [
         'Hello! 😊 Here is the summary you asked for[1][2].',
         '',
