@@ -42,6 +42,11 @@ class TidyOptions {
   bool stripHtml;
   bool unescape;
   bool smartPunct;
+
+  /// " — "를 " : "로 (2026-08-24 소유자 지시, 기본 켜짐).
+  /// 사이 줄표는 AI 답변의 버릇이고, 우리말 문서에는 쌍점이 맞는다.
+  /// 붙여 쓴 줄표(1995—2000 같은 범위)는 뜻이 달라 건드리지 않는다.
+  bool dashToColon;
   bool removeOuterFence;
   bool normalizeWhitespace;
   String emphStyle; // remove | quoteSingle | quoteDouble | keep
@@ -77,6 +82,7 @@ class TidyOptions {
     this.stripHtml = false,
     this.unescape = false,
     this.smartPunct = false,
+    this.dashToColon = true,
     this.removeOuterFence = false,
     this.normalizeWhitespace = true,
     this.emphStyle = 'remove',
@@ -112,6 +118,7 @@ class TidyOptions {
     bool? stripHtml,
     bool? unescape,
     bool? smartPunct,
+    bool? dashToColon,
     bool? removeOuterFence,
     bool? normalizeWhitespace,
     String? emphStyle,
@@ -146,6 +153,7 @@ class TidyOptions {
       stripHtml: stripHtml ?? this.stripHtml,
       unescape: unescape ?? this.unescape,
       smartPunct: smartPunct ?? this.smartPunct,
+      dashToColon: dashToColon ?? this.dashToColon,
       removeOuterFence: removeOuterFence ?? this.removeOuterFence,
       normalizeWhitespace: normalizeWhitespace ?? this.normalizeWhitespace,
       emphStyle: emphStyle ?? this.emphStyle,
@@ -1227,6 +1235,9 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
     t = t.replaceAll(_zwNoZwj, '');
   }
   t = t.replaceAll('\u00A0', ' ');
+  if (o.dashToColon) {
+    t = t.replaceAll(' \u2014 ', ' : ').replaceAll(' \u2013 ', ' : ');
+  }
   if (o.smartPunct) {
     t = t
         .replaceAll(RegExp('[\u201C\u201D]'), '"')
