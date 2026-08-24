@@ -1,1 +1,1 @@
-All your devices now see the same notes. Sign in with Google to sync iPhone, iPad, Mac, Android, Windows and the web — or choose iCloud for Apple-only setups. Open notes follow edits from other devices as they arrive, and conflicting edits are backed up to the trash so nothing is ever silently lost.
+Auto-replace rules can now live on a single note: when saving from Find & Replace, choose between all notes and this note only. Tidy now turns spaced dashes ( — ) into colons ( : ) by default, and body text uses zero letter spacing so the system font looks the way it should.
