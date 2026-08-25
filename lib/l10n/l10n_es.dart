@@ -1090,7 +1090,8 @@ class L10nEs extends L10n {
   @override
   String get syncAllowDrive => 'Permitir el acceso a Drive';
   @override
-  String get syncDiagPreparingGdrive => 'Sesión iniciada. Trayendo tus notas desde Drive.';
+  String get syncDiagPreparingGdrive =>
+      "Sesión iniciada. Recibiendo tus notas de Drive. No hace falta quedarse mirando — puedes ir a otra app; la descarga se pausa y continúa donde iba cuando vuelvas.";
   @override
   String get syncRecheckStillGdrive => 'Todavía no está todo. La primera sincronización tarda un poco si tienes muchas notas \u2014 continúa aunque cierres esto.';
 

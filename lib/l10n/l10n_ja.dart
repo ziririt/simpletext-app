@@ -1087,7 +1087,8 @@ class L10nJa extends L10n {
   @override
   String get syncAllowDrive => 'ドライブへのアクセスを許可';
   @override
-  String get syncDiagPreparingGdrive => 'ログインできました。ドライブからメモを取得しています。';
+  String get syncDiagPreparingGdrive =>
+      "ログインしました。ドライブからノートを受け取っています。画面を見続ける必要はありません — 他のアプリに移っても、受け取りは一時停止し、戻ると続きから再開します。";
   @override
   String get syncRecheckStillGdrive => 'まだ全部は届いていません。メモが多いと最初の同期に少し時間がかかります \u2014 この画面を閉じても続きます。';
 

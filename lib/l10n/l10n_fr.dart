@@ -1091,7 +1091,8 @@ class L10nFr extends L10n {
   @override
   String get syncAllowDrive => 'Autoriser Drive';
   @override
-  String get syncDiagPreparingGdrive => 'Connecté. Récupération de vos notes depuis Drive.';
+  String get syncDiagPreparingGdrive =>
+      "Connecté. Récupération de vos notes depuis Drive. Inutile de rester devant l’écran — passez à une autre app ; la récupération se met en pause et reprend à votre retour.";
   @override
   String get syncRecheckStillGdrive => 'Tout n\u2019est pas encore arrivé. La première synchronisation prend un moment si vous avez beaucoup de notes \u2014 elle continue après la fermeture.';
 

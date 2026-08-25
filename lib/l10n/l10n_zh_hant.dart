@@ -1087,7 +1087,8 @@ class L10nZhHant extends L10n {
   @override
   String get syncAllowDrive => '允許存取雲端硬碟';
   @override
-  String get syncDiagPreparingGdrive => '已登入。正在從雲端硬碟取回備忘。';
+  String get syncDiagPreparingGdrive =>
+      "已登入，正在從雲端硬碟接收筆記。無需一直盯著螢幕 — 切到其他 App 也沒關係，接收會暫停，回來後從中斷處繼續。";
   @override
   String get syncRecheckStillGdrive => '尚未全部取回。備忘較多時首次同步需要一點時間 \u2014 關閉此視窗後仍會繼續。';
 

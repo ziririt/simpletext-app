@@ -1091,7 +1091,8 @@ class L10nDe extends L10n {
   @override
   String get syncAllowDrive => 'Zugriff auf Drive erlauben';
   @override
-  String get syncDiagPreparingGdrive => 'Angemeldet. Ihre Notizen werden von Drive geholt.';
+  String get syncDiagPreparingGdrive =>
+      "Angemeldet. Notizen werden aus Drive geladen. Sie müssen nicht zusehen — wechseln Sie ruhig die App; das Laden pausiert und setzt beim Zurückkehren genau dort fort.";
   @override
   String get syncRecheckStillGdrive => 'Noch nicht alles da. Der erste Abgleich dauert etwas, wenn Sie viele Notizen haben \u2014 er läuft weiter, auch wenn Sie schließen.';
 

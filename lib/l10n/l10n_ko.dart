@@ -1087,7 +1087,8 @@ class L10nKo extends L10n {
   @override
   String get syncAllowDrive => '드라이브 접근 허용';
   @override
-  String get syncDiagPreparingGdrive => '로그인은 되었습니다. 드라이브에서 노트를 받아오는 중입니다.';
+  String get syncDiagPreparingGdrive =>
+      "로그인은 되었습니다. 드라이브에서 노트를 받아오는 중입니다. 화면을 계속 보고 있을 필요는 없습니다 — 다른 앱에 다녀와도, 받아오기는 잠시 쉬었다가 돌아오면 이어집니다.";
   @override
   String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 노트가 많으면 첫 맞추기는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
 

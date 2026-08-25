@@ -1087,7 +1087,8 @@ class L10nZhHans extends L10n {
   @override
   String get syncAllowDrive => '允许访问云端硬盘';
   @override
-  String get syncDiagPreparingGdrive => '已登录。正在从云端硬盘取回备忘。';
+  String get syncDiagPreparingGdrive =>
+      "已登录，正在从云端硬盘接收笔记。无需一直盯着屏幕 — 切到其他应用也没关系，接收会暂停，回来后从中断处继续。";
   @override
   String get syncRecheckStillGdrive => '还没全部取回。备忘较多时首次同步需要一点时间 \u2014 关闭此窗口后仍会继续。';
 
