@@ -1,26 +1,23 @@
-That answer the AI gave you is useful. The formatting is not.
+Paste messy AI text. Get a clean note.
 
-Paste it in. Asterisks, hash marks and throat-clearing intros come out, and what is left is clean text you can drop anywhere.
+Skyblue Note is a simple notes app with one job:
+take answers from ChatGPT, Claude, Gemini, Grok, or Perplexity
+and remove the markdown symbols, extra bold marks, and broken tables.
 
-WHAT IT REMOVES
-- Markdown markers (**bold**, ## headings, --- rules)
-- Emoji and openers like "Sure, here is a summary"
-- Citation marks such as [1] and the link block at the end
-- Invisible spaces and zero-width characters
+WHAT IT DOES
+• Paste an AI reply and strip the markdown junk
+• Repair broken tables and copy them straight into a spreadsheet
+• Write on paper-like notes with tags and search
+• Sync across iPhone, iPad, Mac, Android and the web with Google Drive — iCloud works too on Apple devices
+• Lock your notes with Face ID
 
-WHAT IT DOES WITH TABLES
-Misaligned rows and missing cells get repaired. Narrow tables are aligned into neat columns. Wide tables full of sentences are broken out row by row, so they stay readable on a phone. You can also copy any table straight into Google Sheets or Excel.
+WHAT IT IS NOT
+Not Notion. Not another AI chatbot.
+Just a quiet place to keep text after the AI is done talking.
 
-IT STAYS ON YOUR DEVICE
-Cleanup runs entirely on your device. It works with no connection, and your text is never sent to a server.
+HOW TO USE
+1. Copy an answer from your AI app
+2. Paste it into Skyblue Note
+3. Read a clean note. Keep writing.
 
-YOU CAN ALWAYS GO BACK
-Cleanup applies the moment you tap. If you do not like it, one undo puts it back.
-
-YOUR RULES
-Decide whether emphasis becomes quotes or disappears, pick your bullet character and indent, set the spacing around subheadings. Your choices carry over to the next paste.
-
-IT IS ALSO YOUR NOTEBOOK
-What you clean up stays as a note. Pin it, tag it, search it. Sign in with Google and your iPhone, iPad, Mac, Android phone, Windows PC and web browser all see the same notes. Apple-only households can choose iCloud sync instead. Notes live only in your iCloud or your Google Drive — there is no server of ours. Lock the app with Face ID, and pick the paper you write on: cream, manuscript grid or graph.
-
-Tuned for answers from ChatGPT, Claude, Gemini, Grok and Perplexity.
+Made in Korea. Available worldwide.

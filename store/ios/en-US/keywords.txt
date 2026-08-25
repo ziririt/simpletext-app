@@ -1,1 +1,1 @@
-chatgpt,gpt,claude,gemini,markdown,remove,strip,formatting,paste,text,table,excel,spreadsheet,tidy
+chatgpt,gpt,claude,gemini,markdown,remove,strip,paste,text,table,excel,spreadsheet,tidy,memo

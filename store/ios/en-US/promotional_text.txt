@@ -1,1 +1,1 @@
-Paste an answer from ChatGPT or Claude and get clean, ready-to-use text. Broken tables get repaired, too.
+Paste a ChatGPT or Claude answer. Skyblue Note strips the markdown junk, repairs broken tables, and keeps the rest as a clean note.
