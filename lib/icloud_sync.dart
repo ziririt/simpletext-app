@@ -290,6 +290,23 @@ class ICloudSync {
     _debounce = Timer(const Duration(seconds: 3), () => unawaited(syncNow()));
   }
 
+  /// 떠나기 전에 부친다 (2026-08-26).
+  ///
+  /// 3초 모으기가 아직 남아 있으면 기다리지 않고 지금 올린다. 맥에서
+  /// 앱이 뒤로 물러나면 macOS 낮잠(App Nap)이 타이머를 얼려, 쓴 글이
+  /// 창고에 못 간 채 잠드는 일이 실제로 있었다(8/25 밤 수사). 물러나는
+  /// 순간이 보낼 수 있는 마지막 기회다.
+  ///
+  /// 모으기가 없으면 아무것도 안 한다 — 창을 오갈 때마다 공연히 한
+  /// 바퀴 돌 이유는 없다.
+  void flushUp() {
+    if (!supported || paused) return;
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      unawaited(syncNow());
+    }
+  }
+
   void dispose() {
     _tick?.cancel();
     _debounce?.cancel();

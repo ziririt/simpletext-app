@@ -3599,7 +3599,14 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     _bindStatusBarTap();
     store.addListener(_onChange);
-    _life = AppLifecycleListener(onResume: ICloudSync.instance.onResume);
+    // 돌아올 때는 받아 오고(onResume), 물러날 때는 부친다(flushUp).
+    // inactive는 확인 창만 떠도 오는 신호라(LockGate 주석 참고) 여기서
+    // 하는 일은 '남은 모으기 흘려보내기'뿐이다 — 보낼 게 없으면 무해하다.
+    _life = AppLifecycleListener(
+      onResume: ICloudSync.instance.onResume,
+      onInactive: ICloudSync.instance.flushUp,
+      onHide: ICloudSync.instance.flushUp,
+    );
     // 아이클라우드는 메모를 다 읽은 **뒤에** 켠다. 먼저 켜면 아직 비어 있는
     // 목록을 "이 기기에는 메모가 없다"로 읽고, 그 상태로 남의 기기 것과
     // 합친 결과를 기기에 되쓴다 — 메모가 통째로 날아가는 길이다.
@@ -3822,7 +3829,21 @@ class _HomeScreenState extends State<HomeScreen>
   /// 창고가 없거나 꺼져 있으면 맞출 것도 없다. 그때는 빙글이만 잠깐 돌고
   /// 만다 — 여기서 '동기화가 꺼져 있습니다' 같은 것을 띄우면 당길 때마다
   /// 잔소리를 듣는 셈이 된다. **물어본 것에 대답만 하고 훈수는 안 둔다.**
+  /// 목록에 눈에 띄는 변화가 있었는지 값 하나로 요약한다 — 당김 손맛의
+  /// '진짜 받았다' 판정용. 가장 늦은 도장과 개수를 섞는다.
+  int _notesMark() {
+    var m = 0;
+    for (final n in store.notes) {
+      if (n.updatedAt > m) m = n.updatedAt;
+    }
+    return m ^ store.notes.length;
+  }
+
   Future<void> _pullSync() async {
+    // 손맛 (2026-08-25 소유자 지시 "햅틱 피드백이 같이 있으면 좋겠다.
+    // 손맛."). 당기는 순간 가볍게 '톡' — 손짓을 받았다는 답이다.
+    // 데스크톱·웹에서는 진동이 없으므로 조용히 지나간다.
+    unawaited(HapticFeedback.lightImpact());
     final sync = ICloudSync.instance;
     if (!sync.active || sync.paused) {
       await Future<void>.delayed(const Duration(milliseconds: 320));
@@ -3836,9 +3857,16 @@ class _HomeScreenState extends State<HomeScreen>
     // 설정의 동기화 줄이 '맞추는 중'으로 계속 알린다.
     //
     // 8초가 지나면 동그라미만 걷는다. 동기화는 그대로 돈다.
+    final before = _notesMark();
     await sync
         .recheck()
         .timeout(const Duration(seconds: 8), onTimeout: () {});
+    // 새 것이 실제로 들어왔을 때만 한 번 더, 조금 무겁게 — '진짜 됐다'.
+    // 아무 일도 없었으면 조용히 끝난다. 과한 피드백은 신호를 소음으로
+    // 만든다.
+    if (mounted && _notesMark() != before) {
+      unawaited(HapticFeedback.mediumImpact());
+    }
   }
   void _wireWidget() {
     if (!WidgetBridge.supported) return;
