@@ -1,1 +1,1 @@
-Auto-Ersetzungsregeln können jetzt zu einer einzelnen Notiz gehören: Beim Speichern aus Suchen & Ersetzen wählen Sie zwischen allen Notizen und nur dieser Notiz. Aufräumen wandelt Gedankenstriche ( — ) jetzt standardmäßig in Doppelpunkte ( : ) um, und der Fließtext nutzt Laufweite 0, damit die Systemschrift so aussieht, wie sie soll.
+Der Fließtext folgt jetzt noch enger der Systemvorgabe — standardmäßig 16pt mit Zeilenabstand 1,5. Die Einstellungen haben nun Teilen- und Bewerten-Einträge.

@@ -281,10 +281,12 @@ bool get isApplePlatform =>
 /// (다른 기기에서 넣어 동기화로 들어온 경우) AI 자리를 보인다.
 /// 맥 앱스토어에 낼 때도 같은 지침이 적용되므로 iOS만 따로 보지 않고
 /// 애플 모바일 판 전체(iOS = 아이폰·아이패드)를 본다.
-bool aiUiVisible() =>
-    kIsWeb ||
-    defaultTargetPlatform != TargetPlatform.iOS ||
-    Store.instance.settings.aiKey.trim().isNotEmpty;
+/// 2026-08-25 소유자 결정 — 1.2 승인 후 재도전: 아이폰에서도 키 입력칸을
+/// 다시 보인다. BYO 키 앱이 널리 통과되는 회색지대이므로 한 번 부딪혀
+/// 본다. **1.3이 3.1.1로 거절되면 절충안으로 물러선다**(입력칸 대신
+/// '다른 기기나 웹에서 키를 넣으면 여기서도 쓸 수 있다' 안내문만).
+/// 함수는 남겨 둔다 — 물러설 때 이 한 곳만 되돌리면 되게.
+bool aiUiVisible() => true;
 
 /// 이 기기가 자기 잠금을 부르는 이름 — 'apple' · 'android' · 'windows'.
 ///

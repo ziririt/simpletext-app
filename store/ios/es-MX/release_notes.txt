@@ -1,1 +1,1 @@
-Las reglas de reemplazo automático ahora pueden pertenecer a una sola nota: al guardar desde Buscar y reemplazar, elige entre todas las notas o solo esta nota. Ordenar ahora convierte por defecto las rayas con espacios ( — ) en dos puntos ( : ), y el cuerpo usa espaciado de letras 0 para que la fuente del sistema se vea como debe.
+El cuerpo del texto sigue ahora más de cerca el ajuste del sistema — 16pt e interlineado 1.5 por defecto. Los ajustes suman Compartir y Valóranos.

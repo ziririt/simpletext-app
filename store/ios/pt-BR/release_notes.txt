@@ -1,1 +1,1 @@
-As regras de substituição automática agora podem pertencer a uma única nota: ao salvar em Localizar e substituir, escolha entre todas as notas ou somente esta nota. Organizar agora converte por padrão travessões com espaços ( — ) em dois-pontos ( : ), e o corpo usa espaçamento de letras 0 para a fonte do sistema aparecer como deve.
+O corpo do texto agora segue mais de perto o padrão do sistema — 16pt e entrelinha 1,5 por padrão. Os ajustes ganharam Compartilhar e Avalie-nos.

@@ -1,1 +1,1 @@
-As regras de substituição automática agora podem pertencer a uma única nota: ao guardar em Localizar e substituir, escolha entre todas as notas ou apenas esta nota. Organizar converte agora por predefinição travessões com espaços ( — ) em dois-pontos ( : ), e o corpo usa espaçamento de letras 0 para a fonte do sistema aparecer como deve.
+O corpo do texto segue agora mais de perto a predefinição do sistema — 16pt e entrelinha 1,5 por predefinição. As definições ganharam Partilhar e Avalie-nos.

@@ -1,1 +1,1 @@
-Les règles de remplacement automatique peuvent désormais appartenir à une seule note : lors de l'enregistrement depuis Rechercher-remplacer, choisissez entre toutes les notes et cette note uniquement. Nettoyer transforme désormais les tirets espacés ( — ) en deux-points ( : ) par défaut, et le corps du texte utilise un interlettrage nul pour restituer la police système telle quelle.
+Le corps du texte suit désormais de plus près le réglage système — 16pt et interligne 1,5 par défaut. Les réglages gagnent les entrées Partager et Évaluez-nous.
