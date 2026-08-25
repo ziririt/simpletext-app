@@ -217,3 +217,20 @@ editorRefresh), sync_merge.dart, auto_meta.dart, auto_tag_gate.dart.
 - 원본은 저장소다. 콘솔·채팅에만 있는 문구는 원본이 아니다 — 저장소를
   고쳐서 API·배포로 밀어낸다(스토어 문구가 그 예).
 - 문서에도 비밀값은 적지 않는다. 위치만 가리킨다.
+
+## 빌드는 반드시 키를 싣는다 (2026-08-25 사고)
+
+- **어떤 판이든** flutter build (web·ipa·macos·apk·appbundle) 는
+  `~/development/_patch/skyblue_keys.env` 를 source 해서
+  `--dart-define=GOOGLE_WEB_CLIENT_ID=... --dart-define=GOOGLE_IOS_CLIENT_ID=...`
+  를 붙여 짓는다. tool/deploy.sh 의 DEFINES 블록이 원형이다.
+- 키 없이 지으면 **빌드는 성공하고 구글 로그인만 조용히 죽는다.**
+  DriveAuth.supported 가 거짓이 되어 설정에서 동기화 메뉴가 통째로
+  사라지거나, 켜져 있던 기기는 토큰이 만료되는 순간부터 조용히 멎는다.
+- 실제 사고: 8/24~25 맨손 빌드(web74·mac74/75/76·ipa5/ipa6)가 웹·맥·
+  아이폰에 동시 배포되어 "다 성공이라는데 안 맞는" 하루짜리 수사가
+  됐고, 스토어 1.2와 심사 중이던 1.3(164)까지 오염 — 165로 교체 재제출.
+- 검증법: 웹은 grep -c googleusercontent build/web/main.dart.js 가 1 이상.
+  애플 AOT 바이너리는 문자열 검색이 안 통하므로(압축) **기능으로 확인**
+  — 시크릿 창/새 기기에서 설정에 '구글 드라이브'가 보이면 실린 것이다.
+
