@@ -1,1 +1,1 @@
-Paste an AI answer: markdown and filler come out, broken tables get repaired
+Clean ChatGPT answers: strip markdown, repair broken tables, copy to Excel.

@@ -1,1 +1,1 @@
-IA,nettoyer,Markdown,supprimer,convertir,texte,notes,tableau,tableur,coller,presse-papiers
+chatgpt,gpt,markdown,supprimer,nettoyer,coller,tableau,excel,notes,texte,ia,format

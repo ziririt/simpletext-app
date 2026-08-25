@@ -1,4 +1,4 @@
-That answer the AI gave you is useful. The formatting is not.
+Pasted a ChatGPT, Claude or Gemini answer and got a mess? Skyblue Note strips markdown, removes filler, repairs broken tables and copies them straight to Excel — in one tap.
 
 Paste it in. Asterisks, hash marks and throat-clearing intros come out, and what is left is clean text you can drop anywhere.
 

@@ -1,1 +1,1 @@
-AI,整理,Markdown,清除,转换,文本,笔记,表格,电子表格,粘贴,剪贴板,效率
+chatgpt,gpt,markdown,清除,整理,粘贴,表格,excel,笔记,备忘,文本,格式

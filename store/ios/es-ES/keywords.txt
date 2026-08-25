@@ -1,1 +1,1 @@
-IA,limpiar,Markdown,eliminar,convertir,texto,notas,tabla,hoja de cálculo,pegar,portapapeles
+chatgpt,gpt,markdown,quitar,limpiar,pegar,tabla,excel,notas,texto,ia,formato,respuesta

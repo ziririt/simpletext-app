@@ -1,1 +1,1 @@
-KI,aufräumen,Markdown,entfernen,umwandeln,Text,Notizen,Tabelle,Tabellenkalkulation,einfügen
+chatgpt,gpt,markdown,entfernen,bereinigen,einfügen,tabelle,excel,notizen,text,ki,formatierung

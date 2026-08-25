@@ -1,1 +1,1 @@
-IA,limpar,Markdown,remover,converter,texto,notas,tabela,folha de cálculo,colar,área de transferência
+chatgpt,gpt,markdown,remover,limpar,colar,tabela,excel,notas,texto,ia,formatar,resposta
