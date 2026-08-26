@@ -1225,17 +1225,47 @@ class L10nZhHant extends L10n {
   @override
   String get sponsorGoPremium => '升級進階版，無廣告';
   @override
+  String get premiumPlanBase => '基本版';
+  @override
+  String get premiumPlanAll => '全裝置';
+  @override
+  String get premiumBestValue => '最划算';
+  @override
+  String get premiumPerks => '無廣告 · 整理無限 · AI 精靈無限';
+  @override
+  String get premiumScopeBase => '在購買所在商店的裝置與網頁版上可用。';
+  @override
+  String get premiumScopeAll => 'iPhone、iPad、Mac、Android、Windows 與網頁版，處處可用。';
+  @override
+  String get premiumAutoRenew => '訂閱將在到期前 24 小時未取消時自動續訂並按同額計費。您可隨時在帳戶設定中取消。';
+  @override
+  String get premiumRestore => '回復購買';
+  @override
+  String get premiumTerms => '使用條款';
+  @override
+  String get premiumPrivacy => '隱私權政策';
+  @override
+  String get premiumThanks => '謝謝，進階版已開啟。';
+  @override
+  String get premiumNoStore => '此裝置無法購買。在 iPhone 或 Android App 購買後，用同一帳號登入這裡即可生效。';
+  @override
+  String get premiumUpgradeHere => '要在此裝置使用，請升級至「全裝置」。剩餘時間由商店折算。';
+  @override
+  String get premiumHave => '目前方案';
+  @override
+  String get premiumLoading => '正在從商店取得價格';
+  @override
   String get premiumTitle => '進階版';
   @override
-  String get premiumPitch => '無廣告，全裝置通用';
+  String get premiumPitch => '無廣告，不設限';
   @override
-  String get premiumPitchSub => '買斷 US\$29.99 或每月 US\$1.99 · iPhone、iPad、Mac 一次搞定';
+  String get premiumPitchSub => '無廣告、不限量 · 從月付到買斷';
   @override
-  String get premiumBody => '進階版將移除所有廣告，並可在 iPhone、iPad 和 Mac 上不受限制地使用。一次購買，三端通用。您的支持成就下一次更新。';
+  String get premiumBody => '進階版移除廣告，並解鎖無限整理與 AI 精靈。兩種方案 —「基本版」適用於購買所在商店的裝置與網頁版；「全裝置」適用於 iPhone、Android、PC 與網頁版。您的支持成就下一次更新。';
   @override
-  String get premiumLifetime => '買斷 · US\$29.99';
+  String get premiumLifetime => '買斷';
   @override
-  String get premiumMonthly => '訂閱 · US\$2.99/月';
+  String get premiumMonthly => '月付';
   @override
   String get premiumComingSoon => '購買將在 App Store 正式版中開放，敬請期待。';
   @override
@@ -1248,9 +1278,9 @@ class L10nZhHant extends L10n {
   @override
   String get limitSeePremium => '查看進階版';
   @override
-  String get premiumYearly => '年付 · US\$14.99/年';
+  String get premiumYearly => '年付';
   @override
-  String get premiumLifetimeNote => '上市紀念價 · 原價 US\$39.99';
+  String get premiumLifetimeNote => '一次付款，不再續費';
 
   @override
   String trialBadge(int days) => '無限體驗 · 剩餘$days天';

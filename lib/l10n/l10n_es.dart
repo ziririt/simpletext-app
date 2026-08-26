@@ -1229,17 +1229,47 @@ class L10nEs extends L10n {
   @override
   String get sponsorGoPremium => 'Hazte Premium, sin anuncios';
   @override
+  String get premiumPlanBase => 'Estándar';
+  @override
+  String get premiumPlanAll => 'Todos los dispositivos';
+  @override
+  String get premiumBestValue => 'Mejor precio';
+  @override
+  String get premiumPerks => 'Sin anuncios · Limpieza ilimitada · Asistente IA ilimitado';
+  @override
+  String get premiumScopeBase => 'Funciona en los dispositivos de la tienda donde compraste, y en la web.';
+  @override
+  String get premiumScopeAll => 'Funciona en todas partes: iPhone, iPad, Mac, Android, Windows y web.';
+  @override
+  String get premiumAutoRenew => 'La suscripción se renueva automáticamente si no se cancela al menos 24 horas antes del fin del periodo. Puedes cancelarla cuando quieras en los ajustes de tu cuenta.';
+  @override
+  String get premiumRestore => 'Restaurar compras';
+  @override
+  String get premiumTerms => 'Términos de uso';
+  @override
+  String get premiumPrivacy => 'Política de privacidad';
+  @override
+  String get premiumThanks => 'Gracias. Premium está activo.';
+  @override
+  String get premiumNoStore => 'No puedes comprar en este dispositivo. Compra en la app de iPhone o Android y se aplicará aquí al iniciar sesión con la misma cuenta.';
+  @override
+  String get premiumUpgradeHere => 'Cambia a Todos los dispositivos para usarlo aquí. La tienda te acredita el tiempo restante.';
+  @override
+  String get premiumHave => 'Tu plan';
+  @override
+  String get premiumLoading => 'Obteniendo precios de la tienda';
+  @override
   String get premiumTitle => 'Premium';
   @override
-  String get premiumPitch => 'Sin anuncios, en todos tus dispositivos';
+  String get premiumPitch => 'Sin anuncios. Sin límites.';
   @override
-  String get premiumPitchSub => 'US\$29.99 una vez o US\$1.99/mes · iPhone, iPad y Mac juntos';
+  String get premiumPitchSub => 'Sin anuncios e ilimitado · mensual, anual o de por vida';
   @override
-  String get premiumBody => 'Premium elimina todos los anuncios y desbloquea Skyblue Note en iPhone, iPad y Mac. Una sola compra cubre los tres. Tu apoyo construye la próxima actualización.';
+  String get premiumBody => 'Premium quita los anuncios y abre limpieza y asistente IA sin límite. Dos planes: Estándar, para los dispositivos de la tienda donde compraste y la web; y Todos los dispositivos, para todo — iPhone, Android, PC y web. Tu apoyo construye la próxima versión.';
   @override
-  String get premiumLifetime => 'De por vida · US\$29.99';
+  String get premiumLifetime => 'De por vida';
   @override
-  String get premiumMonthly => 'Mensual · US\$2.99/mes';
+  String get premiumMonthly => 'Mensual';
   @override
   String get premiumComingSoon => 'Las compras se activarán en la versión de la App Store. Ya falta poco.';
   @override
@@ -1252,9 +1282,9 @@ class L10nEs extends L10n {
   @override
   String get limitSeePremium => 'Ver Premium';
   @override
-  String get premiumYearly => 'Anual · US\$14.99/año';
+  String get premiumYearly => 'Anual';
   @override
-  String get premiumLifetimeNote => 'Precio de lanzamiento · normal US\$39.99';
+  String get premiumLifetimeNote => 'Un pago, sin renovación';
 
   @override
   String trialBadge(int days) => 'Prueba ilimitada · quedan $days días';

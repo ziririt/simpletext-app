@@ -678,6 +678,21 @@ abstract class L10n {
   String get limitSeePremium;
   String get premiumYearly;
   String get premiumLifetimeNote;
+  String get premiumPlanBase;
+  String get premiumPlanAll;
+  String get premiumBestValue;
+  String get premiumPerks;
+  String get premiumScopeBase;
+  String get premiumScopeAll;
+  String get premiumAutoRenew;
+  String get premiumRestore;
+  String get premiumTerms;
+  String get premiumPrivacy;
+  String get premiumThanks;
+  String get premiumNoStore;
+  String get premiumUpgradeHere;
+  String get premiumHave;
+  String get premiumLoading;
   String trialBadge(int days);
   String get trialEndedTitle;
   String trialEndedBody(int tidy, int wiz, int tidyLimit, int wizLimit);
@@ -1101,6 +1116,21 @@ abstract class L10n {
         'limitSeePremium': limitSeePremium,
         'premiumYearly': premiumYearly,
         'premiumLifetimeNote': premiumLifetimeNote,
+        'premiumPlanBase': premiumPlanBase,
+        'premiumPlanAll': premiumPlanAll,
+        'premiumBestValue': premiumBestValue,
+        'premiumPerks': premiumPerks,
+        'premiumScopeBase': premiumScopeBase,
+        'premiumScopeAll': premiumScopeAll,
+        'premiumAutoRenew': premiumAutoRenew,
+        'premiumRestore': premiumRestore,
+        'premiumTerms': premiumTerms,
+        'premiumPrivacy': premiumPrivacy,
+        'premiumThanks': premiumThanks,
+        'premiumNoStore': premiumNoStore,
+        'premiumUpgradeHere': premiumUpgradeHere,
+        'premiumHave': premiumHave,
+        'premiumLoading': premiumLoading,
         'trialEndedTitle': trialEndedTitle,
         'themeTitle': themeTitle,
         'themeSystem': themeSystem,

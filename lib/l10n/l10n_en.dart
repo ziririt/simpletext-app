@@ -1229,17 +1229,47 @@ class L10nEn extends L10n {
   @override
   String get sponsorGoPremium => 'Go Premium — no ads';
   @override
+  String get premiumPlanBase => 'Standard';
+  @override
+  String get premiumPlanAll => 'All Devices';
+  @override
+  String get premiumBestValue => 'Best value';
+  @override
+  String get premiumPerks => 'No ads · Unlimited tidy · Unlimited AI wizard';
+  @override
+  String get premiumScopeBase => 'Works on the devices of the store you bought from, plus the web.';
+  @override
+  String get premiumScopeAll => 'Works everywhere: iPhone, iPad, Mac, Android, Windows and the web.';
+  @override
+  String get premiumAutoRenew => 'Subscriptions renew automatically unless canceled at least 24 hours before the period ends. You can cancel any time in your account settings.';
+  @override
+  String get premiumRestore => 'Restore purchases';
+  @override
+  String get premiumTerms => 'Terms of Use';
+  @override
+  String get premiumPrivacy => 'Privacy Policy';
+  @override
+  String get premiumThanks => 'Thank you. Premium is on.';
+  @override
+  String get premiumNoStore => 'You can’t purchase on this device. Buy in the iPhone or Android app and it applies here as soon as you sign in with the same account.';
+  @override
+  String get premiumUpgradeHere => 'Upgrade to All Devices to use it here too. The store credits your remaining time.';
+  @override
+  String get premiumHave => 'Your plan';
+  @override
+  String get premiumLoading => 'Getting prices from the store';
+  @override
   String get premiumTitle => 'Premium';
   @override
-  String get premiumPitch => 'No ads, on every device';
+  String get premiumPitch => 'No ads. No limits.';
   @override
-  String get premiumPitchSub => 'US\$29.99 once or US\$1.99/month · iPhone, iPad and Mac together';
+  String get premiumPitchSub => 'Ad-free and unlimited · monthly, yearly or lifetime';
   @override
-  String get premiumBody => 'Premium removes all ads and unlocks Skyblue Note on iPhone, iPad and Mac. One purchase covers all three. Your support builds the next update.';
+  String get premiumBody => 'Premium removes ads and unlocks unlimited tidy and AI wizard. Two plans: Standard, for the devices of the store you bought from plus the web; and All Devices, for everything — iPhone, Android, PC and web. Your support builds the next release.';
   @override
-  String get premiumLifetime => 'Lifetime · US\$29.99';
+  String get premiumLifetime => 'Lifetime';
   @override
-  String get premiumMonthly => 'Monthly · US\$2.99/mo';
+  String get premiumMonthly => 'Monthly';
   @override
   String get premiumComingSoon => 'Purchases will be enabled in the App Store release. Almost there.';
   @override
@@ -1252,9 +1282,9 @@ class L10nEn extends L10n {
   @override
   String get limitSeePremium => 'See Premium';
   @override
-  String get premiumYearly => 'Yearly · US\$14.99/yr';
+  String get premiumYearly => 'Yearly';
   @override
-  String get premiumLifetimeNote => 'Launch price · regularly US\$39.99';
+  String get premiumLifetimeNote => 'One payment, no renewal';
 
   @override
   String trialBadge(int days) => 'Unlimited trial · $days days left';

@@ -48,6 +48,7 @@ import 'core/note_lock.dart';
 import 'core/paper.dart';
 import 'core/plain_text.dart';
 import 'core/purchase_gate.dart';
+import 'purchase_service.dart';
 import 'core/source_detect.dart';
 import 'core/tidy_engine.dart';
 import 'core/trash.dart';
@@ -107,6 +108,9 @@ Future<void> main() async {
   unawaited(WidgetBridge.init());
   // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
   AdsService.instance.boot();
+  // 결제 시동. 상품 목록을 받아 오고, 스토어에 "권한이 아직 살아 있나"를
+  // 묻는다. 웹·윈도우에서는 아무것도 안 한다.
+  unawaited(PurchaseService.instance.boot());
   runApp(const SimpleTextApp());
 }
 
@@ -3636,7 +3640,12 @@ class _HomeScreenState extends State<HomeScreen>
     // inactive는 확인 창만 떠도 오는 신호라(LockGate 주석 참고) 여기서
     // 하는 일은 '남은 모으기 흘려보내기'뿐이다 — 보낼 게 없으면 무해하다.
     _life = AppLifecycleListener(
-      onResume: ICloudSync.instance.onResume,
+      onResume: () {
+        ICloudSync.instance.onResume();
+        // 스토어에도 다시 묻는다. 뒤에 있는 동안 구독이 끊겼을 수도,
+        // 다른 기기에서 샀을 수도 있다.
+        unawaited(PurchaseService.instance.refresh());
+      },
       onInactive: ICloudSync.instance.flushUp,
       onHide: ICloudSync.instance.flushUp,
     );
@@ -10174,81 +10183,293 @@ String deviceFamily() {
 ///
 /// 2026-08-17 — 지금은 **아무 데서도 부르지 않는다**([kPaidTierLive]).
 /// StoreKit이 붙는 날 다시 연결한다.
-class PremiumScreen extends StatelessWidget {
+class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
+
+  @override
+  State<PremiumScreen> createState() => _PremiumScreenState();
+}
+
+class _PremiumScreenState extends State<PremiumScreen> {
+  final PurchaseService _svc = PurchaseService.instance;
+  bool _wasPremium = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _wasPremium = Store.instance.settings.premium;
+    _svc.revision.addListener(_tick);
+    Store.instance.addListener(_tick);
+    // 화면에 들어온 김에 값을 한 번 더 받아 온다. 처음 시동 때 스토어가
+    // 느렸거나 인터넷이 없었으면 목록이 비어 있을 수 있다.
+    unawaited(_svc.loadProducts());
+  }
+
+  @override
+  void dispose() {
+    _svc.revision.removeListener(_tick);
+    Store.instance.removeListener(_tick);
+    super.dispose();
+  }
+
+  void _tick() {
+    if (!mounted) return;
+    final now = Store.instance.settings.premium;
+    if (now && !_wasPremium) {
+      _wasPremium = true;
+      _toast(context, L10n.of(context).premiumThanks);
+    }
+    setState(() {});
+  }
+
+  bool get _apple =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.macOS);
+
+  Future<void> _open(String url) async =>
+      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+
+  Future<void> _buy(String id) async {
+    final p = _svc.product(id);
+    if (p == null) {
+      _toast(context, L10n.of(context).premiumLoading);
+      return;
+    }
+    await _svc.buy(p);
+  }
+
+  /// 값 한 줄. 스토어가 준 값을 그대로 쓴다 — 나라마다 다르고, 우리가 적어 둔
+  /// 숫자는 반드시 언젠가 실제와 어긋난다.
+  Widget _plan({
+    required String id,
+    required String title,
+    String? note,
+    String? badge,
+    bool filled = false,
+  }) {
+    final c = context.c;
+    final p = _svc.product(id);
+    final price = p?.price;
+    final body = Row(children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Flexible(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
+              ),
+              if (badge != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: c.infoBg,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(badge,
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: c.accent)),
+                ),
+              ],
+            ]),
+            if (note != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(note,
+                    style: const TextStyle(fontSize: 12.5, height: 1.25)),
+              ),
+          ],
+        ),
+      ),
+      const SizedBox(width: 10),
+      Text(price ?? '···',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+    ]);
+    final onTap = (_svc.busy || price == null) ? null : () => unawaited(_buy(id));
+    final style = ButtonStyle(
+      padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14)),
+      shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: filled
+          ? FilledButton(style: style, onPressed: onTap, child: body)
+          : OutlinedButton(style: style, onPressed: onTap, child: body),
+    );
+  }
+
+  Widget _sectionTitle(String title, String scope) => Padding(
+        padding: const EdgeInsets.only(top: 14, bottom: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(scope,
+                style: TextStyle(
+                    fontSize: 12.5, height: 1.35, color: context.c.sub)),
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
+    final c = context.c;
+    final s = Store.instance.settings;
+    final now = DateTime.now();
+    final family = deviceFamily();
+    final tier = tierOf(e: s.ent, now: now);
+    final offerUp = shouldOfferUpgrade(e: s.ent, family: family, now: now);
+
+    final body = <Widget>[
+      Center(
+        child: CircleAvatar(
+          radius: 34,
+          backgroundColor: c.infoBg,
+          child: Icon(Icons.workspace_premium, size: 38, color: c.accent),
+        ),
+      ),
+      const SizedBox(height: 16),
+      Text(l.premiumPitch,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+      const SizedBox(height: 8),
+      Text(l.premiumPerks,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13.5, height: 1.4, color: c.accent)),
+    ];
+
+    // 체험 중이면 남은 날을 여기서도 보여 준다. 끝나는 날을 미리 알고 있으면
+    // 종료가 배신이 아니라 예고가 된다.
+    if (trialOn(s.trialDays)) {
+      body.addAll([
+        const SizedBox(height: 10),
+        Text(l.trialBadge(trialLeft(s.trialDays)),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w700, color: c.accent)),
+      ]);
+    }
+
+    // 이미 가진 사람에게는 무엇을 가졌는지부터 알려 준다.
+    if (tier > 0) {
+      body.addAll([
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: c.infoBg,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(children: [
+            Text('${l.premiumHave} · ${tier == 2 ? l.premiumPlanAll : l.premiumPlanBase}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w700)),
+            if (offerUp) ...[
+              const SizedBox(height: 6),
+              Text(l.premiumUpgradeHere,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 13, height: 1.4)),
+            ],
+          ]),
+        ),
+      ]);
+    }
+
+    body.addAll([
+      const SizedBox(height: 14),
+      Text(l.premiumBody,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 14.5, height: 1.55, color: c.guideInk)),
+    ]);
+
+    if (!_svc.supported) {
+      // 웹·윈도우에는 붙일 스토어가 없다. 단추를 그려 놓고 눌러도 아무 일이
+      // 없게 두는 것보다, 어디서 사면 되는지 말해 주는 편이 정직하다.
+      body.addAll([
+        const SizedBox(height: 18),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: c.panel,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.glassLine),
+          ),
+          child: Text(l.premiumNoStore,
+              style: const TextStyle(fontSize: 13.5, height: 1.5)),
+        ),
+      ]);
+    } else {
+      body.addAll([
+        _sectionTitle(l.premiumPlanAll, l.premiumScopeAll),
+        _plan(
+          id: kProductLifetime,
+          title: l.premiumLifetime,
+          note: l.premiumLifetimeNote,
+          filled: true,
+        ),
+        _plan(
+          id: kProductAllYearly,
+          title: l.premiumYearly,
+          badge: l.premiumBestValue,
+        ),
+        _plan(id: kProductAllMonthly, title: l.premiumMonthly),
+        _sectionTitle(l.premiumPlanBase, l.premiumScopeBase),
+        _plan(id: kProductYearly, title: l.premiumYearly),
+        _plan(id: kProductMonthly, title: l.premiumMonthly),
+        const SizedBox(height: 10),
+        // 자동 갱신 고지 — 애플이 결제 화면에서 반드시 찾는 문장이다.
+        Text(l.premiumAutoRenew,
+            style: TextStyle(fontSize: 11.5, height: 1.5, color: c.sub)),
+        const SizedBox(height: 10),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 6,
+          children: [
+            TextButton(
+              onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
+              child: Text(l.premiumRestore),
+            ),
+            if (_apple)
+              TextButton(
+                onPressed: () => unawaited(_open(appleEulaUrl())),
+                child: Text(l.premiumTerms),
+              ),
+            TextButton(
+              onPressed: () => unawaited(_open(privacyUrl())),
+              child: Text(l.premiumPrivacy),
+            ),
+          ],
+        ),
+      ]);
+      if (!_svc.hasProducts) {
+        body.add(Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(l.premiumLoading,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: c.sub)),
+        ));
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(l.premiumTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Center(
-            child: CircleAvatar(
-              radius: 34,
-              backgroundColor: context.c.infoBg,
-              child: Icon(Icons.workspace_premium, size: 38, color: context.c.accent),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(l.premiumPitch,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-          // 체험 중이면 남은 날을 여기서도 보여 준다. 끝나는 날을 미리
-          // 알고 있으면 종료가 배신이 아니라 예고가 된다.
-          if (trialOn(Store.instance.settings.trialDays)) ...[
-            const SizedBox(height: 10),
-            Text(l.trialBadge(trialLeft(Store.instance.settings.trialDays)),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: context.c.accent)),
-          ],
-          const SizedBox(height: 10),
-          Text(l.premiumBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15.5, height: 1.55, color: context.c.guideInk)),
-          const SizedBox(height: 24),
-          // 2026-08-16 확정 가격(경쟁 앱 조사 후): 평생이 주력, 연간이
-          // 물량, 월간은 진입용. 평생 정가 US\$39.99는 UpNote와 같은 값이고
-          // 연간의 2.7배라 구독을 잠식하지 않는다. 출시 3개월은 기념가.
-          FilledButton(
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            onPressed: () => _toast(context, l.premiumComingSoon),
-            child: Column(children: [
-              Text(l.premiumLifetime,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              Text(l.premiumLifetimeNote,
-                  style: const TextStyle(fontSize: 12.5, height: 1.3)),
-            ]),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            onPressed: () => _toast(context, l.premiumComingSoon),
-            child: Text(l.premiumYearly,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            onPressed: () => _toast(context, l.premiumComingSoon),
-            child: Text(l.premiumMonthly,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          ),
-        ],
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+        children: body,
       ),
     );
   }

@@ -44,11 +44,34 @@ void main() {
             '${found.length > 20 ? '\n… 그리고 ${found.length - 20}곳 더' : ''}');
   });
 
-  test('진짜 달러 표시는 그대로 둔다 (2026-08-17)', () {
-    // 위 테스트가 너무 세게 잡아서 가격까지 고치는 일이 없도록 못 박는다.
-    // US$29.99 같은 값은 escape가 **맞다**.
-    final ko = File('lib/l10n/l10n_en.dart').readAsStringSync();
-    expect(ko.contains(r'US\$'), isTrue,
-        reason: '가격의 달러 표시가 사라졌다 — escape를 지나치게 걷어냈다');
+  test('가격은 문구에 박지 않는다 (2026-08-26)', () {
+    // 2026-08-17에는 반대였다 — 그때는 값을 문구에 적어 두었고, 위 시험이
+    // 그 달러 표시까지 걷어내지 않도록 못 박아야 했다.
+    //
+    // 2026-08-26에 규칙이 바뀌었다. 값은 **스토어가 준 것**을 쓴다.
+    //   · 나라마다 값이 다르다. 우리가 적은 숫자는 미국 값 하나뿐이다.
+    //   · 우리가 적은 숫자는 언젠가 반드시 실제와 어긋난다. 기념가가
+    //     끝나는 날, 애플이 환율표를 손보는 날, 우리가 값을 올리는 날.
+    //   · 그리고 화면의 값과 스토어의 값이 다르면 **심사에서 거절된다.**
+    //
+    // 그래서 시험을 뒤집는다. 문구 파일에 돈이 적혀 있으면 실패다.
+    final dir = Directory('lib/l10n');
+    final money = RegExp(r'US\\\$|\\\$[0-9]');
+    final found = <String>[];
+
+    for (final f in dir.listSync().whereType<File>()) {
+      if (!f.path.endsWith('.dart')) continue;
+      final lines = f.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        if (money.hasMatch(lines[i])) {
+          found.add('${f.path}:${i + 1}  ${lines[i].trim()}');
+        }
+      }
+    }
+
+    expect(found, isEmpty,
+        reason: '값은 스토어가 준 것을 쓴다. 문구에서 숫자를 빼고 '
+            'ProductDetails.price 를 쓸 것:\n'
+            '${found.take(20).join('\n')}');
   });
 }

@@ -16,6 +16,15 @@ String appStoreReviewUrl() =>
 
 /// 소개 페이지 — 스토어 등록이 없는 기기(안드로이드 테스트판·맥
 /// 직배포판)에서 공유할 곳.
+/// 개인정보처리방침. 결제 화면에 **반드시** 링크가 있어야 한다(애플 3.1.2).
+String privacyUrl() => 'https://ezlong.com/skybluenote/privacy/';
+
+/// 이용약관. 애플은 우리가 따로 약관을 두지 않으면 **애플 표준 EULA**를
+/// 링크하는 것을 인정한다. 안드로이드·웹용 자체 약관 페이지가 생기면
+/// 여기만 고치면 된다.
+String appleEulaUrl() =>
+    'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+
 String landingUrl() => 'https://ezlong.com/skybluenote/';
 
 /// 공유할 주소. 앱스토어에 있는 판(iOS·iPadOS)은 스토어로, 나머지는

@@ -1225,17 +1225,47 @@ class L10nKo extends L10n {
   @override
   String get sponsorGoPremium => '프리미엄으로 광고 없이 쓰기';
   @override
+  String get premiumPlanBase => '기본';
+  @override
+  String get premiumPlanAll => '모든 기기';
+  @override
+  String get premiumBestValue => '가장 알뜰';
+  @override
+  String get premiumPerks => '광고 없음 · 정리 무제한 · AI 마법사 무제한';
+  @override
+  String get premiumScopeBase => '결제한 스토어의 기기와 웹에서 열립니다.';
+  @override
+  String get premiumScopeAll => '아이폰·아이패드·맥·안드로이드·윈도우·웹 어디서나 열립니다.';
+  @override
+  String get premiumAutoRenew => '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
+  @override
+  String get premiumRestore => '구매 복원';
+  @override
+  String get premiumTerms => '이용약관';
+  @override
+  String get premiumPrivacy => '개인정보처리방침';
+  @override
+  String get premiumThanks => '고맙습니다. 프리미엄이 켜졌습니다.';
+  @override
+  String get premiumNoStore => '이 기기에서는 결제를 진행할 수 없습니다. 아이폰이나 안드로이드 앱에서 결제하시면, 같은 계정으로 로그인한 이곳에도 바로 적용됩니다.';
+  @override
+  String get premiumUpgradeHere => '이 기기에서도 쓰시려면 ‘모든 기기’로 올리세요. 남은 기간은 스토어가 정산해 드립니다.';
+  @override
+  String get premiumHave => '지금 등급';
+  @override
+  String get premiumLoading => '스토어에서 값을 받아오는 중입니다';
+  @override
   String get premiumTitle => '프리미엄';
   @override
-  String get premiumPitch => '광고 없이, 모든 기기에서';
+  String get premiumPitch => '광고 없이, 끝까지';
   @override
-  String get premiumPitchSub => '평생 US\$29.99 또는 월 US\$1.99 · 아이폰과 아이패드, 맥까지 한 번에';
+  String get premiumPitchSub => '광고 없이 무제한 · 월 구독부터 평생 이용권까지';
   @override
-  String get premiumBody => '프리미엄은 광고를 모두 없애고, 아이폰·아이패드·맥 어디서나 제한 없이 쓰게 해 줍니다. 결제는 한 번이면 세 기기 모두에 적용됩니다. 여러분의 응원이 다음 업데이트를 만듭니다.';
+  String get premiumBody => '프리미엄은 광고를 없애고 정리와 AI 마법사를 무제한으로 열어 줍니다. 등급은 둘입니다 — 결제한 스토어의 기기와 웹에서 쓰는 ‘기본’, 아이폰·안드로이드·PC·웹 어디서나 쓰는 ‘모든 기기’. 여러분의 응원이 다음 판을 만듭니다.';
   @override
-  String get premiumLifetime => '평생 이용권 · US\$29.99';
+  String get premiumLifetime => '평생 이용권';
   @override
-  String get premiumMonthly => '월간 구독 · 월 US\$2.99';
+  String get premiumMonthly => '월간';
   @override
   String get premiumComingSoon => '결제는 스토어 출시 버전에서 활성화됩니다. 조금만 기다려 주세요.';
   @override
@@ -1248,9 +1278,9 @@ class L10nKo extends L10n {
   @override
   String get limitSeePremium => '프리미엄 보기';
   @override
-  String get premiumYearly => '연간 구독 · 연 US\$14.99';
+  String get premiumYearly => '연간';
   @override
-  String get premiumLifetimeNote => '출시 기념가 · 정가 US\$39.99';
+  String get premiumLifetimeNote => '한 번 결제, 갱신 없음';
 
   @override
   String trialBadge(int days) => '무제한 체험 · $days일 남음';

@@ -1225,17 +1225,47 @@ class L10nJa extends L10n {
   @override
   String get sponsorGoPremium => 'プレミアムで広告なしに';
   @override
+  String get premiumPlanBase => 'ベーシック';
+  @override
+  String get premiumPlanAll => 'すべての端末';
+  @override
+  String get premiumBestValue => 'いちばんお得';
+  @override
+  String get premiumPerks => '広告なし・整形は無制限・AIウィザードも無制限';
+  @override
+  String get premiumScopeBase => '購入したストアの端末とウェブで使えます。';
+  @override
+  String get premiumScopeAll => 'iPhone・iPad・Mac・Android・Windows・ウェブ、どこでも使えます。';
+  @override
+  String get premiumAutoRenew => 'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
+  @override
+  String get premiumRestore => '購入を復元';
+  @override
+  String get premiumTerms => '利用規約';
+  @override
+  String get premiumPrivacy => 'プライバシーポリシー';
+  @override
+  String get premiumThanks => 'ありがとうございます。プレミアムが有効になりました。';
+  @override
+  String get premiumNoStore => 'この端末では購入できません。iPhone または Android アプリで購入すると、同じアカウントでログインしたこちらにもすぐ反映されます。';
+  @override
+  String get premiumUpgradeHere => 'この端末でも使うには「すべての端末」へアップグレードしてください。残り期間はストアが精算します。';
+  @override
+  String get premiumHave => '現在のプラン';
+  @override
+  String get premiumLoading => 'ストアから価格を取得しています';
+  @override
   String get premiumTitle => 'プレミアム';
   @override
-  String get premiumPitch => '広告なしで、すべてのデバイスで';
+  String get premiumPitch => '広告なしで、最後まで';
   @override
-  String get premiumPitchSub => '買い切りUS\$29.99または月額US\$1.99 · iPhone・iPad・Macまとめて';
+  String get premiumPitchSub => '広告なしで無制限・月額から買い切りまで';
   @override
-  String get premiumBody => 'プレミアムはすべての広告をなくし、iPhone・iPad・Macで制限なく使えるようにします。1回の購入で3つのデバイスすべてに適用されます。皆さまの応援が次のアップデートを作ります。';
+  String get premiumBody => 'プレミアムは広告をなくし、整形とAIウィザードを無制限にします。プランは2つ — 購入したストアの端末とウェブで使う「ベーシック」、iPhoneもAndroidもPCもウェブも使える「すべての端末」。応援が次の更新をつくります。';
   @override
-  String get premiumLifetime => '買い切り · US\$29.99';
+  String get premiumLifetime => '買い切り';
   @override
-  String get premiumMonthly => '月額 · US\$2.99/月';
+  String get premiumMonthly => '月額';
   @override
   String get premiumComingSoon => '購入はApp Store公開版で有効になります。もうしばらくお待ちください。';
   @override
@@ -1248,9 +1278,9 @@ class L10nJa extends L10n {
   @override
   String get limitSeePremium => 'プレミアムを見る';
   @override
-  String get premiumYearly => '年間 · 年US\$14.99';
+  String get premiumYearly => '年額';
   @override
-  String get premiumLifetimeNote => '発売記念価格 · 通常US\$39.99';
+  String get premiumLifetimeNote => '一度の支払い、更新なし';
 
   @override
   String trialBadge(int days) => '無制限体験 · 残り$days日';
