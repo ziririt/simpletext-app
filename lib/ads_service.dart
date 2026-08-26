@@ -51,6 +51,36 @@ String get bannerUnitId => Platform.isIOS
         ? 'ca-app-pub-2336764115275414/2139765486'
         : 'ca-app-pub-3940256099942544/6300978111');
 
+/// 네이티브 광고 단위 — **애드몹 콘솔에서 따로 만들어야 한다.**
+///
+/// 배너 단위로는 네이티브 광고가 안 나온다. 종류가 다른 상품이다.
+/// 소유자가 콘솔에서 '네이티브 고급' 단위를 두 개(iOS·안드로이드) 만들어
+/// 이 두 상수를 채우기 전까지는 비어 있고, 그동안은 아래 [nativeUnitId]가
+/// null을 돌려주어 **예전 배너 사다리로 저절로 되돌아간다.**
+/// 빈 문자열인 채로 스토어에 나가도 광고 자리가 비지 않는다는 뜻이다.
+const String kNativeUnitIos = '';
+const String kNativeUnitAndroid = '';
+
+/// 시험용 네이티브 단위(구글 공식). 개발 빌드는 언제나 이것으로 돈다.
+const String kNativeTestIos = 'ca-app-pub-3940256099942544/3986624511';
+const String kNativeTestAndroid = 'ca-app-pub-3940256099942544/2247696110';
+
+/// 지금 쓸 네이티브 단위. 실광고인데 아직 단위를 안 만들었으면 null.
+String? get nativeUnitId {
+  if (!kRealAds) {
+    return Platform.isIOS ? kNativeTestIos : kNativeTestAndroid;
+  }
+  final id = Platform.isIOS ? kNativeUnitIos : kNativeUnitAndroid;
+  return id.isEmpty ? null : id;
+}
+
+/// 네이티브 medium 판이 요구하는 칸 높이. 구글 템플릿의 최소가 320이라
+/// 그보다 여유를 둔다. 이보다 낮게 주면 템플릿이 잘려 그려진다.
+const double kNativeMediumH = 360;
+
+/// 네이티브 small 판(목록 한가운데용). 가로로 눕는 모양이라 낮다.
+const double kNativeSmallH = 110;
+
 String get interstitialUnitId => Platform.isIOS
     ? (kRealAds
         ? 'ca-app-pub-2336764115275414/3636679980'
@@ -460,10 +490,17 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   ///
   /// 작은 화면에서는 600을 아예 안 묻는다. 화면보다 큰 광고는 스크롤
   /// 도중에 나타나면 사람이 무엇을 보고 있었는지 잃어버린다.
-  static const List<AdSize> _big = [
-    AdSize(width: 300, height: 600),
-    AdSize.mediumRectangle,
-  ];
+  /// 2026-08-27 — **하프페이지(300×600)를 뺐다.**
+  ///
+  /// 소유자 신고: "가로 폭이 좁은 세로형 배너가 나오네? 이건 내가 원하는 게
+  /// 아니다." 맞다. 300×600은 큰 것이지 넓은 것이 아니다. 폭 440 화면에서
+  /// 양옆에 70씩 남고 세로로만 600이 뻗는다. 게다가 구글이 그 자리에
+  /// 160×600 같은 더 좁은 소재를 채워 넣어 더 앙상해 보였다.
+  ///
+  /// '풀사이즈'를 높이로 읽은 것이 잘못이었다. 이제 큰 자리는 네이티브
+  /// 광고가 맡고(폭을 꽉 채운다), 이 사다리는 네이티브가 실패했을 때만
+  /// 쓰는 **되돌아갈 자리**다. 되돌아가더라도 세로로 긴 것은 안 쓴다.
+  static const List<AdSize> _big = [AdSize.mediumRectangle];
   static const List<AdSize> _small = [AdSize.mediumRectangle];
 
   /// 가로형 차례. 큰 것부터라는 규칙은 여기서도 같다.
@@ -482,6 +519,11 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
 
   /// 300×600을 물을 만한 화면 높이(논리 픽셀). 이보다 낮으면 안 묻는다.
   static const double _tallEnough = 760;
+
+  /// 네이티브 광고. 이것이 뜨면 배너는 아예 묻지 않는다.
+  NativeAd? _native;
+  bool _nativeLoaded = false;
+  bool _nativeTried = false;
 
   BannerAd? _ad;
   double _adH = 250;
@@ -525,6 +567,54 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   List<AdSize> _ladder(double screenHeight) => widget.wide
       ? _wide
       : (screenHeight >= _tallEnough ? _big : _small);
+
+  /// 네이티브 광고를 한 번 물어본다. 실패하면 다시 묻지 않고 배너로 내려간다.
+  ///
+  /// 색을 우리 팔레트로 넘기는 까닭: 구글 기성 템플릿은 기본이 흰 바탕이라
+  /// 다크 모드에서 그 자리만 눈이 부신다. 광고라도 앱의 밤에는 밤이어야 한다.
+  void _createNative(BuildContext context) {
+    if (_nativeTried || _native != null) return;
+    _nativeTried = true;
+    final unit = nativeUnitId;
+    if (unit == null) return; // 아직 단위를 안 만들었다 — 배너로 간다
+    final c = context.c;
+    final ink = Theme.of(context).colorScheme.onSurface;
+    final medium = !widget.wide;
+    final ad = NativeAd(
+      adUnitId: unit,
+      request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: medium ? TemplateType.medium : TemplateType.small,
+        mainBackgroundColor: c.panel,
+        cornerRadius: 12,
+        primaryTextStyle: NativeTemplateTextStyle(textColor: ink, size: 15),
+        secondaryTextStyle: NativeTemplateTextStyle(textColor: c.sub, size: 13),
+        tertiaryTextStyle: NativeTemplateTextStyle(textColor: c.sub, size: 12),
+        callToActionTextStyle: NativeTemplateTextStyle(
+            textColor: Colors.white, backgroundColor: c.accent, size: 15),
+      ),
+      listener: NativeAdListener(
+        onAdLoaded: (_) {
+          if (!mounted) return;
+          setState(() {
+            _nativeLoaded = true;
+            _adH = medium ? kNativeMediumH : kNativeSmallH;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+          if (!mounted) return;
+          // 되돌아갈 자리를 연다. _native 를 비우면 build 가 배너를 묻는다.
+          setState(() {
+            _native = null;
+            _nativeLoaded = false;
+          });
+        },
+      ),
+    );
+    _native = ad;
+    ad.load();
+  }
 
   void _create(double screenHeight) {
     if (_creating || _ad != null) return;
@@ -638,6 +728,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
     _ad?.dispose();
+    _native?.dispose();
     super.dispose();
   }
 
@@ -653,8 +744,14 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
-    _create(MediaQuery.of(context).size.height);
-    if (_ad == null || !_loaded) return const SizedBox.shrink();
+    // 네이티브를 먼저 묻는다. 물어보는 중(_native != null)에는 배너를 켜지
+    // 않는다 — 둘이 같이 뜨면 자리가 두 번 흔들린다.
+    _createNative(context);
+    if (_native == null) _create(MediaQuery.of(context).size.height);
+    final showNative = _nativeLoaded && _native != null;
+    if (!showNative && (_ad == null || !_loaded)) {
+      return const SizedBox.shrink();
+    }
 
     final c = context.c;
     final l = L10n.of(context);
@@ -669,11 +766,15 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     // 누른다고 그냥 사라지지는 않는다. 후원 안내가 열리고, 거기서 전면 광고
     // 한 편을 보면 **그날 하루 광고가 전부 사라진다.** 끄고 싶은 마음과 우리가
     // 받아야 할 몫을 맞바꾸는 자리다.
+    // 네이티브는 **폭을 꽉 채운다.** 그게 이 판을 만든 이유다.
+    // 배너로 되돌아갔을 때만 박힌 폭(_adW)을 쓴다.
     final ad = SizedBox(
-      width: _adW,
+      width: showNative ? double.infinity : _adW,
       height: _adH,
       child: Stack(children: [
-        Positioned.fill(child: ClipRect(child: AdWidget(ad: _ad!))),
+        Positioned.fill(
+            child: ClipRect(
+                child: AdWidget(ad: showNative ? _native! : _ad!))),
         Positioned(
           top: 2,
           right: 2,
