@@ -9617,8 +9617,9 @@ class _SyncNapBannerState extends State<SyncNapBanner> {
     setState(() => _busy = true);
     final ok = await DriveAuth.instance.authorizeDrive();
     if (ok) {
-      await applySyncBackend();
-      await ICloudSync.instance.rebind();
+      // 첫 맞추기를 기다리며 단추를 붙잡아 두지 않는다 (2026-08-26).
+      // 배너는 맞추기가 끝나면 스스로 사라진다 — 기다릴 이유가 없다.
+      unawaited(applySyncBackend().then((_) => ICloudSync.instance.rebind()));
     }
     if (!mounted) return;
     setState(() => _busy = false);
@@ -9809,10 +9810,9 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
       });
       return;
     }
-    await applySyncBackend();
-    await ICloudSync.instance.rebind();
-    if (!mounted) return;
-    await _report();
+    // 첫 맞추기를 기다리지 않는다 — 까닭은 _googleIn 에 적었다.
+    unawaited(_fetchInBackground());
+    await _sayFetching();
   }
 
   Future<void> _googleIn() async {
@@ -9830,11 +9830,40 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
       });
       return;
     }
-    // 붙었으면 통로를 새 토큰으로 갈아 끼우고 처음부터 다시 맞춘다.
+    // 붙었다. **첫 맞추기를 기다리지 않는다** (2026-08-26 소유자 지시).
+    //
+    // 여태는 첫 맞추기가 다 끝날 때까지 이 시트를 열어 둔 채 기다렸다.
+    // 노트가 많으면 1~2분이고, 하필 인증 창에서 막 돌아온 예민한 때다 —
+    // 그 사이 아이폰이 검은 화면으로 남았다는 신고가 있었다(8/26 아침).
+    //
+    // 받아오기는 뒤에서 이어져도 되는 일이다. 앱이 잠들면 쉬었다가
+    // 돌아올 때 onResume 이 이어받는다(icloud_sync.dart). 그러니 사람
+    // 에게는 바로 답하고 창을 닫는다. 기다리게 하지 않는 것이 맞다.
+    unawaited(_fetchInBackground());
+    await _sayFetching();
+  }
+
+  /// 통로를 갈아 끼우고 처음부터 다시 맞춘다 — 화면과 상관없이 돈다.
+  ///
+  /// 화면을 만지지 않으므로 시트가 닫힌 뒤에 끝나도 안전하다.
+  Future<void> _fetchInBackground() async {
     await applySyncBackend();
     await ICloudSync.instance.rebind();
+  }
+
+  /// "받아오는 중"이라고 말하고 창을 닫는다.
+  ///
+  /// 쓰는 말은 진단 줄과 **같은 것**을 쓴다. 같은 사실을 두 벌로 적어
+  /// 두면 한쪽만 고치는 날이 온다 — 이 말은 9개 언어에 이미 있다.
+  Future<void> _sayFetching() async {
     if (!mounted) return;
-    await _report();
+    setState(() {
+      _checking = false;
+      _saidBad = false;
+      _said = L10n.of(context).syncDiagPreparingGdrive;
+    });
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (mounted) Navigator.pop(context);
   }
 
   /// 확인한 결과를 사람 말로 알리고, 됐으면 창을 닫는다.
