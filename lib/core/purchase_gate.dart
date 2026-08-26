@@ -258,6 +258,23 @@ bool shouldOfferUpgrade({
 }) =>
     tierOf(e: e, now: now) == 1 && !premiumHere(e: e, family: family, now: now);
 
+/// **개발 중에만** 쓰는 값. 스토어가 아직 상품을 안 내려줄 때(시뮬레이터,
+/// 상품이 심사 준비 전, 인터넷 없음) 화면이 점 세 개로 비어 보이지 않도록
+/// 채워 넣는다.
+///
+/// 릴리스에서는 절대 쓰지 않는다 — 화면 코드가 kDebugMode 로 막는다.
+/// 진짜 값은 언제나 스토어가 준 ProductDetails.price 다. 나라마다 다르고,
+/// 여기 적힌 숫자는 미국 값 하나뿐이며, 기념가가 끝나는 날 어긋난다.
+///
+/// 2026-08-26 소유자 확정값. App Store Connect 에 실제로 등록한 값과 같다.
+const Map<String, String> kDevUsdPrice = <String, String>{
+  kProductMonthly: r'$2.99',
+  kProductYearly: r'$19.99',
+  kProductAllMonthly: r'$3.99',
+  kProductAllYearly: r'$29.99',
+  kProductLifetime: r'$39.99',
+};
+
 /// 하루 한도를 이 사람에게 들이대는가.
 ///
 /// 체험 중인지는 여기서 보지 않는다 — usage_gate의 canUseNow가 본다.

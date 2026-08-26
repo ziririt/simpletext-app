@@ -13,7 +13,7 @@ import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
 // material.dart는 defaultTargetPlatform을 내보내지 않는다(TargetPlatform은 내보낸다).
 // 2026-08-14에 이걸 몰라서 analyze가 undefined_identifier로 잡았다.
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart' show openFiles, XFile;
@@ -3639,6 +3639,15 @@ class _HomeScreenState extends State<HomeScreen>
     // 돌아올 때는 받아 오고(onResume), 물러날 때는 부친다(flushUp).
     // inactive는 확인 창만 떠도 오는 신호라(LockGate 주석 참고) 여기서
     // 하는 일은 '남은 모으기 흘려보내기'뿐이다 — 보낼 게 없으면 무해하다.
+    if (kDebugMode && kShowPaywallOnStart) {
+      // 첫 프레임이 그려진 뒤에 연다 — 그 전에는 Navigator 가 아직 없다.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        unawaited(Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) => const PremiumScreen(),
+        )));
+      });
+    }
     _life = AppLifecycleListener(
       onResume: () {
         ICloudSync.instance.onResume();
@@ -10158,8 +10167,18 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
 ///
 /// const가 아니라 final인 이유: const로 두면 분석기가 아래 코드를 전부
 /// '죽은 코드'로 보고 경고한다. 죽은 게 아니라 **잠깐 꺼 둔 것**이다.
+// 2026-08-26 — 상수를 손으로 고쳤다 되돌리는 짓을 그만둔다. 빌드할 때
+// --dart-define=PAID_TIER=true 를 실으면 켜진다. 샌드박스 검증이 끝나면
+// 여기 기본값을 true 로 바꾼다.
 // ignore: prefer_const_declarations
-final bool kPaidTierLive = false;
+final bool kPaidTierLive = const bool.fromEnvironment('PAID_TIER');
+
+/// 켜고 나면 곧장 결제 화면을 연다 — **디버그 전용**.
+///
+/// 심사용 스크린샷을 찍을 때 화면을 손으로 뒤지지 않기 위해서다.
+/// simctl 로 띄우고 simctl io ... screenshot 으로 바로 찍는다.
+// ignore: prefer_const_declarations
+final bool kShowPaywallOnStart = const bool.fromEnvironment('SHOW_PAYWALL');
 
 /// 이 기기가 어느 스토어의 식구인가 — core/purchase_gate.dart의 갈래로 옮긴다.
 ///
@@ -10250,7 +10269,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
   }) {
     final c = context.c;
     final p = _svc.product(id);
-    final price = p?.price;
+    // 스토어가 준 값이 언제나 먼저다. 개발 중(디버그)에만, 그리고 스토어가
+    // 아직 아무것도 안 줬을 때만 우리가 적어 둔 미국 값으로 자리를 채운다.
+    final price = p?.price ?? (kDebugMode ? kDevUsdPrice[id] : null);
     final body = Row(children: [
       Expanded(
         child: Column(
