@@ -462,9 +462,43 @@ bool isTimeHeader(String line) {
 /// 문서 맨 위·맨 아래에 있으면 내용이 없으므로 지운다(소유자 신고 2026-08-14:
 /// 맨 위 "---" 때문에 제목이 "---"로 붙었다). 문서 중간의 구분선은 글을 나누는
 /// 뜻이 있으므로 그대로 둔다.
+/// 장식 줄에 쓰이는 기호 — 한 곳에서만 정한다 (2026-08-26 소유자 지시).
+///
+/// 소유자 신고: "붙여넣은 원본 문서에 '――――' 이런 선이 있다면 이것도
+/// 기본 정리 대상이다." 여태 우리가 아는 구분선은 '-*_=─━═' 뿐이어서,
+/// 대시붙이(‒–—―)와 굵은 줄·겹줄로 그린 선은 정리에서 살아남았다.
+///
+/// 구분선을 두 갈래로 가른다.
+///   · **마크다운 구분선**('---' '***' '___') — 뜻이 있는 문법이다.
+///     지울지 말지는 설정(구분선)이 정한다. 여태 하던 그대로다.
+///   · **장식 줄**('――――' '─────' '═════' '▬▬▬') — 문법이 아니라
+///     원본 문서의 꾸밈이다. 늘 걷는다 — 기본 정리 대상이다.
+///
+/// 일부러 뺀 기호:
+///   '~' — '~~~'는 마크다운 코드 울타리다. 지우면 코드가 풀린다.
+///   '=' — '===='가 제목 밑줄(setext)일 수 있다. 지우면 제목이 사라진다.
+///   'ㅡ' — 'ㅡㅡ'를 표정으로 쓰는 사람이 있다.
+const String kDecorDividerGlyphs =
+    '‐‑‒–—―−'
+    '─━┄┅┈┉╌╍═'
+    '▬‾－＿￣';
+
+final RegExp _decorDividerRe = RegExp('^[$kDecorDividerGlyphs]{3,}\$');
+
+/// 장식 줄인가 — **한 가지** 기호로만 3개 이상 그린 줄.
+///
+/// 한 가지로 못 박는 까닭: '―는 이렇게―'처럼 글 안에 섞여 쓰인 줄은
+/// 선이 아니라 문장이다. 섞이면 손대지 않는다.
+bool isDecorDivider(String line) {
+  final c = line.trim().replaceAll(RegExp(r'\s'), '');
+  if (!_decorDividerRe.hasMatch(c)) return false;
+  return c.split('').toSet().length == 1;
+}
+
 bool isLoneDivider(String line) {
   final c = line.trim().replaceAll(RegExp(r'\s'), '');
   if (c.length < 3) return false;
+  if (isDecorDivider(c)) return true;
   if (!RegExp(r'^[-*_=─━═]+$').hasMatch(c)) return false;
   return c.split('').toSet().length == 1; // 한 가지 기호로만 이루어질 것
 }
@@ -1372,6 +1406,10 @@ List<String> _processTextSegment(
       } else {
         out.add(formatted);
       }
+    } else if (isDecorDivider(line)) {
+      // 장식 줄은 문법이 아니라 원본의 꾸밈이다 — 설정을 묻지 않고 걷는다
+      // (2026-08-26 소유자 지시). 마크다운 구분선 판정보다 먼저 본다.
+      rep.markers++;
     } else if (RegExp(r'^\s*([-*_])\s*(\1\s*){2,}$').hasMatch(line)) {
       final hrm = o.hrMode.isNotEmpty ? o.hrMode : (o.removeHr ? 'remove' : 'keep');
       if (hrm == 'remove') {
