@@ -47,6 +47,7 @@ import 'core/mru.dart';
 import 'core/note_lock.dart';
 import 'core/paper.dart';
 import 'core/plain_text.dart';
+import 'core/purchase_gate.dart';
 import 'core/source_detect.dart';
 import 'core/tidy_engine.dart';
 import 'core/trash.dart';
@@ -1386,9 +1387,27 @@ class AppSettings {
   String aiModel = 'gemini-2.5-flash-lite';
   List<String> aiModels = []; // '키 확인' 때 받아 온 실제 모델 목록
 
-  /// 프리미엄 구매 여부. 실제 결제(StoreKit/Play)는 스토어 제출 작업에서
-  /// 붙는다 — 그때 이 값을 영수증으로 채운다. 지금은 항상 false.
+  /// 지금 프리미엄인가 — **읽기 전용으로 여겨라.** 아래 두 칸에서 계산해
+  /// 채운다(core/purchase_gate.dart의 premiumNow). 화면·광고·한도 코드는
+  /// 이 값만 보면 된다.
   bool premium = false;
+
+  /// 평생 이용권을 샀는가. 한 번 참이면 날짜로 꺼지지 않는다.
+  bool premiumLifetime = false;
+
+  /// 구독을 '언제까지 믿을지'의 울타리(ms). 규칙은 core/purchase_gate.dart.
+  /// 애플 기기가 앱을 켤 때마다 다시 세우고, 결제가 끊기면 저절로 넘어간다.
+  int premiumUntilMs = 0;
+
+  /// 유료 체계가 생기기 전(1.0~1.3)부터 쓰던 사람인가.
+  ///
+  /// 2026-08-26 소유자 결정 — 하루 한도는 **새로 깐 사람부터**다. 그 사람들은
+  /// '완전 무료'라는 말을 보고 앱을 깔았다. 나중에 문을 달아 잠그는 것은
+  /// 약속을 깨는 일이고, 돌아오는 것은 결제가 아니라 별 하나짜리 리뷰다.
+  ///
+  /// 판정은 딱 한 번, 설정을 불러올 때 한다. 저장본에 이 열쇠가 없으면
+  /// 옛 판에서 올라온 것이므로 유예다. 저장본 자체가 없으면 새 설치다.
+  bool legacyFree = false;
 
   /// 무료 한도 계수기(정리·마법사). 규칙은 core/usage_gate.dart.
   String tidyDate = '';
@@ -1544,6 +1563,9 @@ class AppSettings {
         'lockOn': lockOn,
         'lockGraceSec': lockGraceSec,
         'premium': premium,
+        'premiumLifetime': premiumLifetime,
+        'premiumUntilMs': premiumUntilMs,
+        'legacyFree': legacyFree,
         'tidyDate': tidyDate,
         'tidyCount': tidyCount,
         'wizDate': wizDate,
@@ -1659,7 +1681,19 @@ class AppSettings {
     s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
     s.adFreeDate = (j['adFreeDate'] ?? s.adFreeDate) as String;
     s.themeMode = (j['themeMode'] ?? s.themeMode) as String;
-    s.premium = (j['premium'] ?? s.premium) as bool;
+    s.premiumLifetime = (j['premiumLifetime'] ?? s.premiumLifetime) as bool;
+    s.premiumUntilMs = (j['premiumUntilMs'] ?? s.premiumUntilMs) as int;
+    // 이 열쇠가 없는 저장본 = 유료 체계 이전(1.0~1.3)에 만들어진 것이다.
+    // 그 사람은 한도를 면제받는다. 새 설치는 저장본 자체가 없으므로 이
+    // 갈래를 아예 지나지 않고 기본값 false로 남는다.
+    s.legacyFree = (j['legacyFree'] ?? true) as bool;
+    // premium은 저장값을 믿지 않고 매번 다시 센다 — 구독은 시간이 지나면
+    // 끝나는데 저장된 참은 스스로 거짓이 되지 못한다.
+    s.premium = premiumNow(
+      lifetime: s.premiumLifetime,
+      untilMs: s.premiumUntilMs,
+      now: DateTime.now(),
+    );
     s.tidyDate = (j['tidyDate'] ?? s.tidyDate) as String;
     s.tidyCount = (j['tidyCount'] ?? s.tidyCount) as int;
     s.wizDate = (j['wizDate'] ?? s.wizDate) as String;
@@ -6387,7 +6421,13 @@ static const int kTagScanChars = 3000;
     final s = store.settings;
     // 2026-08-17 — 첫 판은 완전 무료다. 한도도, 프리미엄 안내도 없다.
     // 화면만 숨기고 한도를 남기면 빠져나갈 길이 없는 벽이 된다.
-    if (!kPaidTierLive) return false;
+    if (!limitsApply(
+      paidTierLive: kPaidTierLive,
+      legacyFree: s.legacyFree,
+      premium: s.premium,
+    )) {
+      return false;
+    }
 
     final now = DateTime.now();
     // canUse가 아니라 canUseNow다 — canUse는 한도만 보므로 체험 중인

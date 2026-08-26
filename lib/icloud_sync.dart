@@ -39,6 +39,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
+import 'core/purchase_gate.dart';
 import 'core/sync_merge.dart';
 import 'core/sync_plan.dart';
 import 'core/sync_transport.dart';
@@ -743,14 +744,32 @@ class ICloudSync {
       final t = mx('tidy', s.trialTidyTotal);
       final w = mx('wiz', s.trialWizTotal);
       final n = (remote['notice'] == true) || s.trialNoticeShown;
+      // 결제 기록도 같은 파일에 싣는다. 여기만이 '가진 쪽이 이긴다'로
+      // 도는 자리이기 때문이다 — 규칙 동기화(늦은 쪽이 이긴다)에 실으면
+      // 결제를 모르는 기기가 켜지는 순간 산 것을 덮어 버린다.
+      final lf = mergeLifetime(s.premiumLifetime, remote['life'] == true);
+      final un = mergeUntil(
+          s.premiumUntilMs, remote['until'] is int ? remote['until'] as int : 0);
+      final lg = mergeLegacyFree(s.legacyFree, remote['legacy'] == true);
       if (d != s.trialDays ||
           t != s.trialTidyTotal ||
           w != s.trialWizTotal ||
-          n != s.trialNoticeShown) {
+          n != s.trialNoticeShown ||
+          lf != s.premiumLifetime ||
+          un != s.premiumUntilMs ||
+          lg != s.legacyFree) {
         s.trialDays = d;
         s.trialTidyTotal = t;
         s.trialWizTotal = w;
         s.trialNoticeShown = n;
+        s.premiumLifetime = lf;
+        s.premiumUntilMs = un;
+        s.legacyFree = lg;
+        s.premium = premiumNow(
+          lifetime: lf,
+          untilMs: un,
+          now: DateTime.now(),
+        );
         changed = true;
       }
     }
@@ -763,6 +782,9 @@ class ICloudSync {
       'tidy': s.trialTidyTotal,
       'wiz': s.trialWizTotal,
       'notice': s.trialNoticeShown,
+      'life': s.premiumLifetime,
+      'until': s.premiumUntilMs,
+      'legacy': s.legacyFree,
     });
   }
 
