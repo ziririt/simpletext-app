@@ -226,8 +226,12 @@ class _TopBannerBarState extends State<TopBannerBar> {
     final c = context.c;
     return Container(
       width: double.infinity,
-      color: c.panel,
       alignment: Alignment.center,
+      // 색은 decoration 안에서만 정한다 — Container에 color:와 decoration:을
+      // 함께 주면 플러터가 단언으로 막는다(container.dart:277). 릴리스 빌드는
+      // 단언을 지우고 지나가므로 스토어판에서는 안 보였고, 시뮬레이터(디버그)
+      // 에서 광고 띠가 처음 뜨는 순간 빨간 화면으로 드러났다.
+      // (2026-08-26 소유자 신고 — "갑자기 이런 빨간 페이지가 떴다")
       decoration: BoxDecoration(
         color: c.panel,
         border: Border(bottom: BorderSide(color: c.glassLine)),
