@@ -1392,12 +1392,12 @@ class AppSettings {
   /// 이 값만 보면 된다.
   bool premium = false;
 
-  /// 평생 이용권을 샀는가. 한 번 참이면 날짜로 꺼지지 않는다.
-  bool premiumLifetime = false;
-
-  /// 구독을 '언제까지 믿을지'의 울타리(ms). 규칙은 core/purchase_gate.dart.
-  /// 애플 기기가 앱을 켤 때마다 다시 세우고, 결제가 끊기면 저절로 넘어간다.
-  int premiumUntilMs = 0;
+  /// 결제로 얻은 것. 네 칸이며 규칙은 core/purchase_gate.dart에 있다.
+  ///
+  /// 스토어마다 울타리를 따로 두는 까닭: 기본 등급은 **산 스토어의 기기군**
+  /// 에서만 열린다. 한 사람이 애플에서도 구글에서도 살 수 있으므로 등급
+  /// 하나로는 표현이 안 된다.
+  Entitlement ent = const Entitlement();
 
   /// 유료 체계가 생기기 전(1.0~1.3)부터 쓰던 사람인가.
   ///
@@ -1563,8 +1563,7 @@ class AppSettings {
         'lockOn': lockOn,
         'lockGraceSec': lockGraceSec,
         'premium': premium,
-        'premiumLifetime': premiumLifetime,
-        'premiumUntilMs': premiumUntilMs,
+        'ent': ent.toJson(),
         'legacyFree': legacyFree,
         'tidyDate': tidyDate,
         'tidyCount': tidyCount,
@@ -1681,17 +1680,17 @@ class AppSettings {
     s.aiModels = List<String>.from((j['aiModels'] ?? const []) as List);
     s.adFreeDate = (j['adFreeDate'] ?? s.adFreeDate) as String;
     s.themeMode = (j['themeMode'] ?? s.themeMode) as String;
-    s.premiumLifetime = (j['premiumLifetime'] ?? s.premiumLifetime) as bool;
-    s.premiumUntilMs = (j['premiumUntilMs'] ?? s.premiumUntilMs) as int;
+    s.ent = Entitlement.fromJson(j['ent'] as Map<String, dynamic>?);
     // 이 열쇠가 없는 저장본 = 유료 체계 이전(1.0~1.3)에 만들어진 것이다.
     // 그 사람은 한도를 면제받는다. 새 설치는 저장본 자체가 없으므로 이
     // 갈래를 아예 지나지 않고 기본값 false로 남는다.
     s.legacyFree = (j['legacyFree'] ?? true) as bool;
     // premium은 저장값을 믿지 않고 매번 다시 센다 — 구독은 시간이 지나면
-    // 끝나는데 저장된 참은 스스로 거짓이 되지 못한다.
-    s.premium = premiumNow(
-      lifetime: s.premiumLifetime,
-      untilMs: s.premiumUntilMs,
+    // 끝나는데 저장된 참은 스스로 거짓이 되지 못한다. 그리고 **이 기기**
+    // 에서의 답이므로 기기 갈래를 함께 본다.
+    s.premium = premiumHere(
+      e: s.ent,
+      family: deviceFamily(),
       now: DateTime.now(),
     );
     s.tidyDate = (j['tidyDate'] ?? s.tidyDate) as String;
@@ -10152,6 +10151,24 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
 /// '죽은 코드'로 보고 경고한다. 죽은 게 아니라 **잠깐 꺼 둔 것**이다.
 // ignore: prefer_const_declarations
 final bool kPaidTierLive = false;
+
+/// 이 기기가 어느 스토어의 식구인가 — core/purchase_gate.dart의 갈래로 옮긴다.
+///
+/// 기본 등급이 '산 스토어의 기기군'에서만 열리기 때문에, 판정에는 반드시
+/// 이 값이 필요하다. 순수 함수 쪽에 Platform을 부르는 코드를 넣지 않으려고
+/// 바깥에서 정해 넣는다(시험에서 못 돌리게 되는 것을 막는다).
+String deviceFamily() {
+  if (kIsWeb) return kFamilyWeb;
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.iOS:
+    case TargetPlatform.macOS:
+      return kFamilyApple;
+    case TargetPlatform.android:
+      return kFamilyGoogle;
+    default:
+      return kFamilyOther; // 윈도우·리눅스 — 살 스토어가 없다
+  }
+}
 
 /// 프리미엄 안내 화면.
 ///

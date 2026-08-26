@@ -48,7 +48,7 @@ import 'sync/icloud_transport.dart';
 // CustomRule은 main.dart가 아니라 엔진 쪽에 산다(2026-08-16에 여기서 한 번
 // 틀렸다 — analyze가 undefined_method로 잡아 줬다).
 import 'core/tidy_engine.dart' show CustomRule;
-import 'main.dart' show Store, Note;
+import 'main.dart' show Store, Note, deviceFamily;
 
 /// 동기화 상태 — 화면에 한 줄로 보여 주기 위한 것.
 ///
@@ -747,27 +747,24 @@ class ICloudSync {
       // 결제 기록도 같은 파일에 싣는다. 여기만이 '가진 쪽이 이긴다'로
       // 도는 자리이기 때문이다 — 규칙 동기화(늦은 쪽이 이긴다)에 실으면
       // 결제를 모르는 기기가 켜지는 순간 산 것을 덮어 버린다.
-      final lf = mergeLifetime(s.premiumLifetime, remote['life'] == true);
-      final un = mergeUntil(
-          s.premiumUntilMs, remote['until'] is int ? remote['until'] as int : 0);
-      final lg = mergeLegacyFree(s.legacyFree, remote['legacy'] == true);
+      final en = s.ent.merge(
+          Entitlement.fromJson(remote['ent'] as Map<String, dynamic>?));
+      final lg = s.legacyFree || remote['legacy'] == true;
       if (d != s.trialDays ||
           t != s.trialTidyTotal ||
           w != s.trialWizTotal ||
           n != s.trialNoticeShown ||
-          lf != s.premiumLifetime ||
-          un != s.premiumUntilMs ||
+          en != s.ent ||
           lg != s.legacyFree) {
         s.trialDays = d;
         s.trialTidyTotal = t;
         s.trialWizTotal = w;
         s.trialNoticeShown = n;
-        s.premiumLifetime = lf;
-        s.premiumUntilMs = un;
+        s.ent = en;
         s.legacyFree = lg;
-        s.premium = premiumNow(
-          lifetime: lf,
-          untilMs: un,
+        s.premium = premiumHere(
+          e: en,
+          family: deviceFamily(),
           now: DateTime.now(),
         );
         changed = true;
@@ -782,8 +779,7 @@ class ICloudSync {
       'tidy': s.trialTidyTotal,
       'wiz': s.trialWizTotal,
       'notice': s.trialNoticeShown,
-      'life': s.premiumLifetime,
-      'until': s.premiumUntilMs,
+      'ent': s.ent.toJson(),
       'legacy': s.legacyFree,
     });
   }
