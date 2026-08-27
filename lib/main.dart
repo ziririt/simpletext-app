@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show File;
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
@@ -3199,6 +3200,41 @@ class GlideScrollBehavior extends MaterialScrollBehavior {
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) =>
       const BouncingScrollPhysics(parent: RangeMaintainingScrollPhysics());
+}
+
+/// 편집 화면 맨 위의 유리 띠.
+///
+/// 흐림 세기와 짙기는 눈으로 맞췄다(2026-08-27). 기준은 하나 — **밑을
+/// 지나는 글이 글자로 읽히면 안 되고, 그렇다고 밑이 비어 보여도 안 된다.**
+/// 색과 움직임은 남기고 글자만 죽인다.
+class _HeadGlass extends StatelessWidget {
+  const _HeadGlass();
+
+  /// 아래 몇 할부터 사라지기 시작하나.
+  static const double _fadeFrom = 0.74;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return ClipRect(
+      child: ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (r) => const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black, Colors.black, Colors.transparent],
+          stops: [0, _fadeFrom, 1],
+        ).createShader(r),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          // 흐림만으로는 큰 글자가 아직 형태로 읽힌다. 종이색을 옅게
+          // 한 겹 얹어 대비를 마저 죽인다. 다 덮지는 않는다 — 다 덮으면
+          // 유리가 아니라 벽이다.
+          child: Container(color: c.bg.withValues(alpha: 0.72)),
+        ),
+      ),
+    );
+  }
 }
 
 class Glass extends StatelessWidget {
@@ -7702,6 +7738,22 @@ static const int kTagScanChars = 3000;
           backgroundColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
+          // 머리 밑으로 글이 흘러 들어가되, **읽히지는 않게** 한다.
+          //
+          // 2026-08-27 소유자 지시 — 클로드 앱처럼. 그전까지 이 머리는
+          // 그냥 투명이었다. 글이 제목 뒤로 그대로 비쳐서 두 줄이 겹쳐
+          // 읽혔고, 제목도 본문도 안 읽혔다. 비치는 것이 멋인 줄 알았지만
+          // 읽히는 것이 먼저다.
+          //
+          // 흐림(BackdropFilter)을 쓴다. 색만 얹어 가리면 그건 유리가
+          // 아니라 뚜껑이다 — 밑에 뭔가 흐르고 있다는 감각이 사라진다.
+          // 흐리면 색과 움직임은 남고 글자만 죽는다. 애플이 이 재료를
+          // 쓰는 까닭이 그것이다.
+          //
+          // 아래 끝은 선을 긋지 않고 흐림째로 사라지게 한다(ShaderMask).
+          // 실선을 그으면 머리가 종이에서 떨어진 별개의 판으로 보이고,
+          // 흐림만 뚝 끊으면 그 자리에 눈에 거슬리는 턱이 생긴다.
+          flexibleSpace: const _HeadGlass(),
           automaticallyImplyLeading: !widget.embedded,
           // 넓은 화면에서만 나오는 목록 접기 단추.
           //
