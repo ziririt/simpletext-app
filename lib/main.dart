@@ -5402,8 +5402,9 @@ class _EditorScreenState extends State<EditorScreen>
     final sel = bodyCtl.selection;
     final at = sel.isValid ? sel : TextSelection.collapsed(offset: t.length);
     final (a, e) = lineSpan(t, at.start, at.end);
+    // pad: 2 — 소유자 지시(2026-08-27). 목록은 본문보다 한 칸 안으로.
     final made = listify(t.substring(a, e),
-        kind: kind, bullet: dotBullet(store.settings.bulletChar));
+        kind: kind, bullet: dotBullet(store.settings.bulletChar), pad: 2);
     bodyCtl.value = TextEditingValue(
       text: t.replaceRange(a, e, made),
       // 손댄 곳을 그대로 잡아 둔다. 커서가 엉뚱한 데로 튀면 다음 버튼을
@@ -6159,6 +6160,15 @@ class _EditorScreenState extends State<EditorScreen>
       _tools(L10n l) => [
             // 2026-08-27 소유자 지시 — 찾기를 맨 왼쪽으로.
             _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
+            // 2026-08-27 밤 소유자 지시 — 구분선(수평선)을 두 번째 자리로.
+            //
+            // 처음에 나는 이 말을 '세로 가름선을 넣어라'로 읽고 가름선을
+            // 넣었다. 다시 같은 말을 들었으니 내가 틀리게 읽은 것이다.
+            // 소유자가 말한 구분선은 **본문에 넣는 수평선 단추**다.
+            _tool(
+                icon: Icons.horizontal_rule,
+                tip: l.dividerTip,
+                onTap: _insertDivider),
             _tool(divider: true),
             _tool(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
             _tool(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
@@ -6209,10 +6219,6 @@ class _EditorScreenState extends State<EditorScreen>
                 onTap: () => _op((t, a, b) => toggleWrap(t, a, b, '**'))),
             _tool(icon: Icons.code, tip: l.codeTip, onTap: () => _op(toggleCode)),
             _tool(icon: Icons.link, tip: l.linkTip, onTap: () => _op(makeLink)),
-            _tool(
-                icon: Icons.horizontal_rule,
-                tip: l.dividerTip,
-                onTap: _insertDivider),
             _tool(divider: true),
             // ── 커서 옮기기 ──
             //

@@ -158,4 +158,33 @@ void main() {
       expect(dash, '- 가\n- 나');
     });
   });
+
+  group('한 칸 들여쓰기(pad)', () {
+    test('맨 줄에 붙일 때는 빈칸 두 개가 앞에 붙는다', () {
+      expect(listify('사과\n배', kind: kListDash, pad: 2), '  - 사과\n  - 배');
+    });
+
+    test('다시 누르면 정확히 원래대로 온다 — 빈칸도 같이 걷힌다', () {
+      final on = listify('사과\n배', kind: kListDash, pad: 2);
+      expect(listify(on, kind: kListDash, pad: 2), '사과\n배');
+    });
+
+    test('종류만 바꿀 때는 안 깊어진다', () {
+      final dash = listify('사과\n배', kind: kListDash, pad: 2);
+      expect(listify(dash, kind: kListNumber, pad: 2), '  1. 사과\n  2. 배');
+    });
+
+    test('이미 들여쓴 줄은 그 깊이에서 한 칸 더', () {
+      expect(listify('  사과', kind: kListDash, pad: 2), '    - 사과');
+    });
+
+    test('빈 줄은 안 건드린다', () {
+      expect(listify('사과\n\n배', kind: kListDash, pad: 2),
+          '  - 사과\n\n  - 배');
+    });
+
+    test('pad 가 0이면 예전 그대로다', () {
+      expect(listify('사과', kind: kListDash), '- 사과');
+    });
+  });
 }

@@ -32,7 +32,20 @@ final RegExp _numHead = RegExp(r'^\d+[.)]$');
 ///
 /// 빈 줄은 건드리지 않고 번호도 세지 않는다. 빈 줄에 '3.'이 붙으면
 /// 그건 목록이 아니라 사고다.
-String listify(String block, {required String kind, String bullet = '·'}) {
+/// [pad] 는 **맨 줄을 목록으로 만들 때만** 앞에 더 넣는 빈칸 수다.
+///
+/// 2026-08-27 소유자 지시 — "글목록 3가지는 들여쓰기 한번 하고(스페이스
+/// 2칸)". 블로거·워드가 그렇게 한다. 목록이 본문보다 한 칸 안으로 들어가
+/// 있어야 눈이 덩어리를 덩어리로 읽는다.
+///
+/// 규칙이 셋이다.
+///
+///   맨 줄에 붙일 때만  더한다. 이미 목록인 줄의 종류만 바꿀 때는 안
+///                     더한다 — 점에서 번호로 바꿨다고 더 깊어지면 안 된다.
+///   뗄 때는 도로 걷는다  같은 단추를 다시 누르면 정확히 원래대로 온다.
+///   [pad] 가 0이면 아무 일도 안 한다  — 셈 자체를 시험하는 자리에서는 0이다.
+String listify(String block,
+    {required String kind, String bullet = '·', int pad = 0}) {
   final b = bullet.trim().isEmpty ? '·' : bullet.trim();
   final lines = block.split('\n');
 
@@ -66,16 +79,27 @@ String listify(String block, {required String kind, String bullet = '·'}) {
     final rest =
         m != null ? line.substring(m.end) : line.substring(indent.length);
     if (off) {
-      out.add('$indent$rest');
+      // 넣을 때 더한 만큼만 도로 걷는다.
+      var back = indent;
+      if (pad > 0) {
+        var k = 0;
+        while (k < pad && k < back.length && back[k] == ' ') {
+          k++;
+        }
+        back = back.substring(k);
+      }
+      out.add('$back$rest');
       continue;
     }
     n++;
+    // 맨 줄일 때만 한 칸 들여쓴다. 이미 목록이던 줄은 깊이를 지킨다.
+    final lead = m == null ? '${' ' * pad}$indent' : indent;
     final head = switch (kind) {
       kListBullet => '$b ',
       kListDash => '- ',
       _ => '$n. ',
     };
-    out.add('$indent$head$rest');
+    out.add('$lead$head$rest');
   }
   return out.join('\n');
 }
