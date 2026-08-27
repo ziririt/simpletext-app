@@ -606,6 +606,29 @@ class L10nPt extends L10n {
   String get cursorRightTip => 'Direita';
   @override
   String get clearFormatTip => 'Limpar formatação';
+
+  @override
+  String get blockFormatTip => 'Formato de parágrafo';
+  @override
+  String get blockBody => 'Corpo';
+  @override
+  String get blockH1 => 'Título 1';
+  @override
+  String get blockH2 => 'Título 2';
+  @override
+  String get blockH3 => 'Título 3';
+  @override
+  String get blockQuote => 'Citação';
+  @override
+  String get blockCode => 'Código';
+  @override
+  String get bodyFontTitle => 'Fonte do corpo';
+  @override
+  String get bodyFontSystem => 'Sistema';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => 'Monoespaçada';
   @override
   String get moreTools => 'Mais';
   @override

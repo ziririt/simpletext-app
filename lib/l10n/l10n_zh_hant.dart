@@ -605,6 +605,29 @@ class L10nZhHant extends L10n {
   String get cursorRightTip => '向右';
   @override
   String get clearFormatTip => '清除格式';
+
+  @override
+  String get blockFormatTip => '段落格式';
+  @override
+  String get blockBody => '內文';
+  @override
+  String get blockH1 => '標題1';
+  @override
+  String get blockH2 => '標題2';
+  @override
+  String get blockH3 => '標題3';
+  @override
+  String get blockQuote => '引用';
+  @override
+  String get blockCode => '程式碼';
+  @override
+  String get bodyFontTitle => '內文字型';
+  @override
+  String get bodyFontSystem => '系統';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => '等寬';
   @override
   String get moreTools => '更多';
   @override

@@ -372,6 +372,19 @@ abstract class L10n {
   String get moreTools;
   String get clearFormatTip;
 
+  // 단락 형식 고르개와 본문 글꼴 (2026-08-27 밤)
+  String get blockFormatTip;
+  String get blockBody;
+  String get blockH1;
+  String get blockH2;
+  String get blockH3;
+  String get blockQuote;
+  String get blockCode;
+  String get bodyFontTitle;
+  String get bodyFontSystem;
+  String get bodyFontNoto;
+  String get bodyFontMono;
+
   /// 찾기·바꾸기(2026-08-27). 기본은 찾기, '대치'를 누르면 펴진다.
   String get findTitle;
   String get findAction;
@@ -948,6 +961,17 @@ abstract class L10n {
         'cursorRightTip': cursorRightTip,
         'moreTools': moreTools,
         'clearFormatTip': clearFormatTip,
+        'blockFormatTip': blockFormatTip,
+        'blockBody': blockBody,
+        'blockH1': blockH1,
+        'blockH2': blockH2,
+        'blockH3': blockH3,
+        'blockQuote': blockQuote,
+        'blockCode': blockCode,
+        'bodyFontTitle': bodyFontTitle,
+        'bodyFontSystem': bodyFontSystem,
+        'bodyFontNoto': bodyFontNoto,
+        'bodyFontMono': bodyFontMono,
         'findTitle': findTitle,
         'findAction': findAction,
         'showReplaceLabel': showReplaceLabel,

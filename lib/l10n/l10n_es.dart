@@ -606,6 +606,29 @@ class L10nEs extends L10n {
   String get cursorRightTip => 'Derecha';
   @override
   String get clearFormatTip => 'Borrar formato';
+
+  @override
+  String get blockFormatTip => 'Formato de párrafo';
+  @override
+  String get blockBody => 'Cuerpo';
+  @override
+  String get blockH1 => 'Título 1';
+  @override
+  String get blockH2 => 'Título 2';
+  @override
+  String get blockH3 => 'Título 3';
+  @override
+  String get blockQuote => 'Cita';
+  @override
+  String get blockCode => 'Código';
+  @override
+  String get bodyFontTitle => 'Fuente del cuerpo';
+  @override
+  String get bodyFontSystem => 'Sistema';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => 'Monoespaciada';
   @override
   String get moreTools => 'Más';
   @override

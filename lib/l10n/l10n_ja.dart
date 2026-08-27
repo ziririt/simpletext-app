@@ -605,6 +605,29 @@ class L10nJa extends L10n {
   String get cursorRightTip => '右へ';
   @override
   String get clearFormatTip => '書式をクリア';
+
+  @override
+  String get blockFormatTip => '段落の書式';
+  @override
+  String get blockBody => '本文';
+  @override
+  String get blockH1 => '見出し1';
+  @override
+  String get blockH2 => '見出し2';
+  @override
+  String get blockH3 => '見出し3';
+  @override
+  String get blockQuote => '引用';
+  @override
+  String get blockCode => 'コード';
+  @override
+  String get bodyFontTitle => '本文フォント';
+  @override
+  String get bodyFontSystem => '標準';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => '等幅';
   @override
   String get moreTools => 'その他';
   @override

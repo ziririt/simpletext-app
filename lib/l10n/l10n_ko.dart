@@ -605,6 +605,29 @@ class L10nKo extends L10n {
   String get cursorRightTip => '오른쪽으로';
   @override
   String get clearFormatTip => '서식 지우기';
+
+  @override
+  String get blockFormatTip => '단락 형식';
+  @override
+  String get blockBody => '본문';
+  @override
+  String get blockH1 => '제목1';
+  @override
+  String get blockH2 => '제목2';
+  @override
+  String get blockH3 => '제목3';
+  @override
+  String get blockQuote => '인용';
+  @override
+  String get blockCode => '코드';
+  @override
+  String get bodyFontTitle => '본문 글꼴';
+  @override
+  String get bodyFontSystem => '기본';
+  @override
+  String get bodyFontNoto => '노토';
+  @override
+  String get bodyFontMono => '고정폭';
   @override
   String get moreTools => '더 보기';
   @override

@@ -607,6 +607,29 @@ class L10nFr extends L10n {
   String get cursorRightTip => 'Droite';
   @override
   String get clearFormatTip => 'Effacer la mise en forme';
+
+  @override
+  String get blockFormatTip => 'Format de paragraphe';
+  @override
+  String get blockBody => 'Corps';
+  @override
+  String get blockH1 => 'Titre 1';
+  @override
+  String get blockH2 => 'Titre 2';
+  @override
+  String get blockH3 => 'Titre 3';
+  @override
+  String get blockQuote => 'Citation';
+  @override
+  String get blockCode => 'Code';
+  @override
+  String get bodyFontTitle => 'Police du corps';
+  @override
+  String get bodyFontSystem => 'Système';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => 'Monospace';
   @override
   String get moreTools => 'Plus';
   @override

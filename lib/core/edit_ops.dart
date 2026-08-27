@@ -342,3 +342,136 @@ List<({int start, int end})> findAll(String text, String find,
   }
   return all.first;
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// 단락 형식 — 돌려 가며 고르는 대신 **곧장 고른다**
+//
+// 2026-08-27 밤 소유자 지시 — "단락 형식을 블로거처럼 펼침 목록(본문/
+// 제목1/2/3/인용/코드)으로."
+//
+// '제목' 단추는 지금까지 누를 때마다 한 단계씩 돌았다(없음→#→##→###).
+// 그 자체는 잘 돌지만 두 가지가 걸린다. 첫째, 지금 이 줄이 무슨 형식인지
+// 화면에 안 나온다. 둘째, 제목3에서 본문으로 가려면 한 번 더 눌러야
+// 하는지 세 번 눌러야 하는지 사람이 세고 있어야 한다.
+//
+// 목록에서 고르면 둘 다 없어진다. 지금 것이 보이고, 원하는 것을 한 번에
+// 짚는다.
+// ─────────────────────────────────────────────────────────────────────
+
+const String kBlockBody = 'body';
+const String kBlockH1 = 'h1';
+const String kBlockH2 = 'h2';
+const String kBlockH3 = 'h3';
+const String kBlockQuote = 'quote';
+const String kBlockCode = 'code';
+
+/// 펼침 목록에 세울 차례. 위에서 아래로 '약한 것 → 센 것'이다.
+const List<String> kBlockKinds = [
+  kBlockBody,
+  kBlockH1,
+  kBlockH2,
+  kBlockH3,
+  kBlockQuote,
+  kBlockCode,
+];
+
+final RegExp _fence = RegExp(r'^\s*```');
+
+/// 고른 자리가 지금 무슨 형식인가. 섞여 있으면 [kBlockBody] 로 본다.
+///
+/// 섞였을 때 아무 말도 안 하지 않고 '본문'이라고 말하는 까닭: 이 값은
+/// 단추에 적히는 글자다. 빈 칸이 적혀 있으면 고장으로 읽힌다.
+String blockKind(String text, int start, int end) {
+  final s = blockSpan(text, start, end);
+  final lines = text
+      .substring(s.from, s.to)
+      .split('\n')
+      .where((l) => l.trim().isNotEmpty)
+      .toList();
+  if (lines.isEmpty) return kBlockBody;
+  if (lines.any(_fence.hasMatch)) return kBlockCode;
+  if (lines.every((l) => l.trimLeft().startsWith('> '))) return kBlockQuote;
+  final heads = lines.map((l) {
+    final m = _head.firstMatch(l.trimLeft());
+    return m == null ? 0 : m.group(1)!.length;
+  }).toSet();
+  if (heads.length != 1) return kBlockBody;
+  switch (heads.first) {
+    case 1:
+      return kBlockH1;
+    case 2:
+      return kBlockH2;
+    case 3:
+      return kBlockH3;
+    default:
+      return kBlockBody;
+  }
+}
+
+/// 고른 줄들을 [kind] 로 **만든다**(스위치가 아니다).
+///
+/// 붙어 있던 다른 형식은 먼저 벗긴다. 벗기지 않으면 '> # 제목'처럼
+/// 두 겹이 되고, 그건 마크다운에서 인용 안의 제목이라는 다른 뜻이다.
+/// 사람이 목록에서 '제목2'를 골랐을 때 바라는 것은 제목2 하나다.
+EditResult applyBlock(String text, int start, int end, String kind) {
+  // 코드에서 나올 때는 울타리부터 걷는다. 안 걷으면 '``` 줄' 자체에
+  // 우물정이 붙어 ```# ``` 같은 것이 남는다.
+  if (kind != kBlockCode && blockKind(text, start, end) == kBlockCode) {
+    final b = _bare(text, start, end);
+    return applyBlock(b.text, b.start, b.end, kind);
+  }
+  if (kind == kBlockCode) {
+    final s0 = blockSpan(text, start, end);
+    // 이미 코드면 아무 일도 안 한다. 이건 스위치가 아니라 고르개다 —
+    // 고른 것을 다시 골랐다고 벗겨지면 그건 사람이 안 시킨 일이다.
+    if (blockKind(text, start, end) == kBlockCode) {
+      return EditResult(text, s0.from, s0.to);
+    }
+    // 한 줄이든 여러 줄이든 울타리로 감싼다. 목록에서 '코드'를 고른
+    // 사람이 바라는 것은 코드 덩이이지 홑따옴표 코드가 아니다.
+    final bare = applyBlock(text, start, end, kBlockBody);
+    final s = blockSpan(bare.text, bare.start, bare.end);
+    final block = bare.text.substring(s.from, s.to);
+    final out = '```\n$block\n```';
+    return EditResult(
+        bare.text.replaceRange(s.from, s.to, out), s.from, s.from + out.length);
+  }
+  final head = switch (kind) {
+    kBlockH1 => '# ',
+    kBlockH2 => '## ',
+    kBlockH3 => '### ',
+    kBlockQuote => '> ',
+    _ => '',
+  };
+  return _mapLines(text, start, end, (line) {
+    if (line.trim().isEmpty) return line;
+    final indent = line.length - line.trimLeft().length;
+    var body = line.substring(indent);
+    // 붙어 있던 것을 벗긴다. 인용이 먼저다 — '> ## 글'처럼 겹친 것도 있다.
+    while (true) {
+      if (body.startsWith('> ')) {
+        body = body.substring(2);
+        continue;
+      }
+      final m = _head.firstMatch(body);
+      if (m != null) {
+        body = body.substring(m.end);
+        continue;
+      }
+      break;
+    }
+    return '${line.substring(0, indent)}$head$body';
+  });
+}
+
+/// 울타리(```)만 걷어 낸다. 코드에서 다른 형식으로 갈 때 쓴다.
+EditResult _bare(String text, int start, int end) {
+  final s = blockSpan(text, start, end);
+  final kept = text
+      .substring(s.from, s.to)
+      .split('\n')
+      .where((l) => !_fence.hasMatch(l))
+      .join('\n');
+  return EditResult(
+      text.replaceRange(s.from, s.to, kept), s.from, s.from + kept.length);
+}

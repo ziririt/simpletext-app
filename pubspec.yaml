@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.7.3+201
+version: 3.8.0+202
 
 environment:
   sdk: ^3.12.2
@@ -103,6 +103,13 @@ flutter:
     - family: D2Coding
       fonts:
         - asset: assets/fonts/D2Coding.ttf
+    # 본문 글꼴 고르개(core/body_font.dart)의 '노토'. 아래 assets: 에
+    # 이미 있던 파일 그대로다 — 같은 경로라 앱이 무거워지지 않는다.
+    - family: NotoSansKR
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Regular.ttf
+        - asset: assets/fonts/NotoSansKR-Bold.ttf
+          weight: 700
 
   # PDF에 심는 본문 글꼴(Noto Sans KR, OFL). 화면과 달리 PDF는 기기의
   # 글꼴을 빌려 쓰지 못한다 — 파일 안에 글자 모양이 없으면 받는 쪽에서

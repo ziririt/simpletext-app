@@ -606,6 +606,29 @@ class L10nEn extends L10n {
   String get cursorRightTip => 'Right';
   @override
   String get clearFormatTip => 'Clear formatting';
+
+  @override
+  String get blockFormatTip => 'Paragraph format';
+  @override
+  String get blockBody => 'Body';
+  @override
+  String get blockH1 => 'Heading 1';
+  @override
+  String get blockH2 => 'Heading 2';
+  @override
+  String get blockH3 => 'Heading 3';
+  @override
+  String get blockQuote => 'Quote';
+  @override
+  String get blockCode => 'Code';
+  @override
+  String get bodyFontTitle => 'Body font';
+  @override
+  String get bodyFontSystem => 'System';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => 'Mono';
   @override
   String get moreTools => 'More';
   @override

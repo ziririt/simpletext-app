@@ -607,6 +607,29 @@ class L10nDe extends L10n {
   String get cursorRightTip => 'Rechts';
   @override
   String get clearFormatTip => 'Formatierung löschen';
+
+  @override
+  String get blockFormatTip => 'Absatzformat';
+  @override
+  String get blockBody => 'Fließtext';
+  @override
+  String get blockH1 => 'Überschrift 1';
+  @override
+  String get blockH2 => 'Überschrift 2';
+  @override
+  String get blockH3 => 'Überschrift 3';
+  @override
+  String get blockQuote => 'Zitat';
+  @override
+  String get blockCode => 'Code';
+  @override
+  String get bodyFontTitle => 'Textschrift';
+  @override
+  String get bodyFontSystem => 'System';
+  @override
+  String get bodyFontNoto => 'Noto';
+  @override
+  String get bodyFontMono => 'Monospace';
   @override
   String get moreTools => 'Mehr';
   @override

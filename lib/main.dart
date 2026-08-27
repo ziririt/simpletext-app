@@ -58,6 +58,7 @@ import 'core/paper.dart';
 import 'core/plain_text.dart';
 import 'core/purchase_gate.dart';
 import 'purchase_service.dart';
+import 'core/body_font.dart';
 import 'core/capture_sig.dart';
 import 'core/source_detect.dart';
 import 'core/tidy_engine.dart';
@@ -1396,6 +1397,10 @@ class AppSettings {
   /// (2026-08-14 — 고정값을 바꿔 가며 맞추려니 매번 설치 왕복이 생겼다).
   double bodyFontSize = MonoTextController.defaultBodyFontSize;
   double bodyLineHeight = MonoTextController.bodyHeight;
+
+  /// 본문 글꼴. 값과 까닭은 core/body_font.dart 에 있다.
+  /// 2026-08-27 밤 소유자 지시 — 크기는 있는데 글꼴이 없었다.
+  String bodyFont = kBodyFontSystem;
   String aiKey = '';
   // 2026-08-16 소유자 승인 — 모델은 키에서 자동으로 정한다.
   // 키 앞글자로 회사를 판정하고, 그 회사의 모델 목록을 받아 와서 제일 싼
@@ -1566,6 +1571,7 @@ class AppSettings {
         'previewBeforeApply': previewBeforeApply,
         'pasteTipDone': pasteTipDone,
         'bodyFontSize': bodyFontSize,
+        'bodyFont': bodyFont,
         'bodyLineHeight': bodyLineHeight,
         'prefsStamp': prefsStamp,
         'prefsSig': prefsSig,
@@ -1679,6 +1685,7 @@ class AppSettings {
       s.previewBeforeApply = false;
     }
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
+    s.bodyFont = safeBodyFont(j['bodyFont'] as String?);
     s.bodyLineHeight =
         ((j['bodyLineHeight'] ?? s.bodyLineHeight) as num).toDouble();
     // 2026-08-24 — 기본값을 클로드 앱 실측(16 / 1.5)에 맞추면서, 옛 기본값
@@ -5939,7 +5946,19 @@ class _EditorScreenState extends State<EditorScreen>
   ///
   /// **전체 선택일 때만** 부른다. 손가락으로 범위를 끄는 중에 부르면 끄는
   /// 내내 메뉴가 깜빡인다.
+  /// 단락 고르개에 지금 적혀 있는 형식. 값이 실제로 달라졌을 때만 다시
+  /// 그린다 — 타자 한 자마다 화면을 새로 그리면 긴 글에서 손이 걸린다.
+  String _blockSeen = kBlockBody;
+
+  void _watchBlock() {
+    final now = _blockNow();
+    if (now == _blockSeen) return;
+    _blockSeen = now;
+    if (mounted) setState(() {});
+  }
+
   void _onSelectionChanged() {
+    _watchBlock();
     final sel = bodyCtl.selection;
     if (sel == _lastSel) return;
     final wasCollapsed = _lastSel.isCollapsed;
@@ -6125,14 +6144,22 @@ class _EditorScreenState extends State<EditorScreen>
   /// 목록으로 한 번 만들어 두고 두 가지 방식으로 그린다 — 폰은 옆으로
   /// 굴리고, 맥과 웹은 넘치는 것을 '더 보기'로 접었다 편다. 같은 목록을
   /// 쓰므로 두 화면의 차례가 어긋날 일이 없다.
-  ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})
+  ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})
       _tool(
               {IconData? icon,
               String? glyph,
               String tip = '',
               VoidCallback? onTap,
-              bool divider = false}) =>
-          (icon: icon, glyph: glyph, tip: tip, onTap: onTap, divider: divider);
+              bool divider = false,
+              bool wide = false}) =>
+          (
+            icon: icon,
+            glyph: glyph,
+            tip: tip,
+            onTap: onTap,
+            divider: divider,
+            wide: wide
+          );
 
   /// 도구 막대에 무엇이 어떤 차례로 있는가.
   ///
@@ -6156,7 +6183,7 @@ class _EditorScreenState extends State<EditorScreen>
   /// 차례는 소유자 지시대로 **찾기가 맨 왼쪽**, 그 오른쪽에 가름선.
   /// 그다음은 하는 일의 결로 묶었다 — 되돌리기 / 문단 / 목록 / 글자 /
   /// 커서 / 걷어내기.
-  List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})>
+  List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})>
       _tools(L10n l) => [
             // 2026-08-27 소유자 지시 — 찾기를 맨 왼쪽으로.
             _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
@@ -6173,9 +6200,16 @@ class _EditorScreenState extends State<EditorScreen>
             _tool(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
             _tool(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
             _tool(divider: true),
-            // ── 문단 ──
-            _tool(icon: Icons.title, tip: l.headingTip, onTap: () => _op(cycleHeading)),
-            _tool(icon: Icons.format_quote, tip: l.quoteTip, onTap: () => _op(toggleQuote)),
+            // ── 단락 형식 ──
+            //
+            // 2026-08-27 밤 소유자 지시 — 블로거처럼 펼침 목록으로.
+            // 돌려 가며 고르던 '제목' 단추와 '인용' 단추가 여기 합쳐졌다.
+            // 지금 이 줄이 무슨 형식인지 단추에 그대로 적힌다.
+            _tool(
+                glyph: _blockLabel(l),
+                tip: l.blockFormatTip,
+                wide: true,
+                onTap: _showBlockMenu),
             _tool(divider: true),
             // ── 목록 넷 ──
             //
@@ -6238,6 +6272,79 @@ class _EditorScreenState extends State<EditorScreen>
                 tip: l.clearFormatTip,
                 onTap: () => _op(stripFormat)),
           ];
+
+  /// 지금 커서가 놓인 줄의 단락 형식 이름.
+  String _blockLabel(L10n l) => _blockName(l, _blockNow());
+
+  String _blockNow() {
+    final sel = bodyCtl.selection;
+    final t = bodyCtl.text;
+    final a = sel.isValid ? sel.start : t.length;
+    final b = sel.isValid ? sel.end : t.length;
+    return blockKind(t, a, b);
+  }
+
+  String _blockName(L10n l, String kind) => switch (kind) {
+        kBlockH1 => l.blockH1,
+        kBlockH2 => l.blockH2,
+        kBlockH3 => l.blockH3,
+        kBlockQuote => l.blockQuote,
+        kBlockCode => l.blockCode,
+        _ => l.blockBody,
+      };
+
+  /// 단락 형식 펼침 목록. 지금 것에 체크가 붙는다.
+  ///
+  /// 화면 가운데가 아니라 **눌린 단추 옆**에서 펴진다. 고르개는 제가 선
+  /// 자리에서 펴져야 무엇에 대한 목록인지가 설명 없이 읽힌다.
+  Future<void> _showBlockMenu() async {
+    final l = L10n.of(context);
+    final now = _blockNow();
+    final box = context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (box == null || overlay == null) return;
+    final at = box.localToGlobal(Offset.zero, ancestor: overlay);
+    final picked = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          at.dx + 12, at.dy + 40, at.dx + 220, at.dy + 400),
+      items: [
+        for (final k in kBlockKinds)
+          PopupMenuItem<String>(
+            value: k,
+            height: 40,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 22,
+                  child: k == now
+                      ? Icon(Icons.check, size: 17, color: context.c.accent)
+                      : null,
+                ),
+                Text(_blockName(l, k),
+                    style: TextStyle(
+                        fontSize: k == kBlockH1
+                            ? 19
+                            : k == kBlockH2
+                                ? 17
+                                : k == kBlockH3
+                                    ? 15.5
+                                    : 14,
+                        fontFamily: k == kBlockCode ? 'D2Coding' : null,
+                        fontStyle:
+                            k == kBlockQuote ? FontStyle.italic : null,
+                        fontWeight: k == kBlockBody || k == kBlockQuote
+                            ? FontWeight.w400
+                            : FontWeight.w700)),
+              ],
+            ),
+          ),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    _op((t, a, b) => applyBlock(t, a, b, picked));
+  }
 
   /// 고른 자리에 셈 하나를 먹인다. 되돌리기가 듣도록 controller 값을
   /// 한 번에 바꾼다.
@@ -6307,6 +6414,9 @@ class _EditorScreenState extends State<EditorScreen>
   static const double _toolW = 44;
   static const double _dividerW = 9;
 
+  /// 단락 형식 고르개처럼 글자가 들어가는 칸의 너비.
+  static const double _wideW = 104;
+
   /// 들어가는 만큼만 세우고, 넘치는 것은 '⋯'를 눌러 **아래로 편다.**
   ///
   /// 2026-08-27 소유자 지시 — "작은 해상도에서 툴바가 다 못 나오면 ⋯를
@@ -6316,11 +6426,12 @@ class _EditorScreenState extends State<EditorScreen>
   /// 것이라 손이 기억한 그림이 사라진다. 아래로 펴면 같은 그림이 같은
   /// 크기로 남고, 자리만 한 줄 내려간다.
   Widget _barFit(
-      List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})>
+      List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})>
           items,
       double width,
       bool atTop) {
-    double w(int i) => items[i].divider ? _dividerW : _toolW;
+    double w(int i) =>
+        items[i].divider ? _dividerW : (items[i].wide ? _wideW : _toolW);
     var total = 0.0;
     for (var i = 0; i < items.length; i++) {
       total += w(i);
@@ -6380,7 +6491,7 @@ class _EditorScreenState extends State<EditorScreen>
   }
 
   Widget _toolWidget(
-      ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})
+      ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})
           it) {
     if (it.divider) {
       return Container(
@@ -6388,6 +6499,36 @@ class _EditorScreenState extends State<EditorScreen>
           height: 26,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           color: context.c.toolbarLine);
+    }
+    if (it.wide) {
+      return Tooltip(
+        message: it.tip,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: it.onTap,
+          child: Container(
+            width: _wideW - 4,
+            height: 34,
+            margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+            padding: const EdgeInsets.only(left: 10, right: 4),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: context.c.toolbarLine)),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(it.glyph ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13.5, fontWeight: FontWeight.w600)),
+                ),
+                const Icon(Icons.arrow_drop_down, size: 20),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return _kbBtn(
         icon: it.icon, glyph: it.glyph, tip: it.tip, onTap: it.onTap ?? () {});
@@ -8833,6 +8974,10 @@ static const int kTagScanChars = 3000;
                   style: TextStyle(
                       fontSize: store.settings.bodyFontSize,
                       height: store.settings.bodyLineHeight,
+                      // 고른 본문 글꼴. '기본'이면 여기 null 이 들어가고
+                      // 테마가 정한 글꼴이 그대로 쓰인다(core/body_font.dart).
+                      fontFamily: bodyFontFamily(store.settings.bodyFont,
+                          webDefault: kIsWeb ? kWebFontFamily : null),
                       // 자간 0 (2026-08-24 소유자 신고 "클로드 앱 폰트가
                       // 좋은데 다르다"). 글꼴은 이미 시스템 것이었고,
                       // 다른 건 머티리얼 기본 자간 +0.5였다 — 영문 SF용
@@ -12813,6 +12958,42 @@ class _TypographyScreenState extends State<TypographyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── 본문 글꼴 ──
+            //
+            // 2026-08-27 밤 소유자 지시. 크기와 줄 간격은 있었는데 글꼴이
+            // 없었다. 왜 셋뿐인지는 core/body_font.dart 머리말에 있다.
+            Text(l.bodyFontTitle,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<String>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                      value: kBodyFontSystem,
+                      label: Text(l.bodyFontSystem,
+                          style: const TextStyle(fontSize: 13))),
+                  ButtonSegment(
+                      value: kBodyFontNoto,
+                      label: Text(l.bodyFontNoto,
+                          style: const TextStyle(
+                              fontSize: 13, fontFamily: 'NotoSansKR'))),
+                  ButtonSegment(
+                      value: kBodyFontMono,
+                      label: Text(l.bodyFontMono,
+                          style: const TextStyle(
+                              fontSize: 13, fontFamily: 'D2Coding'))),
+                ],
+                selected: {s.bodyFont},
+                onSelectionChanged: (v) {
+                  setState(() => s.bodyFont = v.first);
+                  store.persistSettings();
+                },
+              ),
+            ),
+            const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
@@ -12873,7 +13054,12 @@ class _TypographyScreenState extends State<TypographyScreen> {
                   borderRadius: BorderRadius.circular(10)),
               child: Text(l.bodyFontSizeSample,
                   style: TextStyle(
-                      fontSize: s.bodyFontSize, height: s.bodyLineHeight)),
+                      fontSize: s.bodyFontSize,
+                      height: s.bodyLineHeight,
+                      // 견본은 고른 글꼴 그대로 보여 준다. 견본이 다른
+                      // 글꼴이면 견본이 아니다.
+                      fontFamily: bodyFontFamily(s.bodyFont,
+                          webDefault: kIsWeb ? kWebFontFamily : null))),
             ),
           ],
         ),
