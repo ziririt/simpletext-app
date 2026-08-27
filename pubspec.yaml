@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.9.6+179
+version: 2.9.7+180
 
 environment:
   sdk: ^3.12.2
@@ -147,6 +147,11 @@ flutter:
 # 도구가 iOS·안드로이드·맥 전 크기를 만들어 채운다:
 #   dart run flutter_launcher_icons
 # 아이콘을 바꿀 때 각 플랫폼 폴더의 PNG를 손으로 만지지 말 것.
+#
+# 웹만 예외다. flutter_launcher_icons 의 web 생성기는 manifest.json 을
+# 제가 다시 써버려서 id·scope·display_override·categories·description 이
+# 날아간다. 그래서 웹 아이콘은 아래 스크립트로 따로 만든다:
+#   python3 tool/web_icons.py
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
   android: true

@@ -58,8 +58,8 @@ String get bannerUnitId => Platform.isIOS
 /// 이 두 상수를 채우기 전까지는 비어 있고, 그동안은 아래 [nativeUnitId]가
 /// null을 돌려주어 **예전 배너 사다리로 저절로 되돌아간다.**
 /// 빈 문자열인 채로 스토어에 나가도 광고 자리가 비지 않는다는 뜻이다.
-const String kNativeUnitIos = '';
-const String kNativeUnitAndroid = '';
+const String kNativeUnitIos = 'ca-app-pub-2336764115275414/1760076247';
+const String kNativeUnitAndroid = 'ca-app-pub-2336764115275414/9986050629';
 
 /// 시험용 네이티브 단위(구글 공식). 개발 빌드는 언제나 이것으로 돈다.
 const String kNativeTestIos = 'ca-app-pub-3940256099942544/3986624511';
