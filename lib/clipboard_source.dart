@@ -2,38 +2,44 @@
 ///
 /// 2026-08-16. 브라우저에서 글을 복사하면 클립보드에는 글자만 실리는 게
 /// 아니다. 원본 주소나 HTML이 함께 실리는 경우가 많고, 거기에
-/// chatgpt.com이 들어 있으면 출처는 추측이 아니라 **사실**이다.
+/// chatgpt.com 이나 font-claude-message 가 들어 있으면 출처는 추측이
+/// 아니라 **사실**이다.
 ///
-/// 플러터의 Clipboard는 'text/plain'만 읽는다. 그래서 이 한 조각만 네이티브로
-/// 내려간다. 스위프트 쪽 구현은 아이클라우드 다리와 같은 채널에 얹었다 —
-/// 채널 하나 더 만드는 것보다 낫고, 하는 일이 '기기에 물어본다'로 같다.
+/// 플러터의 Clipboard 는 'text/plain' 만 읽는다. 그래서 이 한 조각만
+/// 판마다 따로 내려간다.
 ///
-/// 못 읽어도 아무 일도 일어나지 않는다. 주소가 없으면 글의 생김새로 추측하는
+/// ## 2026-08-27 — 안드로이드와 웹을 채웠다
+///
+/// 소유자 신고: "출처 자동 디텍팅이 거의 안 된다."
+///
+/// 까닭 하나가 여기 있었다. **아이폰과 맥에만 이 길이 있었다.** 안드로이드와
+/// 웹에서는 1단이 아예 안 돌고 글의 생김새로만 찍고 있었는데, 소유자가 가장
+/// 많이 쓰는 것이 사파리 웹앱이다.
+///
+/// 웹은 방식이 다르다. 브라우저는 아무 때나 클립보드를 읽게 해 주지 않는다.
+/// 대신 **붙여넣기가 일어나는 순간**에는 그 내용을 준다. 그래서 웹에서는
+/// 문서 전체의 붙여넣기 사건을 엿듣고 HTML 조각을 주워 둔다.
+///
+/// 못 읽어도 아무 일도 일어나지 않는다. 증거가 없으면 글의 생김새로 찍는
 /// 2단(core/source_detect.dart)이 받는다.
 library;
 
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'clipboard_source_io.dart'
+    if (dart.library.js_interop) 'clipboard_source_web.dart' as impl;
 
 class ClipboardSource {
-  static const MethodChannel _ch = MethodChannel('skyblue/icloud');
-
-  static bool get supported =>
-      !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+  /// 이 판에서 읽을 수 있는가. 화면에서 쓰지 않고 기록용으로만 둔다 —
+  /// 못 읽는 판에서도 부르는 쪽은 그냥 null 을 받으면 되기 때문이다.
+  static bool get supported => impl.supported;
 
   /// 붙여넣기 **직후에만** 부른다.
   ///
   /// 아이폰은 iOS 16부터 클립보드를 읽을 때 확인 창을 띄우는데, 사용자가
   /// 방금 붙여넣기를 눌러 글자를 읽어 온 흐름이라 그 창은 이미 지나간
   /// 뒤다. 아무 때나 부르면 뜬금없는 확인 창이 뜬다.
-  static Future<String?> read() async {
-    if (!supported) return null;
-    try {
-      return await _ch.invokeMethod<String>('clipboardSource');
-    } catch (_) {
-      return null;
-    }
-  }
+  static Future<String?> read() => impl.readCapture();
+
+  /// 웹에서 붙여넣기 엿듣기를 켠다. 다른 판에서는 아무 일도 안 한다.
+  /// 앱이 켜질 때 한 번 부른다.
+  static void boot() => impl.bootCapture();
 }

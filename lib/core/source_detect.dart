@@ -69,25 +69,106 @@ class SourceGuess {
   bool get isKnown => name.isNotEmpty;
 }
 
-/// 1단 — 클립보드에 딸려 온 주소나 HTML에서 찾기. 찾으면 확실하다.
-SourceGuess sourceFromUrl(String? urlOrHtml) {
-  if (urlOrHtml == null || urlOrHtml.isEmpty) return SourceGuess.unknown;
-  final t = urlOrHtml.toLowerCase();
-  if (t.contains('chatgpt.com') || t.contains('chat.openai.com')) {
-    return const SourceGuess(kChatGpt, certain: true);
-  }
-  if (t.contains('claude.ai')) return const SourceGuess(kClaude, certain: true);
-  if (t.contains('gemini.google.com') || t.contains('bard.google.com')) {
-    return const SourceGuess(kGemini, certain: true);
-  }
-  if (t.contains('perplexity.ai')) {
-    return const SourceGuess(kPerplexity, certain: true);
-  }
-  if (t.contains('grok.com') || t.contains('x.com/i/grok')) {
-    return const SourceGuess(kGrok, certain: true);
-  }
+// ---------------------------------------------------------------------------
+// 1단 — 복사한 순간에 딸려 온 증거
+// ---------------------------------------------------------------------------
+
+/// 주소에서 곧바로 갈리는 것들. 이건 추측이 아니다.
+const Map<String, List<String>> _domains = {
+  kChatGpt: [
+    'chatgpt.com',
+    'chat.openai.com',
+    'openai.com/share',
+    'oaiusercontent.com',
+    'utm_source=chatgpt.com',
+    'utm_source=openai',
+  ],
+  kClaude: [
+    'claude.ai',
+    'anthropic.com/share',
+    'utm_source=claude',
+  ],
+  kGemini: [
+    'gemini.google.com',
+    'bard.google.com',
+    'g.co/gemini',
+    'aistudio.google.com',
+    'utm_source=gemini',
+  ],
+  kPerplexity: [
+    'perplexity.ai',
+    'pplx.ai',
+    'utm_source=perplexity',
+  ],
+  kGrok: [
+    'grok.com',
+    'x.com/i/grok',
+    'x.ai/grok',
+    'grok.x.ai',
+    'utm_source=grok',
+  ],
+};
+
+/// HTML 조각에 박혀 있는 이름들. 화면을 그리려고 서비스가 박아 둔 것이라
+/// 사용자가 어떻게 물어보든 바뀌지 않는다.
+///
+/// **여기 넣을 자격**: 그 서비스에서만 나오는 이름이어야 한다. `prose` 는
+/// 테일윈드 기본값이라 챗지피티에도 퍼플렉시티에도 있다 — 그런 것은 넣지
+/// 않는다. 넣으면 못 잡는 것보다 나쁜 일(엉뚱하게 확정)이 일어난다.
+const Map<String, List<String>> _htmlMarks = {
+  kChatGpt: [
+    'data-message-author-role',
+    'data-message-id',
+    'text-token-text-primary',
+    'result-streaming',
+    'agent-turn',
+  ],
+  kClaude: [
+    'font-claude-message',
+    'font-claude-response',
+    'data-is-streaming',
+    'standard-markdown',
+  ],
+  kGemini: [
+    'model-response-text',
+    'response-container-content',
+    'message-content-id',
+    'gemini-response',
+  ],
+  kPerplexity: [
+    'pplx-',
+    'perplexity',
+  ],
+  kGrok: [
+    'grok-response',
+    'data-grok',
+  ],
+};
+
+/// 딸려 온 증거(주소 또는 HTML 조각)에서 출처를 찾는다.
+///
+/// 두 서비스의 표식이 함께 보이면 **아무 말도 안 한다.** 사용자가 여러
+/// 창에서 긁어모은 글일 수 있고, 그때 하나를 골라 박으면 그건 거짓이다.
+SourceGuess sourceFromCapture(String? capture) {
+  if (capture == null || capture.isEmpty) return SourceGuess.unknown;
+  final t = capture.toLowerCase();
+
+  final hit = <String>{};
+  _domains.forEach((who, marks) {
+    if (marks.any(t.contains)) hit.add(who);
+  });
+  if (hit.length == 1) return SourceGuess(hit.first, certain: true);
+  if (hit.length > 1) return SourceGuess.unknown;
+
+  _htmlMarks.forEach((who, marks) {
+    if (marks.any(t.contains)) hit.add(who);
+  });
+  if (hit.length == 1) return SourceGuess(hit.first, certain: true);
   return SourceGuess.unknown;
 }
+
+/// 옛 이름. 부르는 자리가 여럿이라 남겨 둔다.
+SourceGuess sourceFromUrl(String? urlOrHtml) => sourceFromCapture(urlOrHtml);
 
 /// 붙여넣기로 새로 들어온 덩이만 떼어 낸다.
 ///

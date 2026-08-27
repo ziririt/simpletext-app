@@ -116,6 +116,9 @@ Future<void> main() async {
   await loadWebFont();
   unawaited(WidgetBridge.init());
   // 광고 시동(모바일에서만 동작 — 맥·윈도우에서는 아무것도 안 한다).
+  // 웹에서 붙여넣기 사건을 엿듣기 시작한다. 다른 판에서는 아무 일도
+  // 안 한다(clipboard_source.dart).
+  ClipboardSource.boot();
   AdsService.instance.boot();
   // 결제 시동. 상품 목록을 받아 오고, 스토어에 "권한이 아직 살아 있나"를
   // 묻는다. 웹·윈도우에서는 아무것도 안 한다.
@@ -3895,7 +3898,7 @@ class _HomeScreenState extends State<HomeScreen>
     if (mounted) await maybeShowPasteTip(context);
     // 1단은 클립보드에 딸려 온 주소다. 거기 chatgpt.com이 있으면 추측이
     // 아니라 사실이라 '(추정)'을 안 붙인다.
-    final fromUrl = sourceFromUrl(await ClipboardSource.read());
+    final fromUrl = sourceFromCapture(await ClipboardSource.read());
     await _intake(text, tidy: true, known: fromUrl);
   }
 
@@ -5288,15 +5291,33 @@ class _EditorScreenState extends State<EditorScreen>
     // 새로 들어온 덩이만 본다. 이미 있던 글이 섞이면 그쪽 생김새가
     // 판정을 끌고 간다.
     final chunk = insertedChunk(before, v);
-    final g = guessSource(chunk.length >= _pasteMin ? chunk : v);
+    unawaited(_stampSource(chunk.length >= _pasteMin ? chunk : v));
+  }
+
+  /// 붙여넣은 글의 출처를 찍는다.
+  ///
+  /// 2026-08-27 — **여기에 1단이 없었다.** 목록에서 '붙여넣고 정리'를
+  /// 누르는 길에만 클립보드 증거를 물었고, 편집 화면에 그냥 붙여넣는
+  /// 길에서는 글의 생김새로만 찍고 있었다. 그런데 사람이 훨씬 자주 쓰는
+  /// 것은 이쪽이다. 소유자가 "디텍팅이 거의 안 된다"고 한 까닭의 절반이
+  /// 이 빠뜨림이었다.
+  ///
+  /// 증거를 먼저 묻고, 없을 때만 생김새로 찍는다. 증거는 늙지 않지만
+  /// 문체는 프롬프트 한 줄로 바뀐다.
+  Future<void> _stampSource(String text) async {
+    final capture = await ClipboardSource.read();
+    final known = sourceFromCapture(capture);
+    final g = known.isKnown ? known : guessSource(text);
     if (!g.isKnown) return;
+    // 이 사이에 사람이 손으로 골랐을 수도 있다. 다시 한 번 본다.
+    if (note.source.isNotEmpty) return;
 
     note.source = g.name;
     note.sourceAuto = !g.certain;
     if (note.pastedAt == 0) {
       note.pastedAt = DateTime.now().millisecondsSinceEpoch;
     }
-    _save();
+    await _save();
     if (!mounted) return;
     setState(() {});
     // 조용히 채워 넣으면 사용자는 자기가 고른 줄 안다.

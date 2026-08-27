@@ -1,5 +1,7 @@
 package com.ziririt.simpletext
 
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -32,6 +34,16 @@ class MainActivity : FlutterFragmentActivity() {
                     result.success(pending)
                     pending = null
                 }
+                // 2026-08-27 — 클립보드에 딸려 온 HTML 조각.
+                //
+                // 안드로이드에는 이 길이 아예 없었다. 아이폰과 맥에만 있어서
+                // 안드로이드에서는 출처 1단(증거)이 안 돌고 글의 생김새로만
+                // 찍고 있었다. 소유자 신고 "디텍팅이 거의 안 된다"의 한 갈래다.
+                //
+                // getHtmlText() 는 복사한 쪽이 HTML 을 같이 실었을 때만 값이
+                // 있다. 브라우저에서 글을 고르고 복사하면 대개 실린다.
+                // 없으면 null 이고, 그때는 다트가 생김새로 찍는다.
+                "clipboardSource" -> result.success(clipboardHtml())
                 else -> result.notImplemented()
             }
         }
@@ -49,6 +61,25 @@ class MainActivity : FlutterFragmentActivity() {
             ch.invokeMethod("received", text)
         } else {
             pending = text
+        }
+    }
+
+    /// 클립보드의 HTML 조각. 없으면 null.
+    ///
+    /// 앞 8000자만 넘긴다. 표식(class 이름, 주소)은 앞쪽에 있고, 수 메가바이트를
+    /// 다트로 넘길 이유가 없다.
+    private fun clipboardHtml(): String? {
+        return try {
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                ?: return null
+            val clip = cm.primaryClip ?: return null
+            if (clip.itemCount == 0) return null
+            val item = clip.getItemAt(0)
+            val html = item.htmlText ?: item.uri?.toString()
+            if (html.isNullOrBlank()) null else html.take(8000)
+        } catch (_: Exception) {
+            // 못 읽는 것은 고장이 아니다. 증거가 없을 뿐이다.
+            null
         }
     }
 
