@@ -761,6 +761,11 @@ class ICloudSync {
     }
 
     // --- 창고에 반영 ---
+    //
+    // 2026-08-27 — 하나씩 줄 세워 보내던 것을 한꺼번에 모아 겹쳐 보낸다.
+    // 드라이브는 파일 하나에 왕복이 둘이라, 넷을 줄 세우면 여덟 번을
+    // 기다린다. 받는 쪽은 이미 겹쳐 받고 있었다.
+    final toWrite = <String, Map<String, dynamic>>{};
     for (final n in merged.notes) {
       // 올릴지는 딱지 셈이 정한다(core/sync_plan.dart). 핵심 하나 —
       // **모르면 안 올린다.** 있는 건 아는데 얼마나 새것인지 모르는
@@ -771,7 +776,9 @@ class ICloudSync {
         remoteStamp: remoteStamp[n.id],
         localStamp: n.updatedAt,
       )) {
-        await _t.write('$notesDir/${n.id}.json', n.toJson());
+        toWrite['$notesDir/${n.id}.json'] = n.toJson();
+        // 기록에 적는 '올림'은 메모 수다. 삭제 기록(툼스톤)은 안 센다 —
+        // 사람이 보는 숫자는 사람이 쓴 것의 수여야 한다.
         _roundUp++;
       }
     }
@@ -784,7 +791,7 @@ class ICloudSync {
       final id = t['id'] as String;
       tombIds.add(id);
       if (!remoteTombIds.contains(id)) {
-        await _t.write('$tombsDir/$id.json', t);
+        toWrite['$tombsDir/$id.json'] = t;
       }
       // 지워진 메모의 본문 파일은 치운다. 안 그러면 툼스톤이 만료된 뒤에
       // 그 파일이 '새 메모'로 되살아난다.
@@ -795,6 +802,9 @@ class ICloudSync {
         await _t.remove('$notesDir/$id.json');
       }
     }
+    // 모아 둔 것을 한꺼번에 보낸다.
+    if (toWrite.isNotEmpty) await _t.writeMany(toWrite);
+
     // 만료된 툼스톤 파일 치우기
     for (final t in remoteTombs) {
       final id = t['id'] as String;

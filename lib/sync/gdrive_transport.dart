@@ -530,6 +530,19 @@ class GDriveTransport extends SyncTransport {
     } catch (_) {}
   }
 
+  /// 겹쳐 보낸다. 여섯 줄로 나눠 보내는 까닭 — 받는 쪽(readMany)은
+  /// 여덟인데 여기는 여섯이다. 쓰기는 읽기보다 무겁고, 구글은 같은
+  /// 계정에서 쓰기가 몰리면 429(잠깐 쉬어라)를 돌려준다.
+  @override
+  Future<void> writeMany(Map<String, Map<String, dynamic>> items) async {
+    final paths = items.keys.toList();
+    const int lanes = 6;
+    for (var i = 0; i < paths.length; i += lanes) {
+      final slice = paths.skip(i).take(lanes).toList();
+      await Future.wait(slice.map((p) => write(p, items[p]!)));
+    }
+  }
+
   @override
   Future<void> remove(String path) async {
     final h = await _head();

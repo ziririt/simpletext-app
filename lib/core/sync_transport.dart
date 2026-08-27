@@ -90,6 +90,24 @@ abstract class SyncTransport {
   /// 없어도 조용히 넘어간다.
   Future<void> remove(String path);
 
+  /// 여러 파일을 쓴다.
+  ///
+  /// 2026-08-27 — 한 바퀴가 10~35초씩 걸리고 있었다(동기화 기록). 까닭은
+  /// 올리기를 하나씩 차례로 했기 때문이다. 드라이브에서는 파일 하나에
+  /// 왕복이 둘(내용 한 번, 딱지 한 번)이라, 노트 넷이면 여덟 번을 줄
+  /// 세워 기다렸다.
+  ///
+  /// 받는 쪽은 이미 겹쳐 받고 있었다(readMany). 보내는 쪽만 줄을 서 있던
+  /// 것은 그냥 빠뜨린 것이다.
+  ///
+  /// 기본은 하나씩이다. 왕복이 공짜인 통로(아이클라우드)는 겹칠 이유가
+  /// 없다.
+  Future<void> writeMany(Map<String, Map<String, dynamic>> items) async {
+    for (final e in items.entries) {
+      await write(e.key, e.value);
+    }
+  }
+
   /// 방 안의 목록만 — 본문 없이 (이름표, 딱지의 시각).
   ///
   /// null 은 "이 통로는 딱지를 모른다"는 뜻이다. 그때 부르는 쪽은
