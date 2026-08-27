@@ -92,6 +92,30 @@ enum EditorRefresh {
   assertMine,
 }
 
+/// 짧은 물음의 간격 — 지금 몇 초마다 문을 두드릴까.
+///
+/// 2026-08-27. 3초마다 묻는 것은 사람이 글을 주고받는 동안에만 값어치가
+/// 있다. 아무도 안 쓰는 새벽 세 시에도 3초마다 두드리면, 그건 배터리와
+/// 구글의 하루치 몫을 태우는 짓이다. 우리 앱 하나만 보면 티가 안 나지만
+/// 손님이 천 명이면 구글이 문을 닫는다.
+///
+/// 그래서 '뜨거운 동안'만 빠르게 묻는다. 뜨거워지는 순간은 둘 —
+/// 이 기기에서 글이 바뀌었을 때, 그리고 남의 글이 도착했을 때다.
+/// 둘 다 '지금 누군가 쓰고 있다'는 신호다. 그 뒤 2분 동안 빠르게 묻고,
+/// 잠잠해지면 느리게 돌아간다.
+///
+/// 느린 쪽도 15초다. 예전의 30초 훑기보다 여전히 두 배 빠르다.
+Duration probeEvery({
+  required int hotUntilMs,
+  required int nowMs,
+  Duration hot = const Duration(seconds: 3),
+  Duration cool = const Duration(seconds: 15),
+}) =>
+    nowMs < hotUntilMs ? hot : cool;
+
+/// 뜨거운 시간이 얼마나 가나.
+const int kProbeHotMs = 2 * 60 * 1000;
+
 EditorRefresh editorRefresh({
   required bool sameObject,
   required bool editing,

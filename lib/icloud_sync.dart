@@ -204,6 +204,74 @@ class ICloudSync {
   Timer? _debounce;
   Timer? _tick;
 
+  // --------------------------------------------------- 짧게 묻는 시계
+  //
+  // 2026-08-27 소유자 지시 — "'동기화'가 가장 빠르고 정확한 노트 앱이
+  // 되고 싶다." 30초마다 방을 훑는 것으로는 그 말에 못 미친다. 남이 쓴
+  // 글을 30초 뒤에 보는 앱을 빠르다고 부를 수는 없다.
+  //
+  // 그렇다고 훑기를 3초로 당길 수는 없다. 훑기는 방 안의 모든 이름을
+  // 받아 오는 일이라 값이 비싸다. 대신 **'바뀐 게 있나'만 묻는 짧은
+  // 물음**이 따로 있다(core/sync_transport.dart 의 probeChanged).
+  // 바뀐 게 없으면 답이 빈 봉투다. 그건 3초마다 물어도 된다.
+  //
+  // 그래서 두 시계를 나란히 둔다. 짧은 물음이 3초마다 문을 두드리고,
+  // 훑기는 30초에 한 번 그물을 던진다 — 짧은 물음이 못 잡는 통로
+  // (아이클라우드)와 물음이 실패하는 판을 위한 바닥이다.
+  //
+  // 짧은 물음은 앱이 앞에 있을 때만 돈다. 뒤로 물러난 앱에서 3초마다
+  // 그물을 던지는 것은 배터리를 태우는 짓이고, 어차피 모바일에서는
+  // 시계가 얼어붙는다.
+  // 얼마나 자주 물을지는 core/sync_plan.dart 의 probeEvery 가 정한다 —
+  // 뜨거운 동안(누군가 쓰고 있는 동안)만 3초, 잠잠하면 15초.
+  Timer? _probe;
+  bool _probing = false;
+  int _hotUntil = 0;
+
+  /// 지금 누군가 쓰고 있다 — 한동안 빠르게 묻는다.
+  void markHot() {
+    _hotUntil = DateTime.now().millisecondsSinceEpoch + kProbeHotMs;
+  }
+
+  void _startProbe() {
+    _probe?.cancel();
+    if (!active || paused) return;
+    // 되풀이 시계(periodic)가 아니라 한 번짜리를 이어 건다. 간격이
+    // 도중에 바뀌기 때문이다 — 뜨거워지면 다음 물음부터 곧바로 빨라진다.
+    _probe = Timer(
+      probeEvery(
+          hotUntilMs: _hotUntil, nowMs: DateTime.now().millisecondsSinceEpoch),
+      () async {
+        await _probeOnce();
+        _startProbe();
+      },
+    );
+  }
+
+  void _stopProbe() {
+    _probe?.cancel();
+    _probe = null;
+  }
+
+  /// 짧은 물음을 지금 곧바로 한 번. 뜨겁게 만들고 시계를 다시 건다.
+  void wakeProbe() {
+    markHot();
+    _startProbe();
+  }
+
+  Future<void> _probeOnce() async {
+    // 한 바퀴가 도는 중이면 물어볼 것도 없다. 그 바퀴가 어차피 다 본다.
+    if (!active || paused || _busy || _probing) return;
+    _probing = true;
+    try {
+      if (await _t.probeChanged() == true) await syncNow();
+    } catch (_) {
+      // 물음이 실패해도 조용히 지나간다. 30초 시계가 바닥을 받친다.
+    } finally {
+      _probing = false;
+    }
+  }
+
   // ------------------------------------------------------- 동기화 기록
   //
   // 2026-08-27 소유자 요청. 무엇이 언제 오갔는지를 남긴다. 자세한 까닭은
@@ -246,6 +314,8 @@ class ICloudSync {
       err: err == null ? null : _shortErr(err),
     );
     if (!_log.add(e)) return;
+    // 오간 것이 있었다 = 누군가 쓰고 있다. 한동안 빠르게 묻는다.
+    if (e.up > 0 || e.down > 0) wakeProbe();
     logRevision.value++;
     unawaited(_persistLog());
   }
@@ -291,6 +361,7 @@ class ICloudSync {
     // 느끼지 못하고, 훑는 비용은 파일 목록 한 번이라 사실상 공짜다.
     _tick?.cancel();
     _tick = Timer.periodic(const Duration(seconds: 30), (_) => syncNow());
+    _startProbe();
   }
 
   /// 앱이 다시 앞으로 나올 때. 다른 기기에서 고친 게 있으면 여기서 들어온다.
@@ -300,6 +371,17 @@ class ICloudSync {
     if (!active) return;
     if (state.value != SyncState.ok) forgetRoot();
     unawaited(syncNow());
+    // 뒤로 물러날 때 껐던 짧은 시계를 다시 건다. 돌아온 직후는 늘
+    // 뜨겁게 본다 — 자리를 비운 동안 남이 썼을 가능성이 가장 큰 순간이다.
+    wakeProbe();
+  }
+
+  /// 앱이 뒤로 물러날 때. 짧은 시계를 끈다 — 안 보이는 앱이 3초마다
+  /// 그물을 던지면 배터리만 탄다. 모바일에서는 어차피 시계가 얼지만,
+  /// 맥과 웹은 창을 가려도 계속 돌기 때문에 여기서 명시적으로 끈다.
+  void onPause() {
+    _stopProbe();
+    flushUp();
   }
 
   /// 사용자가 '다시 확인'을 눌렀을 때.
@@ -325,6 +407,7 @@ class ICloudSync {
   Future<void> rebind() async {
     _tick?.cancel();
     _tick = null;
+    _stopProbe();
     forgetRoot();
     if (!active) {
       state.value = SyncState.unsupported;
@@ -346,11 +429,21 @@ class ICloudSync {
   }
 
   /// 메모를 저장할 때마다 불린다. 저장은 글자 하나마다 일어나므로 곧바로
-  /// 올리면 파일을 초당 몇 번씩 쓰게 된다. 3초 쉬었다가 한 번만 올린다.
+  /// 올리면 파일을 초당 몇 번씩 쓰게 된다. 잠시 쉬었다가 한 번만 올린다.
+  ///
+  /// 2026-08-27 — 3초에서 1초로 줄인다. 저장 자체가 이미 0.7초를 모으고
+  /// 있어서(Store.touch), 3초를 더 얹으면 마지막 글자에서 올라가기까지
+  /// 3.7초가 걸렸다. 그 사이에 손을 멈추면 **문장 중간까지만** 남의
+  /// 기기로 건너갔다 — 소유자가 08-27 아침에 겪은 그 일이다.
+  ///
+  /// 1초라도 모으는 까닭은 남아 있다. 안 모으면 타자 한 번에 파일 하나가
+  /// 올라간다.
   void scheduleUp() {
     if (!supported || paused) return;
     _debounce?.cancel();
-    _debounce = Timer(const Duration(seconds: 3), () => unawaited(syncNow()));
+    _debounce = Timer(const Duration(seconds: 1), () => unawaited(syncNow()));
+    // 내가 쓰고 있다. 저쪽에서도 쓰고 있을 때가 많다 — 빠르게 묻는다.
+    markHot();
   }
 
   /// 떠나기 전에 부친다 (2026-08-26).
@@ -373,6 +466,7 @@ class ICloudSync {
   void dispose() {
     _tick?.cancel();
     _debounce?.cancel();
+    _stopProbe();
   }
 
   // -------------------------------------------------------------- 경로
@@ -708,9 +802,27 @@ class ICloudSync {
       await _t.remove('$tombsDir/$id.json');
     }
 
-    await _syncRules(root);
-    await _syncAiKey(root);
+    // 규칙과 AI 키는 매 바퀴마다 볼 것이 아니다.
+    //
+    // 2026-08-27 — 한 바퀴가 8~16초 걸리고 있었다(동기화 기록에 찍혔다).
+    // 메모 쪽은 목록 두 번이면 끝나는데, 여기서 왕복이 서너 번 더 붙는다.
+    // 그런데 규칙이나 AI 키는 하루에 몇 번 바뀌는 것도 아니다. 30초마다
+    // 물어볼 이유가 없다.
+    //
+    // 메모가 몇 초 늦는 것은 사람이 알아채지만, 규칙이 1분 늦는 것은
+    // 아무도 모른다. 늦어도 되는 것을 늦추고, 그 값으로 메모를 당긴다.
+    final sideNow = DateTime.now().millisecondsSinceEpoch;
+    if (sideNow - _sideMs >= _sideEvery) {
+      _sideMs = sideNow;
+      await _syncRules(root);
+      await _syncAiKey(root);
+    }
   }
+
+  /// 곁들이를 마지막으로 본 시각. 0 이면 아직 한 번도 안 봤다 —
+  /// 첫 바퀴에서는 반드시 본다.
+  int _sideMs = 0;
+  static const int _sideEvery = 60 * 1000;
 
   // ------------------------------------------------------ 규칙·체험 맞추기
 

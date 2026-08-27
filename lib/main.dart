@@ -698,6 +698,8 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
       case AppLifecycleState.paused:
         _away = true;
         _leftAt = now;
+        // 물러나기 전에 부치고, 3초 시계를 끈다(2026-08-27).
+        ICloudSync.instance.onPause();
         if (on && !_shield) setState(() => _shield = true);
       case AppLifecycleState.resumed:
         // 나간 적이 없으면 돌아온 것도 아니다.

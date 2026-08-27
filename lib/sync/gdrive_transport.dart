@@ -49,6 +49,7 @@ typedef DriveToken = Future<String?> Function();
 
 const String _api = 'https://www.googleapis.com/drive/v3/files';
 const String _upload = 'https://www.googleapis.com/upload/drive/v3/files';
+const String _changes = 'https://www.googleapis.com/drive/v3/changes';
 
 /// 나가는 왕복마다 같은 시간 제한을 거는 껍데기.
 ///
@@ -174,6 +175,64 @@ class GDriveTransport extends SyncTransport {
       final got = (files.first as Map)['id'] as String?;
       if (got != null) _ids[path] = got;
       return got;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 변경 목록의 표. null 이면 아직 안 받았다.
+  String? _pageToken;
+
+  @override
+  Future<bool?> probeChanged() async {
+    final h = await _head();
+    if (h == null) return null;
+    try {
+      if (_pageToken == null) {
+        // 표를 처음 받는다. 이 표는 '지금부터'를 뜻하므로 이번 물음은
+        // 답할 것이 없다 — false 로 두고 다음 물음부터 센다.
+        //
+        // spaces 를 안 붙인다. 표를 내주는 쪽은 그 낱말을 모른다(400).
+        // 거르는 것은 아래 목록 쪽 일이다.
+        final r = await _http.get(
+            Uri.parse('$_changes/startPageToken'),
+            headers: h);
+        if (r.statusCode != 200) return null;
+        final j = jsonDecode(r.body);
+        if (j is! Map) return null;
+        final t = j['startPageToken'];
+        if (t is! String || t.isEmpty) return null;
+        _pageToken = t;
+        return false;
+      }
+      var token = _pageToken!;
+      var changed = false;
+      // 장이 여러 쪽으로 나뉠 수 있다. 사용자의 드라이브 전체가 바쁘면
+      // 우리 방과 상관없는 변경으로도 쪽이 늘어난다. 다섯 쪽에서 끊는다 —
+      // 짧게 묻자고 만든 물음이 길어지면 뜻이 없다. 못 넘긴 쪽은 다음
+      // 물음이 이어서 본다.
+      for (var page = 0; page < 5; page++) {
+        final u = Uri.parse('$_changes'
+            '?pageToken=${Uri.encodeQueryComponent(token)}'
+            '&spaces=appDataFolder&pageSize=100'
+            '&fields=newStartPageToken,nextPageToken,changes(fileId)');
+        final r = await _http.get(u, headers: h);
+        if (r.statusCode != 200) return null;
+        final j = jsonDecode(r.body);
+        if (j is! Map) return null;
+        final list = j['changes'];
+        if (list is List && list.isNotEmpty) changed = true;
+        final next = j['nextPageToken'];
+        if (next is String && next.isNotEmpty) {
+          token = next;
+          _pageToken = next;
+          continue;
+        }
+        final end = j['newStartPageToken'];
+        if (end is String && end.isNotEmpty) _pageToken = end;
+        break;
+      }
+      return changed;
     } catch (_) {
       return null;
     }
