@@ -588,6 +588,24 @@ class L10nKo extends L10n {
   String get syncLastNever =>
       '아직 한 번도 못 맞췄습니다';
   @override
+  String get syncLogTitle => '동기화 기록';
+  @override
+  String get syncLogNote => '무엇이 언제 오갔는지만 남습니다. 노트 내용은 남지 않습니다.';
+  @override
+  String get syncLogEmpty => '아직 오간 것이 없습니다';
+  @override
+  String get syncLogNever => '아직 없음';
+  @override
+  String get syncLogUp => '올림';
+  @override
+  String get syncLogDown => '받음';
+  @override
+  String get syncLogFailed => '실패';
+  @override
+  String syncLogLastUp(String when) => '마지막으로 올린 때 · ' + when;
+  @override
+  String syncLogLastDown(String when) => '마지막으로 받은 때 · ' + when;
+  @override
   String get syncTroubleTitle =>
       '문제가 생기면';
   @override

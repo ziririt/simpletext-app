@@ -588,6 +588,24 @@ class L10nJa extends L10n {
   String get syncLastNever =>
       'まだ一度も同期していません';
   @override
+  String get syncLogTitle => '同期の記録';
+  @override
+  String get syncLogNote => '何がいつ行き来したかだけを残します。ノートの中身は残りません。';
+  @override
+  String get syncLogEmpty => 'まだ行き来はありません';
+  @override
+  String get syncLogNever => 'まだありません';
+  @override
+  String get syncLogUp => '送信';
+  @override
+  String get syncLogDown => '受信';
+  @override
+  String get syncLogFailed => '失敗';
+  @override
+  String syncLogLastUp(String when) => '最後に送った時刻 · ' + when;
+  @override
+  String syncLogLastDown(String when) => '最後に受け取った時刻 · ' + when;
+  @override
   String get syncTroubleTitle =>
       '困ったときは';
   @override

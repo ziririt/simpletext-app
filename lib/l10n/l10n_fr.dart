@@ -590,6 +590,24 @@ class L10nFr extends L10n {
   String get syncLastNever =>
       'Jamais synchronisé';
   @override
+  String get syncLogTitle => 'Historique de synchronisation';
+  @override
+  String get syncLogNote => 'Uniquement ce qui a circulé et quand. Le contenu des notes n\'est pas conservé ici.';
+  @override
+  String get syncLogEmpty => 'Rien n\'a encore circulé';
+  @override
+  String get syncLogNever => 'Pas encore';
+  @override
+  String get syncLogUp => 'Envoyé';
+  @override
+  String get syncLogDown => 'Reçu';
+  @override
+  String get syncLogFailed => 'Échec';
+  @override
+  String syncLogLastUp(String when) => 'Dernier envoi · ' + when;
+  @override
+  String syncLogLastDown(String when) => 'Dernière réception · ' + when;
+  @override
   String get syncTroubleTitle =>
       'En cas de problème';
   @override

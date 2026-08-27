@@ -589,6 +589,24 @@ class L10nPt extends L10n {
   String get syncLastNever =>
       'Ainda não sincronizou';
   @override
+  String get syncLogTitle => 'Histórico de sincronização';
+  @override
+  String get syncLogNote => 'Apenas o que foi movido e quando. O conteúdo das notas não fica guardado aqui.';
+  @override
+  String get syncLogEmpty => 'Ainda não houve movimento';
+  @override
+  String get syncLogNever => 'Ainda não';
+  @override
+  String get syncLogUp => 'Enviado';
+  @override
+  String get syncLogDown => 'Recebido';
+  @override
+  String get syncLogFailed => 'Falha';
+  @override
+  String syncLogLastUp(String when) => 'Último envio · ' + when;
+  @override
+  String syncLogLastDown(String when) => 'Última receção · ' + when;
+  @override
   String get syncTroubleTitle =>
       'Se algo der errado';
   @override

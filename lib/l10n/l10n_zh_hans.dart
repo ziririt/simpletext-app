@@ -588,6 +588,24 @@ class L10nZhHans extends L10n {
   String get syncLastNever =>
       '还没有同步过';
   @override
+  String get syncLogTitle => '同步记录';
+  @override
+  String get syncLogNote => '只记录什么在何时同步过，不保存笔记内容。';
+  @override
+  String get syncLogEmpty => '还没有同步过任何内容';
+  @override
+  String get syncLogNever => '尚无';
+  @override
+  String get syncLogUp => '上传';
+  @override
+  String get syncLogDown => '下载';
+  @override
+  String get syncLogFailed => '失败';
+  @override
+  String syncLogLastUp(String when) => '最近一次上传 · ' + when;
+  @override
+  String syncLogLastDown(String when) => '最近一次下载 · ' + when;
+  @override
   String get syncTroubleTitle =>
       '出问题时';
   @override

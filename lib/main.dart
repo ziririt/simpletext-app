@@ -43,6 +43,7 @@ import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
 import 'core/sync_plan.dart'
     show EditorRefresh, editorRefresh, SyncBanner, syncBanner;
+import 'core/sync_log.dart';
 import 'core/mru.dart';
 import 'core/note_lock.dart';
 import 'core/paper.dart';
@@ -3131,6 +3132,20 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                       ]),
                     );
                   },
+                ),
+                _sep(),
+                // 동기화 기록(2026-08-27). '되고 있나'에 상태 문구보다
+                // 정확히 답하는 자리다 — 무엇이 언제 몇 개 오갔는지.
+                ListTile(
+                  title: Text(l.syncLogTitle,
+                      style: const TextStyle(
+                          fontSize: 17, fontWeight: FontWeight.w600)),
+                  trailing:
+                      Icon(Icons.chevron_right, color: context.c.sub),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                        builder: (_) => const SyncLogScreen()),
+                  ),
                 ),
               ]),
             ],
@@ -9757,6 +9772,148 @@ class _SyncNapBannerState extends State<SyncNapBanner> {
       ),
     );
   }
+}
+
+/// 동기화 기록 화면 (2026-08-27).
+///
+/// 소유자 요청 — "동기화 기록 기능을 이어서 넣어라." 앞선 이틀 동안
+/// "맥에서 쓴 글이 아이폰에 몇 시간째 안 온다", "한 문장 중 앞부분만
+/// 왔다" 같은 신고가 있었는데, 그때마다 답할 근거가 없었다. 화면에는
+/// '켜짐'이라는 초록 글씨뿐이었기 때문이다.
+///
+/// 이 화면은 고치는 화면이 아니라 **보는 화면**이다. 무엇이 언제 몇 개
+/// 오갔고 얼마나 걸렸는지만 보여 준다. 그것만 있으면 "안 온다"가
+/// "8시 5분에 올렸는데 10시 35분에 받았다"로 바뀐다.
+///
+/// 노트 내용은 한 글자도 남기지 않는다. 화면 아래에 그렇게 적어 둔다 —
+/// 기록이 남는다는 말을 들으면 사람은 먼저 그것을 걱정한다.
+class SyncLogScreen extends StatelessWidget {
+  const SyncLogScreen({super.key});
+
+  static String _stamp(int ms) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ms);
+    return '${DateFormat.Md().format(d)} ${DateFormat.Hms().format(d)}';
+  }
+
+  static String _short(int ms) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ms);
+    return '${DateFormat.Md().format(d)} ${DateFormat.Hm().format(d)}';
+  }
+
+  /// 걸린 시간. 1초가 안 되면 밀리초로 — 0.0초가 줄줄이 늘어서면
+  /// 빠르다는 사실이 오히려 안 보인다.
+  static String _took(int ms) =>
+      ms < 1000 ? '${ms}ms' : '${(ms / 1000).toStringAsFixed(1)}s';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final sync = ICloudSync.instance;
+    return Scaffold(
+      backgroundColor: context.c.bg,
+      appBar: AppBar(
+        backgroundColor: context.c.bg,
+        title: Text(l.syncLogTitle,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+      ),
+      body: narrowBody(
+        context,
+        ValueListenableBuilder<int>(
+          valueListenable: sync.logRevision,
+          builder: (_, __, ___) {
+            final log = sync.log;
+            final up = log.lastUpMs;
+            final down = log.lastDownMs;
+            return ListView(
+              padding: scrollPad(context, top: 10),
+              children: [
+                _card(context, [
+                  _line(context, l.syncLogLastUp(up == null ? l.syncLogNever : _short(up)),
+                      strong: up != null),
+                  _sep(context),
+                  _line(context, l.syncLogLastDown(down == null ? l.syncLogNever : _short(down)),
+                      strong: down != null),
+                ]),
+                const SizedBox(height: 18),
+                if (log.isEmpty)
+                  _card(context, [_line(context, l.syncLogEmpty)])
+                else
+                  _card(context, [
+                    for (var i = 0; i < log.events.length; i++) ...[
+                      if (i > 0) _sep(context),
+                      _eventRow(context, l, log.events[i]),
+                    ],
+                  ]),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 14, 32, 8),
+                  child: Text(l.syncLogNote,
+                      style: TextStyle(
+                          fontSize: 13.5, height: 1.45, color: context.c.sub)),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _eventRow(BuildContext context, L10n l, SyncEvent e) {
+    final parts = <String>[
+      if (e.up > 0) '${l.syncLogUp} ${e.up}',
+      if (e.down > 0) '${l.syncLogDown} ${e.down}',
+      if (!e.ok) '${l.syncLogFailed} (${e.err})',
+      _took(e.ms),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
+      child: Row(children: [
+        Icon(
+            e.ok
+                ? (e.up > 0 && e.down > 0
+                    ? Icons.swap_vert
+                    : e.up > 0
+                        ? Icons.arrow_upward
+                        : Icons.arrow_downward)
+                : Icons.error_outline,
+            size: 18,
+            color: e.ok ? context.c.accent : context.c.sub),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(_stamp(e.atMs),
+              style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w600,
+                  color: context.c.guideInk)),
+        ),
+        Text(parts.join(' · '),
+            style: TextStyle(fontSize: 13.5, color: context.c.sub)),
+      ]),
+    );
+  }
+
+  Widget _line(BuildContext context, String t, {bool strong = false}) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+        child: Text(t,
+            style: TextStyle(
+                fontSize: 15,
+                fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
+                color: strong ? context.c.guideInk : context.c.sub)),
+      );
+
+  Widget _card(BuildContext context, List<Widget> children) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Material(
+            color: context.c.panel,
+            child: Column(children: children),
+          ),
+        ),
+      );
+
+  Widget _sep(BuildContext context) =>
+      Divider(height: 1, indent: 16, color: context.c.line);
 }
 
 class SyncHelpSheet extends StatefulWidget {

@@ -41,6 +41,7 @@ import 'core/key_vault.dart';
 import 'core/mono_controller.dart' show MonoTextController;
 import 'core/purchase_gate.dart';
 import 'core/sync_merge.dart';
+import 'core/sync_log.dart';
 import 'core/sync_plan.dart';
 import 'core/sync_transport.dart';
 import 'sync/gdrive_transport.dart';
@@ -203,9 +204,70 @@ class ICloudSync {
   Timer? _debounce;
   Timer? _tick;
 
+  // ------------------------------------------------------- 동기화 기록
+  //
+  // 2026-08-27 소유자 요청. 무엇이 언제 오갔는지를 남긴다. 자세한 까닭은
+  // core/sync_log.dart 머리말에 있다. 여기는 세고 적기만 한다.
+  //
+  // 세는 자리를 _run() 안에 두지 않고 밖에 둔 까닭 — _run 은 도중에
+  // 던질 수 있다. 던진 바퀴도 '거기까지는 옮겼다'가 기록으로 남아야
+  // 어디서 끊겼는지 알 수 있다.
+
+  /// 화면이 듣는다. 값이 바뀌면 기록 화면이 다시 그려진다.
+  final ValueNotifier<int> logRevision = ValueNotifier<int>(0);
+
+  SyncLog _log = SyncLog();
+  bool _logLoaded = false;
+  int _roundUp = 0;
+  int _roundDown = 0;
+
+  SyncLog get log => _log;
+
+  Future<void> _loadLog() async {
+    if (_logLoaded) return;
+    _logLoaded = true;
+    try {
+      final p = await SharedPreferences.getInstance();
+      _log = SyncLog.decode(p.getString('syncLog'));
+      logRevision.value++;
+    } catch (_) {}
+  }
+
+  /// 한 바퀴가 끝났다고 알린다. 적을 것이 없으면 아무 일도 안 한다.
+  void _noteRound(int startedMs, Object? err) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final e = SyncEvent(
+      atMs: now,
+      up: _roundUp,
+      down: _roundDown,
+      ms: now - startedMs,
+      // 예외 문구를 그대로 담지 않는다. 창고 주소나 파일 이름이 섞여
+      // 들어올 수 있고, 이 기록은 사람에게 그대로 보인다.
+      err: err == null ? null : _shortErr(err),
+    );
+    if (!_log.add(e)) return;
+    logRevision.value++;
+    unawaited(_persistLog());
+  }
+
+  static String _shortErr(Object err) {
+    if (err is TimeoutException) return 'timeout';
+    if (err is StateError) return 'not-ready';
+    if (err is SocketException) return 'network';
+    return err.runtimeType.toString();
+  }
+
+  Future<void> _persistLog() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString('syncLog', _log.encode());
+    } catch (_) {}
+  }
+
   /// 앱이 켜질 때 한 번 부른다.
   Future<void> boot() async {
     await _loadSyncedUpTo();
+    await _loadLog();
     if (!active) {
       state.value = SyncState.unsupported;
       return;
@@ -402,6 +464,9 @@ class ICloudSync {
       // 없다 — 왕복 하나하나에 12초가 걸려 있으므로(gdrive_transport.dart)
       // 모든 기다림에 바닥이 있다.
       started = true;
+      final roundStartMs = DateTime.now().millisecondsSinceEpoch;
+      _roundUp = 0;
+      _roundDown = 0;
       final work = _run(root);
 
       // **결과는 일 쪽이 정한다.**
@@ -420,8 +485,10 @@ class ICloudSync {
         lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
         unawaited(_saveSyncedUpTo(lastSyncMs.value));
         state.value = SyncState.ok;
-      }, onError: (Object _) {
+        _noteRound(roundStartMs, null);
+      }, onError: (Object e) {
         state.value = SyncState.off;
+        _noteRound(roundStartMs, e);
       }).whenComplete(free));
 
       try {
@@ -560,6 +627,12 @@ class ICloudSync {
     }
 
     // --- 합치기 (규칙은 core/sync_merge.dart) ---
+    //
+    // 받아 온 파일 수를 세지 않고, 합친 뒤에 **이 기기의 글이 실제로
+    // 바뀐 개수**를 센다(아래). 통로마다 읽는 방식이 달라서다 — 딱지
+    // 길은 바뀐 것만 받아 오고, 옛길은 매번 전부 받아 온다. 파일 수를
+    // 세면 같은 일을 두고 아이폰과 맥이 다른 숫자를 말하게 된다.
+    final beforeStamp = {for (final n in store.notes) n.id: n.updatedAt};
     final now = DateTime.now().millisecondsSinceEpoch;
     final merged = mergeNotes<Note>(
       local: store.notes,
@@ -572,6 +645,12 @@ class ICloudSync {
       bodyOf: (n) => n.body,
       syncedBeforeMs: _syncedUpTo,
     );
+
+    _roundDown = 0;
+    for (final n in merged.notes) {
+      final was = beforeStamp[n.id];
+      if (was == null || was != n.updatedAt) _roundDown++;
+    }
 
     // --- 기기에 반영 ---
     // 지는 판에 아직 구름에 못 올라간 수정이 있었다면 휴지통에 백업한다.
@@ -599,6 +678,7 @@ class ICloudSync {
         localStamp: n.updatedAt,
       )) {
         await _t.write('$notesDir/${n.id}.json', n.toJson());
+        _roundUp++;
       }
     }
     final liveIds = {for (final n in merged.notes) n.id};

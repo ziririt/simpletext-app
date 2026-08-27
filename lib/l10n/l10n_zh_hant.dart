@@ -588,6 +588,24 @@ class L10nZhHant extends L10n {
   String get syncLastNever =>
       '還沒有同步過';
   @override
+  String get syncLogTitle => '同步紀錄';
+  @override
+  String get syncLogNote => '只記錄什麼在何時同步過，不保存筆記內容。';
+  @override
+  String get syncLogEmpty => '還沒有同步過任何內容';
+  @override
+  String get syncLogNever => '尚無';
+  @override
+  String get syncLogUp => '上傳';
+  @override
+  String get syncLogDown => '下載';
+  @override
+  String get syncLogFailed => '失敗';
+  @override
+  String syncLogLastUp(String when) => '最近一次上傳 · ' + when;
+  @override
+  String syncLogLastDown(String when) => '最近一次下載 · ' + when;
+  @override
   String get syncTroubleTitle =>
       '出問題時';
   @override

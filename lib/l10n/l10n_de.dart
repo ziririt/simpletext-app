@@ -590,6 +590,24 @@ class L10nDe extends L10n {
   String get syncLastNever =>
       'Noch nie abgeglichen';
   @override
+  String get syncLogTitle => 'Synchronisierungsverlauf';
+  @override
+  String get syncLogNote => 'Nur was wann übertragen wurde. Notizinhalte werden hier nicht gespeichert.';
+  @override
+  String get syncLogEmpty => 'Bisher wurde nichts übertragen';
+  @override
+  String get syncLogNever => 'Noch nicht';
+  @override
+  String get syncLogUp => 'Gesendet';
+  @override
+  String get syncLogDown => 'Empfangen';
+  @override
+  String get syncLogFailed => 'Fehlgeschlagen';
+  @override
+  String syncLogLastUp(String when) => 'Zuletzt gesendet · ' + when;
+  @override
+  String syncLogLastDown(String when) => 'Zuletzt empfangen · ' + when;
+  @override
   String get syncTroubleTitle =>
       'Wenn etwas schiefgeht';
   @override

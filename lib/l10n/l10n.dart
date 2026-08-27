@@ -357,8 +357,19 @@ abstract class L10n {
   String get syncNowBusy;
   String get syncLastNever;
   String get syncTroubleTitle;
+
+  /// 동기화 기록(2026-08-27). 무엇이 언제 오갔는지만 남긴다.
+  String get syncLogTitle;
+  String get syncLogNote;
+  String get syncLogEmpty;
+  String get syncLogNever;
+  String get syncLogUp;
+  String get syncLogDown;
+  String get syncLogFailed;
   String get syncTroubleNote;
   String syncLastAt(String when);
+  String syncLogLastUp(String when);
+  String syncLogLastDown(String when);
 
   /// 지금 자동 동기화가 어디까지 닿는가 (2026-08-18).
   ///
@@ -899,6 +910,13 @@ abstract class L10n {
         'syncNowBusy': syncNowBusy,
         'syncLastNever': syncLastNever,
         'syncTroubleTitle': syncTroubleTitle,
+        'syncLogTitle': syncLogTitle,
+        'syncLogNote': syncLogNote,
+        'syncLogEmpty': syncLogEmpty,
+        'syncLogNever': syncLogNever,
+        'syncLogUp': syncLogUp,
+        'syncLogDown': syncLogDown,
+        'syncLogFailed': syncLogFailed,
         'syncTroubleNote': syncTroubleNote,
         'syncScopePlatform': syncScopePlatform,
         'typographyTitle': typographyTitle,

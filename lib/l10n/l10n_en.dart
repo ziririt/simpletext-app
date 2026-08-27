@@ -589,6 +589,24 @@ class L10nEn extends L10n {
   String get syncLastNever =>
       'Not synced yet';
   @override
+  String get syncLogTitle => 'Sync history';
+  @override
+  String get syncLogNote => 'Only what moved and when. No note content is stored here.';
+  @override
+  String get syncLogEmpty => 'Nothing has moved yet';
+  @override
+  String get syncLogNever => 'Not yet';
+  @override
+  String get syncLogUp => 'Sent';
+  @override
+  String get syncLogDown => 'Received';
+  @override
+  String get syncLogFailed => 'Failed';
+  @override
+  String syncLogLastUp(String when) => 'Last sent · ' + when;
+  @override
+  String syncLogLastDown(String when) => 'Last received · ' + when;
+  @override
   String get syncTroubleTitle =>
       'If something goes wrong';
   @override
