@@ -58,6 +58,7 @@ import 'core/paper.dart';
 import 'core/plain_text.dart';
 import 'core/purchase_gate.dart';
 import 'purchase_service.dart';
+import 'core/capture_sig.dart';
 import 'core/source_detect.dart';
 import 'core/tidy_engine.dart';
 import 'core/trash.dart';
@@ -5306,6 +5307,25 @@ class _EditorScreenState extends State<EditorScreen>
   ///
   /// 증거를 먼저 묻고, 없을 때만 생김새로 찍는다. 증거는 늙지 않지만
   /// 문체는 프롬프트 한 줄로 바뀐다.
+  /// 붙여넣기의 **지문만** 남긴다. 기기 안에만 쌓이고 동기화를 안 탄다.
+  ///
+  /// 2026-08-27 밤 — 지문표가 짐작이라 제미나이·챗지피티를 놓치고 있다.
+  /// 무엇이 맞는지 알려면 실제로 오는 것을 봐야 한다. 최근 여덟 번만
+  /// 남긴다. 담는 것은 클래스 이름·id·data-* 이름·호스트뿐이고 글자는
+  /// 한 자도 안 담는다(core/capture_sig.dart).
+  static Future<void> _recordCaptureSig(String? capture) async {
+    try {
+      final sig = captureSignature(capture);
+      final prefs = await SharedPreferences.getInstance();
+      final old = prefs.getStringList('captureSigs') ?? const <String>[];
+      final at = DateTime.now().toIso8601String().substring(0, 19);
+      final next = <String>['$at $sig', ...old].take(8).toList();
+      await prefs.setStringList('captureSigs', next);
+    } catch (_) {
+      // 실험 도구다. 실패해도 붙여넣기를 막지 않는다.
+    }
+  }
+
   Future<void> _stampSource(String text) async {
     // 붙여넣은 사실은 출처를 몰라도 남긴다.
     //
@@ -5324,6 +5344,7 @@ class _EditorScreenState extends State<EditorScreen>
     // 머리말에 실측과 함께 적어 두었다 — 다섯 중 둘을 틀렸고 둘 다 같은
     // 이름으로 갔다.
     final capture = await ClipboardSource.read();
+    unawaited(_recordCaptureSig(capture));
     var g = sourceFromCapture(capture);
     if (!g.isKnown) g = sourceFromBody(text);
     if (!g.isKnown) {
