@@ -7828,15 +7828,6 @@ static const int kTagScanChars = 3000;
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // 글자만으로는 누를 수 있다는 뜻이 안 선다. 제목이
-                    // 없을 때만 연필을 붙인다 — 있을 때는 제목 자체가
-                    // 읽을 거리라 아이콘이 끼면 시끄럽다.
-                    if (empty) ...[
-                      Icon(Icons.edit_outlined,
-                          size: 15,
-                          color: _showMeta ? context.c.accent : context.c.sub),
-                      const SizedBox(width: 5),
-                    ],
                     Flexible(
                       child: Text(
                         _headTitle(l),
@@ -7855,6 +7846,22 @@ static const int kTagScanChars = 3000;
                                 _showMeta ? context.c.accent : context.c.sub),
                       ),
                     ),
+                    // 제목 바로 오른쪽의 연필 (2026-08-27 소유자 지시).
+                    //
+                    // 처음에는 머리 오른쪽 끝, 동기화 단추가 있던 자리에
+                    // 뒀다. 소유자 지적 — "지금은 '글쓰기' 버튼처럼
+                    // 보이잖아." 맞다. **아이콘의 뜻은 모양이 아니라 자리가
+                    // 정한다.** 머리 오른쪽 끝의 연필은 어느 앱에서나 '새
+                    // 글 쓰기'다. 같은 연필이라도 제목에 붙어 있으면 '이
+                    // 제목을 고친다'가 된다.
+                    //
+                    // 제목이 있을 때는 아이콘이 시끄럽다고 여겨 숨겼던
+                    // 것도 이번에 걷는다. 숨겨 놓으니 아무도 제목이
+                    // 눌린다는 것을 몰랐다 — 08-19 신고가 그것이었다.
+                    const SizedBox(width: 6),
+                    Icon(_showMeta ? Icons.edit : Icons.edit_outlined,
+                        size: 16,
+                        color: _showMeta ? context.c.accent : context.c.sub),
                   ],
                 ),
               );
@@ -7866,36 +7873,6 @@ static const int kTagScanChars = 3000;
                 onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
-            // 제목 수정. 동기화 단추가 있던 자리다.
-            //
-            // 2026-08-27 소유자 지시 — "이제 자동 동기화가 너무 잘 되서
-            // 수동 동기화 버튼이 필요 없을 듯. 편집화면에서는 빼자."
-            // 맞는 말이다. 손으로 맞추고 싶으면 아래로 당기면 되고,
-            // 그마저도 이제 쓸 일이 없다. 자리는 더 쓸모 있는 것에 준다.
-            //
-            // 제목 줄을 눌러도 같은 일이 일어난다. 그런데도 단추를 따로
-            // 두는 까닭 — **가운데 글자가 눌린다는 것을 아는 사람이 드물다.**
-            // 08-19 에 "제목 입력란을 못 찾는 유저가 있음" 신고가 실제로
-            // 있었다. 연필은 그 말을 아이콘 하나로 한다.
-            IconButton(
-              tooltip: l.metaTooltip,
-              icon: Icon(_showMeta ? Icons.edit : Icons.edit_outlined,
-                  size: 20, color: _showMeta ? context.c.accent : null),
-              onPressed: () {
-                HapticFeedback.selectionClick();
-                final opening = !_showMeta;
-                setState(() => _showMeta = opening);
-                // 펴 주기만 하고 손을 놓으면 칸이 나와도 어디를 눌러야
-                // 하는지 또 찾아야 한다. 제목이 비어 있으면 그 칸으로
-                // 바로 데려간다. 이미 제목이 있으면 안 데려간다 — 보려고
-                // 편 사람의 손에서 자판이 튀어나오면 방해다.
-                if (opening && _headTitleEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) _titleFocus.requestFocus();
-                  });
-                }
-              },
-            ),
             // 2026-08-17 소유자 지시 — 위쪽 '정리' 버튼을 뺐다.
             //
             // 이건 아래 막대의 '정리'가 한 번에 안 되던 시절의 잔재다. 그때는
