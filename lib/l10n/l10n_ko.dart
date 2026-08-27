@@ -588,6 +588,10 @@ class L10nKo extends L10n {
   String get syncLastNever =>
       '아직 한 번도 동기화하지 못했습니다';
   @override
+  String get syncFirstTitle => '동기화 중입니다';
+  @override
+  String get syncFirstSub => '다른 기기의 노트를 가져오고 있습니다. 노트가 많으면 조금 걸립니다.';
+  @override
   String get syncLogTitle => '동기화 기록';
   @override
   String get syncLogNote => '무엇이 언제 오갔는지만 남습니다. 노트 내용은 남지 않습니다.';

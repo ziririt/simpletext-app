@@ -128,6 +128,31 @@ EditorRefresh editorRefresh({
   return editing ? EditorRefresh.assertMine : EditorRefresh.adopt;
 }
 
+/// 목록 위에 '동기화 중입니다' 띠를 보일까.
+///
+/// 2026-08-27 소유자 신고 — "로그인 직후 아직 동기화가 안 된 경우에
+/// 샘플 문서 하나만 딸랑 있는데, 이때 사람들이 '왜 로그인했는데도
+/// 동기화가 안 되지?'라는 의문을 가진다. 아무것도 안 나오고 텅 비어
+/// 있으니 에러 난 줄 아는 사람이 많다."
+///
+/// 맞는 말이다. **사람은 침묵을 고장으로 읽는다.** 특히 방금 무언가를
+/// 허락한 직후에는 더 그렇다 — 내가 한 일이 통했는지 아닌지를 확인하고
+/// 싶은데 화면이 아무 말도 안 하면, 통하지 않았다고 결론 내린다.
+///
+/// 이 띠는 **이 기기에서 첫 동기화가 끝나기 전까지만** 나온다. 한 번이라도
+/// 끝난 기기에서는 다시 안 나온다. 앱을 켤 때마다 몇 초씩 뜨면 그건
+/// 안내가 아니라 잔소리다.
+bool showSyncingBanner({
+  required bool active,
+  required bool paused,
+  required bool everSynced,
+  required bool running,
+}) {
+  if (!active || paused) return false;
+  if (everSynced) return false;
+  return running;
+}
+
 /// 동기화가 잠들었을 때 목록 위에 눕는 안내 띠 — 무엇을 보일까.
 ///
 /// 2026-08-20 소유자 지적: 허락이 만료된 사실을 설정 구석에서 기다리게

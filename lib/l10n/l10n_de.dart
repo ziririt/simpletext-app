@@ -590,6 +590,10 @@ class L10nDe extends L10n {
   String get syncLastNever =>
       'Noch nie abgeglichen';
   @override
+  String get syncFirstTitle => 'Wird synchronisiert …';
+  @override
+  String get syncFirstSub => 'Notizen von Ihren anderen Geräten werden geladen. Bei vielen Notizen dauert es einen Moment.';
+  @override
   String get syncLogTitle => 'Synchronisierungsverlauf';
   @override
   String get syncLogNote => 'Nur was wann übertragen wurde. Notizinhalte werden hier nicht gespeichert.';

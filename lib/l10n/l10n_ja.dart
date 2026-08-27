@@ -588,6 +588,10 @@ class L10nJa extends L10n {
   String get syncLastNever =>
       'まだ一度も同期していません';
   @override
+  String get syncFirstTitle => '同期中です';
+  @override
+  String get syncFirstSub => '他の端末のノートを取得しています。数が多いと少し時間がかかります。';
+  @override
   String get syncLogTitle => '同期の記録';
   @override
   String get syncLogNote => '何がいつ行き来したかだけを残します。ノートの中身は残りません。';

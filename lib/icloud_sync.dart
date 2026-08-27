@@ -151,6 +151,12 @@ class ICloudSync {
     } catch (_) {}
   }
 
+  /// 이 기기에서 한 바퀴라도 끝난 적이 있나.
+  ///
+  /// 앱을 껐다 켜면 lastSyncMs 는 0 으로 돌아가지만 _syncedUpTo 는 남는다.
+  /// 둘 중 하나라도 서 있으면 '처음'이 아니다.
+  bool get everSynced => _syncedUpTo > 0 || lastSyncMs.value > 0;
+
   Future<void> _saveSyncedUpTo(int ms) async {
     _syncedUpTo = ms;
     try {

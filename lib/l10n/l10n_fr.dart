@@ -590,6 +590,10 @@ class L10nFr extends L10n {
   String get syncLastNever =>
       'Jamais synchronisé';
   @override
+  String get syncFirstTitle => 'Synchronisation…';
+  @override
+  String get syncFirstSub => 'Récupération des notes de vos autres appareils. Cela peut prendre un moment si vous en avez beaucoup.';
+  @override
   String get syncLogTitle => 'Historique de synchronisation';
   @override
   String get syncLogNote => 'Uniquement ce qui a circulé et quand. Le contenu des notes n\'est pas conservé ici.';

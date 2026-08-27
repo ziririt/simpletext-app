@@ -589,6 +589,10 @@ class L10nEs extends L10n {
   String get syncLastNever =>
       'Aún no se ha sincronizado';
   @override
+  String get syncFirstTitle => 'Sincronizando…';
+  @override
+  String get syncFirstSub => 'Obteniendo las notas de tus otros dispositivos. Puede tardar un poco si tienes muchas.';
+  @override
   String get syncLogTitle => 'Historial de sincronización';
   @override
   String get syncLogNote => 'Solo qué se movió y cuándo. Aquí no se guarda el contenido de las notas.';

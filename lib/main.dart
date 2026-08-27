@@ -43,7 +43,12 @@ import 'core/mono_controller.dart';
 import 'core/auto_tag_gate.dart';
 import 'core/rich_spans.dart' show todoAt;
 import 'core/sync_plan.dart'
-    show EditorRefresh, editorRefresh, SyncBanner, syncBanner;
+    show
+        EditorRefresh,
+        editorRefresh,
+        SyncBanner,
+        syncBanner,
+        showSyncingBanner;
 import 'core/sync_log.dart';
 import 'core/mru.dart';
 import 'core/note_lock.dart';
@@ -4079,6 +4084,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Column(children: [
                 if (!widget.embedded) const TopBannerBar(),
                 const SyncNapBanner(),
+                const SyncBusyBanner(),
                 Expanded(
                   child: Stack(children: [
                     Positioned.fill(
@@ -7860,9 +7866,36 @@ static const int kTagScanChars = 3000;
                 onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
-            // 글을 치는 중에는 안 보인다. 자판이 올라와 있는데 위쪽에
-            // 단추가 늘어서 있으면 '완료'를 찾기가 어려워진다.
-            if (!_editing) const SyncNowButton(size: 20),
+            // 제목 수정. 동기화 단추가 있던 자리다.
+            //
+            // 2026-08-27 소유자 지시 — "이제 자동 동기화가 너무 잘 되서
+            // 수동 동기화 버튼이 필요 없을 듯. 편집화면에서는 빼자."
+            // 맞는 말이다. 손으로 맞추고 싶으면 아래로 당기면 되고,
+            // 그마저도 이제 쓸 일이 없다. 자리는 더 쓸모 있는 것에 준다.
+            //
+            // 제목 줄을 눌러도 같은 일이 일어난다. 그런데도 단추를 따로
+            // 두는 까닭 — **가운데 글자가 눌린다는 것을 아는 사람이 드물다.**
+            // 08-19 에 "제목 입력란을 못 찾는 유저가 있음" 신고가 실제로
+            // 있었다. 연필은 그 말을 아이콘 하나로 한다.
+            IconButton(
+              tooltip: l.metaTooltip,
+              icon: Icon(_showMeta ? Icons.edit : Icons.edit_outlined,
+                  size: 20, color: _showMeta ? context.c.accent : null),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                final opening = !_showMeta;
+                setState(() => _showMeta = opening);
+                // 펴 주기만 하고 손을 놓으면 칸이 나와도 어디를 눌러야
+                // 하는지 또 찾아야 한다. 제목이 비어 있으면 그 칸으로
+                // 바로 데려간다. 이미 제목이 있으면 안 데려간다 — 보려고
+                // 편 사람의 손에서 자판이 튀어나오면 방해다.
+                if (opening && _headTitleEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _titleFocus.requestFocus();
+                  });
+                }
+              },
+            ),
             // 2026-08-17 소유자 지시 — 위쪽 '정리' 버튼을 뺐다.
             //
             // 이건 아래 막대의 '정리'가 한 번에 안 되던 시절의 잔재다. 그때는
@@ -9817,6 +9850,95 @@ class _PaperPainter extends CustomPainter {
 /// wake(허락 만료)일 때 누르면 그 자리에서 허락 창을 띄운다 — 누름
 /// 자체가 브라우저가 요구하는 사용자의 손짓이라 이것이 가능하다.
 /// 실패하면 동기화 시트를 열어 긴 안내로 넘긴다.
+/// 첫 동기화가 도는 동안 목록 위에 눕는 띠.
+///
+/// 2026-08-27 소유자 신고 — 로그인 직후 목록에 샘플 문서 하나만 있으면
+/// 사람들이 "왜 로그인했는데 동기화가 안 되지?"라고 묻는다. 텅 비어
+/// 있으니 에러 난 줄 안다.
+///
+/// 사람은 침묵을 고장으로 읽는다. 방금 무언가를 허락한 직후에는 더
+/// 그렇다 — 내가 한 일이 통했는지 확인하고 싶은데 화면이 아무 말도
+/// 안 하면, 통하지 않았다고 결론 내린다.
+///
+/// 도는 막대를 쓰는 까닭. 글자만으로는 "지금도 돌고 있다"가 안 전해진다.
+/// 멈춘 글자는 멈춘 것으로 읽힌다. 움직이는 것이 하나라도 있어야 사람은
+/// 기다린다.
+///
+/// 언제 사라지나 — **이 기기에서 첫 바퀴가 끝나는 순간.** 그 뒤로는 앱을
+/// 껐다 켜도 다시 안 나온다. 켤 때마다 몇 초씩 뜨면 그건 안내가 아니라
+/// 잔소리다. 셈은 core/sync_plan.dart 의 showSyncingBanner 에 있다.
+class SyncBusyBanner extends StatelessWidget {
+  const SyncBusyBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final sync = ICloudSync.instance;
+    return ListenableBuilder(
+      listenable: Listenable.merge([sync.state, sync.lastSyncMs]),
+      builder: (_, __) {
+        final show = showSyncingBanner(
+          active: sync.active,
+          paused: sync.paused,
+          everSynced: sync.everSynced,
+          running: sync.state.value == SyncState.running,
+        );
+        if (!show) return const SizedBox.shrink();
+        final c = context.c;
+        return Container(
+          width: double.infinity,
+          color: c.accent.withValues(alpha: 0.10),
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 11),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: c.accent),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l.syncFirstTitle,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: c.accent)),
+                        const SizedBox(height: 3),
+                        Text(l.syncFirstSub,
+                            style: TextStyle(
+                                fontSize: 13.5, height: 1.4, color: c.sub)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 아래 실 한 줄. 동그라미만으로도 되지만, 띠 전체가 살아
+            // 있다는 것을 이 줄이 말한다.
+            SizedBox(
+              height: 2,
+              child: LinearProgressIndicator(
+                backgroundColor: c.accent.withValues(alpha: 0.15),
+                color: c.accent,
+              ),
+            ),
+          ]),
+        );
+      },
+    );
+  }
+}
+
 class SyncNapBanner extends StatefulWidget {
   const SyncNapBanner({super.key});
 

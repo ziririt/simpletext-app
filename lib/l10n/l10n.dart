@@ -359,6 +359,10 @@ abstract class L10n {
   String get syncTroubleTitle;
 
   /// 동기화 기록(2026-08-27). 무엇이 언제 오갔는지만 남긴다.
+  /// 첫 동기화가 도는 동안 목록 위에 눕는 띠(2026-08-27).
+  String get syncFirstTitle;
+  String get syncFirstSub;
+
   String get syncLogTitle;
   String get syncLogNote;
   String get syncLogEmpty;
@@ -913,6 +917,8 @@ abstract class L10n {
         'syncNowBusy': syncNowBusy,
         'syncLastNever': syncLastNever,
         'syncTroubleTitle': syncTroubleTitle,
+        'syncFirstTitle': syncFirstTitle,
+        'syncFirstSub': syncFirstSub,
         'syncLogTitle': syncLogTitle,
         'syncLogNote': syncLogNote,
         'syncLogEmpty': syncLogEmpty,

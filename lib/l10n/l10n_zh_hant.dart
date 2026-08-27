@@ -588,6 +588,10 @@ class L10nZhHant extends L10n {
   String get syncLastNever =>
       '還沒有同步過';
   @override
+  String get syncFirstTitle => '正在同步';
+  @override
+  String get syncFirstSub => '正在取得其他裝置上的筆記。筆記較多時可能需要一點時間。';
+  @override
   String get syncLogTitle => '同步紀錄';
   @override
   String get syncLogNote => '只記錄什麼在何時同步過，不保存筆記內容。';
