@@ -1,1 +1,5 @@
-O corpo do texto segue agora mais de perto a predefinição do sistema — 16pt e entrelinha 1,5 por predefinição. As definições ganharam Partilhar e Avalie-nos.
+A sincronização ficou bastante mais rápida — os dispositivos actualizam-se em segundos.
+A barra de edição foi refeita: localizar e substituir, selector de formato de parágrafo (corpo, títulos, citação, código), três tipos de lista, listas de tarefas com várias linhas, limpar formatação e mover o cursor.
+Premir Enter numa lista continua a numeração ou o marcador.
+Já pode escolher a fonte do corpo (sistema, Noto ou monoespaçada).
+Em ecrãs estreitos a barra abre-se por baixo.

@@ -1,1 +1,5 @@
-O corpo do texto agora segue mais de perto o padrão do sistema — 16pt e entrelinha 1,5 por padrão. Os ajustes ganharam Compartilhar e Avalie-nos.
+A sincronização ficou bem mais rápida — os aparelhos se atualizam em segundos.
+A barra de edição foi refeita: localizar e substituir, seletor de formato de parágrafo (corpo, títulos, citação, código), três tipos de lista, listas de tarefas com várias linhas, limpar formatação e mover o cursor.
+Pressionar Enter em uma lista continua a numeração ou o marcador.
+Agora dá para escolher a fonte do corpo (sistema, Noto ou monoespaçada).
+Em telas estreitas a barra se abre abaixo.

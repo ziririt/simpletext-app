@@ -1,1 +1,5 @@
-Der Fließtext folgt jetzt noch enger der Systemvorgabe — standardmäßig 16pt mit Zeilenabstand 1,5. Die Einstellungen haben nun Teilen- und Bewerten-Einträge.
+Die Synchronisierung ist deutlich schneller — Geräte gleichen sich in Sekunden ab.
+Die Bearbeitungsleiste wurde neu gebaut: Suchen und Ersetzen, Absatzformat-Auswahl (Fließtext, Überschriften, Zitat, Code), drei Listenarten, mehrzeilige Aufgabenlisten, Formatierung löschen und Cursor-Tasten.
+Die Eingabetaste setzt Nummerierung oder Aufzählung fort.
+Die Textschrift lässt sich wählen (System, Noto, Monospace).
+Auf schmalen Bildschirmen klappt die Leiste nach unten auf.

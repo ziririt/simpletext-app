@@ -1,1 +1,5 @@
-El cuerpo del texto sigue ahora más de cerca el ajuste del sistema — 16pt e interlineado 1,5 por defecto. Los ajustes suman Compartir y Valóranos.
+La sincronización es mucho más rápida: los dispositivos se ponen al día en segundos.
+Se rehízo la barra de edición: buscar y reemplazar, selector de formato de párrafo (cuerpo, títulos, cita, código), tres tipos de lista, listas de tareas de varias líneas, borrar formato y mover el cursor.
+Al pulsar Intro en una lista continúa la numeración o la viñeta.
+Ahora puedes elegir la fuente del cuerpo (sistema, Noto o monoespaciada).
+En pantallas estrechas la barra se despliega debajo.
