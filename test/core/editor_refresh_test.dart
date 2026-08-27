@@ -8,20 +8,50 @@ import 'package:simpletext/core/sync_plan.dart';
 
 void main() {
   test('같은 객체면 가만히 있는다 — 내 저장이 돌아온 메아리다', () {
-    expect(editorRefresh(sameObject: true, editing: false),
+    expect(
+        editorRefresh(sameObject: true, editing: false, sameContent: true),
         EditorRefresh.keep);
-    expect(editorRefresh(sameObject: true, editing: true),
+    expect(
+        editorRefresh(sameObject: true, editing: true, sameContent: false),
         EditorRefresh.keep);
   });
 
   test('새 판이 왔고 손대지 않았으면 갈아 그린다', () {
-    expect(editorRefresh(sameObject: false, editing: false),
+    expect(
+        editorRefresh(sameObject: false, editing: false, sameContent: false),
         EditorRefresh.adopt);
   });
 
   test('치던 중이면 눈앞의 글이 이긴다 — 보면서 만지는 글을 소리 없이 갈아치우지 않는다', () {
-    expect(editorRefresh(sameObject: false, editing: true),
+    expect(
+        editorRefresh(sameObject: false, editing: true, sameContent: false),
         EditorRefresh.assertMine);
+  });
+
+  group('2026-08-27 되받아치기 사건', () {
+    // 맥앱이 노트 하나를 편집 화면에 열어 둔 채로, 30초마다 제 옛 글을
+    // 새 시각으로 창고에 도로 올렸다. 웹앱에서 새로 쓴 줄이 계속 사라졌고,
+    // 아이폰은 이미 받았던 글을 도로 잃었다. 옛 글이 새 도장을 받아
+    // '가장 새것'이 되었기 때문이다.
+    test('알맹이가 같으면 치던 중이어도 다시 쓰지 않는다', () {
+      expect(
+          editorRefresh(sameObject: false, editing: true, sameContent: true),
+          EditorRefresh.rebind);
+    });
+
+    test('알맹이가 같으면 손대지 않았어도 갈아 그릴 것이 없다', () {
+      expect(
+          editorRefresh(sameObject: false, editing: false, sameContent: true),
+          EditorRefresh.rebind);
+    });
+
+    test('rebind 는 keep 이 아니다 — 객체는 반드시 갈아 끼워야 한다', () {
+      // 옛 객체는 이미 store.notes 에서 빠졌다. 그대로 물고 있으면
+      // 그 뒤의 편집이 아무 데도 닿지 않는다.
+      expect(
+          editorRefresh(sameObject: false, editing: true, sameContent: true),
+          isNot(EditorRefresh.keep));
+    });
   });
 
   group('잠든 동기화 안내 띠', () {

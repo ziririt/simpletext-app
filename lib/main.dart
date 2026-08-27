@@ -6394,9 +6394,25 @@ static const int kTagScanChars = 3000;
     final fresh = store.notes[i];
     switch (editorRefresh(
       sameObject: identical(fresh, note),
-      editing: _bodyTouched,
+      sameContent: fresh.body == bodyCtl.text && fresh.title == titleCtl.text,
+      // '치는 중'은 언젠가 손댔다는 뜻이 아니라, **아직 저장 안 된 글자가
+      // 지금 화면에 있다**는 뜻이다.
+      //
+      // 2026-08-27 — 예전에는 붙박이 깃발(_bodyTouched)을 썼다. 한 글자만
+      // 쳐도 그 깃발은 편집 화면을 닫을 때까지 켜져 있었고, 그동안 들어오는
+      // 남의 글을 30초마다 제 옛 글로 도로 덮었다. 소유자가 웹앱에서 쓴
+      // 줄들이 맥앱 때문에 계속 사라진 사건이 이것이다. 깃발은 태그 셈에만
+      // 남기고, 여기서는 지금 이 순간의 사실을 묻는다.
+      editing: bodyCtl.text != note.body,
     )) {
       case EditorRefresh.keep:
+        return;
+      case EditorRefresh.rebind:
+        // 글자는 그대로 두고 객체만 새것으로 바꾼다. 옛 객체는 이미
+        // store.notes 에서 빠졌으므로, 안 바꾸면 이 뒤의 편집이 아무 데도
+        // 닿지 않는 유령 객체에 쌓인다.
+        note = fresh;
+        _lastBody = fresh.body;
         return;
       case EditorRefresh.adopt:
         note = fresh;

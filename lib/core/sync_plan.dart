@@ -74,6 +74,15 @@ enum EditorRefresh {
   /// 같은 객체다 — 내 손이 만졌거나 남의 일이다. 할 일 없다.
   keep,
 
+  /// 새 판이 왔는데 알맹이가 화면의 것과 똑같다. 객체만 갈아 끼운다 —
+  /// 글자도 시각도 건드리지 않는다.
+  ///
+  /// 2026-08-27 사건이 여기서 났다. 이 갈래가 없어서 '똑같은 글'이
+  /// 들어와도 assertMine 으로 빠졌고, 그때마다 시각이 새로 찍혀 창고에
+  /// 올라갔다. 저쪽 기기도 똑같이 되받아쳐서 두 기기가 30초마다 서로를
+  /// 밀어냈다. 그 사이에 다른 기기에서 쓴 진짜 새 글은 계속 밀려났다.
+  rebind,
+
   /// 새 판이 왔고 이 화면에서 치던 글이 없다 — 갈아 그린다.
   adopt,
 
@@ -86,8 +95,12 @@ enum EditorRefresh {
 EditorRefresh editorRefresh({
   required bool sameObject,
   required bool editing,
+  required bool sameContent,
 }) {
   if (sameObject) return EditorRefresh.keep;
+  // 알맹이가 같으면 다툴 것이 없다. 이 한 줄이 2026-08-27 의 되받아치기를
+  // 끊는다.
+  if (sameContent) return EditorRefresh.rebind;
   return editing ? EditorRefresh.assertMine : EditorRefresh.adopt;
 }
 
