@@ -606,6 +606,8 @@ class L10nFr extends L10n {
   @override
   String get cursorRightTip => 'Droite';
   @override
+  String get clearFormatTip => 'Effacer la mise en forme';
+  @override
   String get moreTools => 'Plus';
   @override
   String get findTitle => 'Rechercher';

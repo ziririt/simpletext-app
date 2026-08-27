@@ -605,6 +605,8 @@ class L10nPt extends L10n {
   @override
   String get cursorRightTip => 'Direita';
   @override
+  String get clearFormatTip => 'Limpar formatação';
+  @override
   String get moreTools => 'Mais';
   @override
   String get findTitle => 'Localizar';

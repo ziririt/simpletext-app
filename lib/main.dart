@@ -5422,21 +5422,6 @@ class _EditorScreenState extends State<EditorScreen>
     _save();
   }
 
-  void _insertText(String left, [String right = '']) {
-    final sel = bodyCtl.selection;
-    final text = bodyCtl.text;
-    final start = sel.isValid ? sel.start : text.length;
-    final end = sel.isValid ? sel.end : text.length;
-    final selected = text.substring(start, end);
-    final ins = '$left$selected$right';
-    bodyCtl.value = bodyCtl.value.copyWith(
-      text: text.replaceRange(start, end, ins),
-      selection: TextSelection.collapsed(
-          offset: right.isEmpty ? start + ins.length : start + left.length + selected.length),
-    );
-    _save();
-  }
-
   Widget _kbBtn({String? glyph, IconData? icon, required VoidCallback onTap, String? tip}) {
     final child = glyph != null
         ? Text(glyph, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1))
@@ -6116,8 +6101,8 @@ class _EditorScreenState extends State<EditorScreen>
   /// 도구 막대의 한 칸. 가름선이면 [divider] 만 참이다.
   ///
   /// 목록으로 한 번 만들어 두고 두 가지 방식으로 그린다 — 폰은 옆으로
-  /// 굴리고, 맥과 웹은 넘치는 것을 '더 보기'로 접는다. 같은 목록을 쓰므로
-  /// 두 화면의 차례가 어긋날 일이 없다.
+  /// 굴리고, 맥과 웹은 넘치는 것을 '더 보기'로 접었다 편다. 같은 목록을
+  /// 쓰므로 두 화면의 차례가 어긋날 일이 없다.
   ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})
       _tool(
               {IconData? icon,
@@ -6129,32 +6114,64 @@ class _EditorScreenState extends State<EditorScreen>
 
   /// 도구 막대에 무엇이 어떤 차례로 있는가.
   ///
-  /// 2026-08-27 소유자 지시로 다시 짰다. 조사해 보니 세계가 합의한
-  /// '기본 여섯'(깃허브 markdown-toolbar-element)이 굵게·제목·기울임·
-  /// 인용·코드·링크인데 우리에겐 목록 셋과 체크박스뿐이었다.
+  /// 2026-08-27 저녁, 소유자가 블로거(blogger.com)의 도구 막대를 놓고 다시
+  /// 지시했다. 그 막대의 차례가 이렇다 — 실행취소 / 글꼴·크기·단락형식 /
+  /// 굵게·기울임·밑줄·취소선·색·형광펜 / 링크·그림·영상·이모지 /
+  /// 정렬·들여쓰기 / 목록·인용·구분선 / 서식 지우기.
   ///
-  /// 차례는 **문단에 하는 일 → 글자에 하는 일 → 넣는 것 → 옮기는 것 →
-  /// 찾는 것** 순이다. 사람이 글을 다루는 순서가 그 순서다.
+  /// 그중 우리가 가져온 것과 안 가져온 것.
   ///
-  /// 기울임은 뺐다. 한글에 기울임체는 어울리지 않고 한국어 글에서 거의
-  /// 안 쓴다. 밑줄·취소선·하이라이트도 뺐다 — 마크다운 표준이 아니고,
-  /// 이 앱은 '복사하면 표시가 빠진다'가 약속이라 표준 밖 문법을 늘리면
-  /// 그 약속이 흐려진다.
+  /// **가져온 것** — 서식 지우기. 블로거 막대 맨 오른쪽의 그 단추다.
+  /// 우리 앱에서는 특히 뜻이 깊다. 이 앱이 하는 일이 원래 '표시를 걷는
+  /// 것'인데, 지금까지 그건 글 전체에 한 번에 하는 일뿐이었다. 한 문단만
+  /// 걷고 싶을 때 길이 없었다.
+  ///
+  /// **안 가져온 것** — 글꼴·글자 크기·글자색·형광펜·정렬. 블로거는 HTML을
+  /// 만드는 도구라 그런 것이 뜻이 있지만, 우리 노트는 **맨 글자**다.
+  /// 복사하면 표시가 빠지는 것이 이 앱의 약속인데, 마크다운에 없는 문법을
+  /// 넣으면 그 약속이 흐려진다.
+  ///
+  /// 차례는 소유자 지시대로 **찾기가 맨 왼쪽**, 그 오른쪽에 가름선.
+  /// 그다음은 하는 일의 결로 묶었다 — 되돌리기 / 문단 / 목록 / 글자 /
+  /// 커서 / 걷어내기.
   List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})>
       _tools(L10n l) => [
+            // 2026-08-27 소유자 지시 — 찾기를 맨 왼쪽으로.
+            _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
+            _tool(divider: true),
             _tool(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
             _tool(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
             _tool(divider: true),
-            // ── 문단에 하는 일 ──
+            // ── 문단 ──
             _tool(icon: Icons.title, tip: l.headingTip, onTap: () => _op(cycleHeading)),
             _tool(icon: Icons.format_quote, tip: l.quoteTip, onTap: () => _op(toggleQuote)),
-            _tool(glyph: '1.', tip: l.listNumberAction, onTap: () => _makeList('number')),
-            _tool(glyph: '·', tip: l.listBulletAction, onTap: () => _makeList('bullet')),
-            _tool(glyph: '-', tip: l.listDashAction, onTap: () => _makeList('dash')),
+            _tool(divider: true),
+            // ── 목록 넷 ──
+            //
+            // 아이콘을 글자(1. · -)에서 목록 그림으로 바꿨다(소유자 지시).
+            // 글자는 그 자체로 '이 글자를 넣는다'로 읽힌다 — 08-17에 실제로
+            // 그 오해가 있었다. 그림은 '이 줄들을 목록으로 만든다'로 읽힌다.
+            //
+            // 하이픈 목록은 이 앱의 특징이다. 다른 편집기는 대개 점과 번호
+            // 둘뿐인데, AI 답변에는 하이픈 목록이 압도적으로 많이 온다.
             _tool(
-                icon: Icons.check_box_outlined,
+                icon: Icons.format_list_numbered,
+                tip: l.listNumberAction,
+                onTap: () => _makeList('number')),
+            _tool(
+                icon: Icons.format_list_bulleted,
+                tip: l.listBulletAction,
+                onTap: () => _makeList('bullet')),
+            _tool(
+                icon: Icons.list,
+                tip: l.listDashAction,
+                onTap: () => _makeList('dash')),
+            // 이제 줄에 하는 일이다. 나란히 있는 네 단추 중 하나만 다르게
+            // 굴면 사람은 그걸 고장으로 읽는다.
+            _tool(
+                icon: Icons.checklist,
                 tip: l.todoAction,
-                onTap: () => _insertText('- [ ] ')),
+                onTap: () => _op(toggleTodo)),
             _tool(
                 icon: Icons.format_indent_increase,
                 tip: l.indentTip,
@@ -6164,7 +6181,7 @@ class _EditorScreenState extends State<EditorScreen>
                 tip: l.outdentTip,
                 onTap: () => _op(outdentLines)),
             _tool(divider: true),
-            // ── 글자에 하는 일 ──
+            // ── 글자 ──
             _tool(
                 icon: Icons.format_bold,
                 tip: l.boldTip,
@@ -6179,9 +6196,7 @@ class _EditorScreenState extends State<EditorScreen>
             // ── 커서 옮기기 ──
             //
             // 한글 입력에서 커서를 정확한 자리에 놓기가 정말 어렵다. 손가락
-            // 하나가 글자 두세 개를 덮기 때문이다. iA Writer 가 이 키를
-            // 상징으로 삼은 까닭이고, 긴 AI 답변을 손보는 우리 앱에서는
-            // 굵게보다 자주 눌릴 수도 있다.
+            // 하나가 글자 두세 개를 덮기 때문이다.
             _tool(
                 icon: Icons.keyboard_arrow_left,
                 tip: l.cursorLeftTip,
@@ -6191,13 +6206,10 @@ class _EditorScreenState extends State<EditorScreen>
                 tip: l.cursorRightTip,
                 onTap: () => _moveCaret(1)),
             _tool(divider: true),
-            // 2026-08-27 소유자 지시 — 그냥 돋보기로.
-            //
-            // 전에는 find_replace 아이콘이었다. "찾기와 바꾸기를 둘 다
-            // 한다"를 그림으로 설명하려던 것인데, 그건 **만든 사람의
-            // 사정이지 쓰는 사람의 사정이 아니다.** 세상의 모든 편집기가
-            // 돋보기 안에 바꾸기를 넣어 두었고 사람들은 그걸 이미 안다.
-            _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
+            _tool(
+                icon: Icons.format_clear,
+                tip: l.clearFormatTip,
+                onTap: () => _op(stripFormat)),
           ];
 
   /// 고른 자리에 셈 하나를 먹인다. 되돌리기가 듣도록 controller 값을
@@ -6229,6 +6241,9 @@ class _EditorScreenState extends State<EditorScreen>
     if (!_bodyFocus.hasFocus) _bodyFocus.requestFocus();
   }
 
+  /// 넘친 단추를 펴 두었는가. 맥·웹에서만 쓴다.
+  bool _toolsOpen = false;
+
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
     final items = _tools(l);
@@ -6236,63 +6251,63 @@ class _EditorScreenState extends State<EditorScreen>
     return Glass(
       hairlineTop: !atTop,
       hairlineBottom: atTop,
-      child: SizedBox(
-        height: 44,
-        child: Row(
-          children: [
-            Expanded(
-              // 폰은 옆으로 굴리고, 맥·웹은 넘치는 것을 접는다
-              // (2026-08-27 소유자 지시). 손가락은 굴리는 것이 자연스럽고,
-              // 트랙패드는 가로 굴림이 잘 안 잡힌다 — 목록 화면에서 당기기가
-              // 안 잡히는 것과 같은 까닭이다.
-              child: _isDesktop
-                  ? LayoutBuilder(
-                      builder: (_, box) => _barFit(items, box.maxWidth))
-                  : ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      children: [for (final it in items) _toolWidget(it)],
-                    ),
+      child: _isDesktop
+          ? LayoutBuilder(builder: (_, box) => _barFit(items, box.maxWidth, atTop))
+          : SizedBox(
+              height: 44,
+              child: Row(children: [
+                Expanded(
+                  // 폰은 옆으로 굴린다. 손가락은 굴리는 것이 자연스럽다.
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    children: [for (final it in items) _toolWidget(it)],
+                  ),
+                ),
+                if (!atTop) ...[
+                  Container(width: 1, height: 26, color: context.c.toolbarLine),
+                  _kbBtn(
+                    icon: Icons.keyboard_hide_outlined,
+                    tip: l.hideKeyboardTip,
+                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  ),
+                ],
+              ]),
             ),
-            // 내릴 키보드가 없는 데스크톱에서는 이 버튼이 뜻이 없다.
-            if (!atTop) ...[
-              Container(width: 1, height: 26, color: context.c.toolbarLine),
-              _kbBtn(
-                icon: Icons.keyboard_hide_outlined,
-                tip: l.hideKeyboardTip,
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 
   static const double _toolW = 44;
   static const double _dividerW = 9;
 
-  /// 들어가는 만큼만 세우고 나머지는 '더 보기'로 접는다.
+  /// 들어가는 만큼만 세우고, 넘치는 것은 '⋯'를 눌러 **아래로 편다.**
   ///
-  /// 굴려야만 보이는 단추는 없는 것과 같다. 그렇다고 다 넣자고 창을
-  /// 넓히라고 할 수도 없다. 접는 쪽이 정직하다 — 접힌 것이 있다는 사실이
-  /// 점 세 개로 보이기 때문이다.
+  /// 2026-08-27 소유자 지시 — "작은 해상도에서 툴바가 다 못 나오면 ⋯를
+  /// 누르면 블로거처럼 기본 한 줄 아래에 2~3줄로 나오게."
+  ///
+  /// 처음에는 세로 메뉴로 만들었는데, 그건 단추를 **글자 목록**으로 바꾼
+  /// 것이라 손이 기억한 그림이 사라진다. 아래로 펴면 같은 그림이 같은
+  /// 크기로 남고, 자리만 한 줄 내려간다.
   Widget _barFit(
       List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})>
           items,
-      double width) {
+      double width,
+      bool atTop) {
     double w(int i) => items[i].divider ? _dividerW : _toolW;
     var total = 0.0;
     for (var i = 0; i < items.length; i++) {
       total += w(i);
     }
     if (total <= width - 8) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(children: [for (final it in items) _toolWidget(it)]),
+      return SizedBox(
+        height: 44,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(children: [for (final it in items) _toolWidget(it)]),
+        ),
       );
     }
-    // '더 보기' 단추 자리를 미리 뺀다.
+    // '⋯' 자리를 미리 뺀다.
     final room = width - 8 - _toolW;
     var used = 0.0;
     var cut = 0;
@@ -6306,41 +6321,34 @@ class _EditorScreenState extends State<EditorScreen>
     while (rest.isNotEmpty && rest.first.divider) {
       rest.removeAt(0);
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(children: [
-        for (final it in items.take(cut)) _toolWidget(it),
-        if (rest.isNotEmpty)
-          PopupMenuButton<int>(
-            icon: const Icon(Icons.more_horiz, size: 20),
-            tooltip: L10n.of(context).moreTools,
-            position: PopupMenuPosition.under,
-            offset: const Offset(0, 6),
-            onSelected: (i) => rest[i].onTap?.call(),
-            itemBuilder: (_) => [
-              for (var i = 0; i < rest.length; i++)
-                if (!rest[i].divider)
-                  PopupMenuItem<int>(
-                    value: i,
-                    height: 36,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Row(children: [
-                      SizedBox(
-                        width: 22,
-                        child: rest[i].glyph != null
-                            ? Text(rest[i].glyph!,
-                                style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w600))
-                            : Icon(rest[i].icon, size: 18),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(rest[i].tip,
-                          style: const TextStyle(fontSize: 15)),
-                    ]),
-                  ),
-            ],
+    final l = L10n.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 44,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(children: [
+              for (final it in items.take(cut)) _toolWidget(it),
+              if (rest.isNotEmpty)
+                _kbBtn(
+                  icon: _toolsOpen ? Icons.expand_less : Icons.more_horiz,
+                  tip: l.moreTools,
+                  onTap: () => setState(() => _toolsOpen = !_toolsOpen),
+                ),
+            ]),
           ),
-      ]),
+        ),
+        if (_toolsOpen && rest.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+            child: Wrap(
+              alignment: WrapAlignment.start,
+              children: [for (final it in rest) _toolWidget(it)],
+            ),
+          ),
+      ],
     );
   }
 

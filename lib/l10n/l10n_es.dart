@@ -605,6 +605,8 @@ class L10nEs extends L10n {
   @override
   String get cursorRightTip => 'Derecha';
   @override
+  String get clearFormatTip => 'Borrar formato';
+  @override
   String get moreTools => 'Más';
   @override
   String get findTitle => 'Buscar';

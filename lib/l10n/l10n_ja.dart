@@ -604,6 +604,8 @@ class L10nJa extends L10n {
   @override
   String get cursorRightTip => '右へ';
   @override
+  String get clearFormatTip => '書式をクリア';
+  @override
   String get moreTools => 'その他';
   @override
   String get findTitle => '検索';

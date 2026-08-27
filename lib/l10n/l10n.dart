@@ -370,6 +370,7 @@ abstract class L10n {
   String get cursorLeftTip;
   String get cursorRightTip;
   String get moreTools;
+  String get clearFormatTip;
 
   /// 찾기·바꾸기(2026-08-27). 기본은 찾기, '대치'를 누르면 펴진다.
   String get findTitle;
@@ -946,6 +947,7 @@ abstract class L10n {
         'cursorLeftTip': cursorLeftTip,
         'cursorRightTip': cursorRightTip,
         'moreTools': moreTools,
+        'clearFormatTip': clearFormatTip,
         'findTitle': findTitle,
         'findAction': findAction,
         'showReplaceLabel': showReplaceLabel,

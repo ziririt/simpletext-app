@@ -604,6 +604,8 @@ class L10nKo extends L10n {
   @override
   String get cursorRightTip => '오른쪽으로';
   @override
+  String get clearFormatTip => '서식 지우기';
+  @override
   String get moreTools => '더 보기';
   @override
   String get findTitle => '찾기';

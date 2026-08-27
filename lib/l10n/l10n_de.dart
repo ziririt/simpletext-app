@@ -606,6 +606,8 @@ class L10nDe extends L10n {
   @override
   String get cursorRightTip => 'Rechts';
   @override
+  String get clearFormatTip => 'Formatierung löschen';
+  @override
   String get moreTools => 'Mehr';
   @override
   String get findTitle => 'Suchen';

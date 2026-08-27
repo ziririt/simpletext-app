@@ -209,6 +209,101 @@ EditResult outdentLines(String text, int start, int end, {int by = 2}) =>
       return line.substring(n);
     });
 
+/// 할 일 목록 — 고른 줄마다 네모를 붙인다. 다 붙어 있으면 뗀다.
+///
+/// 2026-08-27 소유자 요청 — "몇 줄을 블럭 씌워서 할일 목록을 누르면 행마다
+/// 앞에 할일 목록이 나오면 좋겠다(글목록처럼)."
+///
+/// 맞는 지적이다. 목록 셋(번호·점·하이픈)은 이미 줄에 하는 일이었는데
+/// 체크박스만 커서 자리에 글자를 꽂고 있었다. 나란히 있는 네 단추 중
+/// 하나만 다르게 굴면 사람은 그걸 고장으로 읽는다.
+///
+/// 이미 다른 목록 표시가 붙어 있으면 갈아 끼운다. 안 그러면
+/// '- - [ ] 항목'처럼 두 겹이 된다.
+EditResult toggleTodo(String text, int start, int end) {
+  final s = blockSpan(text, start, end);
+  final lines = text.substring(s.from, s.to).split('\n');
+  final filled = lines.where((l) => l.trim().isNotEmpty);
+  final off = filled.isNotEmpty && filled.every(_todoLine.hasMatch);
+  return _mapLines(text, start, end, (line) {
+    if (line.trim().isEmpty) return line;
+    final m = _todoLine.firstMatch(line);
+    if (off) {
+      // 걷을 때는 네모만 떼고 글은 남긴다.
+      return '${m!.group(1)}${line.substring(m.end)}';
+    }
+    if (m != null) return line;
+    final indent = line.length - line.trimLeft().length;
+    final pad = line.substring(0, indent);
+    final rest = line.substring(indent).replaceFirst(_anyBullet, '');
+    return '$pad- [ ] $rest';
+  });
+}
+
+final RegExp _todoLine = RegExp(r'^([ \t]*)[-*] \[[ xX]\] ');
+final RegExp _anyBullet = RegExp(r'^(?:[•·*+\-–—]|\d+[.)])[ \t]+');
+
+/// 서식 지우기 — 고른 곳의 마크다운 표시를 걷는다.
+///
+/// 2026-08-27. 블로거 도구 막대 맨 오른쪽의 그 단추다. 우리 앱에서는
+/// 특히 뜻이 깊다 — 이 앱이 하는 일이 원래 '표시를 걷는 것'인데, 지금까지
+/// 그건 글 전체에 한 번에 하는 일뿐이었다. 한 문단만, 한 줄만 걷고 싶을
+/// 때 길이 없었다.
+///
+/// 고른 것이 없으면 그 줄 하나를 걷는다.
+///
+/// 홑별표(*기울임*)는 안 건드린다. 한국어 글에서 거의 안 쓰는 데다,
+/// 곱셈 기호나 각주 별표를 지워 버릴 위험이 그 이득보다 크다.
+EditResult stripFormat(String text, int start, int end) {
+  final a = start < end ? start : end;
+  final b = start < end ? end : start;
+  final int from;
+  final int to;
+  if (a == b) {
+    final s = blockSpan(text, a, b);
+    from = s.from;
+    to = s.to;
+  } else {
+    from = a;
+    to = b;
+  }
+  final out = bareText(text.substring(from, to));
+  return EditResult(text.replaceRange(from, to, out), from, from + out.length);
+}
+
+/// 마크다운 표시를 걷어 낸 글자.
+String bareText(String s) {
+  var t = s;
+  // 줄머리에 붙는 것들
+  t = t.replaceAll(RegExp(r'^[ \t]*#{1,6}[ \t]+', multiLine: true), '');
+  // replaceAll 에 r'$1' 을 넘기면 그 다섯 글자가 그대로 박힌다. 되받는
+  // 자리는 replaceAllMapped 뿐이다(2026-08-27 시험이 잡았다).
+  t = t.replaceAllMapped(
+      RegExp(r'^([ \t]*)>[ \t]?', multiLine: true), (m) => m.group(1) ?? '');
+  t = t.replaceAllMapped(
+      RegExp(r'^([ \t]*)[-*] \[[ xX]\] ', multiLine: true),
+      (m) => m.group(1) ?? '');
+  t = t.replaceAllMapped(
+      RegExp(r'^([ \t]*)(?:[•·*+\-–—]|\d+[.)])[ \t]+', multiLine: true),
+      (m) => m.group(1) ?? '');
+  // 울타리
+  t = t.replaceAll(RegExp(r'^[ \t]*(?:```|~~~).*$', multiLine: true), '');
+  // 링크는 이름만 남긴다
+  t = t.replaceAllMapped(
+      RegExp(r'\[([^\]\n]*)\]\([^)\n]*\)'), (m) => m.group(1) ?? '');
+  // 짝을 이루는 표시들. 짝일 때만 걷는다.
+  for (final re in [
+    RegExp(r'\*\*\*(.+?)\*\*\*', dotAll: true),
+    RegExp(r'\*\*(.+?)\*\*', dotAll: true),
+    RegExp(r'~~(.+?)~~', dotAll: true),
+    RegExp(r'==(.+?)==', dotAll: true),
+    RegExp(r'`([^`\n]+)`'),
+  ]) {
+    t = t.replaceAllMapped(re, (m) => m.group(1) ?? '');
+  }
+  return t;
+}
+
 /// 찾은 자리들. 정규식이 틀렸으면 빈 목록 — 화면이 죽는 것보다 낫다.
 List<({int start, int end})> findAll(String text, String find,
     {bool regex = false}) {

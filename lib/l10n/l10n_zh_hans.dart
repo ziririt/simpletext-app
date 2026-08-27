@@ -604,6 +604,8 @@ class L10nZhHans extends L10n {
   @override
   String get cursorRightTip => '向右';
   @override
+  String get clearFormatTip => '清除格式';
+  @override
   String get moreTools => '更多';
   @override
   String get findTitle => '查找';
