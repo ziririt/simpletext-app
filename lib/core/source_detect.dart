@@ -117,6 +117,16 @@ const Map<String, List<String>> _domains = {
 /// 않는다. 넣으면 못 잡는 것보다 나쁜 일(엉뚱하게 확정)이 일어난다.
 const Map<String, List<String>> _htmlMarks = {
   kChatGpt: [
+    // 2026-08-27 23:00 실측 — **여기 있는 것 중 하나도 안 왔다.**
+    //
+    // 챗지피티가 클립보드에 싣는 HTML 은 화면에 그려 둔 그 덩어리가
+    // 아니었다. 앞 4000자에 class 도 id 도 data-* 도 하나도 없는,
+    // 속성이 벗겨진 깨끗한 HTML 이었다. 즉 아래 다섯은 화면에서는
+    // 맞을지 몰라도 **복사물에는 안 실린다.**
+    //
+    // 그래서 이 다섯은 남겨 두되(웹 붙여넣기 경로에서는 화면 조각이
+    // 그대로 올 수도 있다) 여기에 기대지 않는다. 무엇으로 잡을지는
+    // 지문 기록기 2판(태그 뼈대와 속성 이름)의 다음 실측을 본다.
     'data-message-author-role',
     'data-message-id',
     'text-token-text-primary',
@@ -130,10 +140,18 @@ const Map<String, List<String>> _htmlMarks = {
     'standard-markdown',
   ],
   kGemini: [
-    'model-response-text',
-    'response-container-content',
-    'message-content-id',
-    'gemini-response',
+    // 2026-08-27 23:01 실측. 맥앱에 실제로 붙여넣은 조각에서 뽑았다.
+    //
+    // 여기 있던 넷(model-response-text, response-container-content,
+    // message-content-id, gemini-response)은 **전부 내 짐작이었고 전부
+    // 틀렸다.** 실제 조각에는 하나도 없었다. 소유자가 "디텍팅이 거의 안
+    // 된다"고 한 까닭이 이것이다. 짐작한 이름은 지웠다.
+    'markdown-main-panel',
+    'model-response-message-content',
+    'enable-luminous-fast-follows',
+    'enable-updated-hr-color',
+    'data-path-to-node',
+    'data-index-in-node',
   ],
   kPerplexity: [
     'pplx-',

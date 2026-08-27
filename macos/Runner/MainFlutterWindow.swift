@@ -195,17 +195,24 @@ enum ICloudBridge {
           result(false)
         }
       case "clipboardSource":
+        // 2026-08-27 밤 — 여기 문지기가 하나 있었다.
+        //
+        // 주소가 있으면 그것만 돌려주고 **HTML 은 아예 안 봤다.** 그런데
+        // 주소와 HTML 은 서로를 밀어낼 이유가 없다. 둘 다 증거다. 주소
+        // 하나 있다고 지문 한 뭉치를 버리고 있었던 것이다.
+        //
+        // 그리고 앞 4000자만 넘겼는데, 그 4000자에 표식이 하나도 없어서
+        // 챗지피티를 못 잡았다(core/capture_sig.dart 2판 머리말 참고).
+        // 안드로이드와 같은 8000자로 맞춘다.
         let pb = NSPasteboard.general
-        var found: String?
+        var parts: [String] = []
         if let u = pb.string(forType: .URL) {
-          found = u
+          parts.append(u)
         }
-        if found == nil, let h = pb.string(forType: .html) {
-          // HTML 조각은 통째로 클 수 있다. 원본 주소는 앞쪽에 있으므로
-          // 앞부분만 넘긴다 — 다트로 수 메가바이트를 넘길 이유가 없다.
-          found = String(h.prefix(4000))
+        if let h = pb.string(forType: .html) {
+          parts.append(String(h.prefix(8000)))
         }
-        result(found)
+        result(parts.isEmpty ? nil : parts.joined(separator: "\n"))
       default:
         result(FlutterMethodNotImplemented)
       }

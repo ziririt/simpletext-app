@@ -280,12 +280,19 @@ enum ICloudBridge {
         //
         // 여기서 찾는 것은 '어디서 복사했는가' 하나뿐이다. 글자는 이미
         // 플러터가 읽었다.
-        var found: String?
+        //
+        // 2026-08-27 밤 — 여기는 주소만 보고 있었다. 맥은 HTML 도 보는데
+        // 아이폰은 안 봤다. 같은 앱인데 아이폰 쪽 눈이 하나 없었던 셈이다.
+        var parts: [String] = []
         let pb = UIPasteboard.general
         if pb.hasURLs, let u = pb.url {
-          found = u.absoluteString
+          parts.append(u.absoluteString)
         }
-        result(found)
+        if let d = pb.data(forPasteboardType: "public.html"),
+           let h = String(data: d, encoding: .utf8) {
+          parts.append(String(h.prefix(8000)))
+        }
+        result(parts.isEmpty ? nil : parts.joined(separator: "\n"))
       default:
         result(FlutterMethodNotImplemented)
       }

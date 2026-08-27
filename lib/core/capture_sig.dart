@@ -20,7 +20,23 @@
 ///
 /// **안 담는 것** — 글자. 한 글자도 안 담는다. 이 값은 기기 안에만 남는
 /// 실험 기록이지만, 여기에 사람의 글이 섞이면 그건 사고다.
-String captureSignature(String? capture, {int max = 400}) {
+/// ## 2판 (2026-08-27 23:10) — 태그 뼈대와 속성 이름을 더 담는다
+///
+/// 1판으로 잰 결과가 이렇게 갈렸다.
+///
+///   제미나이   markdown-main-panel, md-content, data-path-to-node …  잡았다.
+///   챗지피티   plain:4000 — 앞 4000자에 class/id/data-* 가 **하나도 없다.**
+///   그록       빈 값 — 클립보드에 HTML 자체가 안 실린다.
+///
+/// 챗지피티가 빈손으로 보인 것은 HTML 이 없어서가 아니라 **내가 세 가지
+/// 속성만 보고 있었기 때문**이다. 속성이 벗겨진 깨끗한 HTML 이라면 남는
+/// 단서는 태그의 생김새와 나머지 속성 이름뿐이다. 그래서 2판은
+///
+///   t:  나온 태그 이름을 순서대로 (처음 14개)
+///   a:  나온 속성 이름 모두 (class/id/data-* 는 이미 위에서 값까지 봤다)
+///
+/// 를 더 담는다. 여전히 **글자는 한 자도 안 담는다.**
+String captureSignature(String? capture, {int max = 700}) {
   if (capture == null || capture.isEmpty) return '';
   final seen = <String>{};
   void add(String s) {
@@ -44,8 +60,31 @@ String captureSignature(String? capture, {int max = 400}) {
       .allMatches(capture)) {
     add('@${m.group(1)!.toLowerCase()}');
   }
+
+  // 태그 뼈대 — 속성이 벗겨진 HTML 에서는 이것만 남는다.
+  final tags = <String>[];
+  for (final m in RegExp(r'<([a-zA-Z][a-zA-Z0-9]{0,12})[\s>/]').allMatches(capture)) {
+    final t = m.group(1)!.toLowerCase();
+    if (!tags.contains(t)) tags.add(t);
+    if (tags.length >= 14) break;
+  }
+
+  // 속성 이름 — 값은 안 본다. 값에는 사람의 글이 들어갈 수 있다.
+  final attrs = <String>{};
+  for (final m in RegExp(r'\s([a-zA-Z][a-zA-Z0-9-]{0,24})\s*=\s*[\x22\x27]')
+      .allMatches(capture)) {
+    attrs.add(m.group(1)!.toLowerCase());
+  }
+
+  final parts = <String>[];
+  if (seen.isNotEmpty) parts.add(seen.join(' '));
+  if (tags.isNotEmpty) parts.add('t:${tags.join(',')}');
+  if (attrs.isNotEmpty) {
+    final a = attrs.toList()..sort();
+    parts.add('a:${a.join(',')}');
+  }
   // 아무 표식도 없으면 '맨 글자였다'는 사실 자체가 정보다.
-  if (seen.isEmpty) return 'plain:${capture.length}';
-  final out = seen.join(' ');
+  if (parts.isEmpty) return 'plain:${capture.length}';
+  final out = parts.join(' | ');
   return out.length > max ? out.substring(0, max) : out;
 }

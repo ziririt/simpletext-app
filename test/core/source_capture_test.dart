@@ -52,11 +52,24 @@ void main() {
           kClaude);
     });
 
-    test('제미나이의 응답 칸', () {
+    // 2026-08-27 23:01 실측한 조각이다. 짐작한 이름이 아니라 진짜다.
+    test('제미나이의 응답 칸 — 클래스', () {
       expect(
-          sourceFromCapture('<message-content class="model-response-text">')
+          sourceFromCapture(
+                  '<div class="markdown markdown-main-panel md-content">')
               .name,
           kGemini);
+    });
+
+    test('제미나이의 응답 칸 — id', () {
+      expect(
+          sourceFromCapture('<div id="model-response-message-contentr_82cc">')
+              .name,
+          kGemini);
+    });
+
+    test('제미나이의 응답 칸 — 인용 표식', () {
+      expect(sourceFromCapture('<span data-path-to-node="0">').name, kGemini);
     });
 
     test('표식으로 찾은 것도 확정이다 — 사용자가 어떻게 물어보든 안 바뀌는 것이라', () {

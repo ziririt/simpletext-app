@@ -12,6 +12,32 @@ void main() {
       expect(captureSignature('## 장점\n**1. 실시간**'), 'plain:16');
     });
 
+    test('속성이 벗겨진 HTML 도 태그 뼈대로 남는다 — 챗지피티가 이 모양이었다', () {
+      final s = captureSignature('<h3>제목</h3><p>글</p><ul><li>하나</li></ul>');
+      expect(s.startsWith('t:'), true);
+      expect(s.contains('h3'), true);
+      expect(s.contains('ul'), true);
+      expect(s.contains('li'), true);
+      expect(s.contains('제목'), false);
+    });
+
+    test('속성 이름은 담고 값은 안 담는다', () {
+      final s = captureSignature('<meta charset="utf-8"><p dir="ltr">비밀</p>');
+      expect(s.contains('a:'), true);
+      expect(s.contains('charset'), true);
+      expect(s.contains('dir'), true);
+      expect(s.contains('utf-8'), false);
+      expect(s.contains('비밀'), false);
+    });
+
+    test('제미나이 실측 조각을 그대로 알아본다', () {
+      final s = captureSignature(
+          '<div class="markdown markdown-main-panel enable-luminous-fast-follows" '
+          'id="model-response-message-contentr_82cc" data-path-to-node="0">글</div>');
+      expect(s.contains('markdown-main-panel'), true);
+      expect(s.contains('data-path-to-node'), true);
+    });
+
     test('클래스 이름을 낱개로 쪼갠다', () {
       final s = captureSignature('<div class="markdown prose dark">글</div>');
       expect(s.contains('markdown'), true);
@@ -47,7 +73,7 @@ void main() {
 
     test('길이를 넘기면 자른다', () {
       final many = List.generate(200, (i) => '<p class="c$i">x</p>').join();
-      expect(captureSignature(many).length <= 400, true);
+      expect(captureSignature(many).length <= 700, true);
     });
   });
 }
