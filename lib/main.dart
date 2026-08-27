@@ -4197,8 +4197,17 @@ class _HomeScreenState extends State<HomeScreen>
                       left: 0,
                       right: 0,
                       child: SizedBox(
-                          height: kHomeHeaderH,
-                          child: Padding(
+                        height: kHomeHeaderH,
+                        child: Stack(children: [
+                          // 편집 화면과 같은 유리(2026-08-27 소유자 지시 —
+                          // "같은 유리로 맞추면 더 좋겠다").
+                          //
+                          // 그전까지 이 머리는 투명이었다. 목록 글자가
+                          // 삼선·돋보기·톱니 뒤로 그대로 비쳐서, 굴릴 때마다
+                          // 아이콘이 글자 위에서 헤엄쳤다. 두 화면의 머리가
+                          // 서로 다른 재료면 그건 한 앱이 아니다.
+                          const Positioned.fill(child: _HeadGlass()),
+                          Padding(
                             padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
                             child: _searching
                                 ? Row(children: [
@@ -4277,7 +4286,8 @@ class _HomeScreenState extends State<HomeScreen>
                                     ),
                                   ]),
                           ),
-                        ),
+                        ]),
+                      ),
                     ),
                   ]),
                 ),
