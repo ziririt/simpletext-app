@@ -170,6 +170,48 @@ SourceGuess sourceFromCapture(String? capture) {
 /// 옛 이름. 부르는 자리가 여럿이라 남겨 둔다.
 SourceGuess sourceFromUrl(String? urlOrHtml) => sourceFromCapture(urlOrHtml);
 
+/// **본문 글자 안에 박힌 링크**에서 찾는다.
+///
+/// 2026-08-27 저녁, 소유자가 다섯 서비스를 하나씩 붙여넣어 재 봤다. 거기서
+/// 알게 된 것 — **요즘 AI 앱의 '복사' 단추는 마크다운 글자만 넣는다.**
+/// HTML 이 아예 안 실린다. 그러면 1단(클립보드 증거)이 볼 것이 없다.
+///
+/// 그때 남는 유일한 증거가 본문에 박힌 링크다. 웹 검색을 켠 답변에는
+/// 출처 링크가 본문에 그대로 들어오고, 그 주소가 어느 서비스인지 말해 준다.
+///
+/// **주소 꼴일 때만 센다.** 그냥 'perplexity' 라는 낱말이 글에 나온다고
+/// 퍼플렉시티일 리 없다. 오늘 이 앱을 만들며 쓴 설계 문서에는 다섯 이름이
+/// 모두 나온다 — 그런 글에 아무 이름이나 박으면 그게 제일 나쁘다.
+///
+/// 그래서 둘 이상이 보이면 아무 말도 안 한다. 설계 문서 같은 글이 정확히
+/// 그 경우다.
+SourceGuess sourceFromBody(String text) {
+  if (text.isEmpty) return SourceGuess.unknown;
+  final t = text.toLowerCase();
+  final hit = <String>{};
+  _domains.forEach((who, marks) {
+    for (final m in marks) {
+      // utm 표식은 그 자체가 주소 안에만 산다.
+      if (m.startsWith('utm_')) {
+        if (t.contains(m)) {
+          hit.add(who);
+          break;
+        }
+        continue;
+      }
+      // 나머지는 주소 꼴일 때만 센다.
+      if (t.contains('://$m') ||
+          t.contains('://www.$m') ||
+          t.contains('/$m') && t.contains('http')) {
+        hit.add(who);
+        break;
+      }
+    }
+  });
+  if (hit.length == 1) return SourceGuess(hit.first, certain: true);
+  return SourceGuess.unknown;
+}
+
 /// 붙여넣기로 새로 들어온 덩이만 떼어 낸다.
 ///
 /// 2026-08-17 — 편집 화면에서 붙여넣어도 출처를 찍으려면, 글 전체가 아니라
@@ -238,7 +280,36 @@ final RegExp _heading = RegExp(r'^#{1,6}\s', multiLine: true);
 final RegExp _bold = RegExp(r'\*\*[^*\n]{2,}\*\*');
 final RegExp _blankLine = RegExp(r'\n\s*\n');
 
-/// 2단 — 글의 생김새로 추측. 애매하면 빈 결과를 준다.
+/// 2단 — 글의 생김새로 추측.
+///
+/// ## 2026-08-27 — 더 이상 이 값을 화면에 쓰지 않는다
+///
+/// 소유자가 다섯 서비스를 하나씩 붙여넣어 재 봤다. 결과가 이랬다.
+///
+/// ```
+///   실제        탐지        어떻게
+///   Grok        Gemini      생김새   ← 틀림
+///   ChatGPT     Gemini      생김새   ← 틀림
+///   Gemini      (못 잡음)
+///   Perplexity  Perplexity  증거     ← 맞음
+///   Claude      Claude      증거     ← 맞음
+/// ```
+///
+/// 증거로 잡은 둘은 맞았고, **생김새로 찍은 둘은 다 틀렸다. 그것도 둘 다
+/// 같은 이름(Gemini)으로.** 까닭은 분명하다 — 제미나이 규칙이 '소제목 여럿
+/// + 표 + 굵게'인데, **2026년 8월 현재 다섯 모델이 전부 그렇게 쓴다.**
+/// 열흘 전(08-17) 다섯 편으로 맞춘 규칙이 열흘 만에 낡았다.
+///
+/// 실제 수치. ChatGPT 편은 소제목이 29개였고 Grok 편은 표가 10줄이었다.
+/// 옛 규칙에서 그건 제미나이의 표식이었다.
+///
+/// **그래서 붙여넣을 때 이 함수를 부르지 않는다.** 틀린 이름을 조용히 박는
+/// 것은 아무 말도 안 하는 것보다 나쁘다. 사람은 앱이 박아 준 이름을 나중에
+/// 의심하지 않는다.
+///
+/// 함수와 시험은 남겨 둔다. 언젠가 실기기 표본을 충분히 모아 confusion
+/// matrix 를 그리면 그때 다시 쓸 자리가 있을 수 있다. 다만 그때까지는
+/// **증거만 말한다.**
 SourceGuess guessSource(String text) {
   // 2026-08-17 — 문턱을 200자에서 140자로 내렸다. 200자는 한국어 한 문단이
   // 넘는 길이라, 짧게 묻고 짧게 받은 답이 통째로 빠져나갔다.

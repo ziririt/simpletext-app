@@ -3919,7 +3919,9 @@ class _HomeScreenState extends State<HomeScreen>
     // 2단은 글의 생김새로 찍는 것이라 반드시 '(추정)'이 붙는다. 둘 다
     // 안 되면 아무 말도 하지 않는다 — 틀린 출처를 조용히 박아 두는 건
     // 안 하느니만 못하다.
-    final guess = known.isKnown ? known : guessSource(text);
+    // 생김새로 찍는 길은 닫았다(core/source_detect.dart 의 guessSource
+    // 머리말 참고). 증거가 없으면 아무 말도 안 한다.
+    final guess = known.isKnown ? known : sourceFromBody(text);
     if (guess.isKnown) {
       note.source = guess.name;
       note.sourceAuto = !guess.certain;
@@ -5305,18 +5307,37 @@ class _EditorScreenState extends State<EditorScreen>
   /// 증거를 먼저 묻고, 없을 때만 생김새로 찍는다. 증거는 늙지 않지만
   /// 문체는 프롬프트 한 줄로 바뀐다.
   Future<void> _stampSource(String text) async {
-    final capture = await ClipboardSource.read();
-    final known = sourceFromCapture(capture);
-    final g = known.isKnown ? known : guessSource(text);
-    if (!g.isKnown) return;
-    // 이 사이에 사람이 손으로 골랐을 수도 있다. 다시 한 번 본다.
-    if (note.source.isNotEmpty) return;
-
-    note.source = g.name;
-    note.sourceAuto = !g.certain;
+    // 붙여넣은 사실은 출처를 몰라도 남긴다.
+    //
+    // 2026-08-27 저녁 실측에서 드러난 버그다. 전에는 출처를 못 찾으면
+    // 여기서 곧장 돌아갔고, 그래서 **pastedAt 도 안 찍혔다.** 붙여넣은
+    // 사실과 어디서 왔는지는 별개인데 하나로 묶여 있었다. 신선도 경고
+    // (isStale)가 pastedAt 에 달려 있으므로, 출처를 모르는 글은 영영
+    // 낡지 않는 글이 되어 있었다.
     if (note.pastedAt == 0) {
       note.pastedAt = DateTime.now().millisecondsSinceEpoch;
     }
+
+    // 1단 — 복사 순간의 증거. 2단 — 본문에 박힌 링크.
+    //
+    // 생김새로 찍는 3단(guessSource)은 이제 안 부른다. 까닭은 그 함수의
+    // 머리말에 실측과 함께 적어 두었다 — 다섯 중 둘을 틀렸고 둘 다 같은
+    // 이름으로 갔다.
+    final capture = await ClipboardSource.read();
+    var g = sourceFromCapture(capture);
+    if (!g.isKnown) g = sourceFromBody(text);
+    if (!g.isKnown) {
+      await _save();
+      return;
+    }
+    // 이 사이에 사람이 손으로 골랐을 수도 있다. 다시 한 번 본다.
+    if (note.source.isNotEmpty) {
+      await _save();
+      return;
+    }
+
+    note.source = g.name;
+    note.sourceAuto = !g.certain;
     await _save();
     if (!mounted) return;
     setState(() {});
