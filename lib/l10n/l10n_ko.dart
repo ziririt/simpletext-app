@@ -588,6 +588,34 @@ class L10nKo extends L10n {
   String get syncLastNever =>
       '아직 한 번도 동기화하지 못했습니다';
   @override
+  String get headingTip => '제목';
+  @override
+  String get quoteTip => '인용';
+  @override
+  String get boldTip => '굵게';
+  @override
+  String get codeTip => '코드';
+  @override
+  String get linkTip => '링크';
+  @override
+  String get outdentTip => '내어쓰기';
+  @override
+  String get cursorLeftTip => '왼쪽으로';
+  @override
+  String get cursorRightTip => '오른쪽으로';
+  @override
+  String get moreTools => '더 보기';
+  @override
+  String get findTitle => '찾기';
+  @override
+  String get findAction => '찾기';
+  @override
+  String get showReplaceLabel => '대치';
+  @override
+  String get replaceOneAction => '바꾸기';
+  @override
+  String get findNone => '찾은 것이 없습니다';
+  @override
   String get syncFirstTitle => '동기화 중입니다';
   @override
   String get syncFirstSub => '다른 기기의 노트를 가져오고 있습니다. 노트가 많으면 조금 걸립니다.';
@@ -607,6 +635,8 @@ class L10nKo extends L10n {
   String get syncLogFailed => '실패';
   @override
   String syncUpdatedAt(String when) => '최근 업데이트 ' + when;
+  @override
+  String findHits(int n) => n.toString() + '개 찾음';
   @override
   String syncLogLastUp(String when) => '마지막으로 올린 때 · ' + when;
   @override

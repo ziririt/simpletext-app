@@ -589,6 +589,34 @@ class L10nPt extends L10n {
   String get syncLastNever =>
       'Ainda não sincronizou';
   @override
+  String get headingTip => 'Título';
+  @override
+  String get quoteTip => 'Citação';
+  @override
+  String get boldTip => 'Negrito';
+  @override
+  String get codeTip => 'Código';
+  @override
+  String get linkTip => 'Ligação';
+  @override
+  String get outdentTip => 'Diminuir avanço';
+  @override
+  String get cursorLeftTip => 'Esquerda';
+  @override
+  String get cursorRightTip => 'Direita';
+  @override
+  String get moreTools => 'Mais';
+  @override
+  String get findTitle => 'Localizar';
+  @override
+  String get findAction => 'Localizar';
+  @override
+  String get showReplaceLabel => 'Substituir';
+  @override
+  String get replaceOneAction => 'Substituir';
+  @override
+  String get findNone => 'Sem correspondências';
+  @override
   String get syncFirstTitle => 'A sincronizar…';
   @override
   String get syncFirstSub => 'A obter as notas dos seus outros dispositivos. Pode demorar um pouco se tiver muitas.';
@@ -608,6 +636,8 @@ class L10nPt extends L10n {
   String get syncLogFailed => 'Falha';
   @override
   String syncUpdatedAt(String when) => 'Atualizado ' + when;
+  @override
+  String findHits(int n) => n.toString() + ' encontrados';
   @override
   String syncLogLastUp(String when) => 'Último envio · ' + when;
   @override

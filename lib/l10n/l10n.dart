@@ -360,6 +360,24 @@ abstract class L10n {
 
   /// 동기화 기록(2026-08-27). 무엇이 언제 오갔는지만 남긴다.
   /// 첫 동기화가 도는 동안 목록 위에 눕는 띠(2026-08-27).
+  /// 편집 도구 막대(2026-08-27). 세계 표준의 '기본 여섯'을 채운다.
+  String get headingTip;
+  String get quoteTip;
+  String get boldTip;
+  String get codeTip;
+  String get linkTip;
+  String get outdentTip;
+  String get cursorLeftTip;
+  String get cursorRightTip;
+  String get moreTools;
+
+  /// 찾기·바꾸기(2026-08-27). 기본은 찾기, '대치'를 누르면 펴진다.
+  String get findTitle;
+  String get findAction;
+  String get showReplaceLabel;
+  String get replaceOneAction;
+  String get findNone;
+
   String get syncFirstTitle;
   String get syncFirstSub;
 
@@ -375,6 +393,8 @@ abstract class L10n {
   /// 목록·편집 화면에 붙는 '최근 업데이트 11:34'.
   /// 이 기기가 마지막으로 **받아 온** 시각이다(올린 시각이 아니다).
   String syncUpdatedAt(String when);
+  /// '3개 찾음'
+  String findHits(int n);
   String syncLogLastUp(String when);
   String syncLogLastDown(String when);
 
@@ -917,6 +937,20 @@ abstract class L10n {
         'syncNowBusy': syncNowBusy,
         'syncLastNever': syncLastNever,
         'syncTroubleTitle': syncTroubleTitle,
+        'headingTip': headingTip,
+        'quoteTip': quoteTip,
+        'boldTip': boldTip,
+        'codeTip': codeTip,
+        'linkTip': linkTip,
+        'outdentTip': outdentTip,
+        'cursorLeftTip': cursorLeftTip,
+        'cursorRightTip': cursorRightTip,
+        'moreTools': moreTools,
+        'findTitle': findTitle,
+        'findAction': findAction,
+        'showReplaceLabel': showReplaceLabel,
+        'replaceOneAction': replaceOneAction,
+        'findNone': findNone,
         'syncFirstTitle': syncFirstTitle,
         'syncFirstSub': syncFirstSub,
         'syncLogTitle': syncLogTitle,

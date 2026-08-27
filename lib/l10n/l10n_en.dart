@@ -589,6 +589,34 @@ class L10nEn extends L10n {
   String get syncLastNever =>
       'Not synced yet';
   @override
+  String get headingTip => 'Heading';
+  @override
+  String get quoteTip => 'Quote';
+  @override
+  String get boldTip => 'Bold';
+  @override
+  String get codeTip => 'Code';
+  @override
+  String get linkTip => 'Link';
+  @override
+  String get outdentTip => 'Outdent';
+  @override
+  String get cursorLeftTip => 'Left';
+  @override
+  String get cursorRightTip => 'Right';
+  @override
+  String get moreTools => 'More';
+  @override
+  String get findTitle => 'Find';
+  @override
+  String get findAction => 'Find';
+  @override
+  String get showReplaceLabel => 'Replace';
+  @override
+  String get replaceOneAction => 'Replace';
+  @override
+  String get findNone => 'No matches';
+  @override
   String get syncFirstTitle => 'Syncing…';
   @override
   String get syncFirstSub => 'Fetching notes from your other devices. This can take a moment if you have many.';
@@ -608,6 +636,8 @@ class L10nEn extends L10n {
   String get syncLogFailed => 'Failed';
   @override
   String syncUpdatedAt(String when) => 'Updated ' + when;
+  @override
+  String findHits(int n) => n.toString() + ' found';
   @override
   String syncLogLastUp(String when) => 'Last sent · ' + when;
   @override

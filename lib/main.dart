@@ -37,6 +37,7 @@ import 'core/folders.dart';
 import 'core/hangul.dart';
 import 'core/history_align.dart';
 import 'core/key_vault.dart';
+import 'core/edit_ops.dart';
 import 'core/list_continue.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
@@ -6070,102 +6071,249 @@ class _EditorScreenState extends State<EditorScreen>
     return _colW;
   }
 
+  /// 도구 막대의 한 칸. 가름선이면 [divider] 만 참이다.
+  ///
+  /// 목록으로 한 번 만들어 두고 두 가지 방식으로 그린다 — 폰은 옆으로
+  /// 굴리고, 맥과 웹은 넘치는 것을 '더 보기'로 접는다. 같은 목록을 쓰므로
+  /// 두 화면의 차례가 어긋날 일이 없다.
+  ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})
+      _tool(
+              {IconData? icon,
+              String? glyph,
+              String tip = '',
+              VoidCallback? onTap,
+              bool divider = false}) =>
+          (icon: icon, glyph: glyph, tip: tip, onTap: onTap, divider: divider);
+
+  /// 도구 막대에 무엇이 어떤 차례로 있는가.
+  ///
+  /// 2026-08-27 소유자 지시로 다시 짰다. 조사해 보니 세계가 합의한
+  /// '기본 여섯'(깃허브 markdown-toolbar-element)이 굵게·제목·기울임·
+  /// 인용·코드·링크인데 우리에겐 목록 셋과 체크박스뿐이었다.
+  ///
+  /// 차례는 **문단에 하는 일 → 글자에 하는 일 → 넣는 것 → 옮기는 것 →
+  /// 찾는 것** 순이다. 사람이 글을 다루는 순서가 그 순서다.
+  ///
+  /// 기울임은 뺐다. 한글에 기울임체는 어울리지 않고 한국어 글에서 거의
+  /// 안 쓴다. 밑줄·취소선·하이라이트도 뺐다 — 마크다운 표준이 아니고,
+  /// 이 앱은 '복사하면 표시가 빠진다'가 약속이라 표준 밖 문법을 늘리면
+  /// 그 약속이 흐려진다.
+  List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})>
+      _tools(L10n l) => [
+            _tool(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
+            _tool(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
+            _tool(divider: true),
+            // ── 문단에 하는 일 ──
+            _tool(icon: Icons.title, tip: l.headingTip, onTap: () => _op(cycleHeading)),
+            _tool(icon: Icons.format_quote, tip: l.quoteTip, onTap: () => _op(toggleQuote)),
+            _tool(glyph: '1.', tip: l.listNumberAction, onTap: () => _makeList('number')),
+            _tool(glyph: '·', tip: l.listBulletAction, onTap: () => _makeList('bullet')),
+            _tool(glyph: '-', tip: l.listDashAction, onTap: () => _makeList('dash')),
+            _tool(
+                icon: Icons.check_box_outlined,
+                tip: l.todoAction,
+                onTap: () => _insertText('- [ ] ')),
+            _tool(
+                icon: Icons.format_indent_increase,
+                tip: l.indentTip,
+                onTap: () => _op(indentLines)),
+            _tool(
+                icon: Icons.format_indent_decrease,
+                tip: l.outdentTip,
+                onTap: () => _op(outdentLines)),
+            _tool(divider: true),
+            // ── 글자에 하는 일 ──
+            _tool(
+                icon: Icons.format_bold,
+                tip: l.boldTip,
+                onTap: () => _op((t, a, b) => toggleWrap(t, a, b, '**'))),
+            _tool(icon: Icons.code, tip: l.codeTip, onTap: () => _op(toggleCode)),
+            _tool(icon: Icons.link, tip: l.linkTip, onTap: () => _op(makeLink)),
+            _tool(
+                icon: Icons.horizontal_rule,
+                tip: l.dividerTip,
+                onTap: _insertDivider),
+            _tool(divider: true),
+            // ── 커서 옮기기 ──
+            //
+            // 한글 입력에서 커서를 정확한 자리에 놓기가 정말 어렵다. 손가락
+            // 하나가 글자 두세 개를 덮기 때문이다. iA Writer 가 이 키를
+            // 상징으로 삼은 까닭이고, 긴 AI 답변을 손보는 우리 앱에서는
+            // 굵게보다 자주 눌릴 수도 있다.
+            _tool(
+                icon: Icons.keyboard_arrow_left,
+                tip: l.cursorLeftTip,
+                onTap: () => _moveCaret(-1)),
+            _tool(
+                icon: Icons.keyboard_arrow_right,
+                tip: l.cursorRightTip,
+                onTap: () => _moveCaret(1)),
+            _tool(divider: true),
+            // 2026-08-27 소유자 지시 — 그냥 돋보기로.
+            //
+            // 전에는 find_replace 아이콘이었다. "찾기와 바꾸기를 둘 다
+            // 한다"를 그림으로 설명하려던 것인데, 그건 **만든 사람의
+            // 사정이지 쓰는 사람의 사정이 아니다.** 세상의 모든 편집기가
+            // 돋보기 안에 바꾸기를 넣어 두었고 사람들은 그걸 이미 안다.
+            _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
+          ];
+
+  /// 고른 자리에 셈 하나를 먹인다. 되돌리기가 듣도록 controller 값을
+  /// 한 번에 바꾼다.
+  void _op(EditResult Function(String, int, int) f) {
+    final sel = bodyCtl.selection;
+    final text = bodyCtl.text;
+    final a = sel.isValid ? sel.start : text.length;
+    final b = sel.isValid ? sel.end : text.length;
+    final r = f(text, a, b);
+    bodyCtl.value = bodyCtl.value.copyWith(
+      text: r.text,
+      selection: TextSelection(baseOffset: r.start, extentOffset: r.end),
+      composing: TextRange.empty,
+    );
+    _save();
+  }
+
+  /// 커서를 한 글자 옮긴다. 고른 것이 있으면 그 끝으로 붙인다 —
+  /// 화살표를 눌러 고른 자리가 통째로 지워지는 일은 없어야 한다.
+  void _moveCaret(int by) {
+    final sel = bodyCtl.selection;
+    if (!sel.isValid) return;
+    final at = sel.isCollapsed
+        ? sel.baseOffset + by
+        : (by < 0 ? sel.start : sel.end);
+    final n = at.clamp(0, bodyCtl.text.length);
+    bodyCtl.selection = TextSelection.collapsed(offset: n);
+    if (!_bodyFocus.hasFocus) _bodyFocus.requestFocus();
+  }
+
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
+    final items = _tools(l);
     // 2026-08-16 리퀴드 글래스 — 도구 막대는 이제 유리다.
     return Glass(
       hairlineTop: !atTop,
       hairlineBottom: atTop,
       child: SizedBox(
-      height: 44,
-      child: Row(
-        children: [
-          Expanded(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              children: [
-                // 2026-08-17 소유자 지시로 다시 한 번 정리했다.
-                //
-                // 낱글자를 넣던 단추 둘('·' '-')을 없앴다. 이것이 이번 판의
-                // 고장을 낳은 자리다 — '·'가 두 뜻으로 쓰이고 있었다.
-                // 하나는 '가운뎃점 한 글자 넣기', 다른 하나는 '이 줄들을 점
-                // 목록으로 바꾸기'. 겉모습이 같으니 어느 쪽이 눌린 건지
-                // 사람이 알 수가 없었고, 소유자는 "'·'는 -와 같은 결과가
-                // 나온다"고 신고했다.
-                //
-                // 이제 '·'와 '-'는 **목록 단추 하나씩**이다. 낱글자는 자판에
-                // 이미 있다. 순서는 소유자가 고른 대로 1. → · → -.
-                _kbBtn(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
-                _kbBtn(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
-                Container(
-                    width: 1,
-                    height: 26,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    color: context.c.toolbarLine),
-                _kbBtn(
-                    icon: Icons.horizontal_rule,
-                    tip: l.dividerTip,
-                    onTap: _insertDivider),
-                Container(
-                    width: 1,
-                    height: 26,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    color: context.c.toolbarLine),
-                // 목록 셋. 글을 쓰다가 목록으로 바꾸는 순간은 자판이 올라와
-                // 있는 순간이라 여기가 제자리다. 아래 기능 막대는 글을 다
-                // 쓰고 나서 누르는 것들이라 결이 다르다.
-                _kbBtn(
-                    glyph: '1.',
-                    tip: l.listNumberAction,
-                    onTap: () => _makeList('number')),
-                _kbBtn(
-                    glyph: '·',
-                    tip: l.listBulletAction,
-                    onTap: () => _makeList('bullet')),
-                _kbBtn(
-                    glyph: '-',
-                    tip: l.listDashAction,
-                    onTap: () => _makeList('dash')),
-                // 2026-08-18 소유자 요청 — 자판 위에 체크박스.
-                // 목록 셋 바로 옆이 제자리다. 할 일도 목록의 한 종류다.
-                _kbBtn(
-                    icon: Icons.check_box_outlined,
-                    tip: l.todoAction,
-                    onTap: () => _insertText('- [ ] ')),
-                _kbBtn(
-                    icon: Icons.format_indent_increase,
-                    tip: l.indentTip,
-                    onTap: () => _insertText('  ')),
-                Container(
-                    width: 1,
-                    height: 26,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    color: context.c.toolbarLine),
-                // 2026-08-18 소유자 지시로 메뉴에서 여기로 내려왔다.
-                // 바꾸기는 **글을 치는 중에** 하는 일이다. 자판이 올라와
-                // 있는 순간에 손이 닿는 자리가 제자리고, 메뉴는 글을 다
-                // 쓰고 나서 여는 서랍이다.
-                _kbBtn(
-                    icon: Icons.find_replace,
-                    tip: l.replaceAction,
-                    onTap: _showReplaceDialog),
-              ],
+        height: 44,
+        child: Row(
+          children: [
+            Expanded(
+              // 폰은 옆으로 굴리고, 맥·웹은 넘치는 것을 접는다
+              // (2026-08-27 소유자 지시). 손가락은 굴리는 것이 자연스럽고,
+              // 트랙패드는 가로 굴림이 잘 안 잡힌다 — 목록 화면에서 당기기가
+              // 안 잡히는 것과 같은 까닭이다.
+              child: _isDesktop
+                  ? LayoutBuilder(
+                      builder: (_, box) => _barFit(items, box.maxWidth))
+                  : ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      children: [for (final it in items) _toolWidget(it)],
+                    ),
             ),
-          ),
-          // 내릴 키보드가 없는 데스크톱에서는 이 버튼이 뜻이 없다.
-          if (!atTop) ...[
-            Container(width: 1, height: 26, color: context.c.toolbarLine),
-            _kbBtn(
-              icon: Icons.keyboard_hide_outlined,
-              tip: l.hideKeyboardTip,
-              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            ),
+            // 내릴 키보드가 없는 데스크톱에서는 이 버튼이 뜻이 없다.
+            if (!atTop) ...[
+              Container(width: 1, height: 26, color: context.c.toolbarLine),
+              _kbBtn(
+                icon: Icons.keyboard_hide_outlined,
+                tip: l.hideKeyboardTip,
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
+  }
+
+  static const double _toolW = 44;
+  static const double _dividerW = 9;
+
+  /// 들어가는 만큼만 세우고 나머지는 '더 보기'로 접는다.
+  ///
+  /// 굴려야만 보이는 단추는 없는 것과 같다. 그렇다고 다 넣자고 창을
+  /// 넓히라고 할 수도 없다. 접는 쪽이 정직하다 — 접힌 것이 있다는 사실이
+  /// 점 세 개로 보이기 때문이다.
+  Widget _barFit(
+      List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})>
+          items,
+      double width) {
+    double w(int i) => items[i].divider ? _dividerW : _toolW;
+    var total = 0.0;
+    for (var i = 0; i < items.length; i++) {
+      total += w(i);
+    }
+    if (total <= width - 8) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(children: [for (final it in items) _toolWidget(it)]),
+      );
+    }
+    // '더 보기' 단추 자리를 미리 뺀다.
+    final room = width - 8 - _toolW;
+    var used = 0.0;
+    var cut = 0;
+    for (var i = 0; i < items.length; i++) {
+      if (used + w(i) > room) break;
+      used += w(i);
+      cut = i + 1;
+    }
+    // 접히는 쪽 맨 앞의 가름선은 버린다. 아무것도 안 가르는 선이다.
+    final rest = items.sublist(cut);
+    while (rest.isNotEmpty && rest.first.divider) {
+      rest.removeAt(0);
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(children: [
+        for (final it in items.take(cut)) _toolWidget(it),
+        if (rest.isNotEmpty)
+          PopupMenuButton<int>(
+            icon: const Icon(Icons.more_horiz, size: 20),
+            tooltip: L10n.of(context).moreTools,
+            position: PopupMenuPosition.under,
+            offset: const Offset(0, 6),
+            onSelected: (i) => rest[i].onTap?.call(),
+            itemBuilder: (_) => [
+              for (var i = 0; i < rest.length; i++)
+                if (!rest[i].divider)
+                  PopupMenuItem<int>(
+                    value: i,
+                    height: 36,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Row(children: [
+                      SizedBox(
+                        width: 22,
+                        child: rest[i].glyph != null
+                            ? Text(rest[i].glyph!,
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w600))
+                            : Icon(rest[i].icon, size: 18),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(rest[i].tip,
+                          style: const TextStyle(fontSize: 15)),
+                    ]),
+                  ),
+            ],
+          ),
+      ]),
+    );
+  }
+
+  Widget _toolWidget(
+      ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider})
+          it) {
+    if (it.divider) {
+      return Container(
+          width: 1,
+          height: 26,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          color: context.c.toolbarLine);
+    }
+    return _kbBtn(
+        icon: it.icon, glyph: it.glyph, tip: it.tip, onTap: it.onTap ?? () {});
   }
 
   @override
@@ -7474,146 +7622,275 @@ static const int kTagScanChars = 3000;
     );
   }
 
-  Future<void> _showReplaceDialog() async {
+  /// 찾기 — 그리고 필요하면 바꾸기.
+  ///
+  /// 2026-08-27 소유자 지시로 앞뒤를 뒤집었다. 전에는 이 창이 '바꾸기'
+  /// 창이었고 찾기 칸은 그 재료였다. 그런데 사람이 훨씬 자주 하는 일은
+  /// **찾기**다. 바꾸기는 찾은 다음에 가끔 하는 일이다.
+  ///
+  /// 그래서 기본은 찾기 하나뿐이고, '대치'를 누르면 그때 바꿀 말 칸이
+  /// 펴지면서 '바꾸기'와 '모두 바꾸기'가 살아난다. 자주 하는 일을 앞에
+  /// 두고 가끔 하는 일을 한 겹 뒤에 두는 것 — 이 앱이 메뉴를 두 뎁스로
+  /// 접을 때 쓴 규칙과 같다.
+  Future<void> _showFindDialog() async {
     final findCtl = TextEditingController();
     final withCtl = TextEditingController();
     bool useRegex = false;
+    bool showReplace = false;
     bool saveRule = false;
     bool ruleForAll = true;
+    // 어디부터 찾을까. 창을 열 때의 커서 자리에서 시작해서, '바꾸기'를
+    // 누를 때마다 앞으로 나아간다.
+    int cursor = bodyCtl.selection.isValid ? bodyCtl.selection.end : 0;
+
     await showAdaptiveDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) {
           final l = L10n.of(ctx);
+          final find = findCtl.text;
+          final hits = findAll(bodyCtl.text, find, regex: useRegex);
+
+          /// 찾은 자리로 커서를 옮기고 창을 닫는다. 창이 떠 있는 동안에는
+          /// 본문이 손을 놓고 있어서 고른 자리가 안 보인다 — 보여 주려면
+          /// 닫고 본문에 손을 돌려줘야 한다.
+          void jump(({int start, int end}) m) {
+            Navigator.pop(ctx);
+            bodyCtl.selection =
+                TextSelection(baseOffset: m.start, extentOffset: m.end);
+            _bodyFocus.requestFocus();
+          }
+
+          Future<void> replaceOne() async {
+            final m = findNextAfter(bodyCtl.text, find, cursor, regex: useRegex);
+            if (m == null) return;
+            final raw = withCtl.text;
+            var repl = raw.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
+            if (useRegex) {
+              try {
+                final one = RegExp(find).firstMatch(
+                    bodyCtl.text.substring(m.start, m.end));
+                if (one != null) {
+                  for (int g = 1; g <= one.groupCount; g++) {
+                    repl = repl.replaceAll('\$$g', one.group(g) ?? '');
+                  }
+                }
+              } catch (_) {}
+            }
+            note.pushHistory(bodyCtl.text, why: 'replace');
+            bodyCtl.text = bodyCtl.text.replaceRange(m.start, m.end, repl);
+            cursor = m.start + repl.length;
+            await _save();
+            setD(() {});
+          }
+
           return AlertDialog.adaptive(
-            title: Text(l.replaceTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: findCtl, decoration: InputDecoration(labelText: l.findLabel)),
-                TextField(controller: withCtl, decoration: InputDecoration(labelText: l.replaceWithLabel)),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.regexLabel, style: const TextStyle(fontSize: 14)),
-                  value: useRegex,
-                  onChanged: (v) => setD(() => useRegex = v ?? false),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.saveAsRule, style: const TextStyle(fontSize: 14)),
-                  subtitle: Text(l.saveAsRuleSub, style: const TextStyle(fontSize: 12)),
-                  value: saveRule,
-                  onChanged: (v) => setD(() => saveRule = v ?? false),
-                ),
-                // 2026-08-24 소유자 지시 — 저장할 때 범위를 고른다.
-                if (saveRule) ...[
-                  RadioListTile<bool>(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: Text(l.ruleScopeAll,
-                        style: const TextStyle(fontSize: 13)),
-                    value: true,
-                    groupValue: ruleForAll,
-                    onChanged: (v) => setD(() => ruleForAll = v ?? true),
+            title: Text(l.findTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: findCtl,
+                    autofocus: true,
+                    decoration: InputDecoration(labelText: l.findLabel),
+                    onChanged: (_) => setD(() {}),
                   ),
-                  RadioListTile<bool>(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: Text(l.ruleScopeNote,
-                        style: const TextStyle(fontSize: 13)),
-                    value: false,
-                    groupValue: ruleForAll,
-                    onChanged: (v) => setD(() => ruleForAll = v ?? true),
-                  ),
-                ],
-                // 이 노트 전용 규칙 목록. 지우는 길이 여기 하나뿐이므로
-                // 목록 없이 저장만 되게 두면 규칙이 유령이 된다.
-                if (note.rules.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(l.noteRules,
-                      style: TextStyle(
-                          fontSize: 12, color: Theme.of(ctx).hintColor)),
-                  for (int i = 0; i < note.rules.length; i++)
-                    Row(children: [
-                      Expanded(
-                        child: Text(
-                          '${note.rules[i].find} → ${note.rules[i].replace}',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13),
-                        ),
+                  // 몇 개인지 바로 말해 준다. 이 한 줄이 없으면 사람은
+                  // '찾기'를 눌러 봐야만 있는지 없는지 안다.
+                  if (find.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        hits.isEmpty ? l.findNone : l.findHits(hits.length),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: hits.isEmpty
+                                ? Theme.of(ctx).hintColor
+                                : ctx.c.accent),
                       ),
-                      IconButton(
+                    ),
+                  const SizedBox(height: 4),
+                  Row(children: [
+                    // 대치 펴기. 켜면 아래가 열리고 단추가 바뀐다.
+                    TextButton.icon(
+                      onPressed: () => setD(() => showReplace = !showReplace),
+                      icon: Icon(
+                          showReplace
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          size: 18),
+                      label: Text(l.showReplaceLabel),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.close, size: 16),
-                        onPressed: () {
-                          note.rules.removeAt(i);
-                          unawaited(_save());
-                          setD(() {});
-                        },
                       ),
-                    ]),
+                    ),
+                    const Spacer(),
+                    // 정규식은 찾기에도 쓰이므로 늘 보인다.
+                    Text(l.regexLabel, style: const TextStyle(fontSize: 13)),
+                    Checkbox(
+                      value: useRegex,
+                      visualDensity: VisualDensity.compact,
+                      onChanged: (v) => setD(() => useRegex = v ?? false),
+                    ),
+                  ]),
+                  if (showReplace) ...[
+                    TextField(
+                      controller: withCtl,
+                      decoration:
+                          InputDecoration(labelText: l.replaceWithLabel),
+                    ),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l.saveAsRule,
+                          style: const TextStyle(fontSize: 14)),
+                      subtitle: Text(l.saveAsRuleSub,
+                          style: const TextStyle(fontSize: 12)),
+                      value: saveRule,
+                      onChanged: (v) => setD(() => saveRule = v ?? false),
+                    ),
+                    // 2026-08-24 소유자 지시 — 저장할 때 범위를 고른다.
+                    if (saveRule) ...[
+                      RadioListTile<bool>(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        title: Text(l.ruleScopeAll,
+                            style: const TextStyle(fontSize: 13)),
+                        value: true,
+                        groupValue: ruleForAll,
+                        onChanged: (v) => setD(() => ruleForAll = v ?? true),
+                      ),
+                      RadioListTile<bool>(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        title: Text(l.ruleScopeNote,
+                            style: const TextStyle(fontSize: 13)),
+                        value: false,
+                        groupValue: ruleForAll,
+                        onChanged: (v) => setD(() => ruleForAll = v ?? true),
+                      ),
+                    ],
+                  ],
+                  // 이 노트 전용 규칙 목록. 지우는 길이 여기 하나뿐이므로
+                  // 목록 없이 저장만 되게 두면 규칙이 유령이 된다.
+                  if (showReplace && note.rules.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(l.noteRules,
+                        style: TextStyle(
+                            fontSize: 12, color: Theme.of(ctx).hintColor)),
+                    for (int i = 0; i < note.rules.length; i++)
+                      Row(children: [
+                        Expanded(
+                          child: Text(
+                            '${note.rules[i].find} → ${note.rules[i].replace}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.close, size: 16),
+                          onPressed: () {
+                            note.rules.removeAt(i);
+                            unawaited(_save());
+                            setD(() {});
+                          },
+                        ),
+                      ]),
+                  ],
                 ],
-              ],
+              ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
-              FilledButton(
-                onPressed: () async {
-                  final find = findCtl.text;
-                  if (find.isEmpty) return;
-                  final rawRepl = withCtl.text;
-                  final repl = rawRepl.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
-                  int count = 0;
-                  String result = bodyCtl.text;
-                  try {
-                    if (useRegex) {
-                      final re = RegExp(find);
-                      count = re.allMatches(bodyCtl.text).length;
-                      result = bodyCtl.text.replaceAllMapped(re, (m) {
-                        var r2 = repl;
-                        for (int g = 1; g <= m.groupCount; g++) {
-                          r2 = r2.replaceAll('\$$g', m.group(g) ?? '');
-                        }
-                        return r2;
-                      });
-                    } else {
-                      count = find.allMatches(bodyCtl.text).length;
-                      result = bodyCtl.text.split(find).join(repl);
-                    }
-                  } catch (_) {
-                    Navigator.pop(ctx);
-                    if (mounted) _toast(context, L10n.of(context).invalidRegex);
-                    return;
-                  }
-                  Navigator.pop(ctx);
-                  if (count == 0) {
-                    if (mounted) _toast(context, L10n.of(context).noMatches);
-                    return;
-                  }
-                  note.pushHistory(bodyCtl.text, why: 'replace');
-                  bodyCtl.text = result;
-                  if (saveRule) {
-                    final rule = CustomRule(
-                        find: find, replace: rawRepl, regex: useRegex);
-                    if (ruleForAll) {
-                      store.settings.customRules.add(rule);
-                      await store.persistSettings();
-                    } else {
-                      // 노트 전용 — 아래 _save()가 도장 찍어 저장하고
-                      // 동기화가 노트와 함께 나른다.
-                      note.rules.add(rule);
-                    }
-                  }
-                  await _save();
-                  if (mounted) {
-                    setState(() {});
-                    final lm = L10n.of(context);
-                    _toast(context,
-                        '${lm.replacedCount(count)}${saveRule ? lm.savedRuleSuffix : ''}');
-                  }
-                },
-                child: Text(l.replaceAllAction),
-              ),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+              if (!showReplace)
+                FilledButton(
+                  // 찾은 것이 없으면 죽어 있다. 눌러도 아무 일 없는 단추는
+                  // 없는 것보다 나쁘다.
+                  onPressed: hits.isEmpty
+                      ? null
+                      : () {
+                          final m = findNextAfter(
+                              bodyCtl.text, find, cursor, regex: useRegex);
+                          if (m != null) jump(m);
+                        },
+                  child: Text(l.findAction),
+                )
+              else ...[
+                TextButton(
+                  onPressed: hits.isEmpty ? null : () => unawaited(replaceOne()),
+                  child: Text(l.replaceOneAction),
+                ),
+                FilledButton(
+                  onPressed: hits.isEmpty
+                      ? null
+                      : () async {
+                          final rawRepl = withCtl.text;
+                          final repl = rawRepl
+                              .replaceAll(r'\n', '\n')
+                              .replaceAll(r'\t', '\t');
+                          int count = 0;
+                          String result = bodyCtl.text;
+                          try {
+                            if (useRegex) {
+                              final re = RegExp(find);
+                              count = re.allMatches(bodyCtl.text).length;
+                              result =
+                                  bodyCtl.text.replaceAllMapped(re, (m) {
+                                var r2 = repl;
+                                for (int g = 1; g <= m.groupCount; g++) {
+                                  r2 = r2.replaceAll('\$$g', m.group(g) ?? '');
+                                }
+                                return r2;
+                              });
+                            } else {
+                              count = find.allMatches(bodyCtl.text).length;
+                              result = bodyCtl.text.split(find).join(repl);
+                            }
+                          } catch (_) {
+                            Navigator.pop(ctx);
+                            if (mounted) {
+                              _toast(context, L10n.of(context).invalidRegex);
+                            }
+                            return;
+                          }
+                          Navigator.pop(ctx);
+                          if (count == 0) {
+                            if (mounted) {
+                              _toast(context, L10n.of(context).noMatches);
+                            }
+                            return;
+                          }
+                          note.pushHistory(bodyCtl.text, why: 'replace');
+                          bodyCtl.text = result;
+                          if (saveRule) {
+                            final rule = CustomRule(
+                                find: find,
+                                replace: rawRepl,
+                                regex: useRegex);
+                            if (ruleForAll) {
+                              store.settings.customRules.add(rule);
+                              await store.persistSettings();
+                            } else {
+                              // 노트 전용 — 아래 _save()가 도장 찍어 저장하고
+                              // 동기화가 노트와 함께 나른다.
+                              note.rules.add(rule);
+                            }
+                          }
+                          await _save();
+                          if (mounted) {
+                            setState(() {});
+                            final lm = L10n.of(context);
+                            _toast(context,
+                                '${lm.replacedCount(count)}${saveRule ? lm.savedRuleSuffix : ''}');
+                          }
+                        },
+                  child: Text(l.replaceAllAction),
+                ),
+              ],
             ],
           );
         },
@@ -7941,7 +8218,7 @@ static const int kTagScanChars = 3000;
                   return;
                 }
                 if (v == 'replace') {
-                  _showReplaceDialog();
+                  _showFindDialog();
                   return;
                 }
                 if (v == 'copy') {

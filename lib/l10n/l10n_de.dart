@@ -590,6 +590,34 @@ class L10nDe extends L10n {
   String get syncLastNever =>
       'Noch nie abgeglichen';
   @override
+  String get headingTip => 'Überschrift';
+  @override
+  String get quoteTip => 'Zitat';
+  @override
+  String get boldTip => 'Fett';
+  @override
+  String get codeTip => 'Code';
+  @override
+  String get linkTip => 'Link';
+  @override
+  String get outdentTip => 'Ausrücken';
+  @override
+  String get cursorLeftTip => 'Links';
+  @override
+  String get cursorRightTip => 'Rechts';
+  @override
+  String get moreTools => 'Mehr';
+  @override
+  String get findTitle => 'Suchen';
+  @override
+  String get findAction => 'Suchen';
+  @override
+  String get showReplaceLabel => 'Ersetzen';
+  @override
+  String get replaceOneAction => 'Ersetzen';
+  @override
+  String get findNone => 'Keine Treffer';
+  @override
   String get syncFirstTitle => 'Wird synchronisiert …';
   @override
   String get syncFirstSub => 'Notizen von Ihren anderen Geräten werden geladen. Bei vielen Notizen dauert es einen Moment.';
@@ -609,6 +637,8 @@ class L10nDe extends L10n {
   String get syncLogFailed => 'Fehlgeschlagen';
   @override
   String syncUpdatedAt(String when) => 'Aktualisiert ' + when;
+  @override
+  String findHits(int n) => n.toString() + ' gefunden';
   @override
   String syncLogLastUp(String when) => 'Zuletzt gesendet · ' + when;
   @override

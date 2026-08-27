@@ -588,6 +588,34 @@ class L10nJa extends L10n {
   String get syncLastNever =>
       'まだ一度も同期していません';
   @override
+  String get headingTip => '見出し';
+  @override
+  String get quoteTip => '引用';
+  @override
+  String get boldTip => '太字';
+  @override
+  String get codeTip => 'コード';
+  @override
+  String get linkTip => 'リンク';
+  @override
+  String get outdentTip => 'インデント解除';
+  @override
+  String get cursorLeftTip => '左へ';
+  @override
+  String get cursorRightTip => '右へ';
+  @override
+  String get moreTools => 'その他';
+  @override
+  String get findTitle => '検索';
+  @override
+  String get findAction => '検索';
+  @override
+  String get showReplaceLabel => '置換';
+  @override
+  String get replaceOneAction => '置換';
+  @override
+  String get findNone => '見つかりません';
+  @override
   String get syncFirstTitle => '同期中です';
   @override
   String get syncFirstSub => '他の端末のノートを取得しています。数が多いと少し時間がかかります。';
@@ -607,6 +635,8 @@ class L10nJa extends L10n {
   String get syncLogFailed => '失敗';
   @override
   String syncUpdatedAt(String when) => '最終更新 ' + when;
+  @override
+  String findHits(int n) => n.toString() + '件';
   @override
   String syncLogLastUp(String when) => '最後に送った時刻 · ' + when;
   @override

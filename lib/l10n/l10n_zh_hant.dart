@@ -588,6 +588,34 @@ class L10nZhHant extends L10n {
   String get syncLastNever =>
       '還沒有同步過';
   @override
+  String get headingTip => '標題';
+  @override
+  String get quoteTip => '引用';
+  @override
+  String get boldTip => '粗體';
+  @override
+  String get codeTip => '程式碼';
+  @override
+  String get linkTip => '連結';
+  @override
+  String get outdentTip => '減少縮排';
+  @override
+  String get cursorLeftTip => '向左';
+  @override
+  String get cursorRightTip => '向右';
+  @override
+  String get moreTools => '更多';
+  @override
+  String get findTitle => '尋找';
+  @override
+  String get findAction => '尋找';
+  @override
+  String get showReplaceLabel => '取代';
+  @override
+  String get replaceOneAction => '取代';
+  @override
+  String get findNone => '沒有相符項目';
+  @override
   String get syncFirstTitle => '正在同步';
   @override
   String get syncFirstSub => '正在取得其他裝置上的筆記。筆記較多時可能需要一點時間。';
@@ -607,6 +635,8 @@ class L10nZhHant extends L10n {
   String get syncLogFailed => '失敗';
   @override
   String syncUpdatedAt(String when) => '最近更新 ' + when;
+  @override
+  String findHits(int n) => '找到 ' + n.toString() + ' 個';
   @override
   String syncLogLastUp(String when) => '最近一次上傳 · ' + when;
   @override
