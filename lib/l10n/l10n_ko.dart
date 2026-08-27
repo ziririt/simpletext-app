@@ -580,13 +580,13 @@ class L10nKo extends L10n {
       '지금 상태';
   @override
   String get syncNowAction =>
-      '지금 맞추기';
+      '지금 동기화';
   @override
-  String get syncNowBusy => '맞추는 중…';
+  String get syncNowBusy => '동기화 중…';
 
   @override
   String get syncLastNever =>
-      '아직 한 번도 못 맞췄습니다';
+      '아직 한 번도 동기화하지 못했습니다';
   @override
   String get syncLogTitle => '동기화 기록';
   @override
@@ -614,7 +614,7 @@ class L10nKo extends L10n {
   String get syncTroubleNote =>
       '동기화는 백업이 아닙니다. 한쪽에서 지우면 모든 곳에서 지워집니다. 중요한 노트는 가끔 파일로 뽑아 두십시오.';
   @override
-  String syncLastAt(String when) => '마지막으로 맞춘 때 · $when';
+  String syncLastAt(String when) => '마지막으로 동기화한 때 · $when';
 
   @override
   String syncStateOn(String where) => '$where에 올려 두고, 이 앱을 설치한 기기에서 같은 노트를 봅니다';
@@ -623,7 +623,7 @@ class L10nKo extends L10n {
   String get syncStateOff => '기기 설정에서 iCloud Drive를 켜 주세요';
 
   @override
-  String syncStateSyncing(String where) => '$where와 맞추는 중… 몇 초에서 몇십 초 걸립니다';
+  String syncStateSyncing(String where) => '$where와 동기화 중… 몇 초에서 몇십 초 걸립니다';
 
   @override
   String get aiKeyNotSynced => '노트는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
@@ -1097,7 +1097,7 @@ class L10nKo extends L10n {
   @override
   String get syncHelpTitleGdrive => '구글 드라이브 다시 연결하기';
   @override
-  String get syncHelpStepsGdrive => '1. 아래 단추를 눌러 구글 계정을 고릅니다\n2. 드라이브 접근을 허용합니다\n3. 곧바로 맞추기가 시작됩니다';
+  String get syncHelpStepsGdrive => '1. 아래 단추를 눌러 구글 계정을 고릅니다\n2. 드라이브 접근을 허용합니다\n3. 곧바로 동기화가 시작됩니다';
   @override
   String get syncHelpNoteGdrive => '노트는 드라이브에 그대로 있습니다. 다시 로그인하면 돌아옵니다.';
   @override
@@ -1110,7 +1110,7 @@ class L10nKo extends L10n {
   String get syncDiagPreparingGdrive =>
       "로그인은 되었습니다. 드라이브에서 노트를 받아오는 중입니다. 화면을 계속 보고 있을 필요는 없습니다 — 다른 앱에 다녀와도, 받아오기는 잠시 쉬었다가 돌아오면 이어집니다.";
   @override
-  String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 노트가 많으면 첫 맞추기는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
+  String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 노트가 많으면 첫 동기화는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
 
   @override
   String pastedFrom(String src, String date) =>

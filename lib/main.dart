@@ -9966,37 +9966,67 @@ class SyncFreshLabel extends StatelessWidget {
 ///
 /// 이 단추가 자주 눌린다면 그건 동기화가 느리다는 뜻이다. 목표는 이걸
 /// 아무도 안 누르는 것이다.
-class SyncNowButton extends StatelessWidget {
+class SyncNowButton extends StatefulWidget {
   final double size;
   const SyncNowButton({super.key, this.size = 21});
+
+  @override
+  State<SyncNowButton> createState() => _SyncNowButtonState();
+}
+
+class _SyncNowButtonState extends State<SyncNowButton> {
+  /// **내가 눌러서** 도는 중인가.
+  ///
+  /// 2026-08-27 소유자 지시 — "자동으로 될 때는 애니메이션을 할 필요
+  /// 없고, 수동으로 할 때만 나오게 해줘. 자동으로 되는 것은 잘 되기만
+  /// 하면 되지."
+  ///
+  /// 맞는 말이다. 이제 3초마다 한 번씩 도는데(짧은 물음), 그때마다
+  /// 머리에서 뭔가가 빙글거리면 **잘 되고 있다는 사실이 오히려 소란이
+  /// 된다.** 잘 도는 기계는 조용하다.
+  ///
+  /// 그래서 동기화 상태(sync.state)를 안 듣는다. 내 손가락만 듣는다.
+  bool _spin = false;
+
+  Future<void> _go() async {
+    if (_spin) return;
+    setState(() => _spin = true);
+    unawaited(HapticFeedback.lightImpact());
+    final sw = Stopwatch()..start();
+    try {
+      await ICloudSync.instance
+          .recheck()
+          .timeout(const Duration(seconds: 8), onTimeout: () {});
+    } catch (_) {
+      // 실패해도 단추는 조용히 멈춘다. 무슨 일인지는 설정의 동기화 줄이
+      // 말한다 — 목록 머리에서 사람을 붙잡을 일이 아니다.
+    }
+    // 너무 빨리 끝나면 깜빡임으로만 스친다. 눌렀다는 답이 되려면 눈에
+    // 잠깐은 남아야 한다.
+    final left = 600 - sw.elapsedMilliseconds;
+    if (left > 0) {
+      await Future<void>.delayed(Duration(milliseconds: left));
+    }
+    if (mounted) setState(() => _spin = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
     final sync = ICloudSync.instance;
     if (!sync.active || sync.paused) return const SizedBox.shrink();
-    return ValueListenableBuilder<SyncState>(
-      valueListenable: sync.state,
-      builder: (_, st, __) {
-        final busy = st == SyncState.running;
-        return IconButton(
-          tooltip: busy ? l.syncNowBusy : l.syncNowAction,
-          icon: busy
-              ? SizedBox(
-                  width: size - 4,
-                  height: size - 4,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: context.c.accent),
-                )
-              : Icon(Icons.cloud_sync_outlined, size: size),
-          onPressed: busy
-              ? null
-              : () {
-                  unawaited(HapticFeedback.lightImpact());
-                  unawaited(sync.recheck());
-                },
-        );
-      },
+    final size = widget.size;
+    return IconButton(
+      tooltip: _spin ? l.syncNowBusy : l.syncNowAction,
+      icon: _spin
+          ? SizedBox(
+              width: size - 4,
+              height: size - 4,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: context.c.accent),
+            )
+          : Icon(Icons.cloud_sync_outlined, size: size),
+      onPressed: _spin ? null : () => unawaited(_go()),
     );
   }
 }
