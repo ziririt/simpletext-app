@@ -37,6 +37,7 @@ import 'core/folders.dart';
 import 'core/hangul.dart';
 import 'core/history_align.dart';
 import 'core/key_vault.dart';
+import 'core/list_continue.dart';
 import 'core/listify.dart';
 import 'core/lock.dart';
 import 'core/mono_controller.dart';
@@ -8444,6 +8445,10 @@ static const int kTagScanChars = 3000;
                   key: _bodyKey,
                   controller: bodyCtl,
                   focusNode: _bodyFocus,
+                  // 목록에서 엔터를 치면 다음 항목이 따라온다
+                  // (2026-08-27 소유자 신고). 규칙은 core/list_continue.dart
+                  // 에 있고 시험으로 못 박았다.
+                  inputFormatters: const [ListContinueFormatter()],
                   // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
                   //
                   // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
