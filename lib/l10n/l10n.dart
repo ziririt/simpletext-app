@@ -368,6 +368,9 @@ abstract class L10n {
   String get syncLogFailed;
   String get syncTroubleNote;
   String syncLastAt(String when);
+  /// 목록·편집 화면에 붙는 '최근 업데이트 11:34'.
+  /// 이 기기가 마지막으로 **받아 온** 시각이다(올린 시각이 아니다).
+  String syncUpdatedAt(String when);
   String syncLogLastUp(String when);
   String syncLogLastDown(String when);
 

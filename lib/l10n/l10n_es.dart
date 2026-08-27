@@ -603,6 +603,8 @@ class L10nEs extends L10n {
   @override
   String get syncLogFailed => 'Error';
   @override
+  String syncUpdatedAt(String when) => 'Actualizado ' + when;
+  @override
   String syncLogLastUp(String when) => 'Último envío · ' + when;
   @override
   String syncLogLastDown(String when) => 'Última recepción · ' + when;

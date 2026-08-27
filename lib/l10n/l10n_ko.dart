@@ -602,6 +602,8 @@ class L10nKo extends L10n {
   @override
   String get syncLogFailed => '실패';
   @override
+  String syncUpdatedAt(String when) => '최근 업데이트 ' + when;
+  @override
   String syncLogLastUp(String when) => '마지막으로 올린 때 · ' + when;
   @override
   String syncLogLastDown(String when) => '마지막으로 받은 때 · ' + when;

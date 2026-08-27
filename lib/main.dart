@@ -4098,6 +4098,11 @@ class _HomeScreenState extends State<HomeScreen>
                 // 상태에 갇힌다.
                 if (rest.isNotEmpty || _picking)
                   _groupLabel(l.notesLabel,
+                      // 고르는 중에는 안 붙인다 — 그때 이 줄은 '몇 개
+                      // 골랐나'를 말하는 자리이지 동기화 자리가 아니다.
+                      badge: _picking
+                          ? null
+                          : const SyncFreshLabel(size: 12.5),
                       leading: _picking ? _pickAllBtn(l, visible) : null,
                       trailing: _picking
                           ? _pickActions(l, visible)
@@ -4208,6 +4213,10 @@ class _HomeScreenState extends State<HomeScreen>
                                     // 돋보기(가끔 쓰는 것)가 그 안쪽.
                                     _listMenu(l),
                                     const Spacer(),
+                                    // 2026-08-27 — 당기기가 안 잡히는
+                                    // 웹·맥을 위해 나란히 둔다. 자세한
+                                    // 까닭은 SyncNowButton 머리말.
+                                    const SyncNowButton(),
                                     IconButton(
                                       icon: const Icon(CupertinoIcons.search,
                                           size: 22),
@@ -4286,7 +4295,8 @@ class _HomeScreenState extends State<HomeScreen>
   /// 2026-08-17 소유자 지시로 정렬·필터가 '메모' 소제목 옆에 붙었다.
   /// 자기가 다루는 것 바로 위에 놓이면 무엇을 거르는 단추인지 자리만으로
   /// 알 수 있다.
-  Widget _groupLabel(String label, {Widget? leading, Widget? trailing}) =>
+  Widget _groupLabel(String label,
+          {Widget? leading, Widget? trailing, Widget? badge}) =>
       SliverToBoxAdapter(
         child: Padding(
           // 애플 메모의 '고정된 메모' 헤더 실측: 글자높이 52px, 좌측 135px(45pt).
@@ -4305,11 +4315,21 @@ class _HomeScreenState extends State<HomeScreen>
           child: Row(children: [
             if (leading != null) leading,
             Expanded(
-              child: Text(label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+              child: Row(children: [
+                Flexible(
+                  child: Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.w700)),
+                ),
+                if (badge != null) ...[
+                  const SizedBox(width: 10),
+                  // 소제목은 크고 굵다. 그 옆에 붙는 것은 작고 옅어야
+                  // 소제목을 안 밀어낸다 — 같이 커지면 둘 다 안 읽힌다.
+                  Flexible(child: badge),
+                ],
+              ]),
             ),
             if (trailing != null) trailing,
           ]),
@@ -5674,14 +5694,26 @@ class _EditorScreenState extends State<EditorScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: context.c.sub,
-            ),
+          // 수정 시각 옆에 '최근 업데이트' — 2026-08-27 소유자 요청.
+          // 가운데 정렬을 지키려고 Row 를 min 으로 두고 감쌌다.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: context.c.sub,
+                  ),
+                ),
+              ),
+              const _FreshDot(),
+            ],
           ),
           if (stale) ...[
             const SizedBox(height: 6),
@@ -6425,6 +6457,18 @@ static const int kTagScanChars = 3000;
         unawaited(_save());
         setState(() {});
     }
+  }
+
+  /// 편집 화면에서 당겨서 맞추기. 목록의 _pullSync 와 같은 규칙이다 —
+  /// 동그라미는 '손짓을 받았다'는 표시지 일이 끝났다는 표시가 아니다.
+  Future<void> _editorPullSync() async {
+    unawaited(HapticFeedback.lightImpact());
+    final sync = ICloudSync.instance;
+    if (!sync.active || sync.paused) {
+      await Future<void>.delayed(const Duration(milliseconds: 320));
+      return;
+    }
+    await sync.recheck().timeout(const Duration(seconds: 8), onTimeout: () {});
   }
 
   Future<void> _save() async {
@@ -7752,6 +7796,9 @@ static const int kTagScanChars = 3000;
                 onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
+            // 글을 치는 중에는 안 보인다. 자판이 올라와 있는데 위쪽에
+            // 단추가 늘어서 있으면 '완료'를 찾기가 어려워진다.
+            if (!_editing) const SyncNowButton(size: 20),
             // 2026-08-17 소유자 지시 — 위쪽 '정리' 버튼을 뺐다.
             //
             // 이건 아래 막대의 '정리'가 한 번에 안 되던 시절의 잔재다. 그때는
@@ -8259,8 +8306,24 @@ static const int kTagScanChars = 3000;
                     final minBody =
                         (box.maxHeight - blank - _headH - _topInsetInside)
                             .clamp(0.0, double.infinity);
-                    return SingleChildScrollView(
+                    // 편집 화면에서도 당겨서 맞추기(2026-08-27 소유자
+                    // 요청). 손짓이 잡히는 곳에서만 돈다 — 웹·맥의
+                    // 트랙패드 굴림은 끌기로 안 잡히고, 그 자리는 머리의
+                    // 단추가 맡는다.
+                    //
+                    // 글을 치는 중에는 안 건다. 자판이 올라와 있을 때
+                    // 아래로 쓸어내리는 손짓은 '자판 내리기'이지
+                    // '새로 고침'이 아니다.
+                    return RefreshIndicator(
+                      onRefresh: _editorPullSync,
+                      notificationPredicate: (n) =>
+                          !_editing && n.depth == 0,
+                      color: context.c.accent,
+                      backgroundColor: context.c.panel,
+                      displacement: 24,
+                      child: SingleChildScrollView(
                       controller: _bodyScroll,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
                       // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
                       // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
@@ -8423,6 +8486,7 @@ static const int kTagScanChars = 3000;
                           // 눈에 들어오지 않는 자리다(2026-08-17 소유자 지시).
                           const InlineAdBlock(),
                         ],
+                      ),
                       ),
                     );
                   }),
@@ -9803,6 +9867,138 @@ class _SyncNapBannerState extends State<SyncNapBanner> {
 ///
 /// 노트 내용은 한 글자도 남기지 않는다. 화면 아래에 그렇게 적어 둔다 —
 /// 기록이 남는다는 말을 들으면 사람은 먼저 그것을 걱정한다.
+/// 마지막으로 **받은** 시각을 짧게. 오늘이면 시:분만, 아니면 날짜도.
+String syncFreshWhen(BuildContext context, int ms) {
+  final t = DateTime.fromMillisecondsSinceEpoch(ms);
+  final now = DateTime.now();
+  final tag = Localizations.localeOf(context).toLanguageTag();
+  final h24 = MediaQuery.maybeOf(context)?.alwaysUse24HourFormat ?? true;
+  String hm;
+  try {
+    hm = (h24 ? DateFormat.Hm(tag) : DateFormat.jm(tag)).format(t);
+  } catch (_) {
+    hm = DateFormat.Hm().format(t);
+  }
+  if (t.year == now.year && t.month == now.month && t.day == now.day) return hm;
+  try {
+    return '${DateFormat.Md(tag).format(t)} $hm';
+  } catch (_) {
+    return '${DateFormat.Md().format(t)} $hm';
+  }
+}
+
+/// '최근 업데이트 11:34' — 이 기기가 마지막으로 **받아 온** 시각.
+///
+/// 2026-08-27 소유자 요청. 올린 시각이 아니라 받은 시각인 까닭은 그 말이
+/// "뭔가 업데이트된 게 있다면"이었기 때문이다. 내가 쓴 글이 올라간 것은
+/// 업데이트가 아니다 — 내 화면에는 이미 있다. 남이 쓴 것이 도착했을
+/// 때에만 뜻이 있다.
+///
+/// 받은 적이 한 번도 없으면 아무것도 안 그린다. 빈 자리가 거짓말보다 낫다.
+/// 날짜 줄 옆에 붙는 '· 최근 업데이트 11:34'. 받은 적이 없으면 가운뎃점도
+/// 안 찍는다 — 아무것도 없는데 구분점만 남으면 그게 더 이상하다.
+class _FreshDot extends StatelessWidget {
+  const _FreshDot();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final sync = ICloudSync.instance;
+    if (!sync.active || sync.paused) return const SizedBox.shrink();
+    return ValueListenableBuilder<int>(
+      valueListenable: sync.logRevision,
+      builder: (_, __, ___) {
+        final ms = sync.log.lastDownMs;
+        if (ms == null) return const SizedBox.shrink();
+        return Text(
+          '   ${l.syncUpdatedAt(syncFreshWhen(context, ms))}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: context.c.sub),
+        );
+      },
+    );
+  }
+}
+
+class SyncFreshLabel extends StatelessWidget {
+  final TextAlign? align;
+  final double size;
+  const SyncFreshLabel({super.key, this.align, this.size = 12});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final sync = ICloudSync.instance;
+    if (!sync.active || sync.paused) return const SizedBox.shrink();
+    return ValueListenableBuilder<int>(
+      valueListenable: sync.logRevision,
+      builder: (_, __, ___) {
+        final ms = sync.log.lastDownMs;
+        if (ms == null) return const SizedBox.shrink();
+        return Text(
+          l.syncUpdatedAt(syncFreshWhen(context, ms)),
+          textAlign: align,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+              fontSize: size,
+              fontWeight: FontWeight.w500,
+              color: context.c.sub),
+        );
+      },
+    );
+  }
+}
+
+/// 손으로 지금 맞추기. 목록 머리와 편집 화면 머리에 같은 모양으로 둔다.
+///
+/// 2026-08-27 소유자 지시 — 웹과 맥에서는 당겨서 새로 고치기가 안 잡힌다.
+/// 트랙패드 두 손가락 굴림을 브라우저가 '굴림 신호'로 보내지 '끌기'로
+/// 보내지 않아서다. 플러터가 고칠 수 있는 자리가 아니다. 그러니 손짓이
+/// 안 되는 곳에도 길은 있어야 한다 — 당기기는 그대로 두고 단추를 나란히
+/// 놓는다.
+///
+/// 이 단추가 자주 눌린다면 그건 동기화가 느리다는 뜻이다. 목표는 이걸
+/// 아무도 안 누르는 것이다.
+class SyncNowButton extends StatelessWidget {
+  final double size;
+  const SyncNowButton({super.key, this.size = 21});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final sync = ICloudSync.instance;
+    if (!sync.active || sync.paused) return const SizedBox.shrink();
+    return ValueListenableBuilder<SyncState>(
+      valueListenable: sync.state,
+      builder: (_, st, __) {
+        final busy = st == SyncState.running;
+        return IconButton(
+          tooltip: busy ? l.syncNowBusy : l.syncNowAction,
+          icon: busy
+              ? SizedBox(
+                  width: size - 4,
+                  height: size - 4,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: context.c.accent),
+                )
+              : Icon(Icons.cloud_sync_outlined, size: size),
+          onPressed: busy
+              ? null
+              : () {
+                  unawaited(HapticFeedback.lightImpact());
+                  unawaited(sync.recheck());
+                },
+        );
+      },
+    );
+  }
+}
+
 class SyncLogScreen extends StatelessWidget {
   const SyncLogScreen({super.key});
 

@@ -603,6 +603,8 @@ class L10nPt extends L10n {
   @override
   String get syncLogFailed => 'Falha';
   @override
+  String syncUpdatedAt(String when) => 'Atualizado ' + when;
+  @override
   String syncLogLastUp(String when) => 'Último envio · ' + when;
   @override
   String syncLogLastDown(String when) => 'Última receção · ' + when;

@@ -602,6 +602,8 @@ class L10nZhHans extends L10n {
   @override
   String get syncLogFailed => '失败';
   @override
+  String syncUpdatedAt(String when) => '最近更新 ' + when;
+  @override
   String syncLogLastUp(String when) => '最近一次上传 · ' + when;
   @override
   String syncLogLastDown(String when) => '最近一次下载 · ' + when;

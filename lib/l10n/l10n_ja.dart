@@ -602,6 +602,8 @@ class L10nJa extends L10n {
   @override
   String get syncLogFailed => '失敗';
   @override
+  String syncUpdatedAt(String when) => '最終更新 ' + when;
+  @override
   String syncLogLastUp(String when) => '最後に送った時刻 · ' + when;
   @override
   String syncLogLastDown(String when) => '最後に受け取った時刻 · ' + when;
