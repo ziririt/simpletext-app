@@ -3805,13 +3805,17 @@ class _HomeScreenState extends State<HomeScreen>
           }
         },
         itemBuilder: (ctx) {
+          // 편집 화면 메뉴와 같은 치수로 맞춘다(2026-08-27). 같은 일을
+          // 하는 두 서랍이 서로 다른 줄 높이를 쓰면 그게 눈에 걸린다.
           PopupMenuItem<String> row(String v, IconData ic, String label) =>
               PopupMenuItem<String>(
                 value: v,
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Row(children: [
-                  Icon(ic, size: 19, color: ctx.c.sub),
+                  Icon(ic, size: 18, color: ctx.c.sub),
                   const SizedBox(width: 10),
-                  Text(label),
+                  Text(label, style: const TextStyle(fontSize: 15)),
                 ]),
               );
           return [
@@ -3819,7 +3823,7 @@ class _HomeScreenState extends State<HomeScreen>
             row('import', Icons.file_open_outlined, l.importFiles),
             row('exportMd', Icons.folder_zip_outlined, l.exportAllMd),
             row('backup', Icons.settings_backup_restore, l.exportBackup),
-            const PopupMenuDivider(),
+            const PopupMenuDivider(height: 6),
             // 2026-08-17 소유자 지시 — '앱 설정'을 메뉴에서 뺐다.
             //
             // 설정은 메뉴 안에 있을 이유가 없다. 메뉴 안의 것들은 가끔 하는
@@ -8048,16 +8052,29 @@ static const int kTagScanChars = 3000;
                       // 48이 기본인데 열다섯 줄이면 720이다. 그러면 메뉴가
                       // 화면에 안 들어가서 플러터가 위로 밀어 올리고, 밀어
                       // 올린 메뉴가 삼선 단추를 덮는다(소유자 신고).
-                      // 줄을 42로 죄면 단추 아래에 그대로 머문다.
-                      height: 42,
+                      //
+                      // 2026-08-27 — 42도 모자랐다. 소유자 신고: "해상도가
+                      // 낮은 기기에서 메뉴 하단 항목이 안 보인다." 36으로
+                      // 죈다. 열다섯 줄에 가름선 넷이면 570 남짓이라 작은
+                      // 아이폰에서도 들어간다.
+                      //
+                      // 손가락이 놓칠 만큼 좁지는 않은가. 애플이 권하는
+                      // 최소 손가락 자리는 44인데, 그건 **화면에 흩어져
+                      // 있는 단추** 이야기다. 메뉴는 줄이 위아래로 붙어
+                      // 있어서 겨냥이 세로 한 줄로 좁혀지고, 잘못 눌러도
+                      // 옆줄이지 딴 세상이 아니다. 애플 메모의 메뉴도 이
+                      // 언저리다.
+                      height: 36,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Row(children: [
                         Icon(ic,
-                            size: 19,
+                            size: 18,
                             color: (tint ?? ctx.c.guideInk).withValues(
                                 alpha: enabled ? 1.0 : 0.4)),
                         const SizedBox(width: 10),
                         Text(label,
                             style: TextStyle(
+                                fontSize: 15,
                                 color: tint,
                                 fontWeight:
                                     bold ? FontWeight.w600 : FontWeight.w400)),
@@ -8100,11 +8117,11 @@ static const int kTagScanChars = 3000;
                       note.locked ? Icons.lock : Icons.lock_outline,
                       note.locked ? lm.noteUnlock : lm.noteLock,
                       tint: note.locked ? ctx.c.accent : null),
-                  const PopupMenuDivider(height: 9),
+                  const PopupMenuDivider(height: 6),
                   act('preview', CupertinoIcons.eye, lm.menuTidyPreview,
                       tint: ctx.c.accent, bold: true),
                   act('preset', CupertinoIcons.wand_stars, lm.choosePreset),
-                  const PopupMenuDivider(height: 9),
+                  const PopupMenuDivider(height: 6),
                   act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
                   act('tables', CupertinoIcons.table, lm.tableAction),
                   // 클립은 '첨부'에 준다. 여태 '붙이기'(다른 파일의 글을
@@ -8120,7 +8137,7 @@ static const int kTagScanChars = 3000;
                   // 일이다. 받는 사람이 이 앱을 안 써도 그대로 읽힌다.
                   act('pdf', CupertinoIcons.doc_richtext, lm.exportPdf),
                   act('print', CupertinoIcons.printer, lm.printAction),
-                  const PopupMenuDivider(height: 9),
+                  const PopupMenuDivider(height: 6),
                   // 버전 기록과 원본 복귀는 붙여 둔다. 되돌린 뒤 마음이
                   // 바뀌면 바로 위 줄에서 되찾을 수 있다는 것이 눈에
                   // 보여야 한다. 셋 다 '되돌리거나 없애는 일'이라 삭제와
@@ -8131,7 +8148,7 @@ static const int kTagScanChars = 3000;
                       enabled: _canRevert),
                   act('delete', CupertinoIcons.trash, lm.delete,
                       tint: ctx.c.danger),
-                  const PopupMenuDivider(height: 9),
+                  const PopupMenuDivider(height: 6),
                   act('set:', CupertinoIcons.gear_alt, lm.menuAppSettings,
                       tint: ctx.c.accent, bold: true),
                 ];
