@@ -7858,9 +7858,13 @@ static const int kTagScanChars = 3000;
                     // 제목이 있을 때는 아이콘이 시끄럽다고 여겨 숨겼던
                     // 것도 이번에 걷는다. 숨겨 놓으니 아무도 제목이
                     // 눌린다는 것을 몰랐다 — 08-19 신고가 그것이었다.
-                    const SizedBox(width: 6),
+                    // 작게 둔다(2026-08-27 소유자 지시 — 30% 작게).
+                    // 크면 여전히 '새 글 쓰기' 단추로 읽힌다. 이건 누르라고
+                    // 부르는 단추가 아니라 **여기가 눌린다는 귀띔**이다.
+                    // 귀띔은 작을수록 귀띔답다.
+                    const SizedBox(width: 5),
                     Icon(_showMeta ? Icons.edit : Icons.edit_outlined,
-                        size: 16,
+                        size: 11,
                         color: _showMeta ? context.c.accent : context.c.sub),
                   ],
                 ),
