@@ -617,6 +617,15 @@ class L10nZhHant extends L10n {
 
   @override
   String get travelAction => '時間旅行';
+
+  @override
+  String get skyAction => 'AI 星座';
+  @override
+  String get skyTitle => 'AI 星座';
+  @override
+  String skyCounts(int stars, int links) => '$stars 顆星 · $links 條線';
+  @override
+  String skyEmpty(int more) => '再寫 $more 篇，這裡就會出現星座。相似的筆記會被線連起來。';
   @override
   String get travelTitle => '時間旅行';
   @override

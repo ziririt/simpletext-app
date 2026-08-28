@@ -70,6 +70,9 @@ import 'export_service.dart';
 import 'pdf_service.dart';
 import 'widget_bridge.dart';
 import 'time_travel_screen.dart';
+import 'constellation_screen.dart';
+import 'core/constellation.dart';
+import 'scroll_hint.dart';
 import 'wipe_screen.dart';
 import 'core/time_travel.dart';
 import 'import_service.dart';
@@ -3811,6 +3814,10 @@ class _HomeScreenState extends State<HomeScreen>
               final ok = await ExportService.shareBackup();
               if (!mounted) return;
               if (!ok) _toast(context, l.exportFailed);
+            case 'sky':
+              await Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ConstellationScreen()));
+              if (mounted) setState(() {});
             case 'folders':
               await Navigator.push(context,
                   MaterialPageRoute(
@@ -3849,6 +3856,7 @@ class _HomeScreenState extends State<HomeScreen>
             // 그만한 이유가 있을 때만 그렇게 둔다. 이제 위 줄 오른쪽 끝에
             // 톱니바퀴로 나와 있다.
             // 2026-08-18 소유자 지시 — '폴더 설정'은 여기.
+            row('sky', Icons.auto_awesome_outlined, l.skyAction),
             row('folders', Icons.folder_outlined, l.folderManage),
             row('trash', Icons.delete_outline, l.trashTitle),
           ];
@@ -8692,7 +8700,18 @@ static const int kTagScanChars = 3000;
                       ]),
                     );
 
-                return [
+                // 2026-08-29 소유자 지시 — "낮은 해상도에서 메뉴 하단에
+                // 가려진 부분을 스크롤하면 더 있다는 직관적인 UI가 필요."
+                //
+                // 줄을 더 줄이는 것은 이미 두 번 했고(48→42→36) 더 줄일
+                // 데가 없다. 그러니 줄이는 대신 **더 있다는 것을 보이게**
+                // 한다. 아래가 옅어지고 꺾쇠가 뜬다. 끝까지 내리면
+                // 사라진다(scroll_hint.dart).
+                //
+                // 줄들을 통째로 한 칸 안에 넣는다. 안의 줄들은 여전히
+                // PopupMenuItem 이라 눌리면 제 값으로 메뉴가 닫힌다 —
+                // 눌리는 방식은 하나도 안 바뀐다.
+                final rows = <PopupMenuEntry<String>>[
                   // 2026-08-18 소유자 지시로 차례를 통째로 다시 짰다.
                   //
                   // 스물세 줄이 한 폭에 다 나와 있었다. 그중 여덟은 설정
@@ -8736,7 +8755,7 @@ static const int kTagScanChars = 3000;
                   // 뜨고, 빈 화면은 고장으로 읽힌다.
                   act('wipe', CupertinoIcons.rectangle_split_3x1,
                       lm.wipeAction,
-                      enabled: _canWipe, tint: ctx.c.accent),
+                      enabled: _canWipe),
                   act('preset', CupertinoIcons.wand_stars, lm.choosePreset),
                   const PopupMenuDivider(height: 6),
                   act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
@@ -8763,7 +8782,7 @@ static const int kTagScanChars = 3000;
                   // 2026-08-29 — 같은 자료를 손잡이로 훑는 길. 목록과
                   // 나란히 둔다. 정거장이 둘 이상일 때만 켜진다.
                   act('travel', CupertinoIcons.time, lm.travelAction,
-                      enabled: note.history.isNotEmpty, tint: ctx.c.accent),
+                      enabled: note.history.isNotEmpty),
                   act('revert', CupertinoIcons.arrow_uturn_left,
                       lm.revertAction,
                       enabled: _canRevert),
@@ -8772,6 +8791,14 @@ static const int kTagScanChars = 3000;
                   const PopupMenuDivider(height: 6),
                   act('set:', CupertinoIcons.gear_alt, lm.menuAppSettings,
                       tint: ctx.c.accent, bold: true),
+                ];
+                return [
+                  PopupMenuItem<String>(
+                    // 값이 없다 — 이 껍데기를 눌러도 아무 일이 안 난다.
+                    padding: EdgeInsets.zero,
+                    height: 0,
+                    child: _MenuScroll(rows: rows),
+                  ),
                 ];
               },
             ),
@@ -10025,6 +10052,229 @@ String historyWhyLabel(L10n l, String code) {
       return l.historyWhyRestore;
     default:
       return '';
+  }
+}
+
+/// 메뉴 줄들을 담아 굴리고, 아래에 더 있다는 것을 보여 주는 껍데기.
+///
+/// 2026-08-29. 까닭은 scroll_hint.dart 머리말에 있다.
+class _MenuScroll extends StatefulWidget {
+  const _MenuScroll({required this.rows});
+  final List<PopupMenuEntry<String>> rows;
+
+  @override
+  State<_MenuScroll> createState() => _MenuScrollState();
+}
+
+class _MenuScrollState extends State<_MenuScroll> {
+  final _c = ScrollController();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 화면 높이에서 위아래 여백을 뺀 만큼까지만 자란다. 안 죄면 플러터가
+    // 메뉴를 위로 밀어 올려 삼선 단추를 덮는다(2026-08-27 소유자 신고).
+    final h = MediaQuery.sizeOf(context).height;
+    final max = (h - 170).clamp(220.0, 620.0);
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: max),
+      child: ScrollHint(
+        controller: _c,
+        color: Theme.of(context).canvasColor,
+        child: SingleChildScrollView(
+          controller: _c,
+          child: Column(mainAxisSize: MainAxisSize.min, children: widget.rows),
+        ),
+      ),
+    );
+  }
+}
+
+/// AI 성좌 화면 — 셈을 돌리고 그림에 넘긴다.
+///
+/// 2026-08-29. 왜 이렇게 잇는지는 core/constellation.dart 머리말에 있다.
+class ConstellationScreen extends StatefulWidget {
+  const ConstellationScreen({super.key});
+
+  @override
+  State<ConstellationScreen> createState() => _ConstellationScreenState();
+}
+
+class _ConstellationScreenState extends State<ConstellationScreen> {
+  /// 이만큼은 쌓여야 별자리가 된다.
+  ///
+  /// 열 편으로 그린 그물은 그물이 아니라 실 몇 가닥이다. 그것을 첫인상으로
+  /// 보여 주면 '별거 없네'가 되고, 그 판단은 잘 안 뒤집힌다.
+  static const int kMin = 12;
+
+  /// 한 번에 재는 노트의 최대 수.
+  ///
+  /// 쌍의 수는 제곱으로 는다 — 110편이면 5,995쌍이라 눈 깜짝할 새지만
+  /// 1,000편이면 50만 쌍이다. 최근 것부터 이만큼만 본다. 천 편을 넘긴
+  /// 사람에게는 낱말 색인으로 후보만 추리는 길을 따로 내야 한다.
+  static const int kMax = 400;
+
+  List<Star> _stars = const [];
+  List<Pt> _pts = const [];
+  List<Link> _links = const [];
+  List<Note> _notes = const [];
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 첫 프레임을 먼저 그린다. 셈이 짧아도 화면이 한 번 뜬 뒤에 도는
+    // 편이 '멈췄다'로 안 읽힌다.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _compute());
+  }
+
+  void _compute() {
+    final all = Store.instance.notes
+        .where((n) => n.body.trim().isNotEmpty)
+        .toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final notes = all.take(kMax).toList();
+    if (notes.length < kMin) {
+      setState(() {
+        _notes = notes;
+        _ready = true;
+      });
+      return;
+    }
+    final docs = [
+      for (final n in notes) countWords('${n.title} ${n.body}'),
+    ];
+    final df = docFreq(docs);
+    final vecs = [for (final d in docs) vectorOf(d, df, docs.length)];
+    final tags = [for (final n in notes) n.tags.toSet()];
+    final th = pickThreshold(vecs);
+    final links = buildLinks(vecs, threshold: th, tags: tags);
+
+    final pts = normalize(layout(notes.length, links, rounds: 260));
+
+    // 외톨이는 바깥 둘레로. 까닭은 constellation_screen.dart 머리말.
+    final tied = <int>{};
+    for (final l in links) {
+      tied.add(l.a);
+      tied.add(l.b);
+    }
+    final lone = [
+      for (var i = 0; i < notes.length; i++)
+        if (!tied.contains(i)) i
+    ];
+    for (var k = 0; k < lone.length; k++) {
+      final a = k / (lone.isEmpty ? 1 : lone.length) * math.pi * 2;
+      pts[lone[k]] = Pt(0.5 + math.cos(a) * 0.52, 0.5 + math.sin(a) * 0.52);
+    }
+
+    // 크기는 글 길이, 밝기는 얼마나 최근인가.
+    final now = DateTime.now().millisecondsSinceEpoch;
+    const month = 30 * 24 * 60 * 60 * 1000;
+    setState(() {
+      _notes = notes;
+      _links = links;
+      _pts = pts;
+      _stars = [
+        for (final n in notes)
+          Star(
+            id: n.id,
+            title: n.title.trim().isEmpty
+                ? n.body.trim().split('\n').first
+                : n.title,
+            source: n.source,
+            size: (math.log(1 + n.body.length) / math.log(20000)).clamp(0.0, 1.0),
+            fresh: (1 - (now - n.updatedAt) / (month * 6)).clamp(0.15, 1.0),
+          ),
+      ];
+      _ready = true;
+    });
+  }
+
+  /// 출처마다 다른 별빛. 직접 쓴 글은 흰색이다.
+  Color _colorOf(String source) {
+    switch (source) {
+      case kGemini:
+        return const Color(0xFF6FA8FF);
+      case kChatGpt:
+        return const Color(0xFF5BE3B4);
+      case kClaude:
+        return const Color(0xFFFFA96B);
+      case kPerplexity:
+        return const Color(0xFF6FE0F0);
+      case kGrok:
+        return const Color(0xFFD79CFF);
+      default:
+        return const Color(0xFFEFF3FF);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    // 밤하늘은 화면 모드를 안 따른다. 라이트 모드에서 흰 바탕에 별을
+    // 그리면 별이 안 보인다 — 이 화면만은 늘 밤이다.
+    const sky = Color(0xFF080B14);
+    return Scaffold(
+      backgroundColor: sky,
+      appBar: AppBar(
+        backgroundColor: sky,
+        foregroundColor: Colors.white,
+        title: Text(l.skyTitle),
+        bottom: _stars.isEmpty
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(24),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 7),
+                  child: Text(l.skyCounts(_stars.length, _links.length),
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          color: Colors.white.withValues(alpha: 0.55))),
+                ),
+              ),
+      ),
+      body: !_ready
+          ? const Center(child: CircularProgressIndicator())
+          : _notes.length < kMin
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.auto_awesome_outlined,
+                            size: 40,
+                            color: Colors.white.withValues(alpha: 0.35)),
+                        const SizedBox(height: 14),
+                        Text(l.skyEmpty(kMin - _notes.length),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 15,
+                                height: 1.5,
+                                color: Colors.white.withValues(alpha: 0.7))),
+                      ],
+                    ),
+                  ),
+                )
+              : ConstellationView(
+                  stars: _stars,
+                  points: _pts,
+                  links: _links,
+                  colorOf: _colorOf,
+                  onOpen: (id) async {
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => EditorScreen(noteId: id)));
+                    if (mounted) setState(() {});
+                  },
+                ),
+    );
   }
 }
 
@@ -12100,6 +12350,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       );
     });
   }
+  final ScrollController _settingsScroll = ScrollController();
   bool _aiChecking = false;
   bool _aiAdvOpen = false;
   String _aiMsg = '';
@@ -12487,7 +12738,14 @@ class _SettingsScreenState extends State<SettingsScreen>
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
-          child: SingleChildScrollView(
+          // 2026-08-29 소유자 지시 — 아래에 더 있다는 것을 보이게 한다
+          // (scroll_hint.dart). 설정은 화면 몇 장 길이라 낮은 해상도에서는
+          // 끝이 안 보이고, 끝이 안 보이면 사람은 그것이 끝인 줄 안다.
+          child: ScrollHint(
+            controller: _settingsScroll,
+            color: context.c.bg,
+            child: SingleChildScrollView(
+        controller: _settingsScroll,
         padding: const EdgeInsets.only(bottom: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -13160,11 +13418,17 @@ class _SettingsScreenState extends State<SettingsScreen>
           ],
         ),
       ),
+          ),
         ),
       ),
     );
   }
 
+  @override
+  void dispose() {
+    _settingsScroll.dispose();
+    super.dispose();
+  }
 }
 
 /// 글자와 줄 간격 — 설정에서 한 뎁스 들어온 곳.

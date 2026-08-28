@@ -383,6 +383,12 @@ abstract class L10n {
 
   // 시간 여행 (2026-08-29)
   String get travelAction;
+
+  // AI 성좌 (2026-08-29)
+  String get skyAction;
+  String get skyTitle;
+  String skyCounts(int stars, int links);
+  String skyEmpty(int more);
   String get travelTitle;
   String get travelNow;
   String get travelOlder;
@@ -986,6 +992,8 @@ abstract class L10n {
         'syncStalledTitle': syncStalledTitle,
         'wipeAction': wipeAction,
         'travelAction': travelAction,
+        'skyAction': skyAction,
+        'skyTitle': skyTitle,
         'travelTitle': travelTitle,
         'travelNow': travelNow,
         'travelOlder': travelOlder,

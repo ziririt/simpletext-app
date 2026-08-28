@@ -617,6 +617,15 @@ class L10nKo extends L10n {
 
   @override
   String get travelAction => '시간 여행';
+
+  @override
+  String get skyAction => 'AI 성좌';
+  @override
+  String get skyTitle => 'AI 성좌';
+  @override
+  String skyCounts(int stars, int links) => '별 $stars개 · 실 $links가닥';
+  @override
+  String skyEmpty(int more) => '글이 $more편 더 쌓이면 여기에 별자리가 그려집니다. 닮은 글끼리 실로 이어집니다.';
   @override
   String get travelTitle => '시간 여행';
   @override

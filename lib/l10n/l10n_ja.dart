@@ -617,6 +617,15 @@ class L10nJa extends L10n {
 
   @override
   String get travelAction => 'タイムトラベル';
+
+  @override
+  String get skyAction => 'AI 星座';
+  @override
+  String get skyTitle => 'AI 星座';
+  @override
+  String skyCounts(int stars, int links) => '星 $stars · 線 $links';
+  @override
+  String skyEmpty(int more) => 'あと $more 編たまると、ここに星座が描かれます。似たノートが線でつながります。';
   @override
   String get travelTitle => 'タイムトラベル';
   @override

@@ -618,6 +618,15 @@ class L10nPt extends L10n {
 
   @override
   String get travelAction => 'Viagem no tempo';
+
+  @override
+  String get skyAction => 'Constelação';
+  @override
+  String get skyTitle => 'Constelação';
+  @override
+  String skyCounts(int stars, int links) => '$stars estrelas · $links fios';
+  @override
+  String skyEmpty(int more) => 'Com mais $more notas sua constelação aparece aqui. Notas parecidas são ligadas por fios.';
   @override
   String get travelTitle => 'Viagem no tempo';
   @override

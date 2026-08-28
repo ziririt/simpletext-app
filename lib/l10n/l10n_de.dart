@@ -619,6 +619,15 @@ class L10nDe extends L10n {
 
   @override
   String get travelAction => 'Zeitreise';
+
+  @override
+  String get skyAction => 'Sternbild';
+  @override
+  String get skyTitle => 'Sternbild';
+  @override
+  String skyCounts(int stars, int links) => '$stars Sterne · $links Fäden';
+  @override
+  String skyEmpty(int more) => 'Noch $more Notizen, dann erscheint hier Ihr Sternbild. Ähnliche Notizen werden verbunden.';
   @override
   String get travelTitle => 'Zeitreise';
   @override

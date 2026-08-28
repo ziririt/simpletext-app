@@ -618,6 +618,15 @@ class L10nEs extends L10n {
 
   @override
   String get travelAction => 'Viaje en el tiempo';
+
+  @override
+  String get skyAction => 'Constelación';
+  @override
+  String get skyTitle => 'Constelación';
+  @override
+  String skyCounts(int stars, int links) => '$stars estrellas · $links hilos';
+  @override
+  String skyEmpty(int more) => 'Con $more notas más aparecerá aquí tu constelación. Las notas parecidas se unen con hilos.';
   @override
   String get travelTitle => 'Viaje en el tiempo';
   @override
