@@ -34,6 +34,27 @@ except Exception as e:  # noqa: BLE001
     raise SystemExit(2)
 
 BUNDLE = 'com.ziririt.simpletext'
+
+_raw_api = api
+
+
+def api(method, path, body=None, tries=4):
+    """애플 API 는 이따금 응답 없이 연결을 끊는다(2026-08-28 실측).
+
+    한 번 끊겼다고 판 만들기를 중간에 멈추면, 열한 언어 중 둘만 고쳐진
+    어정쩡한 상태가 남는다. 끊기면 잠깐 쉬고 다시 건다.
+    """
+    import time
+    last = None
+    for i in range(tries):
+        try:
+            return _raw_api(method, path, body)
+        except Exception as e:  # noqa: BLE001
+            last = e
+            if i == tries - 1:
+                break
+            time.sleep(2 * (i + 1))
+    raise last
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORE = os.path.join(HERE, 'store', 'ios')
 
@@ -160,7 +181,10 @@ def prepare():
     print('고치는 판: %s (%s)' % (v['attributes']['versionString'], vid))
 
     # 1) 열한 언어의 '새로운 기능'
-    st, r = api('GET', '/v1/appStoreVersions/%s/appStoreVersionLocalizations?limit=50' % vid)
+    # 필드를 locale 하나로 줄인다. 설명 글까지 다 받으면 응답이 커서
+    # 애플 쪽에서 읽다가 끊긴다(2026-08-28 socket.timeout).
+    st, r = api('GET', '/v1/appStoreVersions/%s/appStoreVersionLocalizations'
+                       '?limit=50&fields[appStoreVersionLocalizations]=locale' % vid)
     ok(st, r, '로케일 목록')
     have = {x['attributes']['locale']: x['id'] for x in r['data']}
     for loc, txt in sorted(notes().items()):
