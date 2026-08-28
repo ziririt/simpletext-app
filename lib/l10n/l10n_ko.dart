@@ -614,6 +614,21 @@ class L10nKo extends L10n {
 
   @override
   String get wipeAction => '정리 전·후 보기';
+
+  @override
+  String get travelAction => '시간 여행';
+  @override
+  String get travelTitle => '시간 여행';
+  @override
+  String get travelNow => '지금';
+  @override
+  String get travelOlder => '이전 판';
+  @override
+  String get travelRestore => '이 판으로';
+  @override
+  String travelShrank(int n) => '$n자 줄었습니다';
+  @override
+  String travelGrew(int n) => '$n자 늘었습니다';
   @override
   String get wipeTitle => '정리 전 · 정리 후';
   @override

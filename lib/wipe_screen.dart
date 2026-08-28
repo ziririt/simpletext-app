@@ -21,8 +21,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-import 'core/rich_spans.dart';
 import 'core/wipe.dart';
+import 'rich_note_text.dart';
 
 class WipeView extends StatefulWidget {
   const WipeView({
@@ -120,69 +120,44 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
 
   /// 정리 전 — 표시를 **그대로 보여 준다.** 이게 요점이다. 별표와
   /// 우물정이 글자로 보이는 그 꼴이 사람들이 겪는 그 꼴이다.
+  /// 글 위아래 여백. 위를 넉넉히 두는 까닭은 이름표(정리 전/정리 후)가
+  /// 첫 줄 위에 앉기 때문이다. 안 두면 이름표가 첫 문장을 덮는다.
+  static const double _padTop = 46;
+  static const double _padSide = 18;
+
   Widget _rawPane(Color ink, Color mark) => Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 18, 40),
+        padding: const EdgeInsets.fromLTRB(_padSide, _padTop, _padSide, 40),
         child: Text(widget.before,
             style: _base.copyWith(color: ink.withValues(alpha: 0.75))),
       );
 
   /// 정리 후 — 앱이 실제로 그리는 그대로.
   Widget _richPane(Color ink, Color mark) {
-    final t = widget.after;
-    final spans = richSpans(t);
-    final out = <TextSpan>[];
-    var at = 0;
-    for (final s in spans) {
-      if (s.start > at) {
-        out.add(TextSpan(text: t.substring(at, s.start), style: _base.copyWith(color: ink)));
-      }
-      final piece = t.substring(s.start, s.end);
-      out.add(TextSpan(text: piece, style: _styleOf(s.kind, ink, mark)));
-      at = s.end;
-    }
-    if (at < t.length) {
-      out.add(TextSpan(text: t.substring(at), style: _base.copyWith(color: ink)));
-    }
+    // 2026-08-29 소유자 신고 — "우측 화면은 왼쪽이 살짝 가려진다."
+    //
+    // 두 벌을 같은 자리에 그려 놓고 위의 것을 손잡이에서 잘랐더니, 오른쪽
+    // 글의 **첫 글자가 손잡이 뒤에 숨었다.** '엔비디아'가 '비디아'로,
+    // '매크로와 금리'가 '크로와 금리'로 보였다.
+    //
+    // 사진을 겹치는 와이프였다면 안 생길 일이다. 같은 그림이라 잘린 자리
+    // 뒤에도 같은 것이 있으니까. 그런데 여기 두 벌은 **다른 글**이다.
+    // 잘린 자리 뒤에 있는 것은 가려도 되는 것이 아니라 읽어야 할 글자다.
+    //
+    // 그래서 오른쪽 글은 손잡이 뒤에서 시작하지 않고, 손잡이 오른쪽에서
+    // 시작한다. 손잡이를 밀면 글이 그만큼 좁아지며 다시 접힌다 — 보이는
+    // 만큼만 차지하는 것이 맞다.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 40),
-      child: Text.rich(TextSpan(children: out)),
+      padding: EdgeInsets.fromLTRB(
+          math.max(_padSide, _x + 16), _padTop, _padSide, 40),
+      child: RichNoteText(
+        text: widget.after,
+        fontSize: widget.fontSize,
+        lineHeight: widget.lineHeight,
+        ink: ink,
+        mark: mark,
+        fontFamily: widget.fontFamily,
+      ),
     );
-  }
-
-  TextStyle _styleOf(RichKind k, Color ink, Color mark) {
-    switch (k) {
-      // 표시는 **안 보이게** 한다. 편집기에서는 커서가 놓인 줄에만
-      // 옅게 보여 주지만, 여기서는 읽기만 하므로 없는 편이 정직하다.
-      case RichKind.marker:
-        return _base.copyWith(fontSize: 0.01, color: const Color(0x00000000));
-      case RichKind.h1:
-        return _base.copyWith(
-            fontSize: widget.fontSize * 1.30,
-            height: widget.lineHeight / 1.30,
-            fontWeight: FontWeight.w800,
-            color: ink);
-      case RichKind.h2:
-        return _base.copyWith(
-            fontSize: widget.fontSize * 1.18,
-            height: widget.lineHeight / 1.18,
-            fontWeight: FontWeight.w700,
-            color: ink);
-      case RichKind.h3:
-        return _base.copyWith(
-            fontSize: widget.fontSize * 1.08,
-            height: widget.lineHeight / 1.08,
-            fontWeight: FontWeight.w700,
-            color: ink);
-      case RichKind.bold:
-        return _base.copyWith(fontWeight: FontWeight.w700, color: ink);
-      case RichKind.quote:
-        return _base.copyWith(color: mark, fontStyle: FontStyle.italic);
-      case RichKind.box:
-        return _base.copyWith(color: mark);
-      case RichKind.done:
-        return _base.copyWith(
-            color: mark, decoration: TextDecoration.lineThrough);
-    }
   }
 
   @override

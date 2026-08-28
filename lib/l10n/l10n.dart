@@ -380,6 +380,15 @@ abstract class L10n {
 
   // 전·후 와이프 (2026-08-28)
   String get wipeAction;
+
+  // 시간 여행 (2026-08-29)
+  String get travelAction;
+  String get travelTitle;
+  String get travelNow;
+  String get travelOlder;
+  String get travelRestore;
+  String travelShrank(int n);
+  String travelGrew(int n);
   String get wipeTitle;
   String get wipeBefore;
   String get wipeAfter;
@@ -976,6 +985,11 @@ abstract class L10n {
         'blockFormatTip': blockFormatTip,
         'syncStalledTitle': syncStalledTitle,
         'wipeAction': wipeAction,
+        'travelAction': travelAction,
+        'travelTitle': travelTitle,
+        'travelNow': travelNow,
+        'travelOlder': travelOlder,
+        'travelRestore': travelRestore,
         'wipeTitle': wipeTitle,
         'wipeBefore': wipeBefore,
         'wipeAfter': wipeAfter,

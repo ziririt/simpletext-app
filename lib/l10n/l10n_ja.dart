@@ -614,6 +614,21 @@ class L10nJa extends L10n {
 
   @override
   String get wipeAction => '整形の前と後';
+
+  @override
+  String get travelAction => 'タイムトラベル';
+  @override
+  String get travelTitle => 'タイムトラベル';
+  @override
+  String get travelNow => '現在';
+  @override
+  String get travelOlder => '以前の版';
+  @override
+  String get travelRestore => 'この版に戻す';
+  @override
+  String travelShrank(int n) => '$n文字 減りました';
+  @override
+  String travelGrew(int n) => '$n文字 増えました';
   @override
   String get wipeTitle => '整形前 · 整形後';
   @override

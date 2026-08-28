@@ -616,6 +616,21 @@ class L10nFr extends L10n {
 
   @override
   String get wipeAction => 'Avant et après';
+
+  @override
+  String get travelAction => 'Voyage dans le temps';
+  @override
+  String get travelTitle => 'Voyage dans le temps';
+  @override
+  String get travelNow => 'Maintenant';
+  @override
+  String get travelOlder => 'Version antérieure';
+  @override
+  String get travelRestore => 'Restaurer';
+  @override
+  String travelShrank(int n) => '$n caractères de moins';
+  @override
+  String travelGrew(int n) => '$n caractères de plus';
   @override
   String get wipeTitle => 'Avant · Après';
   @override

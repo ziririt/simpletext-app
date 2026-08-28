@@ -69,7 +69,9 @@ import 'core/wizard.dart';
 import 'export_service.dart';
 import 'pdf_service.dart';
 import 'widget_bridge.dart';
+import 'time_travel_screen.dart';
 import 'wipe_screen.dart';
+import 'core/time_travel.dart';
 import 'import_service.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
@@ -7039,6 +7041,63 @@ static const int kTagScanChars = 3000;
     return t != null && t != bodyCtl.text;
   }
 
+  Future<void> _openTravel() async {
+    if (note.history.isEmpty) return;
+    final l = L10n.of(context);
+    final s = store.settings;
+    final tag = Localizations.localeOf(context).toLanguageTag();
+    String when(int at) {
+      if (at <= 0) return l.historyUnknownTime(0);
+      final t = DateTime.fromMillisecondsSinceEpoch(at);
+      try {
+        return '${DateFormat.MMMd(tag).format(t)} ${DateFormat.Hm(tag).format(t)}';
+      } catch (_) {
+        return DateFormat.Hm().format(t);
+      }
+    }
+
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (ctx) => Scaffold(
+        backgroundColor: ctx.c.bg,
+        appBar: AppBar(title: Text(l.travelTitle)),
+        body: TimeTravelView(
+          stops: travelStops(
+            history: note.history,
+            historyAt: note.historyAt,
+            historyWhy: note.historyWhy,
+            body: bodyCtl.text,
+            updatedAt: note.updatedAt,
+          ),
+          fontSize: s.bodyFontSize,
+          lineHeight: s.bodyLineHeight,
+          fontFamily: bodyFontFamily(s.bodyFont,
+              webDefault: kIsWeb ? kWebFontFamily : null),
+          nowLabel: l.travelNow,
+          whyLabel: (w) {
+            final t = historyWhyLabel(l, w);
+            return t.isEmpty ? l.travelOlder : t;
+          },
+          whenLabel: when,
+          growLabel: (d) => d == 0
+              ? ''
+              : (d < 0 ? l.travelShrank(-d) : l.travelGrew(d)),
+          restoreLabel: l.travelRestore,
+          onRestore: (stop) async {
+            // 되돌리기 자체도 되돌릴 수 있어야 한다. 지금 글을 먼저
+            // 기록에 넣는다 — 안 그러면 '되돌리기'가 곧 '지금 글을
+            // 버리기'가 된다(HistorySheet 와 같은 규칙).
+            note.pushHistory(bodyCtl.text, why: 'restore');
+            bodyCtl.text = stop.text;
+            await _save();
+            HapticFeedback.lightImpact();
+            if (ctx.mounted) Navigator.of(ctx).pop();
+            if (mounted) setState(() {});
+          },
+        ),
+      ),
+    ));
+  }
+
   /// 전·후를 견줄 거리가 있는가.
   ///
   /// 정리 전 글(originalBody)이 있고, 지금 글과 실제로 달라야 한다.
@@ -8503,6 +8562,10 @@ static const int kTagScanChars = 3000;
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'travel') {
+                  await _openTravel();
+                  return;
+                }
                 if (v == 'wipe') {
                   await _openWipe();
                   return;
@@ -8697,6 +8760,10 @@ static const int kTagScanChars = 3000;
                   // 보여야 한다. 셋 다 '되돌리거나 없애는 일'이라 삭제와
                   // 같은 무리에 둔다.
                   act('history', CupertinoIcons.clock, lm.historyTitle),
+                  // 2026-08-29 — 같은 자료를 손잡이로 훑는 길. 목록과
+                  // 나란히 둔다. 정거장이 둘 이상일 때만 켜진다.
+                  act('travel', CupertinoIcons.time, lm.travelAction,
+                      enabled: note.history.isNotEmpty, tint: ctx.c.accent),
                   act('revert', CupertinoIcons.arrow_uturn_left,
                       lm.revertAction,
                       enabled: _canRevert),
@@ -9941,6 +10008,26 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
 ///
 /// 우리는 되돌리기용 이전 판을 이미 쌓고 있었다(정리·바꾸기를 할 때마다).
 /// 데이터는 다 있었고 화면만 없었다.
+/// 기록에 남은 부호를 사람 말로. 부호를 저장하고 말은 그때 고르는
+/// 까닭은 historyWhy 주석에 있다 — 말을 저장하면 언어를 바꾼 뒤 옛
+/// 기록만 옛 언어로 남는다.
+String historyWhyLabel(L10n l, String code) {
+  switch (code) {
+    case 'tidy':
+      return l.historyWhyTidy;
+    case 'ai':
+      return l.historyWhyAi;
+    case 'replace':
+      return l.historyWhyReplace;
+    case 'revert':
+      return l.historyWhyRevert;
+    case 'restore':
+      return l.historyWhyRestore;
+    default:
+      return '';
+  }
+}
+
 class HistorySheet extends StatefulWidget {
   const HistorySheet({super.key, required this.note});
 
@@ -10060,22 +10147,9 @@ class _HistorySheetState extends State<HistorySheet> {
 
   /// 부호를 그때의 언어로. 모르는 부호(옛 저장본, 다음 판이 붙일 새 부호)는
   /// 빈 글자로 두고 시각만 보여 준다 — 모르면 아무 말도 안 하는 편이 낫다.
-  static String _whyLabel(L10n l, String code) {
-    switch (code) {
-      case 'tidy':
-        return l.historyWhyTidy;
-      case 'ai':
-        return l.historyWhyAi;
-      case 'replace':
-        return l.historyWhyReplace;
-      case 'revert':
-        return l.historyWhyRevert;
-      case 'restore':
-        return l.historyWhyRestore;
-      default:
-        return '';
-    }
-  }
+  static String _whyLabel(L10n l, String code) => historyWhyLabel(l, code);
+
+
 
   Widget _row(String when, String peek, VoidCallback onTap,
       {bool accent = false, String why = ''}) {

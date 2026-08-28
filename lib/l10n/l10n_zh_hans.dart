@@ -614,6 +614,21 @@ class L10nZhHans extends L10n {
 
   @override
   String get wipeAction => '整理前后对比';
+
+  @override
+  String get travelAction => '时间旅行';
+  @override
+  String get travelTitle => '时间旅行';
+  @override
+  String get travelNow => '现在';
+  @override
+  String get travelOlder => '早前版本';
+  @override
+  String get travelRestore => '恢复此版本';
+  @override
+  String travelShrank(int n) => '少了 $n 字';
+  @override
+  String travelGrew(int n) => '多了 $n 字';
   @override
   String get wipeTitle => '整理前 · 整理后';
   @override

@@ -615,6 +615,21 @@ class L10nEs extends L10n {
 
   @override
   String get wipeAction => 'Antes y después';
+
+  @override
+  String get travelAction => 'Viaje en el tiempo';
+  @override
+  String get travelTitle => 'Viaje en el tiempo';
+  @override
+  String get travelNow => 'Ahora';
+  @override
+  String get travelOlder => 'Anterior';
+  @override
+  String get travelRestore => 'Restaurar';
+  @override
+  String travelShrank(int n) => '$n caracteres menos';
+  @override
+  String travelGrew(int n) => '$n caracteres más';
   @override
   String get wipeTitle => 'Antes · Después';
   @override

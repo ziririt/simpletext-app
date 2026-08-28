@@ -615,6 +615,21 @@ class L10nPt extends L10n {
 
   @override
   String get wipeAction => 'Antes e depois';
+
+  @override
+  String get travelAction => 'Viagem no tempo';
+  @override
+  String get travelTitle => 'Viagem no tempo';
+  @override
+  String get travelNow => 'Agora';
+  @override
+  String get travelOlder => 'Anterior';
+  @override
+  String get travelRestore => 'Restaurar';
+  @override
+  String travelShrank(int n) => '$n caracteres a menos';
+  @override
+  String travelGrew(int n) => '$n caracteres a mais';
   @override
   String get wipeTitle => 'Antes · Depois';
   @override

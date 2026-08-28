@@ -616,6 +616,21 @@ class L10nDe extends L10n {
 
   @override
   String get wipeAction => 'Vorher und nachher';
+
+  @override
+  String get travelAction => 'Zeitreise';
+  @override
+  String get travelTitle => 'Zeitreise';
+  @override
+  String get travelNow => 'Jetzt';
+  @override
+  String get travelOlder => 'Früher';
+  @override
+  String get travelRestore => 'Wiederherstellen';
+  @override
+  String travelShrank(int n) => '$n Zeichen weniger';
+  @override
+  String travelGrew(int n) => '$n Zeichen mehr';
   @override
   String get wipeTitle => 'Vorher · Nachher';
   @override
