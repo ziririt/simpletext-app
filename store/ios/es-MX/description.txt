@@ -21,6 +21,6 @@ TUS REGLAS
 Decide si el énfasis pasa a comillas o se quita, qué viñeta y qué sangría usar, cuánto espacio dejar alrededor de los subtítulos. El siguiente pegado seguirá lo mismo.
 
 TAMBIÉN ES TU CUADERNO
-Lo que limpias se queda como nota. Fíjala, ponle etiquetas, búscala. Inicia sesión con Google y tu iPhone, iPad, Mac, celular Android, computadora con Windows y navegador web verán las mismas notas. Si solo usas dispositivos Apple, puedes elegir la sincronización con iCloud. Las notas viven solo en tu iCloud o tu Google Drive: no tenemos servidor. Puedes bloquear la app con Face ID y elegir el papel sobre el que escribes: crema, pauta de escritura o cuadrícula.
+Lo que limpias se queda como nota. Fíjala, ponle etiquetas, búscala. Inicia sesión con Google y tu iPhone, iPad, Mac y navegador web verán las mismas notas. Si solo usas dispositivos Apple, puedes elegir la sincronización con iCloud. Las notas viven solo en tu iCloud o tu Google Drive: no tenemos servidor. Puedes bloquear la app con Face ID y elegir el papel sobre el que escribes: crema, pauta de escritura o cuadrícula.
 
 Ajustado a las respuestas de ChatGPT, Claude, Gemini, Grok y Perplexity.

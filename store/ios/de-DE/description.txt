@@ -21,6 +21,6 @@ IHRE REGELN
 Legen Sie fest, ob Hervorhebungen zu Anführungszeichen werden oder verschwinden, welches Aufzählungszeichen und welcher Einzug gilt, wie viel Abstand um Zwischenüberschriften steht. Beim nächsten Einfügen gilt dasselbe.
 
 ES IST AUCH IHR NOTIZBUCH
-Was Sie aufgeräumt haben, bleibt als Notiz. Anheften, mit Schlagwörtern ordnen, durchsuchen. Melden Sie sich mit Google an, und iPhone, iPad, Mac, Android-Telefon, Windows-PC und Webbrowser sehen dieselben Notizen. Wer nur Apple-Geräte nutzt, kann stattdessen iCloud-Sync wählen. Notizen liegen ausschließlich in Ihrer iCloud oder Ihrem Google Drive — einen Server von uns gibt es nicht. Die App lässt sich mit Face ID sperren, und Sie wählen das Papier, auf dem Sie schreiben: cremefarben, Manuskriptraster oder kariert.
+Was Sie aufgeräumt haben, bleibt als Notiz. Anheften, mit Schlagwörtern ordnen, durchsuchen. Melden Sie sich mit Google an, und iPhone, iPad, Mac und Webbrowser sehen dieselben Notizen. Wer nur Apple-Geräte nutzt, kann stattdessen iCloud-Sync wählen. Notizen liegen ausschließlich in Ihrer iCloud oder Ihrem Google Drive — einen Server von uns gibt es nicht. Die App lässt sich mit Face ID sperren, und Sie wählen das Papier, auf dem Sie schreiben: cremefarben, Manuskriptraster oder kariert.
 
 Abgestimmt auf Antworten von ChatGPT, Claude, Gemini, Grok und Perplexity.

@@ -21,6 +21,6 @@ AS SUAS REGRAS
 Decida se o destaque passa a aspas ou desaparece, que marca e que avanço usar, que espaço deixar à volta dos subtítulos. A colagem seguinte segue as mesmas regras.
 
 TAMBÉM É O SEU CADERNO
-O que limpou fica como nota. Pode fixar, marcar com etiquetas e procurar. Inicie sessão com a conta Google e o iPhone, o iPad, o Mac, o telemóvel Android, o PC com Windows e o navegador veem as mesmas notas. Se só usa dispositivos Apple, pode escolher a sincronização com o iCloud. As notas ficam apenas no seu iCloud ou no seu Google Drive — não temos servidor. A app pode ser bloqueada com Face ID, e escolhe o papel em que escreve: creme, pautado de caligrafia ou quadriculado.
+O que limpou fica como nota. Pode fixar, marcar com etiquetas e procurar. Inicie sessão com a conta Google e o iPhone, o iPad, o Mac e o navegador veem as mesmas notas. Se só usa dispositivos Apple, pode escolher a sincronização com o iCloud. As notas ficam apenas no seu iCloud ou no seu Google Drive — não temos servidor. A app pode ser bloqueada com Face ID, e escolhe o papel em que escreve: creme, pautado de caligrafia ou quadriculado.
 
 Ajustado às respostas do ChatGPT, Claude, Gemini, Grok e Perplexity.
