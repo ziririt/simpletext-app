@@ -612,6 +612,17 @@ class L10nPt extends L10n {
 
   @override
   String get syncStalledTitle => 'A sincronização está parada';
+
+  @override
+  String get wipeAction => 'Antes e depois';
+  @override
+  String get wipeTitle => 'Antes · Depois';
+  @override
+  String get wipeBefore => 'Antes';
+  @override
+  String get wipeAfter => 'Depois';
+  @override
+  String wipeCounts(int before, int after) => '$before → $after caracteres';
   @override
   String get syncStalledSub => 'O acesso do Google expirou. Suas notas estão seguras neste aparelho.';
   @override

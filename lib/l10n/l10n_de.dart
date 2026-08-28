@@ -613,6 +613,17 @@ class L10nDe extends L10n {
 
   @override
   String get syncStalledTitle => 'Die Synchronisierung steht';
+
+  @override
+  String get wipeAction => 'Vorher und nachher';
+  @override
+  String get wipeTitle => 'Vorher · Nachher';
+  @override
+  String get wipeBefore => 'Vorher';
+  @override
+  String get wipeAfter => 'Nachher';
+  @override
+  String wipeCounts(int before, int after) => '$before → $after Zeichen';
   @override
   String get syncStalledSub => 'Der Google-Zugriff ist abgelaufen. Ihre Notizen sind auf diesem Gerät sicher.';
   @override

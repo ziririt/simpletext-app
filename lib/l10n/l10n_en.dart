@@ -612,6 +612,17 @@ class L10nEn extends L10n {
 
   @override
   String get syncStalledTitle => 'Sync is stopped';
+
+  @override
+  String get wipeAction => 'Before and after';
+  @override
+  String get wipeTitle => 'Before · After';
+  @override
+  String get wipeBefore => 'Before';
+  @override
+  String get wipeAfter => 'After';
+  @override
+  String wipeCounts(int before, int after) => '$before → $after characters';
   @override
   String get syncStalledSub => 'Google access has lapsed. Your notes are safe on this device.';
   @override

@@ -611,6 +611,17 @@ class L10nZhHans extends L10n {
 
   @override
   String get syncStalledTitle => '同步已停止';
+
+  @override
+  String get wipeAction => '整理前后对比';
+  @override
+  String get wipeTitle => '整理前 · 整理后';
+  @override
+  String get wipeBefore => '整理前';
+  @override
+  String get wipeAfter => '整理后';
+  @override
+  String wipeCounts(int before, int after) => '$before 字 → $after 字';
   @override
   String get syncStalledSub => 'Google 授权已失效。笔记仍安全保存在本设备。';
   @override

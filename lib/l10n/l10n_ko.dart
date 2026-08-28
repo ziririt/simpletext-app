@@ -611,6 +611,17 @@ class L10nKo extends L10n {
 
   @override
   String get syncStalledTitle => '동기화가 멈춰 있습니다';
+
+  @override
+  String get wipeAction => '정리 전·후 보기';
+  @override
+  String get wipeTitle => '정리 전 · 정리 후';
+  @override
+  String get wipeBefore => '정리 전';
+  @override
+  String get wipeAfter => '정리 후';
+  @override
+  String wipeCounts(int before, int after) => '$before자 → $after자';
   @override
   String get syncStalledSub => '구글 계정 허락이 끊겼습니다. 글은 이 기기에 안전하게 있습니다.';
   @override

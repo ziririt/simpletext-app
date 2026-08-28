@@ -69,6 +69,7 @@ import 'core/wizard.dart';
 import 'export_service.dart';
 import 'pdf_service.dart';
 import 'widget_bridge.dart';
+import 'wipe_screen.dart';
 import 'import_service.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
@@ -7038,6 +7039,50 @@ static const int kTagScanChars = 3000;
     return t != null && t != bodyCtl.text;
   }
 
+  /// 전·후를 견줄 거리가 있는가.
+  ///
+  /// 정리 전 글(originalBody)이 있고, 지금 글과 실제로 달라야 한다.
+  /// 같은데 열면 밀어도 아무 일이 안 일어나고, 그 화면을 본 사람은
+  /// 이 기능이 고장 났다고 생각한다.
+  bool get _canWipe {
+    final b = note.originalBody;
+    return b.trim().isNotEmpty && b != bodyCtl.text;
+  }
+
+  Future<void> _openWipe() async {
+    if (!_canWipe) return;
+    final l = L10n.of(context);
+    final s = store.settings;
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (ctx) => Scaffold(
+        backgroundColor: ctx.c.bg,
+        appBar: AppBar(
+          title: Text(l.wipeTitle),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(26),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l.wipeCounts(note.originalBody.length, bodyCtl.text.length),
+                style: TextStyle(fontSize: 12.5, color: ctx.c.sub),
+              ),
+            ),
+          ),
+        ),
+        body: WipeView(
+          before: note.originalBody,
+          after: bodyCtl.text,
+          beforeLabel: l.wipeBefore,
+          afterLabel: l.wipeAfter,
+          fontSize: s.bodyFontSize,
+          lineHeight: s.bodyLineHeight,
+          fontFamily: bodyFontFamily(s.bodyFont,
+              webDefault: kIsWeb ? kWebFontFamily : null),
+        ),
+      ),
+    ));
+  }
+
   String? get _revertTarget {
     if (note.originalBody.isNotEmpty) return note.originalBody;
     if (note.history.isNotEmpty) return note.history.last;
@@ -8458,6 +8503,10 @@ static const int kTagScanChars = 3000;
                   if (mounted) setState(() {});
                   return;
                 }
+                if (v == 'wipe') {
+                  await _openWipe();
+                  return;
+                }
                 if (v == 'preview') {
                   // 설정이 꺼져 있어도 이번 한 번은 먼저 보여 준다.
                   await _runTidyWithPreset(buildPresets().first,
@@ -8619,6 +8668,12 @@ static const int kTagScanChars = 3000;
                   const PopupMenuDivider(height: 6),
                   act('preview', CupertinoIcons.eye, lm.menuTidyPreview,
                       tint: ctx.c.accent, bold: true),
+                  // 2026-08-28 — 전·후 와이프. 정리 전 글이 남아 있고
+                  // 지금 글과 다를 때만 켜진다. 없는데 눌리면 빈 화면이
+                  // 뜨고, 빈 화면은 고장으로 읽힌다.
+                  act('wipe', CupertinoIcons.rectangle_split_3x1,
+                      lm.wipeAction,
+                      enabled: _canWipe, tint: ctx.c.accent),
                   act('preset', CupertinoIcons.wand_stars, lm.choosePreset),
                   const PopupMenuDivider(height: 6),
                   act('wizard', CupertinoIcons.sparkles, lm.wizardAction),

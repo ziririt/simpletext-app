@@ -611,6 +611,17 @@ class L10nJa extends L10n {
 
   @override
   String get syncStalledTitle => '同期が止まっています';
+
+  @override
+  String get wipeAction => '整形の前と後';
+  @override
+  String get wipeTitle => '整形前 · 整形後';
+  @override
+  String get wipeBefore => '整形前';
+  @override
+  String get wipeAfter => '整形後';
+  @override
+  String wipeCounts(int before, int after) => '$before文字 → $after文字';
   @override
   String get syncStalledSub => 'Google の許可が切れました。ノートはこの端末に残っています。';
   @override

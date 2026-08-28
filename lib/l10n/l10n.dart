@@ -377,6 +377,13 @@ abstract class L10n {
 
   // 로그인 때문에 동기화가 멈춘 것을 목록에서 알린다 (2026-08-28)
   String get syncStalledTitle;
+
+  // 전·후 와이프 (2026-08-28)
+  String get wipeAction;
+  String get wipeTitle;
+  String get wipeBefore;
+  String get wipeAfter;
+  String wipeCounts(int before, int after);
   String get syncStalledSub;
   String get syncStalledFix;
   String get blockBody;
@@ -968,6 +975,10 @@ abstract class L10n {
         'clearFormatTip': clearFormatTip,
         'blockFormatTip': blockFormatTip,
         'syncStalledTitle': syncStalledTitle,
+        'wipeAction': wipeAction,
+        'wipeTitle': wipeTitle,
+        'wipeBefore': wipeBefore,
+        'wipeAfter': wipeAfter,
         'syncStalledSub': syncStalledSub,
         'syncStalledFix': syncStalledFix,
         'blockBody': blockBody,
