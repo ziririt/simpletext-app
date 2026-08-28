@@ -526,7 +526,7 @@ class L10nJa extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'Google ドライブの置き場は iPhone・iPad・Mac・Android で共通です。このアプリを入れて同じ Google アカウントでログインしてください';
+      'Google ドライブの置き場は、このアプリを使うすべての端末で共通です。このアプリを入れて同じ Google アカウントでログインしてください';
 
   @override
   String get syncScopeDevice =>
@@ -534,7 +534,7 @@ class L10nJa extends L10n {
 
   @override
   String get syncScopePlatform =>
-      '現在、自動同期はApple製デバイス（iPhone・iPad・Mac）の間だけです。AndroidとWindowsではメニューのバックアップ書き出しと読み込みをお使いください';
+      '現在、自動同期はApple製デバイス（iPhone・iPad・Mac）の間だけです。それ以外の端末ではメニューのバックアップ書き出しと読み込みをお使いください';
 
   @override
   String get typographyTitle => '文字と行間';
@@ -562,7 +562,7 @@ class L10nJa extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      'Android・Windows・ウェブまで';
+      'ほかの端末とウェブまで';
   @override
   String get syncSoon =>
       '準備中';
@@ -1314,7 +1314,7 @@ class L10nJa extends L10n {
   @override
   String get premiumScopeBase => '購入したストアの端末とウェブで使えます。';
   @override
-  String get premiumScopeAll => 'iPhone・iPad・Mac・Android・Windows・ウェブ、どこでも使えます。';
+  String get premiumScopeAll => 'お使いのどの端末でも使えます。';
   @override
   String get premiumAutoRenew => 'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
   @override
@@ -1326,7 +1326,7 @@ class L10nJa extends L10n {
   @override
   String get premiumThanks => 'ありがとうございます。プレミアムが有効になりました。';
   @override
-  String get premiumNoStore => 'この端末では購入できません。iPhone または Android アプリで購入すると、同じアカウントでログインしたこちらにもすぐ反映されます。';
+  String get premiumNoStore => 'この端末では購入できません。購入後、同じアカウントでログインすればこちらにもすぐ反映されます。';
   @override
   String get premiumUpgradeHere => 'この端末でも使うには「すべての端末」へアップグレードしてください。残り期間はストアが精算します。';
   @override
@@ -1340,7 +1340,7 @@ class L10nJa extends L10n {
   @override
   String get premiumPitchSub => '広告なしで無制限・月額から買い切りまで';
   @override
-  String get premiumBody => 'プレミアムは広告をなくし、整形とAIウィザードを無制限にします。プランは2つ — 購入したストアの端末とウェブで使う「ベーシック」、iPhoneもAndroidもPCもウェブも使える「すべての端末」。応援が次の更新をつくります。';
+  String get premiumBody => 'プレミアムは広告をなくし、整形とAIウィザードを無制限にします。プランは2つ — 購入したストアの端末とウェブで使う「ベーシック」、お使いのどの端末でも使える「すべての端末」。応援が次の更新をつくります。';
   @override
   String get premiumLifetime => '買い切り';
   @override

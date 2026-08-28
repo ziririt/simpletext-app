@@ -526,7 +526,7 @@ class L10nZhHans extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'Google 云端硬盘的存放处由 iPhone、iPad、Mac 和 Android 共用。装上本应用并用同一个 Google 账号登录即可';
+      'Google 云端硬盘的存放处由使用本应用的所有设备共用。装上本应用并用同一个 Google 账号登录即可';
 
   @override
   String get syncScopeDevice =>
@@ -534,7 +534,7 @@ class L10nZhHans extends L10n {
 
   @override
   String get syncScopePlatform =>
-      '目前自动同步仅在 Apple 设备（iPhone、iPad、Mac）之间进行。Android 与 Windows 请使用菜单中的导出备份与导入';
+      '目前自动同步仅在 Apple 设备（iPhone、iPad、Mac）之间进行。其他设备请使用菜单中的导出备份与导入';
 
   @override
   String get typographyTitle => '字体与行距';
@@ -562,7 +562,7 @@ class L10nZhHans extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      '还包括安卓·Windows·网页';
+      '还包括其他设备与网页';
   @override
   String get syncSoon =>
       '准备中';
@@ -1314,7 +1314,7 @@ class L10nZhHans extends L10n {
   @override
   String get premiumScopeBase => '在购买所在商店的设备和网页版上可用。';
   @override
-  String get premiumScopeAll => 'iPhone、iPad、Mac、Android、Windows 和网页版，处处可用。';
+  String get premiumScopeAll => '在你使用的任何设备上都可用。';
   @override
   String get premiumAutoRenew => '订阅将在到期前 24 小时未取消时自动续期并按同额计费。您可随时在账户设置中取消。';
   @override
@@ -1326,7 +1326,7 @@ class L10nZhHans extends L10n {
   @override
   String get premiumThanks => '谢谢，高级版已开启。';
   @override
-  String get premiumNoStore => '此设备无法购买。在 iPhone 或 Android 应用中购买后，用同一账号登录这里即可生效。';
+  String get premiumNoStore => '此设备无法购买。购买后用同一账号登录这里即可生效。';
   @override
   String get premiumUpgradeHere => '要在此设备使用，请升级到「全设备」。剩余时间由商店折算。';
   @override
@@ -1340,7 +1340,7 @@ class L10nZhHans extends L10n {
   @override
   String get premiumPitchSub => '无广告、不限量 · 从月付到买断';
   @override
-  String get premiumBody => '高级版去除广告，并解锁无限整理与 AI 向导。两种方案 —「基础版」适用于购买所在商店的设备和网页版；「全设备」适用于 iPhone、Android、PC 与网页版。您的支持成就下一次更新。';
+  String get premiumBody => '高级版去除广告，并解锁无限整理与 AI 向导。两种方案 —「基础版」适用于购买所在商店的设备和网页版；「全设备」适用于你使用的任何设备。您的支持成就下一次更新。';
   @override
   String get premiumLifetime => '买断';
   @override

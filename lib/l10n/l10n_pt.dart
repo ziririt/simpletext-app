@@ -527,7 +527,7 @@ class L10nPt extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'O armazém do Google Drive é compartilhado por iPhone, iPad, Mac e Android. Instale este app e entre com a mesma conta do Google';
+      'O armazém do Google Drive é compartilhado por todos os aparelhos com este app. Instale-o e entre com a mesma conta do Google';
 
   @override
   String get syncScopeDevice =>
@@ -535,7 +535,7 @@ class L10nPt extends L10n {
 
   @override
   String get syncScopePlatform =>
-      'Por enquanto, a sincronização automática funciona apenas entre dispositivos Apple (iPhone, iPad, Mac). No Android e no Windows, use Exportar backup e Importar no menu';
+      'Por enquanto, a sincronização automática funciona apenas entre dispositivos Apple (iPhone, iPad, Mac). Nos demais, use Exportar backup e Importar no menu';
 
   @override
   String get typographyTitle => 'Texto e espaçamento';
@@ -563,7 +563,7 @@ class L10nPt extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      'Android, Windows e a web também';
+      'Outros aparelhos e a web também';
   @override
   String get syncSoon =>
       'Em breve';
@@ -1318,7 +1318,7 @@ class L10nPt extends L10n {
   @override
   String get premiumScopeBase => 'Funciona nos aparelhos da loja onde você comprou, e na web.';
   @override
-  String get premiumScopeAll => 'Funciona em tudo: iPhone, iPad, Mac, Android, Windows e web.';
+  String get premiumScopeAll => 'Funciona em qualquer aparelho que você use.';
   @override
   String get premiumAutoRenew => 'A assinatura é renovada automaticamente se não for cancelada até 24 horas antes do fim do período. Você pode cancelar quando quiser nos ajustes da conta.';
   @override
@@ -1330,7 +1330,7 @@ class L10nPt extends L10n {
   @override
   String get premiumThanks => 'Obrigado. O Premium está ativo.';
   @override
-  String get premiumNoStore => 'Não é possível comprar neste aparelho. Compre no app de iPhone ou Android e valerá aqui ao entrar com a mesma conta.';
+  String get premiumNoStore => 'Não é possível comprar neste aparelho. Após a compra, valerá aqui ao entrar com a mesma conta.';
   @override
   String get premiumUpgradeHere => 'Mude para Todos os aparelhos para usar aqui. A loja credita o tempo restante.';
   @override
@@ -1344,7 +1344,7 @@ class L10nPt extends L10n {
   @override
   String get premiumPitchSub => 'Sem anúncios e ilimitado · mensal, anual ou vitalício';
   @override
-  String get premiumBody => 'O Premium remove anúncios e libera limpeza e assistente de IA sem limite. Dois planos: Padrão, para os aparelhos da loja onde você comprou e a web; e Todos os aparelhos, para tudo — iPhone, Android, PC e web. Seu apoio constrói a próxima versão.';
+  String get premiumBody => 'O Premium remove anúncios e libera limpeza e assistente de IA sem limite. Dois planos: Padrão, para os aparelhos da loja onde você comprou e a web; e Todos os aparelhos, para qualquer aparelho que você use. Seu apoio constrói a próxima versão.';
   @override
   String get premiumLifetime => 'Vitalício';
   @override

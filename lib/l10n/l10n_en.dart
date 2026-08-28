@@ -527,7 +527,7 @@ class L10nEn extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'The Google Drive store is shared by iPhone, iPad, Mac and Android. Install this app and sign in with the same Google account';
+      'The Google Drive store is shared by every device running this app. Install this app and sign in with the same Google account';
 
   @override
   String get syncScopeDevice =>
@@ -535,7 +535,7 @@ class L10nEn extends L10n {
 
   @override
   String get syncScopePlatform =>
-      'Automatic sync currently works between Apple devices only (iPhone, iPad, Mac). On Android and Windows, use Export backup and Import from the menu';
+      'Automatic sync currently works between Apple devices only (iPhone, iPad, Mac). Elsewhere, use Export backup and Import from the menu';
 
   @override
   String get typographyTitle => 'Text & spacing';
@@ -563,7 +563,7 @@ class L10nEn extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      'Android, Windows and the web too';
+      'Other devices and the web too';
   @override
   String get syncSoon =>
       'Coming soon';
@@ -1318,7 +1318,7 @@ class L10nEn extends L10n {
   @override
   String get premiumScopeBase => 'Works on the devices of the store you bought from, plus the web.';
   @override
-  String get premiumScopeAll => 'Works everywhere: iPhone, iPad, Mac, Android, Windows and the web.';
+  String get premiumScopeAll => 'Works on every device you use.';
   @override
   String get premiumAutoRenew => 'Subscriptions renew automatically unless canceled at least 24 hours before the period ends. You can cancel any time in your account settings.';
   @override
@@ -1330,7 +1330,7 @@ class L10nEn extends L10n {
   @override
   String get premiumThanks => 'Thank you. Premium is on.';
   @override
-  String get premiumNoStore => 'You can’t purchase on this device. Buy in the iPhone or Android app and it applies here as soon as you sign in with the same account.';
+  String get premiumNoStore => 'You can’t purchase on this device. Once purchased, it applies here as soon as you sign in with the same account.';
   @override
   String get premiumUpgradeHere => 'Upgrade to All Devices to use it here too. The store credits your remaining time.';
   @override
@@ -1344,7 +1344,7 @@ class L10nEn extends L10n {
   @override
   String get premiumPitchSub => 'Ad-free and unlimited · monthly, yearly or lifetime';
   @override
-  String get premiumBody => 'Premium removes ads and unlocks unlimited tidy and AI wizard. Two plans: Standard, for the devices of the store you bought from plus the web; and All Devices, for everything — iPhone, Android, PC and web. Your support builds the next release.';
+  String get premiumBody => 'Premium removes ads and unlocks unlimited tidy and AI wizard. Two plans: Standard, for the devices of the store you bought from plus the web; and All Devices, for every device you use. Your support builds the next release.';
   @override
   String get premiumLifetime => 'Lifetime';
   @override

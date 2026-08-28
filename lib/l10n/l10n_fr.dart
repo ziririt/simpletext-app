@@ -528,7 +528,7 @@ class L10nFr extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'Le stockage Google Drive est partagé par iPhone, iPad, Mac et Android. Installez cette app et connectez-vous avec le même compte Google';
+      'Le stockage Google Drive est partagé par tous les appareils équipés de cette app. Installez-la et connectez-vous avec le même compte Google';
 
   @override
   String get syncScopeDevice =>
@@ -536,7 +536,7 @@ class L10nFr extends L10n {
 
   @override
   String get syncScopePlatform =>
-      "Pour l'instant, la synchronisation automatique ne fonctionne qu'entre appareils Apple (iPhone, iPad, Mac). Sur Android et Windows, utilisez Exporter la sauvegarde et Importer depuis le menu";
+      "Pour l'instant, la synchronisation automatique ne fonctionne qu'entre appareils Apple (iPhone, iPad, Mac). Ailleurs, utilisez Exporter la sauvegarde et Importer depuis le menu";
 
   @override
   String get typographyTitle => 'Texte et interligne';
@@ -564,7 +564,7 @@ class L10nFr extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      'Android, Windows et le web aussi';
+      'Les autres appareils et le web aussi';
   @override
   String get syncSoon =>
       'Bientôt';
@@ -1319,7 +1319,7 @@ class L10nFr extends L10n {
   @override
   String get premiumScopeBase => 'Fonctionne sur les appareils de la boutique d’achat, et sur le web.';
   @override
-  String get premiumScopeAll => 'Partout : iPhone, iPad, Mac, Android, Windows et le web.';
+  String get premiumScopeAll => 'Sur tous les appareils que vous utilisez.';
   @override
   String get premiumAutoRenew => 'L’abonnement se renouvelle automatiquement s’il n’est pas annulé au moins 24 heures avant la fin de la période. Vous pouvez l’annuler à tout moment dans les réglages du compte.';
   @override
@@ -1331,7 +1331,7 @@ class L10nFr extends L10n {
   @override
   String get premiumThanks => 'Merci. Premium est activé.';
   @override
-  String get premiumNoStore => 'Achat impossible sur cet appareil. Achetez dans l’app iPhone ou Android : cela s’applique ici dès la connexion avec le même compte.';
+  String get premiumNoStore => 'Achat impossible sur cet appareil. Une fois l’achat effectué, cela s’applique ici dès la connexion avec le même compte.';
   @override
   String get premiumUpgradeHere => 'Passez à Tous les appareils pour l’utiliser ici. La boutique déduit le temps restant.';
   @override
@@ -1345,7 +1345,7 @@ class L10nFr extends L10n {
   @override
   String get premiumPitchSub => 'Sans pub et illimité · mensuel, annuel ou à vie';
   @override
-  String get premiumBody => 'Premium supprime la publicité et débloque le nettoyage et l’assistant IA sans limite. Deux formules : Standard, pour les appareils de la boutique d’achat et le web ; et Tous les appareils, pour tout — iPhone, Android, PC et web. Votre soutien construit la prochaine version.';
+  String get premiumBody => 'Premium supprime la publicité et débloque le nettoyage et l’assistant IA sans limite. Deux formules : Standard, pour les appareils de la boutique d’achat et le web ; et Tous les appareils, pour tous les appareils que vous utilisez. Votre soutien construit la prochaine version.';
   @override
   String get premiumLifetime => 'À vie';
   @override

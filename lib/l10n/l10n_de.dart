@@ -528,7 +528,7 @@ class L10nDe extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'Der Google-Drive-Speicher wird von iPhone, iPad, Mac und Android gemeinsam genutzt. Installieren Sie diese App und melden Sie sich mit demselben Google-Konto an';
+      'Der Google-Drive-Speicher wird von allen Geräten mit dieser App gemeinsam genutzt. Installieren Sie diese App und melden Sie sich mit demselben Google-Konto an';
 
   @override
   String get syncScopeDevice =>
@@ -536,7 +536,7 @@ class L10nDe extends L10n {
 
   @override
   String get syncScopePlatform =>
-      'Die automatische Synchronisierung funktioniert derzeit nur zwischen Apple-Geräten (iPhone, iPad, Mac). Unter Android und Windows nutzen Sie Backup exportieren und Importieren im Menü';
+      'Die automatische Synchronisierung funktioniert derzeit nur zwischen Apple-Geräten (iPhone, iPad, Mac). Auf anderen Geräten nutzen Sie Backup exportieren und Importieren im Menü';
 
   @override
   String get typographyTitle => 'Text & Zeilenabstand';
@@ -564,7 +564,7 @@ class L10nDe extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      'Auch Android, Windows und Web';
+      'Auch andere Geräte und Web';
   @override
   String get syncSoon =>
       'In Vorbereitung';
@@ -1319,7 +1319,7 @@ class L10nDe extends L10n {
   @override
   String get premiumScopeBase => 'Gilt für die Geräte des Stores, in dem Sie gekauft haben, plus Web.';
   @override
-  String get premiumScopeAll => 'Überall: iPhone, iPad, Mac, Android, Windows und Web.';
+  String get premiumScopeAll => 'Auf jedem Gerät, das Sie nutzen.';
   @override
   String get premiumAutoRenew => 'Abos verlängern sich automatisch, sofern sie nicht mindestens 24 Stunden vor Ablauf gekündigt werden. Sie können jederzeit in den Kontoeinstellungen kündigen.';
   @override
@@ -1331,7 +1331,7 @@ class L10nDe extends L10n {
   @override
   String get premiumThanks => 'Danke. Premium ist aktiv.';
   @override
-  String get premiumNoStore => 'Auf diesem Gerät ist kein Kauf möglich. Kaufen Sie in der iPhone- oder Android-App; mit demselben Konto gilt es auch hier.';
+  String get premiumNoStore => 'Auf diesem Gerät ist kein Kauf möglich. Nach dem Kauf gilt es hier, sobald Sie sich mit demselben Konto anmelden.';
   @override
   String get premiumUpgradeHere => 'Wechseln Sie zu Alle Geräte, um es auch hier zu nutzen. Die Restlaufzeit rechnet der Store an.';
   @override
@@ -1345,7 +1345,7 @@ class L10nDe extends L10n {
   @override
   String get premiumPitchSub => 'Werbefrei und unbegrenzt · monatlich, jährlich oder lebenslang';
   @override
-  String get premiumBody => 'Premium entfernt Werbung und öffnet Aufräumen und KI-Assistent unbegrenzt. Zwei Tarife: Standard für die Geräte des Kaufstores plus Web, und Alle Geräte für alles — iPhone, Android, PC und Web. Ihre Unterstützung baut das nächste Update.';
+  String get premiumBody => 'Premium entfernt Werbung und öffnet Aufräumen und KI-Assistent unbegrenzt. Zwei Tarife: Standard für die Geräte des Kaufstores plus Web, und Alle Geräte für jedes Gerät, das Sie nutzen. Ihre Unterstützung baut das nächste Update.';
   @override
   String get premiumLifetime => 'Lebenslang';
   @override

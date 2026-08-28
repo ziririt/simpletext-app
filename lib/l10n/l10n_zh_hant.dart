@@ -526,7 +526,7 @@ class L10nZhHant extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      'Google 雲端硬碟的存放處由 iPhone、iPad、Mac 和 Android 共用。裝上本應用並用同一個 Google 帳號登入即可';
+      'Google 雲端硬碟的存放處由使用本應用的所有裝置共用。裝上本應用並用同一個 Google 帳號登入即可';
 
   @override
   String get syncScopeDevice =>
@@ -534,7 +534,7 @@ class L10nZhHant extends L10n {
 
   @override
   String get syncScopePlatform =>
-      '目前自動同步僅在 Apple 裝置（iPhone、iPad、Mac）之間進行。Android 與 Windows 請使用選單中的匯出備份與匯入';
+      '目前自動同步僅在 Apple 裝置（iPhone、iPad、Mac）之間進行。其他裝置請使用選單中的匯出備份與匯入';
 
   @override
   String get typographyTitle => '字體與行距';
@@ -562,7 +562,7 @@ class L10nZhHant extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      '還包括 Android·Windows·網頁';
+      '還包括其他裝置與網頁';
   @override
   String get syncSoon =>
       '準備中';
@@ -1314,7 +1314,7 @@ class L10nZhHant extends L10n {
   @override
   String get premiumScopeBase => '在購買所在商店的裝置與網頁版上可用。';
   @override
-  String get premiumScopeAll => 'iPhone、iPad、Mac、Android、Windows 與網頁版，處處可用。';
+  String get premiumScopeAll => '在您使用的任何裝置上都可用。';
   @override
   String get premiumAutoRenew => '訂閱將在到期前 24 小時未取消時自動續訂並按同額計費。您可隨時在帳戶設定中取消。';
   @override
@@ -1326,7 +1326,7 @@ class L10nZhHant extends L10n {
   @override
   String get premiumThanks => '謝謝，進階版已開啟。';
   @override
-  String get premiumNoStore => '此裝置無法購買。在 iPhone 或 Android App 購買後，用同一帳號登入這裡即可生效。';
+  String get premiumNoStore => '此裝置無法購買。購買後用同一帳號登入這裡即可生效。';
   @override
   String get premiumUpgradeHere => '要在此裝置使用，請升級至「全裝置」。剩餘時間由商店折算。';
   @override
@@ -1340,7 +1340,7 @@ class L10nZhHant extends L10n {
   @override
   String get premiumPitchSub => '無廣告、不限量 · 從月付到買斷';
   @override
-  String get premiumBody => '進階版移除廣告，並解鎖無限整理與 AI 精靈。兩種方案 —「基本版」適用於購買所在商店的裝置與網頁版；「全裝置」適用於 iPhone、Android、PC 與網頁版。您的支持成就下一次更新。';
+  String get premiumBody => '進階版移除廣告，並解鎖無限整理與 AI 精靈。兩種方案 —「基本版」適用於購買所在商店的裝置與網頁版；「全裝置」適用於您使用的任何裝置。您的支持成就下一次更新。';
   @override
   String get premiumLifetime => '買斷';
   @override

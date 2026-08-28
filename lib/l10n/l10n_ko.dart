@@ -526,7 +526,7 @@ class L10nKo extends L10n {
 
   @override
   String get syncScopePlatformGdrive =>
-      '구글 드라이브 창고는 아이폰·아이패드·맥·안드로이드가 함께 씁니다. 이 앱을 깔고 같은 구글 계정으로 들어가면 됩니다';
+      '구글 드라이브 창고는 이 앱을 쓰는 기기가 함께 씁니다. 이 앱을 깔고 같은 구글 계정으로 들어가면 됩니다';
 
   @override
   String get syncScopeDevice =>
@@ -534,7 +534,7 @@ class L10nKo extends L10n {
 
   @override
   String get syncScopePlatform =>
-      '지금 자동 동기화는 애플 기기(아이폰·아이패드·맥)끼리만 됩니다. 안드로이드·윈도우는 메뉴의 백업 내보내기와 불러오기를 쓰세요';
+      '지금 자동 동기화는 애플 기기(아이폰·아이패드·맥)끼리만 됩니다. 그 밖의 기기에서는 메뉴의 백업 내보내기와 불러오기를 쓰세요';
 
   @override
   String get typographyTitle => '글자와 줄 간격';
@@ -562,7 +562,7 @@ class L10nKo extends L10n {
       'Google Drive';
   @override
   String get syncBackendGdriveSub =>
-      '안드로이드·윈도·웹까지 함께';
+      '다른 기기와 웹까지 함께';
   @override
   String get syncSoon =>
       '준비 중';
@@ -1314,7 +1314,7 @@ class L10nKo extends L10n {
   @override
   String get premiumScopeBase => '결제한 스토어의 기기와 웹에서 열립니다.';
   @override
-  String get premiumScopeAll => '아이폰·아이패드·맥·안드로이드·윈도우·웹 어디서나 열립니다.';
+  String get premiumScopeAll => '어느 기기에서나 열립니다.';
   @override
   String get premiumAutoRenew => '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
   @override
@@ -1326,7 +1326,7 @@ class L10nKo extends L10n {
   @override
   String get premiumThanks => '고맙습니다. 프리미엄이 켜졌습니다.';
   @override
-  String get premiumNoStore => '이 기기에서는 결제를 진행할 수 없습니다. 아이폰이나 안드로이드 앱에서 결제하시면, 같은 계정으로 로그인한 이곳에도 바로 적용됩니다.';
+  String get premiumNoStore => '이 기기에서는 결제를 진행할 수 없습니다. 결제하신 뒤 같은 계정으로 로그인하시면 이곳에도 바로 적용됩니다.';
   @override
   String get premiumUpgradeHere => '이 기기에서도 쓰시려면 ‘모든 기기’로 올리세요. 남은 기간은 스토어가 정산해 드립니다.';
   @override
@@ -1340,7 +1340,7 @@ class L10nKo extends L10n {
   @override
   String get premiumPitchSub => '광고 없이 무제한 · 월 구독부터 평생 이용권까지';
   @override
-  String get premiumBody => '프리미엄은 광고를 없애고 정리와 AI 마법사를 무제한으로 열어 줍니다. 등급은 둘입니다 — 결제한 스토어의 기기와 웹에서 쓰는 ‘기본’, 아이폰·안드로이드·PC·웹 어디서나 쓰는 ‘모든 기기’. 여러분의 응원이 다음 판을 만듭니다.';
+  String get premiumBody => '프리미엄은 광고를 없애고 정리와 AI 마법사를 무제한으로 열어 줍니다. 등급은 둘입니다 — 결제한 스토어의 기기와 웹에서 쓰는 ‘기본’, 어느 기기에서나 쓰는 ‘모든 기기’. 여러분의 응원이 다음 판을 만듭니다.';
   @override
   String get premiumLifetime => '평생 이용권';
   @override
