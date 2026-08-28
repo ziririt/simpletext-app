@@ -608,6 +608,13 @@ class L10nJa extends L10n {
 
   @override
   String get blockFormatTip => '段落の書式';
+
+  @override
+  String get syncStalledTitle => '同期が止まっています';
+  @override
+  String get syncStalledSub => 'Google の許可が切れました。ノートはこの端末に残っています。';
+  @override
+  String get syncStalledFix => '再接続';
   @override
   String get blockBody => '本文';
   @override

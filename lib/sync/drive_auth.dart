@@ -217,13 +217,51 @@ class DriveAuth {
   /// 막히는 일이 잦다. 폰·맥에서는 드물지만 없지는 않다.
   bool authExpired = false;
 
+  /// 토큰이 왜 없는가 — 한 낱말로.
+  ///
+  /// 2026-08-28 소유자 신고 "로그인을 너무 자주 묻는다". 맥앱을 열어
+  /// 보니 30초마다 도는 동기화가 **60번 연속 실패**하고 있었고, 기록에
+  /// 남은 것은 'not-ready' 한 마디뿐이었다. 토큰이 없다는 사실만 알고
+  /// 왜 없는지는 몰랐다 — 이 파일이 오류를 전부 `catch (_)` 로 삼키고
+  /// 있었기 때문이다.
+  ///
+  /// 삼키는 것 자체는 옳다. 30초마다 도는 자리에서 예외가 화면까지
+  /// 올라오면 글 쓰다 말고 오류창을 보게 된다. 다만 **삼키더라도
+  /// 남겨야** 다음 사람이 고칠 수 있다. 사람 글은 한 자도 안 담는다.
+  String lastWhy = '';
+
+  /// 조용히 되살려 본 마지막 시각. 너무 자주 하면 그것대로 부담이다.
+  int _revivedAtMs = 0;
+  static const int _reviveEveryMs = 60 * 1000;
+
   Future<String?> token() async {
-    if (!supported) return null;
+    if (!supported) {
+      lastWhy = 'unsupported';
+      return null;
+    }
     try {
       await _init();
-      final u = _user;
+      var u = _user;
+      if (u == null) {
+        // **여기가 빠져 있었다.** 계정이 떨어지면 그 뒤로는 영영 아무
+        // 시도도 안 했다. 앱을 켤 때 한 번 부르는 resume() 말고는
+        // 되살릴 자리가 없었던 것이다. 켠 채로 하루를 두면 그 하루
+        // 내내 동기화가 죽어 있다.
+        //
+        // 묻지 않고 조용히 다시 붙어 본다. 실패해도 아무 말 안 한다.
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now - _revivedAtMs >= _reviveEveryMs) {
+          _revivedAtMs = now;
+          try {
+            _mark(await GoogleSignIn.instance
+                .attemptLightweightAuthentication());
+          } catch (_) {}
+          u = _user;
+        }
+      }
       if (u == null) {
         authExpired = false;
+        lastWhy = 'no-account';
         return null;
       }
       // 이 부름 자체가 **조용한 갱신 시도**다. 30초마다 도는 자리에서
@@ -232,9 +270,13 @@ class DriveAuth {
           .authorizationForScopes(const <String>[kDriveScope]);
       final t = a?.accessToken;
       authExpired = t == null || t.isEmpty;
+      lastWhy = authExpired ? 'no-scope' : '';
       return t;
-    } catch (_) {
+    } catch (e) {
       authExpired = true;
+      // 오류의 **종류만** 담는다. 메시지에는 계정 이름이나 토큰이
+      // 섞여 들어올 수 있다.
+      lastWhy = 'err-${e.runtimeType}';
       return null;
     }
   }

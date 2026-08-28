@@ -610,6 +610,13 @@ class L10nDe extends L10n {
 
   @override
   String get blockFormatTip => 'Absatzformat';
+
+  @override
+  String get syncStalledTitle => 'Die Synchronisierung steht';
+  @override
+  String get syncStalledSub => 'Der Google-Zugriff ist abgelaufen. Ihre Notizen sind auf diesem Gerät sicher.';
+  @override
+  String get syncStalledFix => 'Neu verbinden';
   @override
   String get blockBody => 'Fließtext';
   @override

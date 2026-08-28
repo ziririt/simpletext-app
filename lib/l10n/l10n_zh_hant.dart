@@ -608,6 +608,13 @@ class L10nZhHant extends L10n {
 
   @override
   String get blockFormatTip => '段落格式';
+
+  @override
+  String get syncStalledTitle => '同步已停止';
+  @override
+  String get syncStalledSub => 'Google 授權已失效。筆記仍安全保存在本裝置。';
+  @override
+  String get syncStalledFix => '重新連線';
   @override
   String get blockBody => '內文';
   @override

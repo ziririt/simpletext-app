@@ -609,6 +609,13 @@ class L10nEn extends L10n {
 
   @override
   String get blockFormatTip => 'Paragraph format';
+
+  @override
+  String get syncStalledTitle => 'Sync is stopped';
+  @override
+  String get syncStalledSub => 'Google access has lapsed. Your notes are safe on this device.';
+  @override
+  String get syncStalledFix => 'Reconnect';
   @override
   String get blockBody => 'Body';
   @override

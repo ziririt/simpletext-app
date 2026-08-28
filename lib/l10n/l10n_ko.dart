@@ -608,6 +608,13 @@ class L10nKo extends L10n {
 
   @override
   String get blockFormatTip => '단락 형식';
+
+  @override
+  String get syncStalledTitle => '동기화가 멈춰 있습니다';
+  @override
+  String get syncStalledSub => '구글 계정 허락이 끊겼습니다. 글은 이 기기에 안전하게 있습니다.';
+  @override
+  String get syncStalledFix => '다시 연결';
   @override
   String get blockBody => '본문';
   @override

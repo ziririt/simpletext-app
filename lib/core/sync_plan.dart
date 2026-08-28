@@ -185,3 +185,27 @@ SyncBanner syncBanner({
   if (!signedIn) return SyncBanner.signIn;
   return SyncBanner.none;
 }
+
+/// 동기화가 **로그인 때문에** 멈춰 있는가 — 목록 위에 한 줄을 띄울지.
+///
+/// 2026-08-28 소유자 신고. 맥앱이 30초마다 60번 연속 실패하는 동안
+/// 화면에는 아무 말도 없었다. 설정 화면 깊은 곳에만 까닭이 적혀 있어서,
+/// 사람은 **다른 기기에서 글이 없는 것을 보고서야** 알아챈다. 그때는 이미
+/// "동기화가 안 되는 앱"이라는 결론이 난 뒤다.
+///
+/// 조용한 실패가 잦은 실패보다 나쁘다. 로그인 창을 자꾸 띄우는 것도
+/// 나쁘지만, 그건 적어도 사람이 안다.
+///
+/// [why] 는 sync/drive_auth.dart 의 lastWhy 다. 빈 값이면 멀쩡한 것이고,
+/// 'unsupported' 는 이 기기에서 구글을 아예 못 쓰는 판이라 띄울 일이
+/// 아니다(그때는 창고를 못 고르게 막혀 있다).
+bool showAuthBar({
+  required bool gdrive,
+  required bool active,
+  required bool paused,
+  required String why,
+}) {
+  if (!gdrive || !active || paused) return false;
+  if (why.isEmpty || why == 'unsupported') return false;
+  return true;
+}

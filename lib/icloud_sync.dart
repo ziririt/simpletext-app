@@ -97,8 +97,18 @@ class ICloudSync {
   /// [driveToken] 이 없으면 구글을 골랐어도 애플 통로로 떨어진다 —
   /// 토큰을 못 구하는 판에서 구글 통로를 끼우면 조용히 아무 데도 안
   /// 오간다. 그럴 바에는 원래 쓰던 곳으로 돌려 두는 편이 정직하다.
-  void useBackend(String backend, {DriveToken? driveToken}) {
+  /// 토큰이 왜 없는지 한 낱말로 물어보는 자리. 없으면 안 물어본다.
+  ///
+  /// 2026-08-28 — 기록에 'not-ready' 만 남아 60번 실패의 까닭을 알 수
+  /// 없었다. 여기 한 줄을 달아 두면 그 60줄이 'not-ready:no-account'
+  /// 처럼 스스로 말한다. 로그인 코드를 이 파일로 끌어오지 않고 **묻는
+  /// 길만** 낸다 — 이 파일은 통로를 모르는 채로 있어야 시험이 된다.
+  String Function()? driveWhy;
+
+  void useBackend(String backend,
+      {DriveToken? driveToken, String Function()? why}) {
     paused = backend == 'none';
+    driveWhy = why;
     if (backend == 'gdrive' && driveToken != null) {
       _t = GDriveTransport(driveToken);
     } else {
@@ -326,9 +336,12 @@ class ICloudSync {
     unawaited(_persistLog());
   }
 
-  static String _shortErr(Object err) {
+  String _shortErr(Object err) {
     if (err is TimeoutException) return 'timeout';
-    if (err is StateError) return 'not-ready';
+    if (err is StateError) {
+      final w = driveWhy?.call() ?? '';
+      return w.isEmpty ? 'not-ready' : 'not-ready:$w';
+    }
     if (err is SocketException) return 'network';
     return err.runtimeType.toString();
   }

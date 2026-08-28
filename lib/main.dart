@@ -50,6 +50,7 @@ import 'core/sync_plan.dart'
         editorRefresh,
         SyncBanner,
         syncBanner,
+        showAuthBar,
         showSyncingBanner;
 import 'core/sync_log.dart';
 import 'core/mru.dart';
@@ -2319,6 +2320,7 @@ Future<void> applySyncBackend() async {
   ICloudSync.instance.useBackend(
     Store.instance.settings.syncBackend,
     driveToken: DriveAuth.supported ? DriveAuth.instance.token : null,
+    why: DriveAuth.supported ? () => DriveAuth.instance.lastWhy : null,
   );
 }
 
@@ -4104,6 +4106,7 @@ class _HomeScreenState extends State<HomeScreen>
                 if (!widget.embedded) const TopBannerBar(),
                 const SyncNapBanner(),
                 const SyncBusyBanner(),
+                const SyncStalledBar(),
                 Expanded(
                   child: Stack(children: [
                     Positioned.fill(
@@ -10369,6 +10372,107 @@ class _PaperPainter extends CustomPainter {
 /// 언제 사라지나 — **이 기기에서 첫 바퀴가 끝나는 순간.** 그 뒤로는 앱을
 /// 껐다 켜도 다시 안 나온다. 켤 때마다 몇 초씩 뜨면 그건 안내가 아니라
 /// 잔소리다. 셈은 core/sync_plan.dart 의 showSyncingBanner 에 있다.
+/// 로그인이 끊겨 동기화가 멈춰 있을 때 목록 위에 뜨는 한 줄.
+///
+/// 2026-08-28 소유자 신고 — "너무 자주 로그인을 묻는다". 맥앱을 열어 재
+/// 보니 실제로는 그 반대였다. 30초마다 도는 동기화가 **60번 연속 실패**
+/// 하는 동안 앱은 아무 말도 안 했다. 사람은 다른 기기에서 글이 없는
+/// 것을 보고서야 알아채고, 그제서야 설정에 들어가 다시 로그인한다.
+/// 그 왕복이 '자주 묻는다'로 느껴진 것이다.
+///
+/// 그래서 이 띠의 규칙은 셋이다.
+///
+///   막지 않는다   글은 그대로 써진다. 이 앱은 로그인 없이도 쓰는 앱이다.
+///   한 번만 누르면 된다   설정 깊은 곳까지 들어가게 하지 않는다.
+///   조용히 있지 않는다   멈춰 있는 동안에는 계속 보인다. 사라지는 것은
+///                        실제로 다시 붙었을 때뿐이다.
+class SyncStalledBar extends StatefulWidget {
+  const SyncStalledBar({super.key});
+
+  @override
+  State<SyncStalledBar> createState() => _SyncStalledBarState();
+}
+
+class _SyncStalledBarState extends State<SyncStalledBar> {
+  bool _busy = false;
+
+  Future<void> _fix() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    // 계정이 떨어졌으면 로그인부터, 허락만 끊겼으면 허락만.
+    final auth = DriveAuth.instance;
+    final ok = auth.signedIn ? await auth.authorizeDrive() : await auth.signIn();
+    if (ok) {
+      await applySyncBackend();
+      unawaited(ICloudSync.instance.syncNow());
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final sync = ICloudSync.instance;
+    return ListenableBuilder(
+      listenable: Listenable.merge(
+          [sync.state, sync.logRevision, DriveAuth.instance.revision]),
+      builder: (_, __) {
+        if (!showAuthBar(
+          gdrive: Store.instance.settings.syncBackend == 'gdrive',
+          active: sync.active,
+          paused: sync.paused,
+          why: DriveAuth.supported ? DriveAuth.instance.lastWhy : '',
+        )) {
+          return const SizedBox.shrink();
+        }
+        final c = context.c;
+        return Container(
+          width: double.infinity,
+          color: c.warnBg,
+          padding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Icon(Icons.cloud_off_outlined, size: 18, color: c.warnInk),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.syncStalledTitle,
+                        style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: c.warnInk)),
+                    const SizedBox(height: 2),
+                    Text(l.syncStalledSub,
+                        style: TextStyle(
+                            fontSize: 13, height: 1.4, color: c.sub)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              _busy
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : TextButton(
+                      onPressed: _fix,
+                      child: Text(l.syncStalledFix,
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class SyncBusyBanner extends StatelessWidget {
   const SyncBusyBanner({super.key});
 

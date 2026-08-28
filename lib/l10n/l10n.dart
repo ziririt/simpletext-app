@@ -374,6 +374,11 @@ abstract class L10n {
 
   // 단락 형식 고르개와 본문 글꼴 (2026-08-27 밤)
   String get blockFormatTip;
+
+  // 로그인 때문에 동기화가 멈춘 것을 목록에서 알린다 (2026-08-28)
+  String get syncStalledTitle;
+  String get syncStalledSub;
+  String get syncStalledFix;
   String get blockBody;
   String get blockH1;
   String get blockH2;
@@ -962,6 +967,9 @@ abstract class L10n {
         'moreTools': moreTools,
         'clearFormatTip': clearFormatTip,
         'blockFormatTip': blockFormatTip,
+        'syncStalledTitle': syncStalledTitle,
+        'syncStalledSub': syncStalledSub,
+        'syncStalledFix': syncStalledFix,
         'blockBody': blockBody,
         'blockH1': blockH1,
         'blockH2': blockH2,

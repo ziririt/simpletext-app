@@ -609,6 +609,13 @@ class L10nEs extends L10n {
 
   @override
   String get blockFormatTip => 'Formato de párrafo';
+
+  @override
+  String get syncStalledTitle => 'La sincronización está detenida';
+  @override
+  String get syncStalledSub => 'El acceso de Google ha caducado. Tus notas están a salvo en este dispositivo.';
+  @override
+  String get syncStalledFix => 'Reconectar';
   @override
   String get blockBody => 'Cuerpo';
   @override

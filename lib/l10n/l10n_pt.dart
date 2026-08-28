@@ -609,6 +609,13 @@ class L10nPt extends L10n {
 
   @override
   String get blockFormatTip => 'Formato de parágrafo';
+
+  @override
+  String get syncStalledTitle => 'A sincronização está parada';
+  @override
+  String get syncStalledSub => 'O acesso do Google expirou. Suas notas estão seguras neste aparelho.';
+  @override
+  String get syncStalledFix => 'Reconectar';
   @override
   String get blockBody => 'Corpo';
   @override
