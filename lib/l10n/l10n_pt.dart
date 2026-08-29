@@ -371,6 +371,22 @@ class L10nPt extends L10n {
   @override
   String get aiBusyLabel => 'IA editando…';
   @override
+  String get aiKeyInviteTitle => 'Com a sua própria chave de IA fica bem mais forte';
+  @override
+  String get aiKeyInviteBody => 'Agora só entendemos regras fixas. Com a sua própria chave de IA, instruções livres como "deixe mais conciso" ou "reescreva de forma formal" também funcionam, e as tags são extraídas pela IA.';
+  @override
+  String get aiKeyCta => 'Adicionar chave de IA';
+  @override
+  String get aiKeyPasteBtn => 'Colar';
+  @override
+  String get aiKeyCost => 'Cada empresa de IA cobra diretamente de você. Este app não fica com nada.';
+  @override
+  String get aiKeySafe => 'A chave fica só neste aparelho. Nunca é enviada para os servidores deste app.';
+  @override
+  String get aiKeyWhere => 'Onde obter uma chave';
+  @override
+  String get aiKeyStart => 'Começar';
+  @override
   String get aiWorking => 'A IA está editando conforme suas instruções. Pode demorar um pouco…';
   @override
   String get aiEmptyResponse => 'Resposta vazia';

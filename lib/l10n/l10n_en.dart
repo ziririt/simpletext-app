@@ -371,6 +371,22 @@ class L10nEn extends L10n {
   @override
   String get aiBusyLabel => 'AI editing…';
   @override
+  String get aiKeyInviteTitle => 'Your own AI key makes this much stronger';
+  @override
+  String get aiKeyInviteBody => 'Right now only fixed rules are understood. With your own AI key, free-form instructions like "make this more concise" or "rewrite it politely" work too, and tags are pulled by AI.';
+  @override
+  String get aiKeyCta => 'Add AI key';
+  @override
+  String get aiKeyPasteBtn => 'Paste';
+  @override
+  String get aiKeyCost => 'Each AI company bills you directly. This app takes nothing in between.';
+  @override
+  String get aiKeySafe => 'The key stays on this device. It is never sent to this app’s servers.';
+  @override
+  String get aiKeyWhere => 'Where to get a key';
+  @override
+  String get aiKeyStart => 'Get started';
+  @override
   String get aiWorking => 'The AI is editing as you asked. This can take a little while…';
   @override
   String get aiEmptyResponse => 'Empty response';

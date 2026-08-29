@@ -372,6 +372,22 @@ class L10nDe extends L10n {
   @override
   String get aiBusyLabel => 'KI bearbeitet…';
   @override
+  String get aiKeyInviteTitle => 'Mit eigenem KI-Schlüssel wird es deutlich stärker';
+  @override
+  String get aiKeyInviteBody => 'Derzeit werden nur feste Regeln verstanden. Mit eigenem KI-Schlüssel funktionieren auch freie Anweisungen wie "schreibe das knapper" oder "formuliere es höflicher", und Tags zieht die KI heraus.';
+  @override
+  String get aiKeyCta => 'KI-Schlüssel eingeben';
+  @override
+  String get aiKeyPasteBtn => 'Einfügen';
+  @override
+  String get aiKeyCost => 'Die Rechnung stellt die jeweilige KI-Firma direkt. Diese App bekommt nichts davon.';
+  @override
+  String get aiKeySafe => 'Der Schlüssel bleibt auf diesem Gerät. Er geht nie an die Server dieser App.';
+  @override
+  String get aiKeyWhere => 'Wo es Schlüssel gibt';
+  @override
+  String get aiKeyStart => 'Loslegen';
+  @override
   String get aiWorking => 'Die KI bearbeitet den Text wie gewünscht. Das kann einen Moment dauern…';
   @override
   String get aiEmptyResponse => 'Leere Antwort';

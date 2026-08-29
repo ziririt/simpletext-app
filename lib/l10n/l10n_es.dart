@@ -371,6 +371,22 @@ class L10nEs extends L10n {
   @override
   String get aiBusyLabel => 'IA editando…';
   @override
+  String get aiKeyInviteTitle => 'Con tu propia clave de IA es mucho más potente';
+  @override
+  String get aiKeyInviteBody => 'Ahora solo se entienden reglas fijas. Con tu propia clave de IA también funcionan instrucciones libres como "hazlo más conciso" o "reescríbelo con más formalidad", y las etiquetas las extrae la IA.';
+  @override
+  String get aiKeyCta => 'Añadir clave de IA';
+  @override
+  String get aiKeyPasteBtn => 'Pegar';
+  @override
+  String get aiKeyCost => 'Cada empresa de IA te cobra directamente. Esta app no se queda con nada.';
+  @override
+  String get aiKeySafe => 'La clave se guarda solo en este dispositivo. Nunca se envía a los servidores de esta app.';
+  @override
+  String get aiKeyWhere => 'Dónde conseguir una clave';
+  @override
+  String get aiKeyStart => 'Empezar';
+  @override
   String get aiWorking => 'La IA está editando según tus instrucciones. Puede tardar un poco…';
   @override
   String get aiEmptyResponse => 'Respuesta vacía';

@@ -370,6 +370,22 @@ class L10nZhHans extends L10n {
   @override
   String get aiBusyLabel => 'AI 编辑中…';
   @override
+  String get aiKeyInviteTitle => '填入自己的 AI 密钥，功能会更强';
+  @override
+  String get aiKeyInviteBody => '现在只能理解固定规则。填入自己的 AI 密钥后，“写得更简洁些”“改成敬语”这类自由指令也能直接处理，标签也由 AI 提取。';
+  @override
+  String get aiKeyCta => '填入 AI 密钥';
+  @override
+  String get aiKeyPasteBtn => '粘贴';
+  @override
+  String get aiKeyCost => '费用由各 AI 公司直接向您收取。本应用不从中收取任何费用。';
+  @override
+  String get aiKeySafe => '密钥只保存在本机，不会发送到本应用的服务器。';
+  @override
+  String get aiKeyWhere => '密钥申请地址';
+  @override
+  String get aiKeyStart => '开始使用';
+  @override
   String get aiWorking => 'AI 正在按你的指示编辑。这需要一点时间…';
   @override
   String get aiEmptyResponse => '空响应';

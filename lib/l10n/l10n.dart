@@ -218,6 +218,14 @@ abstract class L10n {
   String appliedPrefix(String what);
   String unknownPrefix(String what);
   String get aiKeyPromo;
+  String get aiKeyInviteTitle;
+  String get aiKeyInviteBody;
+  String get aiKeyCta;
+  String get aiKeyPasteBtn;
+  String get aiKeyCost;
+  String get aiKeySafe;
+  String get aiKeyWhere;
+  String get aiKeyStart;
   String get aiBusyLabel;
 
   /// AI 가 도는 동안 창에 뜨는 줄.
@@ -920,6 +928,14 @@ abstract class L10n {
         'favRemove': favRemove,
         'favSavedToast': favSavedToast,
         'aiKeyPromo': aiKeyPromo,
+        'aiKeyInviteTitle': aiKeyInviteTitle,
+        'aiKeyInviteBody': aiKeyInviteBody,
+        'aiKeyCta': aiKeyCta,
+        'aiKeyPasteBtn': aiKeyPasteBtn,
+        'aiKeyCost': aiKeyCost,
+        'aiKeySafe': aiKeySafe,
+        'aiKeyWhere': aiKeyWhere,
+        'aiKeyStart': aiKeyStart,
         'aiBusyLabel': aiBusyLabel,
         'aiWorking': aiWorking,
         'aiEmptyResponse': aiEmptyResponse,

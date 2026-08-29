@@ -370,6 +370,22 @@ class L10nJa extends L10n {
   @override
   String get aiBusyLabel => 'AI編集中…';
   @override
+  String get aiKeyInviteTitle => 'ご自分のAIキーを入れると、もっと強くなります';
+  @override
+  String get aiKeyInviteBody => '今は決まった規則しか理解できません。ご自分のAIキーを入れると「もっと簡潔にして」「敬体に直して」のような自由な指示もそのまま処理し、タグもAIが抽出します。';
+  @override
+  String get aiKeyCta => 'AIキーを入れる';
+  @override
+  String get aiKeyPasteBtn => '貼り付け';
+  @override
+  String get aiKeyCost => '料金は各AI会社から直接請求されます。このアプリが間で受け取るものはありません。';
+  @override
+  String get aiKeySafe => 'キーはこの端末の中だけに保管します。このアプリのサーバーへは送りません。';
+  @override
+  String get aiKeyWhere => 'キーの発行先';
+  @override
+  String get aiKeyStart => 'はじめる';
+  @override
   String get aiWorking => 'AIが指示どおりに編集しています。少し時間がかかります…';
   @override
   String get aiEmptyResponse => '空の応答';

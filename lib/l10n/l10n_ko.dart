@@ -370,6 +370,22 @@ class L10nKo extends L10n {
   @override
   String get aiBusyLabel => 'AI 편집 중…';
   @override
+  String get aiKeyInviteTitle => '내 AI 키를 넣으면 더 강해집니다';
+  @override
+  String get aiKeyInviteBody => '지금은 정해진 규칙만 알아듣습니다. 내 AI 키를 넣으면 "더 간결하게 써줘", "존댓말로 바꿔줘" 같은 자유로운 지시까지 그대로 처리하고, 태그도 AI가 뽑아 줍니다.';
+  @override
+  String get aiKeyCta => 'AI 키 넣기';
+  @override
+  String get aiKeyPasteBtn => '붙여넣기';
+  @override
+  String get aiKeyCost => '요금은 각 AI 회사가 회원님께 직접 청구합니다. 이 앱은 중간에서 아무것도 받지 않습니다.';
+  @override
+  String get aiKeySafe => '키는 이 기기 안에만 둡니다. 이 앱의 서버로 보내지 않습니다.';
+  @override
+  String get aiKeyWhere => '키 발급받는 곳';
+  @override
+  String get aiKeyStart => '시작하기';
+  @override
   String get aiWorking => 'AI가 지시대로 편집하고 있습니다. 편집에 시간이 좀 걸립니다…';
   @override
   String get aiEmptyResponse => '빈 응답';

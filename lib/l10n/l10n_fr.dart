@@ -372,6 +372,22 @@ class L10nFr extends L10n {
   @override
   String get aiBusyLabel => 'L\'IA édite…';
   @override
+  String get aiKeyInviteTitle => 'Avec votre propre clé IA, c’est bien plus puissant';
+  @override
+  String get aiKeyInviteBody => 'Pour l’instant, seules des règles fixes sont comprises. Avec votre propre clé IA, les consignes libres comme "rends ça plus concis" ou "réécris-le poliment" fonctionnent aussi, et les tags sont extraits par l’IA.';
+  @override
+  String get aiKeyCta => 'Ajouter une clé IA';
+  @override
+  String get aiKeyPasteBtn => 'Coller';
+  @override
+  String get aiKeyCost => 'Chaque société d’IA vous facture directement. Cette app ne prend rien au passage.';
+  @override
+  String get aiKeySafe => 'La clé reste sur cet appareil. Elle n’est jamais envoyée aux serveurs de cette app.';
+  @override
+  String get aiKeyWhere => 'Où obtenir une clé';
+  @override
+  String get aiKeyStart => 'Commencer';
+  @override
   String get aiWorking => 'L\'IA modifie le texte selon vos instructions. Cela peut prendre un moment…';
   @override
   String get aiEmptyResponse => 'Réponse vide';

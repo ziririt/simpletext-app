@@ -6746,8 +6746,10 @@ static const int kTagScanChars = 3000;
     _tagTimer?.cancel();
     final l = L10n.of(context);
     if (store.settings.aiKey.trim().isEmpty) {
-      _toast(context, l.tagAiNeedKey);
-      return;
+      // 2026-08-30 — 여기가 사람이 '키가 필요하구나'를 깨닫는 자리다.
+      // 깨달은 자리에서 바로 받는다. 설정으로 보내면 대개 안 돌아온다.
+      final ok = await showAiKeySheet(context);
+      if (!ok || !mounted) return;
     }
     setState(() => _tagAiBusy = true);
     final head = note.body.length > kTagScanChars
@@ -7605,8 +7607,20 @@ static const int kTagScanChars = 3000;
       );
 
   Future<void> _showWizardDialog() async {
-    if (await _blockedByLimit(wizard: true)) return;
-    await _bumpUse(wizard: true);
+    // 키가 없는 사람에게는 한도를 묻지 않는다.
+    //
+    // 2026-08-30 — 권유 카드를 이 창에 넣으면서 드러난 구멍이다. 창을
+    // 여는 것만으로 하루 2회가 깎이고 있었으니, 키가 없는 사람은 사흘째
+    // 되는 날 **키를 넣으라는 권유조차 볼 수 없었다.** 자물쇠가 열쇠
+    // 가게 문 앞에 걸려 있던 셈이다.
+    //
+    // 한도는 원래 'AI를 썼다'에 매기는 것이고(usage_gate 주석 참고),
+    // 키가 없으면 AI는 한 번도 안 불린다. 규칙 해석은 기기 안에서 돈다.
+    final hasAiKey = store.settings.aiKey.trim().isNotEmpty;
+    if (hasAiKey) {
+      if (await _blockedByLimit(wizard: true)) return;
+      await _bumpUse(wizard: true);
+    }
     final cmdCtl = TextEditingController();
     List<String> applied = [];
     List<String> unknown = [];
@@ -7643,6 +7657,47 @@ static const int kTagScanChars = 3000;
                         border: const OutlineInputBorder(),
                       ),
                     ),
+                    // 키가 없는 사람에게 여기서 한 번 권한다. 이 창이
+                    // 바로 '규칙만으로는 안 되는 말'을 치는 자리라서,
+                    // 권유가 광고가 아니라 **다음 걸음**으로 읽힌다.
+                    if (store.settings.aiKey.trim().isEmpty && aiUiVisible())
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+                          decoration: BoxDecoration(
+                            color: context.c.codeBg,
+                            border: Border.all(color: context.c.line),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(CupertinoIcons.sparkles,
+                                  size: 18, color: context.c.accent),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(l.aiKeyInviteTitle,
+                                    style: const TextStyle(
+                                        fontSize: 13.5,
+                                        height: 1.3,
+                                        fontWeight: FontWeight.w600)),
+                              ),
+                              const SizedBox(width: 8),
+                              FilledButton.tonal(
+                                onPressed: () async {
+                                  final ok = await showAiKeySheet(ctx);
+                                  setD(() {});
+                                  if (ok && mounted) {
+                                    _toast(context,
+                                        L10n.of(context).aiPingOk);
+                                  }
+                                },
+                                child: Text(l.aiKeyCta),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 6),
                     // 2026-08-14 소유자 요청: 자주 쓰는 지시문을 등록해 두고 골라 쓴다.
                     // 같은 지시를 매번 다시 치지 않게 하는 것이 목적이다.
@@ -7774,15 +7829,10 @@ static const int kTagScanChars = 3000;
                         child: Text(l.unknownPrefix(unknown.join(' ')),
                             style: TextStyle(color: context.c.sub, fontSize: 12.5)),
                       ),
-                    if (!aiBusy &&
-                        unknown.isNotEmpty &&
-                        store.settings.aiKey.isEmpty &&
-                        aiUiVisible())
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(l.aiKeyPromo,
-                            style: TextStyle(fontSize: 12, color: context.c.sub)),
-                      ),
+                    // 여기 있던 'aiKeyPromo' 줄(설정에 키를 넣으라는 안내)은
+                    // 2026-08-30에 걷었다. 같은 말을 위 카드가 하고, 카드는
+                    // **누를 수 있다**. 읽고 나서 갈 곳이 없는 안내문은
+                    // 안내가 아니라 변명이다.
                     // 여기 있던 단추 둘('해석 불가 명령을 AI로 실행',
                     // 'AI 결과 적용')과 결과 미리보기 상자를 걷어냈다.
                     // 아래 하나뿐인 단추가 그 일을 다 한다.
@@ -12175,55 +12225,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     return l.aiAutoLabel(providerLabel(p), m);
   }
 
-  /// 회사별 '모델 목록' API. 여기가 이 설계의 심장이다 — 오늘 무슨 모델이
-  /// 있는지는 코드가 아니라 회사에 물어본다.
-  Future<List<String>> _fetchModelIds(String provider, String key) async {
-    if (provider == 'google') {
-      final ids = <String>[];
-      var page = '';
-      for (var i = 0; i < 5; i++) {
-        final res = await http.get(Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${Uri.encodeComponent(key)}${page.isEmpty ? '' : '&pageToken=$page'}'));
-        if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
-        final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-        for (final m in (j['models'] ?? []) as List) {
-          final methods =
-              List<String>.from(((m as Map)['supportedGenerationMethods'] ?? const []) as List);
-          if (!methods.contains('generateContent')) continue;
-          ids.add(((m['name'] ?? '') as String).replaceFirst('models/', ''));
-        }
-        page = (j['nextPageToken'] ?? '') as String;
-        if (page.isEmpty) break;
-      }
-      return ids;
-    }
-    if (provider == 'anthropic') {
-      final res = await http.get(Uri.parse('https://api.anthropic.com/v1/models?limit=100'),
-          headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'});
-      if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
-      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
-    }
-    final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
-    final res = await http.get(Uri.parse('$base/v1/models'),
-        headers: {'authorization': 'Bearer $key'});
-    if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
-    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
-  }
-
-  static String _apiErr2(int code, List<int> bodyBytes) {
-    try {
-      final j = jsonDecode(utf8.decode(bodyBytes));
-      final e = j is Map ? j['error'] : null;
-      final m = (e is Map ? e['message'] : e)?.toString() ?? '';
-      if (m.isNotEmpty) {
-        return 'API $code: ${m.length > 140 ? m.substring(0, 140) : m}';
-      }
-    } catch (_) {}
-    return 'API $code';
-  }
-
   /// 키를 넣으면 회사도 모델도 우리가 알아낸다.
   ///
   /// 2026-08-17 소유자 신고 — 구글 AI 스튜디오 키를 넣었는데 "키 형식을
@@ -12253,88 +12254,68 @@ class _SettingsScreenState extends State<SettingsScreen>
     if (key.isEmpty) return;
     _aiAutoTimer?.cancel();
 
-    final guess = providerOfKey(key);
-    final order = <String>[
-      if (guess != null) guess,
-      for (final p in const ['google', 'openai', 'anthropic', 'xai'])
-        if (p != guess) p,
-    ];
-
     setState(() {
       _aiChecking = true;
       _aiMsg = L10n.of(context).aiDetecting;
     });
 
-    String lastErr = '';
-    for (var i = 0; i < order.length; i++) {
-      final p = order[i];
-      List<String> ids;
-      try {
-        ids = await _fetchModelIds(p, key);
-      } catch (e) {
-        lastErr = '$e';
-        final lo = lastErr.toLowerCase();
-        // 이 회사 것이 아니다 → 다음 회사. 그 밖의 사유(잔액·한도·그물)는
-        // 주인을 찾았다는 뜻이므로 여기서 멈춘다.
-        final wrongOwner = lo.contains('api 401') ||
-            lo.contains('api 403') ||
-            lo.contains('api 400') ||
-            lo.contains('api key not valid') ||
-            lo.contains('invalid api key') ||
-            lo.contains('incorrect api key');
-        if (wrongOwner && i < order.length - 1) continue;
-        // 짚이는 회사가 있었는데 딴 사유로 막힌 경우 — 그 회사로 확정하고
-        // 예비 사다리로 넘어간다.
-        if (!mounted) return;
-        s.aiProvider = p;
-        if (s.aiModel.isEmpty || !modelMatchesProvider(s.aiModel, p)) {
-          s.aiModel = defaultLadder(p).first;
-        }
-        await store.persistSettings();
-        if (!mounted) return;
-        setState(() {
-          _aiChecking = false;
-          _aiMsg = L10n.of(context).aiListFailed(lastErr);
-        });
-        return;
-      }
+    // 판정 자체는 probeAiKey 하나가 한다(편집 화면의 '키 넣기' 쪽지와
+    // 같은 길이다). 이 함수에 남은 일은 **말로 옮기는 것**뿐이다.
+    final r = await probeAiKey(key);
+    if (!mounted) return;
 
-      // 받아 줬다 = 이 키의 주인이다.
-      s.aiProvider = p;
-      s.aiModels = ids;
-      s.aiModel = pickCheapest(p, ids) ?? defaultLadder(p).first;
+    // 네 곳 모두 아니라고 했다.
+    if (r.provider.isEmpty) {
+      s.aiProvider = '';
+      s.aiModels = [];
       await store.persistSettings();
       if (!mounted) return;
-      final found =
-          L10n.of(context).aiModelsFound(filterChatModels(p, ids).length);
-      // 목록을 받았다는 것과 쓸 수 있다는 것은 다르다. 진짜로 한 번 불러 본다.
-      setState(() => _aiMsg = '$found\n${L10n.of(context).aiPinging}');
-      try {
-        await aiPing(provider: p, model: s.aiModel, key: key);
-        if (!mounted) return;
-        setState(() {
-          _aiChecking = false;
-          _aiMsg = '$found\n${L10n.of(context).aiPingOk}';
-        });
-      } catch (e) {
-        if (!mounted) return;
-        setState(() {
-          _aiChecking = false;
-          _aiMsg = '$found\n${L10n.of(context).aiPingFailed('$e')}';
-        });
-      }
+      setState(() {
+        _aiChecking = false;
+        _aiMsg = L10n.of(context).aiKeyUnknownFormat;
+      });
       return;
     }
 
-    // 네 곳 모두 아니라고 했다.
-    if (!mounted) return;
-    s.aiProvider = '';
-    s.aiModels = [];
+    // 주인은 찾았는데 목록을 못 받았다 — 예비 사다리로 간다.
+    if (r.models.isEmpty) {
+      s.aiProvider = r.provider;
+      if (s.aiModel.isEmpty || !modelMatchesProvider(s.aiModel, r.provider)) {
+        s.aiModel = r.model;
+      }
+      await store.persistSettings();
+      if (!mounted) return;
+      setState(() {
+        _aiChecking = false;
+        _aiMsg = L10n.of(context).aiListFailed(r.listError);
+      });
+      return;
+    }
+
+    // 받아 줬다 = 이 키의 주인이다.
+    s.aiProvider = r.provider;
+    s.aiModels = r.models;
+    s.aiModel = r.model;
     await store.persistSettings();
-    setState(() {
-      _aiChecking = false;
-      _aiMsg = L10n.of(context).aiKeyUnknownFormat;
-    });
+    if (!mounted) return;
+    final found = L10n.of(context)
+        .aiModelsFound(filterChatModels(r.provider, r.models).length);
+    // 목록을 받았다는 것과 쓸 수 있다는 것은 다르다. 진짜로 한 번 불러 본다.
+    setState(() => _aiMsg = '$found\n${L10n.of(context).aiPinging}');
+    try {
+      await aiPing(provider: r.provider, model: s.aiModel, key: key);
+      if (!mounted) return;
+      setState(() {
+        _aiChecking = false;
+        _aiMsg = '$found\n${L10n.of(context).aiPingOk}';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _aiChecking = false;
+        _aiMsg = '$found\n${L10n.of(context).aiPingFailed('$e')}';
+      });
+    }
   }
 
 
@@ -13644,6 +13625,119 @@ Future<String> aiCallOnce({
     return choices.isEmpty ? '' : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
   }
 
+/// ── 여기서부터, 키 하나로 회사를 알아내는 길 ──────────────────
+///
+/// 2026-08-30 소유자 지시 — "AI편집에서 '사용자의 AI api를 입력하면 더
+/// 강력한 ai편집을 할수 있다'고 안내하고 api키를 입력받으면 어떨까?"
+///
+/// 그 쪽지를 편집 화면에서도 띄우려면, 설정 화면 안에 갇혀 있던 판정
+/// 코드를 밖으로 내야 했다. **길은 하나여야 한다** — 같은 판정을 두 벌
+/// 두면 한 벌은 반드시 뒤처지고, 뒤처진 쪽을 쓰는 사람이 생긴다.
+/// 회사별 '모델 목록' API. 여기가 이 설계의 심장이다 — 오늘 무슨 모델이
+/// 있는지는 코드가 아니라 회사에 물어본다.
+Future<List<String>> _fetchModelIds(String provider, String key) async {
+  if (provider == 'google') {
+    final ids = <String>[];
+    var page = '';
+    for (var i = 0; i < 5; i++) {
+      final res = await http.get(Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${Uri.encodeComponent(key)}${page.isEmpty ? '' : '&pageToken=$page'}'));
+      if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      for (final m in (j['models'] ?? []) as List) {
+        final methods =
+            List<String>.from(((m as Map)['supportedGenerationMethods'] ?? const []) as List);
+        if (!methods.contains('generateContent')) continue;
+        ids.add(((m['name'] ?? '') as String).replaceFirst('models/', ''));
+      }
+      page = (j['nextPageToken'] ?? '') as String;
+      if (page.isEmpty) break;
+    }
+    return ids;
+  }
+  if (provider == 'anthropic') {
+    final res = await http.get(Uri.parse('https://api.anthropic.com/v1/models?limit=100'),
+        headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'});
+    if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
+  }
+  final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
+  final res = await http.get(Uri.parse('$base/v1/models'),
+      headers: {'authorization': 'Bearer $key'});
+  if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+  final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
+}
+
+String _apiErr2(int code, List<int> bodyBytes) {
+  try {
+    final j = jsonDecode(utf8.decode(bodyBytes));
+    final e = j is Map ? j['error'] : null;
+    final m = (e is Map ? e['message'] : e)?.toString() ?? '';
+    if (m.isNotEmpty) {
+      return 'API $code: ${m.length > 140 ? m.substring(0, 140) : m}';
+    }
+  } catch (_) {}
+  return 'API $code';
+}
+
+
+
+/// 키 하나를 들고 네 회사에 차례로 물어, 주인과 모델을 알아낸다.
+///
+/// 돌려주는 것.
+///   provider 빈 문자열 = 네 곳 모두 아니라고 했다(형식 못 알아봄).
+///   models  비었는데 provider 가 있다 = 주인은 찾았지만 목록을 못 받았다
+///           (잔액·그물 문제). 그때 listError 에 회사가 준 말이 담긴다.
+///
+/// 남의 회사에 키를 보내는 일은 최소로 한다 — 앞글자로 짚이는 곳을 맨
+/// 앞에 두고, **거절당했을 때만** 다음으로 넘어간다.
+Future<({String provider, List<String> models, String model, String listError})>
+    probeAiKey(String key) async {
+  final k = key.trim();
+  if (k.isEmpty) {
+    return (provider: '', models: <String>[], model: '', listError: '');
+  }
+  final guess = providerOfKey(k);
+  final order = <String>[
+    if (guess != null) guess,
+    for (final p in const ['google', 'openai', 'anthropic', 'xai'])
+      if (p != guess) p,
+  ];
+  for (var i = 0; i < order.length; i++) {
+    final p = order[i];
+    List<String> ids;
+    try {
+      ids = await _fetchModelIds(p, k);
+    } catch (e) {
+      final lo = '$e'.toLowerCase();
+      // 이 회사 것이 아니다 → 다음 회사. 그 밖의 사유(잔액·한도·그물)는
+      // 주인을 찾았다는 뜻이므로 여기서 멈춘다.
+      final wrongOwner = lo.contains('api 401') ||
+          lo.contains('api 403') ||
+          lo.contains('api 400') ||
+          lo.contains('api key not valid') ||
+          lo.contains('invalid api key') ||
+          lo.contains('incorrect api key');
+      if (wrongOwner && i < order.length - 1) continue;
+      return (
+        provider: p,
+        models: <String>[],
+        model: defaultLadder(p).first,
+        listError: '$e'
+      );
+    }
+    return (
+      provider: p,
+      models: ids,
+      model: pickCheapest(p, ids) ?? defaultLadder(p).first,
+      listError: ''
+    );
+  }
+  return (provider: '', models: <String>[], model: '', listError: '');
+}
+
 /// 키가 **진짜로 쓸 수 있는지** 한 번 불러 본다.
 ///
 /// 글자 몇 개짜리 호출이라 값은 거의 안 든다. 이걸 안 하면 "목록은 받았는데
@@ -13731,4 +13825,269 @@ String _apiErr(int code, List<int> bodyBytes) {
     }
   } catch (_) {}
   return 'API $code';
+}
+
+/// 회사별 '키 발급받는 곳'. 사람이 열 페이지 주소다.
+///
+/// 여기 없는 회사는 안 보여 준다 — 없는 문을 그려 두는 것보다 문이 네
+/// 개만 있는 편이 낫다.
+const Map<String, String> kKeyConsole = {
+  'google': 'https://aistudio.google.com/apikey',
+  'openai': 'https://platform.openai.com/api-keys',
+  'anthropic': 'https://console.anthropic.com/settings/keys',
+  'xai': 'https://console.x.ai',
+};
+
+/// 편집 화면에서 바로 여는 '내 AI 키 넣기' 쪽지.
+///
+/// 2026-08-30 소유자 지시 — "AI편집에서 '사용자의 AI api를 입력하면 더
+/// 강력한 ai편집을 할수 있다'고 안내하고 api키를 입력받으면 어떨까? 그
+/// 입력받은 api는 '앱 설정'의 api키로 바로 저장이 되게 하고 말이야."
+///
+/// 왜 이게 맞는가. 키가 필요하다는 것을 사람이 **깨닫는 자리**와 키를
+/// 넣는 자리가 여태 달랐다. 깨닫는 곳은 AI 편집 창인데, 넣는 곳은 설정
+/// 화면 한참 아래였다. 그 사이에 '나가기 → 설정 찾기 → 항목 찾기 →
+/// 다시 돌아오기'가 있었고, 그 길에서 사람은 대개 그냥 창을 닫는다.
+/// 필요한 순간에 그 자리에서 받는 것이 옳다.
+///
+/// 저장은 설정 화면과 **똑같은 자리**로 간다 — settings.aiKey 하나이고,
+/// persistSettings 가 그것을 키체인(KeyVault)으로 넘긴다. 새 저장소를
+/// 만들지 않았으므로 설정 화면과 어긋날 수가 없다.
+///
+/// 돌려주는 값은 '이제 AI를 쓸 수 있는가'다. 부르는 쪽은 그걸 보고 하던
+/// 일을 이어 간다.
+Future<bool> showAiKeySheet(BuildContext context) async {
+  final store = Store.instance;
+  final ctl = TextEditingController(text: store.settings.aiKey);
+  Timer? auto;
+  var checking = false;
+  var msg = '';
+
+  bool ready() =>
+      store.settings.aiKey.trim().isNotEmpty &&
+      store.settings.aiProvider.isNotEmpty;
+
+  final got = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setD) {
+        final l = L10n.of(ctx);
+        final w = MediaQuery.of(ctx).size.width;
+
+        Future<void> verify() async {
+          final key = ctl.text.trim();
+          if (key.isEmpty || checking) return;
+          auto?.cancel();
+          setD(() {
+            checking = true;
+            msg = l.aiDetecting;
+          });
+          final r = await probeAiKey(key);
+          final s = store.settings;
+          if (r.provider.isEmpty) {
+            s.aiProvider = '';
+            s.aiModels = [];
+            await store.persistSettings();
+            setD(() {
+              checking = false;
+              msg = l.aiKeyUnknownFormat;
+            });
+            return;
+          }
+          s.aiProvider = r.provider;
+          s.aiModels = r.models;
+          s.aiModel = r.model;
+          await store.persistSettings();
+          if (r.models.isEmpty) {
+            setD(() {
+              checking = false;
+              msg = l.aiListFailed(r.listError);
+            });
+            return;
+          }
+          final found =
+              l.aiModelsFound(filterChatModels(r.provider, r.models).length);
+          setD(() => msg = '$found\n${l.aiPinging}');
+          try {
+            await aiPing(provider: r.provider, model: r.model, key: key);
+            setD(() {
+              checking = false;
+              msg = '$found\n${l.aiPingOk}';
+            });
+          } catch (e) {
+            setD(() {
+              checking = false;
+              msg = '$found\n${l.aiPingFailed('$e')}';
+            });
+          }
+        }
+
+        void put(String v) {
+          final nv = v.trim();
+          final s = store.settings;
+          if (nv == s.aiKey) return;
+          s.aiKey = nv;
+          // 키가 바뀌면 앞서 알아낸 것은 전부 남의 것이다.
+          s.aiProvider = '';
+          s.aiModel = '';
+          s.aiModels = [];
+          store.persistSettings();
+          setD(() => msg = '');
+          // 붙여넣었으면 그게 곧 "써 달라"는 뜻이다. 누를 단추를 줄인다.
+          auto?.cancel();
+          if (nv.length >= 20) {
+            auto = Timer(const Duration(milliseconds: 700), verify);
+          }
+        }
+
+        return AlertDialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+          titlePadding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
+          contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(l.aiKeyInviteTitle,
+              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+          content: SizedBox(
+            width: w < 520 ? w : 460,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(l.aiKeyInviteBody,
+                      style: TextStyle(
+                          fontSize: 14.5,
+                          height: 1.45,
+                          color: ctx.c.guideInk)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: ctl,
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    style: const TextStyle(fontSize: 15),
+                    decoration: InputDecoration(
+                      // 어느 말을 쓰든 키는 이렇게 생겼다.
+                      hintText: 'sk-…  ·  AIza…  ·  sk-ant-…  ·  xai-…',
+                      hintStyle: TextStyle(fontSize: 14, color: ctx.c.sub),
+                      filled: true,
+                      fillColor: ctx.c.field,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: ctx.c.line),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: ctx.c.accent, width: 2),
+                      ),
+                    ),
+                    onChanged: put,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // 키는 손으로 치는 물건이 아니다. 스무 자 넘는 무작위
+                      // 글자를 폰에서 옮겨 치게 두면 거기서 끝난다.
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          final d = await Clipboard.getData('text/plain');
+                          final t = (d?.text ?? '').trim();
+                          if (t.isEmpty) return;
+                          ctl.text = t;
+                          put(t);
+                        },
+                        icon: const Icon(Icons.content_paste, size: 17),
+                        label: Text(l.aiKeyPasteBtn),
+                      ),
+                      const Spacer(),
+                      FilledButton.tonal(
+                        onPressed: checking ? null : verify,
+                        child:
+                            Text(checking ? l.aiKeyChecking : l.aiKeyVerify),
+                      ),
+                    ],
+                  ),
+                  if (msg.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(msg,
+                          style: TextStyle(
+                              fontSize: 13.5,
+                              height: 1.35,
+                              color: ctx.c.guideInk)),
+                    ),
+                  if (aiRemedy(l, msg).isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(aiRemedy(l, msg),
+                          style: TextStyle(
+                              fontSize: 13.5,
+                              height: 1.35,
+                              color: ctx.c.accent)),
+                    ),
+                  const SizedBox(height: 16),
+                  Text(l.aiKeyWhere,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: ctx.c.sub)),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final e in kKeyConsole.entries)
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 4),
+                            minimumSize: const Size(0, 34),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () => unawaited(launchUrl(
+                              Uri.parse(e.value),
+                              mode: LaunchMode.externalApplication)),
+                          child: Text(providerLabel(e.key),
+                              style: const TextStyle(fontSize: 13)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // 돈과 비밀 — 묻기 전에 먼저 답한다. 이 두 줄이 없으면
+                  // 사람은 '이 앱이 내 키로 뭘 하려는 거지'에서 멈춘다.
+                  Text('${l.aiKeyCost}\n${l.aiKeySafe}',
+                      style: TextStyle(
+                          fontSize: 12.5, height: 1.4, color: ctx.c.sub)),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, ready()),
+                child: Text(l.close)),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: ready() ? () => Navigator.pop(ctx, true) : null,
+              child: Text(l.aiKeyStart),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+
+  auto?.cancel();
+  ctl.dispose();
+  return got ?? false;
 }

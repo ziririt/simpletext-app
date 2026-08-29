@@ -370,6 +370,22 @@ class L10nZhHant extends L10n {
   @override
   String get aiBusyLabel => 'AI 編輯中…';
   @override
+  String get aiKeyInviteTitle => '填入自己的 AI 金鑰，功能會更強';
+  @override
+  String get aiKeyInviteBody => '現在只能理解固定規則。填入自己的 AI 金鑰後，「寫得更簡潔一點」「改成敬語」這類自由指令也能直接處理，標籤也由 AI 擷取。';
+  @override
+  String get aiKeyCta => '填入 AI 金鑰';
+  @override
+  String get aiKeyPasteBtn => '貼上';
+  @override
+  String get aiKeyCost => '費用由各 AI 公司直接向您收取。本 App 不從中收取任何費用。';
+  @override
+  String get aiKeySafe => '金鑰只存在這台裝置上，不會傳送到本 App 的伺服器。';
+  @override
+  String get aiKeyWhere => '金鑰申請處';
+  @override
+  String get aiKeyStart => '開始使用';
+  @override
   String get aiWorking => 'AI 正在依你的指示編輯。這需要一點時間…';
   @override
   String get aiEmptyResponse => '空回應';
