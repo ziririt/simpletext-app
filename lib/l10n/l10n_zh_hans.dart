@@ -623,6 +623,13 @@ class L10nZhHans extends L10n {
 
   @override
   String get timePasted => '粘贴';
+
+  @override
+  String get exportShort => '导出';
+  @override
+  String get exportPdfShort => 'PDF';
+  @override
+  String get printShort => '打印';
   @override
   String timeEdited(String when) => '编辑 $when';
   @override

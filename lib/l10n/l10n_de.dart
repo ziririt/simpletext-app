@@ -625,6 +625,13 @@ class L10nDe extends L10n {
 
   @override
   String get timePasted => 'Eingefügt';
+
+  @override
+  String get exportShort => 'Export';
+  @override
+  String get exportPdfShort => 'PDF';
+  @override
+  String get printShort => 'Drucken';
   @override
   String timeEdited(String when) => 'bearb. $when';
   @override

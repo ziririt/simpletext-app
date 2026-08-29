@@ -389,6 +389,11 @@ abstract class L10n {
 
   // 글이 가진 두 시각 (2026-08-29)
   String get timePasted;
+
+  // 한 줄에 셋 (2026-08-29) — 좁은 칸이라 짧은 말을 쓴다
+  String get exportShort;
+  String get exportPdfShort;
+  String get printShort;
   String timeEdited(String when);
   String get skyTitle;
   String skyCounts(int stars, int links);
@@ -998,6 +1003,9 @@ abstract class L10n {
         'travelAction': travelAction,
         'skyAction': skyAction,
         'timePasted': timePasted,
+        'exportShort': exportShort,
+        'exportPdfShort': exportPdfShort,
+        'printShort': printShort,
         'skyTitle': skyTitle,
         'travelTitle': travelTitle,
         'travelNow': travelNow,

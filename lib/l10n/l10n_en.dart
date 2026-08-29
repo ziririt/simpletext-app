@@ -624,6 +624,13 @@ class L10nEn extends L10n {
 
   @override
   String get timePasted => 'Pasted';
+
+  @override
+  String get exportShort => 'Export';
+  @override
+  String get exportPdfShort => 'PDF';
+  @override
+  String get printShort => 'Print';
   @override
   String timeEdited(String when) => 'edited $when';
   @override

@@ -625,6 +625,13 @@ class L10nFr extends L10n {
 
   @override
   String get timePasted => 'Collé';
+
+  @override
+  String get exportShort => 'Exporter';
+  @override
+  String get exportPdfShort => 'PDF';
+  @override
+  String get printShort => 'Imprimer';
   @override
   String timeEdited(String when) => 'modifié $when';
   @override

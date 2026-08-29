@@ -2178,46 +2178,6 @@ Future<bool> toggleNoteLock(BuildContext context, Note n) async {
   }
   return true;
 }
-
-/// 되돌릴 수 있는 일을 한 뒤의 알림 — 오른쪽에 '실행 취소'가 붙는다.
-///
-/// 보통 알림보다 오래 띄운다(6초). 단추가 달린 알림이 2초 만에 사라지면
-/// 그건 단추가 아니라 놀리는 것이다.
-void _toastUndo(BuildContext context, String msg, VoidCallback onUndo) {
-  final l = L10n.of(context);
-  final m = ScaffoldMessenger.of(context);
-  m.hideCurrentSnackBar();
-  final bar = m.showSnackBar(SnackBar(
-    content: Text(msg),
-    duration: _kToastUndo,
-    behavior: SnackBarBehavior.floating,
-    action: SnackBarAction(label: l.undoTip, onPressed: onUndo),
-  ));
-
-  // 시계를 우리가 직접 건다.
-  //
-  // 2026-08-19 소유자 신고 — "원본 복귀하고 나면 뜨는 하단의 토스트가 5초
-  // 정도 후에 자동으로 사라지게 해줘. 지금은 계속 남아있어서 거슬린다."
-  //
-  // duration 을 줬는데도 안 사라진다. 플러터는 **손잡이가 달린 알림**에는
-  // 조건에 따라 시계를 아예 안 건다 — 읽고 누를 시간을 뺏지 않으려는
-  // 배려다. 배려가 이번에도 원인이었다(아이패드 위젯과 같은 모양의 일).
-  //
-  // 이미 닫힌 알림을 또 닫으면 **다음 알림**을 닫아 버린다. 그래서 닫혔는지
-  // 먼저 보고 건다.
-  var gone = false;
-  bar.closed.then((_) => gone = true);
-  Timer(_kToastUndo, () {
-    if (!gone) bar.close();
-  });
-}
-
-/// 되돌릴 수 있는 알림이 화면에 머무는 시간.
-///
-/// 다섯. 여섯은 이미 읽고 판단이 끝난 사람에게 길고, 넷은 '실행 취소'라는
-/// 글자를 읽고 손을 올리기에 짧다.
-const Duration _kToastUndo = Duration(seconds: 5);
-
 /// 고른 창고에 맞는 통로를 끼운다.
 ///
 /// 2026-08-20. 이 일을 하는 자리를 **하나로 못 박는다.** 설정에서 고를 때와
@@ -7063,13 +7023,20 @@ static const int kTagScanChars = 3000;
   /// 자체를 취소할 수 있다. 사라지는 알림에 '취소' 버튼을 다는 길도 있었지만
   /// 안 했다 — 사라지는 알림의 버튼은 누르려는 순간 사라진다. 버전기록은
   /// 안 사라진다.
-  bool get _canRevert {
-    final t = _revertTarget;
-    return t != null && t != bodyCtl.text;
+
+
+  /// 훑을 길이 있는가 — 이전 판이 있거나, 되돌릴 원본이 있거나.
+  ///
+  /// 2026-08-29 — 메뉴에서 '원본 복귀'를 없애고 이 길의 첫 정거장으로
+  /// 넣었으므로, 기록이 비어 있어도 원본만 있으면 열려야 한다.
+  bool get _canTravel {
+    if (note.history.isNotEmpty) return true;
+    final o = note.originalBody.trim();
+    return o.isNotEmpty && o != bodyCtl.text.trim();
   }
 
   Future<void> _openTravel() async {
-    if (note.history.isEmpty) return;
+    if (!_canTravel) return;
     final l = L10n.of(context);
     final s = store.settings;
     final tag = Localizations.localeOf(context).toLanguageTag();
@@ -7086,7 +7053,7 @@ static const int kTagScanChars = 3000;
     await Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (ctx) => Scaffold(
         backgroundColor: ctx.c.bg,
-        appBar: AppBar(title: Text(l.travelTitle)),
+        appBar: AppBar(title: Text(l.historyTitle)),
         body: TimeTravelView(
           stops: travelStops(
             history: note.history,
@@ -7167,12 +7134,6 @@ static const int kTagScanChars = 3000;
         ),
       ),
     ));
-  }
-
-  String? get _revertTarget {
-    if (note.originalBody.isNotEmpty) return note.originalBody;
-    if (note.history.isNotEmpty) return note.history.last;
-    return null;
   }
 
   /// 이 메모를 어느 폴더에 둘지 고른다.
@@ -7298,52 +7259,6 @@ static const int kTagScanChars = 3000;
     return n;
   }
 
-  Future<void> _revertToOriginal() async {
-    final target = _revertTarget;
-    if (target == null || target == bodyCtl.text) return;
-    final l = L10n.of(context);
-    final ok = await confirmDialog(context,
-        title: l.revertConfirmTitle,
-        body: l.revertConfirmBody,
-        okLabel: l.revertConfirmOk,
-        destructive: true);
-    if (!ok || !mounted) return;
-
-    // 지금 글을 먼저 남긴다. 이 순서가 뒤바뀌면 되돌리기를 되돌릴 수 없다.
-    final before = bodyCtl.text;
-    note.pushHistory(before, why: 'revert');
-    note.body = target;
-    note.lastReport = '';
-    bodyCtl.text = target;
-    await _save();
-    if (!mounted) return;
-    setState(() {});
-    // 2026-08-19 소유자 신고 — 잘못 눌러 놓고 되찾는 길을 몰랐다.
-    //
-    // 되돌릴 수 있다는 사실이 화면 어디에도 없었다. 기록에는 멀쩡히
-    // 남아 있는데 그걸 알려 주는 줄이 하나도 없으면, 그건 남아 있지 않은
-    // 것과 같다. 그래서 둘을 겹쳐 둔다.
-    //
-    //   1. 창 하나로 **어디로 가면 되는지**를 알려 준다(소유자 지시).
-    //      경고 알럿에도 같은 말이 이미 있었지만 못 보고 지나쳤다 —
-    //      있는데 안 읽히는 말은 없는 말이다. 그래서 일이 벌어진 **뒤에**,
-    //      화면 한가운데에서 다시 말한다.
-    //   2. 창을 닫으면 아래 막대에 '실행 취소'가 남는다. 안내를 읽고
-    //      "아 잘못 눌렀네" 한 사람이 그 자리에서 바로 되돌릴 수 있어야
-    //      한다. 창을 먼저 띄우는 것은 그래서다 — 막대를 먼저 띄우면
-    //      창이 그 위를 덮고, 창을 닫을 즈음 막대는 사라져 있다.
-    await infoDialog(context,
-        title: l.revertDoneTitle, body: l.revertDoneBody);
-    if (!mounted) return;
-    _toastUndo(context, L10n.of(context).revertedToast, () async {
-      note.popHistoryIf(before);
-      note.body = before;
-      note.lastReport = '';
-      bodyCtl.text = before;
-      await _save();
-      if (mounted) setState(() {});
-    });
-  }
 
   /// [forcePreview]가 참이면 설정과 무관하게 미리보기를 먼저 보여 준다.
   ///
@@ -8545,6 +8460,11 @@ static const int kTagScanChars = 3000;
               // 내려가 버튼이 계속 보이고, 그 자리를 다시 누르면 닫힌다.
               position: PopupMenuPosition.under,
               offset: const Offset(0, 6),
+              // 2026-08-29 소유자 지시 — "메뉴 레이어의 width 를 좀 더
+              // 넓혀줘." 한 줄에 셋을 넣으면서 칸이 좁아졌다. 좁은 칸에
+              // 세 글자를 우겨넣으면 말줄임표가 뜨고, 무엇을 누르는지
+              // 모르는 단추가 된다.
+              constraints: const BoxConstraints(minWidth: 288, maxWidth: 344),
               onSelected: (v) async {
                 // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
                 // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
@@ -8607,21 +8527,10 @@ static const int kTagScanChars = 3000;
                   await _pickFolder();
                   return;
                 }
-                if (v == 'revert') {
-                  await _revertToOriginal();
-                  return;
-                }
+                // 2026-08-29 — '버전 기록'은 이제 시간 여행을 연다.
+                // 목록과 '원본 복귀'는 여기 흡수됐다(_openTravel).
                 if (v == 'history') {
-                  await showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => HistorySheet(note: note),
-                  );
-                  if (!mounted) return;
-                  bodyCtl.text = note.body;
-                  titleCtl.text = note.title;
-                  setState(() {});
+                  await _openTravel();
                   return;
                 }
                 if (v == 'append') {
@@ -8719,6 +8628,53 @@ static const int kTagScanChars = 3000;
                       ]),
                     );
 
+                /// 한 줄에 셋. 2026-08-29 소유자 지시 —
+                /// "'내보내기 | PDF | 인쇄' 이렇게 한 라인에. 단, 3개가
+                /// 터치 간섭이 안 생기게 간격을 많이 띄어줘."
+                ///
+                /// 세 칸을 똑같이 나눠 갖고, 사이에 가는 세로선을 둔다.
+                /// 선은 눈으로 칸을 가르는 일만 하고 누를 수는 없다 —
+                /// 그 자리를 누르면 어느 쪽이 눌릴지 사람이 모른다.
+                PopupMenuItem<String> trio(
+                        List<(String, IconData, String)> three) =>
+                    PopupMenuItem<String>(
+                      padding: EdgeInsets.zero,
+                      height: 46,
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < three.length; i++) ...[
+                            if (i > 0)
+                              Container(
+                                  width: 1,
+                                  height: 22,
+                                  color: ctx.c.line.withValues(alpha: 0.7)),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => Navigator.pop(ctx, three[i].$1),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 6, horizontal: 4),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(three[i].$2,
+                                          size: 17, color: ctx.c.guideInk),
+                                      const SizedBox(height: 3),
+                                      Text(three[i].$3,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+
                 // 2026-08-29 소유자 지시 — "낮은 해상도에서 메뉴 하단에
                 // 가려진 부분을 스크롤하면 더 있다는 직관적인 UI가 필요."
                 //
@@ -8767,15 +8723,12 @@ static const int kTagScanChars = 3000;
                       note.locked ? lm.noteUnlock : lm.noteLock,
                       tint: note.locked ? ctx.c.accent : null),
                   const PopupMenuDivider(height: 6),
-                  act('preview', CupertinoIcons.eye, lm.menuTidyPreview,
-                      tint: ctx.c.accent, bold: true),
-                  // 2026-08-28 — 전·후 와이프. 정리 전 글이 남아 있고
-                  // 지금 글과 다를 때만 켜진다. 없는데 눌리면 빈 화면이
-                  // 뜨고, 빈 화면은 고장으로 읽힌다.
-                  act('wipe', CupertinoIcons.rectangle_split_3x1,
-                      lm.wipeAction,
-                      enabled: _canWipe),
-                  act('preset', CupertinoIcons.wand_stars, lm.choosePreset),
+                  // 2026-08-29 소유자 지시 — 정리 셋을 한 줄로.
+                  trio([
+                    ('preset', CupertinoIcons.wand_stars, lm.choosePreset),
+                    ('preview', CupertinoIcons.eye, lm.menuTidyPreview),
+                    ('wipe', CupertinoIcons.rectangle_split_3x1, lm.wipeAction),
+                  ]),
                   const PopupMenuDivider(height: 6),
                   act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
                   act('tables', CupertinoIcons.table, lm.tableAction),
@@ -8786,25 +8739,26 @@ static const int kTagScanChars = 3000;
                   act('append', CupertinoIcons.tray_arrow_down, lm.importAppend),
                   act('attach', CupertinoIcons.paperclip, lm.attachAdd),
                   act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
-                  act('export', CupertinoIcons.square_arrow_up, lm.exportNote),
-                  // 2026-08-19 — 종이. '내보내기'가 마크다운 파일을
-                  // 건네는 일이라면 이 둘은 **다 그려진 결과**를 건네는
-                  // 일이다. 받는 사람이 이 앱을 안 써도 그대로 읽힌다.
-                  act('pdf', CupertinoIcons.doc_richtext, lm.exportPdf),
-                  act('print', CupertinoIcons.printer, lm.printAction),
+                  // 2026-08-29 소유자 지시 — 내보내기 셋을 한 줄로.
+                  // '내보내기'가 마크다운 파일을 건네는 일이라면 나머지
+                  // 둘은 **다 그려진 결과**를 건네는 일이다.
+                  trio([
+                    ('export', CupertinoIcons.square_arrow_up, lm.exportShort),
+                    ('pdf', CupertinoIcons.doc_richtext, lm.exportPdfShort),
+                    ('print', CupertinoIcons.printer, lm.printShort),
+                  ]),
                   const PopupMenuDivider(height: 6),
-                  // 버전 기록과 원본 복귀는 붙여 둔다. 되돌린 뒤 마음이
-                  // 바뀌면 바로 위 줄에서 되찾을 수 있다는 것이 눈에
-                  // 보여야 한다. 셋 다 '되돌리거나 없애는 일'이라 삭제와
-                  // 같은 무리에 둔다.
-                  act('history', CupertinoIcons.clock, lm.historyTitle),
-                  // 2026-08-29 — 같은 자료를 손잡이로 훑는 길. 목록과
-                  // 나란히 둔다. 정거장이 둘 이상일 때만 켜진다.
-                  act('travel', CupertinoIcons.time, lm.travelAction,
-                      enabled: note.history.isNotEmpty),
-                  act('revert', CupertinoIcons.arrow_uturn_left,
-                      lm.revertAction,
-                      enabled: _canRevert),
+                  // 2026-08-29 소유자 지시 — 셋을 하나로 합쳤다.
+                  //
+                  //   버전 기록(목록)  정확하지만 아무 감흥이 없다
+                  //   시간 여행(손잡이) 같은 자료를 훑는다
+                  //   원본 복귀        기록 중 맨 처음으로 가는 일일 뿐이다
+                  //
+                  // 셋은 같은 것을 다르게 부른 이름이었다. 이름은 사람들이
+                  // 아는 '버전 기록'으로 두고, 안에서는 손잡이로 훑는다.
+                  // 원본은 그 길의 첫 정거장이라 따로 둘 자리가 없다.
+                  act('history', CupertinoIcons.clock, lm.historyTitle,
+                      enabled: _canTravel),
                   act('delete', CupertinoIcons.trash, lm.delete,
                       tint: ctx.c.danger),
                   const PopupMenuDivider(height: 6),
@@ -10069,6 +10023,9 @@ String historyWhyLabel(L10n l, String code) {
       return l.historyWhyRevert;
     case 'restore':
       return l.historyWhyRestore;
+    // 2026-08-29 — 원본이 길의 첫 정거장으로 들어왔다.
+    case 'original':
+      return l.historyOriginal;
     default:
       return '';
   }
@@ -10297,181 +10254,6 @@ class _ConstellationScreenState extends State<ConstellationScreen> {
   }
 }
 
-class HistorySheet extends StatefulWidget {
-  const HistorySheet({super.key, required this.note});
-
-  final Note note;
-
-  @override
-  State<HistorySheet> createState() => _HistorySheetState();
-}
-
-class _HistorySheetState extends State<HistorySheet> {
-  final store = Store.instance;
-
-  Future<void> _restore(String text) async {
-    final n = widget.note;
-    // 되돌리기 자체도 되돌릴 수 있어야 한다. 지금 글을 먼저 기록에 넣는다 —
-    // 안 그러면 '되돌리기'가 곧 '지금 글을 버리기'가 된다.
-    n.pushHistory(n.body, why: 'restore');
-    n.body = text;
-    n.updatedAt = DateTime.now().millisecondsSinceEpoch;
-    await store.persist();
-    HapticFeedback.lightImpact();
-    if (mounted) Navigator.pop(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = L10n.of(context);
-    final c = context.c;
-    final n = widget.note;
-    final tag = Localizations.localeOf(context).toLanguageTag();
-
-    // 최신 것이 위로. 그리고 맨 아래에 붙여넣은 원본을 둔다.
-    //
-    // 2026-08-19 — 곁줄(시각·까닭)을 **끝에서부터** 맞춘다. 앞에서부터
-    // 세면 오늘 남긴 시각이 몇 달 전 판에 붙는다. 까닭은
-    // core/history_align.dart 에 적어 뒀고 시험으로 못 박아 뒀다.
-    final items = <(String, String, String, String)>[];
-    for (var i = n.history.length - 1; i >= 0; i--) {
-      final at = n.historyTimeOf(i);
-      final why = _whyLabel(l, n.historyWhyOf(i));
-      String when;
-      if (at > 0) {
-        final t = DateTime.fromMillisecondsSinceEpoch(at);
-        try {
-          when = '${DateFormat.MMMd(tag).format(t)} ${DateFormat.Hm(tag).format(t)}';
-        } catch (_) {
-          when = DateFormat.Hm().format(t);
-        }
-      } else {
-        when = l.historyUnknownTime(i + 1);
-      }
-      items.add((when, n.history[i], _peek(n.history[i]), why));
-    }
-    final orig = n.originalBody.trim();
-    final hasOrig = orig.isNotEmpty && orig != n.body.trim();
-
-    return SafeArea(
-      top: false,
-      child: Container(
-        decoration: BoxDecoration(
-          color: c.bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-        constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * 0.75),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 38,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 14),
-                decoration: BoxDecoration(
-                    color: c.line, borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
-            Text(l.historyTitle,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 4),
-            Text(l.historySub,
-                style: TextStyle(fontSize: 14, height: 1.4, color: c.sub)),
-            const SizedBox(height: 12),
-            if (items.isEmpty && !hasOrig)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 28),
-                child: Text(l.historyEmpty,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, color: c.guideInk)),
-              )
-            else
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    for (final it in items)
-                      _row(it.$1, it.$3, () => _restore(it.$2), why: it.$4),
-                    if (hasOrig)
-                      _row(l.historyOriginal, _peek(n.originalBody),
-                          () => _restore(n.originalBody),
-                          accent: true),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static String _peek(String s) {
-    final one = s.replaceAll(RegExp(r'\s+'), ' ').trim();
-    return one.length > 90 ? '${one.substring(0, 90)}…' : one;
-  }
-
-  /// 부호를 그때의 언어로. 모르는 부호(옛 저장본, 다음 판이 붙일 새 부호)는
-  /// 빈 글자로 두고 시각만 보여 준다 — 모르면 아무 말도 안 하는 편이 낫다.
-  static String _whyLabel(L10n l, String code) => historyWhyLabel(l, code);
-
-
-
-  Widget _row(String when, String peek, VoidCallback onTap,
-      {bool accent = false, String why = ''}) {
-    final c = context.c;
-    final l = L10n.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: c.panel,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  Expanded(
-                    // 까닭이 앞, 시각이 뒤. 사람이 기억하는 것은 '몇 시'가
-                    // 아니라 '무엇을 하기 전'이다. 오후 두 시에 남은 판이
-                    // 셋이면 시각으로는 고를 수 없다.
-                    child: Text(why.isEmpty ? when : '$why  ·  $when',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: accent ? c.accent : c.guideInk)),
-                  ),
-                  Text(l.historyRestore,
-                      style: TextStyle(fontSize: 13.5, color: c.accent)),
-                ]),
-                const SizedBox(height: 4),
-                Text(peek,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13.5, height: 1.4, color: c.sub)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 정렬과 필터를 고르는 시트.
-///
-/// 메뉴가 아니라 시트인 이유: 태그가 여러 개면 메뉴로는 감당이 안 되고,
-/// 지금 무엇이 걸려 있는지 한눈에 보여 줘야 하기 때문이다. 목록에 메모가
-/// 안 보이는데 왜 안 보이는지 모르는 상태가 가장 나쁘다.
 class SortFilterSheet extends StatefulWidget {
   const SortFilterSheet({super.key});
 

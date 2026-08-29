@@ -623,6 +623,13 @@ class L10nKo extends L10n {
 
   @override
   String get timePasted => '붙여넣음';
+
+  @override
+  String get exportShort => '내보내기';
+  @override
+  String get exportPdfShort => 'PDF';
+  @override
+  String get printShort => '인쇄';
   @override
   String timeEdited(String when) => '고침 $when';
   @override

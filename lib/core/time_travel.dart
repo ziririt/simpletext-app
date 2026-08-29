@@ -51,14 +51,28 @@ class Stop {
 ///
 /// 기록이 하나도 없으면 정거장은 하나다. 그때는 화면이 손잡이를 감추면
 /// 된다 — 밀 데가 없는 손잡이는 고장으로 읽힌다.
+/// [original] 은 붙여넣은 그대로의 글(originalBody)이다.
+///
+/// 2026-08-29 소유자 지시 — "원본 복귀는 버전 기록별로 복귀할 수 있으니
+/// 따로 메뉴에서는 빼도 될 듯." 맞는 말이다. 원본은 이 길의 **첫
+/// 정거장**일 뿐이고, 길이 있는데 지름길을 따로 두면 두 곳을 다 지켜야
+/// 한다. 기록에 이미 같은 글이 있으면 안 겹쳐 넣는다.
 List<Stop> travelStops({
   required List<String> history,
   required List<int> historyAt,
   required List<String> historyWhy,
   required String body,
   required int updatedAt,
+  String original = '',
+  int originalAt = 0,
 }) {
   final out = <Stop>[];
+  final org = original.trim();
+  if (org.isNotEmpty &&
+      org != body.trim() &&
+      !history.any((h) => h.trim() == org)) {
+    out.add(Stop(text: original, at: originalAt, why: 'original', now: false));
+  }
   for (var i = 0; i < history.length; i++) {
     out.add(Stop(
       text: history[i],

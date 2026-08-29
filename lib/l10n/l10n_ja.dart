@@ -623,6 +623,13 @@ class L10nJa extends L10n {
 
   @override
   String get timePasted => '貼り付け';
+
+  @override
+  String get exportShort => '書き出し';
+  @override
+  String get exportPdfShort => 'PDF';
+  @override
+  String get printShort => '印刷';
   @override
   String timeEdited(String when) => '編集 $when';
   @override
