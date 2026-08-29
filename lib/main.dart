@@ -6203,6 +6203,15 @@ class _EditorScreenState extends State<EditorScreen>
                 tip: l.blockFormatTip,
                 wide: true,
                 onTap: _showBlockMenu),
+            // 2026-08-29 소유자 지시 — 굵게를 단락 형식 고르개 바로 옆으로.
+            //
+            // 둘은 같은 일의 두 크기다. 고르개는 **줄 전체**의 무게를
+            // 정하고 굵게는 **고른 글자**의 무게를 정한다. 붙여 놓으면
+            // '무게를 정하는 자리'가 한 곳이 된다.
+            _tool(
+                icon: Icons.format_bold,
+                tip: l.boldTip,
+                onTap: () => _op((t, a, b) => toggleWrap(t, a, b, '**'))),
             _tool(divider: true),
             // ── 목록 넷 ──
             //
@@ -6240,10 +6249,6 @@ class _EditorScreenState extends State<EditorScreen>
                 onTap: () => _op(outdentLines)),
             _tool(divider: true),
             // ── 글자 ──
-            _tool(
-                icon: Icons.format_bold,
-                tip: l.boldTip,
-                onTap: () => _op((t, a, b) => toggleWrap(t, a, b, '**'))),
             _tool(icon: Icons.code, tip: l.codeTip, onTap: () => _op(toggleCode)),
             _tool(icon: Icons.link, tip: l.linkTip, onTap: () => _op(makeLink)),
             _tool(divider: true),
