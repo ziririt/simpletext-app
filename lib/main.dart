@@ -6298,15 +6298,22 @@ class _EditorScreenState extends State<EditorScreen>
   Future<void> _showBlockMenu() async {
     final l = L10n.of(context);
     final now = _blockNow();
-    final box = context.findRenderObject() as RenderBox?;
+    final btn =
+        _blockBtnKey.currentContext?.findRenderObject() as RenderBox?;
     final overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox?;
-    if (box == null || overlay == null) return;
-    final at = box.localToGlobal(Offset.zero, ancestor: overlay);
+    if (btn == null || !btn.attached || overlay == null) return;
+    // 단추의 네 귀퉁이를 그대로 쓴다. 아래로 6만큼 내려 막대에 붙지 않게
+    // 한다. 화면 밖으로 나갈 자리면 showMenu가 알아서 안으로 당긴다 —
+    // 폰처럼 막대가 화면 아래에 있을 때는 위로 펴진다.
+    final topLeft = btn.localToGlobal(const Offset(0, 6), ancestor: overlay);
+    final bottomRight = btn.localToGlobal(
+        btn.size.bottomRight(Offset.zero) + const Offset(0, 6),
+        ancestor: overlay);
     final picked = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-          at.dx + 12, at.dy + 40, at.dx + 220, at.dy + 400),
+      position: RelativeRect.fromRect(
+          Rect.fromPoints(topLeft, bottomRight), Offset.zero & overlay.size),
       items: [
         for (final k in kBlockKinds)
           PopupMenuItem<String>(
@@ -6375,6 +6382,18 @@ class _EditorScreenState extends State<EditorScreen>
 
   /// 넘친 단추를 펴 두었는가. 맥·웹에서만 쓴다.
   bool _toolsOpen = false;
+
+  /// 단락 형식 고르개 단추의 자리표.
+  ///
+  /// 2026-08-29 소유자 지시 — "폰트 사이즈 옵션이 항상 좌측상단에 뜬다.
+  /// 툴바 바로 밑에 뜨게 해줘." 원인은 메뉴의 자리를 **화면**의 render box
+  /// 에서 잰 것이었다. 화면의 왼쪽 위 모서리는 늘 (0,0)이니 메뉴도 늘
+  /// 왼쪽 위에 떴다. 잴 것은 화면이 아니라 **눌린 단추**다.
+  ///
+  /// 이 열쇠가 붙는 자리는 하나뿐이다 — 도구 막대에서 wide인 칸은 단락
+  /// 형식 고르개 하나다. 그리고 도구 막대 자체도 한 번에 하나만 산다
+  /// (맥·웹은 위, 폰은 키보드 위). 그러니 GlobalKey가 겹칠 일이 없다.
+  final GlobalKey _blockBtnKey = GlobalKey();
 
   Widget _accessoryBar({bool atTop = false}) {
     final l = L10n.of(context);
@@ -6500,6 +6519,7 @@ class _EditorScreenState extends State<EditorScreen>
     }
     if (it.wide) {
       return Tooltip(
+        key: _blockBtnKey,
         message: it.tip,
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
