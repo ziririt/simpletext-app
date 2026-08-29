@@ -620,6 +620,11 @@ class L10nJa extends L10n {
 
   @override
   String get skyAction => 'AI 星座';
+
+  @override
+  String get timePasted => '貼り付け';
+  @override
+  String timeEdited(String when) => '編集 $when';
   @override
   String get skyTitle => 'AI 星座';
   @override

@@ -620,6 +620,11 @@ class L10nKo extends L10n {
 
   @override
   String get skyAction => 'AI 성좌';
+
+  @override
+  String get timePasted => '붙여넣음';
+  @override
+  String timeEdited(String when) => '고침 $when';
   @override
   String get skyTitle => 'AI 성좌';
   @override

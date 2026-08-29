@@ -55,6 +55,7 @@ import 'core/sync_plan.dart'
 import 'core/sync_log.dart';
 import 'core/mru.dart';
 import 'core/note_lock.dart';
+import 'core/note_times.dart';
 import 'core/paper.dart';
 import 'core/plain_text.dart';
 import 'core/purchase_gate.dart';
@@ -5780,19 +5781,38 @@ class _EditorScreenState extends State<EditorScreen>
     }
   }
 
-  Widget _dateLine(int ms) {
-    final t = DateTime.fromMillisecondsSinceEpoch(ms);
+  /// 날짜 줄 — **시각은 둘뿐이다.**
+  ///
+  /// 2026-08-29 소유자 지시. 규칙과 까닭은 core/note_times.dart 에 있다.
+  /// 여기 있던 '최근 업데이트'(동기화로 남의 글을 받아 온 시각)는 이 글의
+  /// 이력이 아니라서 뺐다.
+  Widget _dateLine(int _) {
+    final n0 = _note;
+    final times = noteTimes(
+      createdAt: n0?.createdAt ?? 0,
+      pastedAt: n0?.pastedAt ?? 0,
+      updatedAt: n0?.updatedAt ?? DateTime.now().millisecondsSinceEpoch,
+    );
     final tag = Localizations.localeOf(context).toLanguageTag();
     final h24 = MediaQuery.maybeOf(context)?.alwaysUse24HourFormat ?? true;
-    String text;
-    try {
-      final d = DateFormat.yMMMMd(tag).format(t);
-      final hm = (h24 ? DateFormat.Hm(tag) : DateFormat.jm(tag)).format(t);
-      text = '$d  $hm';
-    } catch (_) {
-      // 자료가 없는 로케일이면 형식만 기본으로 떨어뜨린다. 화면을 비우지 않는다.
-      text = '${DateFormat.yMMMMd().format(t)}  ${DateFormat.Hm().format(t)}';
+    String when(int at, {bool full = true}) {
+      final t = DateTime.fromMillisecondsSinceEpoch(at);
+      try {
+        final hm = (h24 ? DateFormat.Hm(tag) : DateFormat.jm(tag)).format(t);
+        return full ? '${DateFormat.yMMMMd(tag).format(t)}  $hm' : '${DateFormat.Md(tag).format(t)} $hm';
+      } catch (_) {
+        final hm = DateFormat.Hm().format(t);
+        return full ? '${DateFormat.yMMMMd().format(t)}  $hm' : '${DateFormat.Md().format(t)} $hm';
+      }
     }
+
+    final l0 = L10n.of(context);
+    var text = when(times.start);
+    // 붙여넣은 글에는 그렇다고 적는다. 직접 쓴 글에는 아무 말도 안 붙인다 —
+    // 대부분의 글이 그쪽이라, 거기까지 이름표를 달면 줄만 길어진다.
+    if (times.pasted) text = '${l0.timePasted} $text';
+    final e = times.edited;
+    if (e != null) text = '$text  ·  ${l0.timeEdited(when(e, full: false))}';
     // 2026-08-16 — 붙여넣은 글이면 '언제 어디서 왔는지'를 같이 적는다.
     // 이게 이 앱이 다른 노트앱과 갈리는 자리다. 저쪽에서 메모는 그냥
     // 글자지만, 우리에게 메모는 출처와 시각이 붙은 AI 답변이다.
@@ -5842,7 +5862,6 @@ class _EditorScreenState extends State<EditorScreen>
                   ),
                 ),
               ),
-              const _FreshDot(),
             ],
           ),
           if (stale) ...[
@@ -11055,43 +11074,6 @@ String syncFreshWhen(BuildContext context, int ms) {
     return '${DateFormat.Md(tag).format(t)} $hm';
   } catch (_) {
     return '${DateFormat.Md().format(t)} $hm';
-  }
-}
-
-/// '최근 업데이트 11:34' — 이 기기가 마지막으로 **받아 온** 시각.
-///
-/// 2026-08-27 소유자 요청. 올린 시각이 아니라 받은 시각인 까닭은 그 말이
-/// "뭔가 업데이트된 게 있다면"이었기 때문이다. 내가 쓴 글이 올라간 것은
-/// 업데이트가 아니다 — 내 화면에는 이미 있다. 남이 쓴 것이 도착했을
-/// 때에만 뜻이 있다.
-///
-/// 받은 적이 한 번도 없으면 아무것도 안 그린다. 빈 자리가 거짓말보다 낫다.
-/// 날짜 줄 옆에 붙는 '· 최근 업데이트 11:34'. 받은 적이 없으면 가운뎃점도
-/// 안 찍는다 — 아무것도 없는데 구분점만 남으면 그게 더 이상하다.
-class _FreshDot extends StatelessWidget {
-  const _FreshDot();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = L10n.of(context);
-    final sync = ICloudSync.instance;
-    if (!sync.active || sync.paused) return const SizedBox.shrink();
-    return ValueListenableBuilder<int>(
-      valueListenable: sync.logRevision,
-      builder: (_, __, ___) {
-        final ms = sync.log.lastDownMs;
-        if (ms == null) return const SizedBox.shrink();
-        return Text(
-          '   ${l.syncUpdatedAt(syncFreshWhen(context, ms))}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: context.c.sub),
-        );
-      },
-    );
   }
 }
 

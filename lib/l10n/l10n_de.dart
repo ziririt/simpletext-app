@@ -622,6 +622,11 @@ class L10nDe extends L10n {
 
   @override
   String get skyAction => 'Sternbild';
+
+  @override
+  String get timePasted => 'Eingefügt';
+  @override
+  String timeEdited(String when) => 'bearb. $when';
   @override
   String get skyTitle => 'Sternbild';
   @override

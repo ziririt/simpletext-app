@@ -620,6 +620,11 @@ class L10nZhHant extends L10n {
 
   @override
   String get skyAction => 'AI 星座';
+
+  @override
+  String get timePasted => '貼上';
+  @override
+  String timeEdited(String when) => '編輯 $when';
   @override
   String get skyTitle => 'AI 星座';
   @override

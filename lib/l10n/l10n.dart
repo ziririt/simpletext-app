@@ -386,6 +386,10 @@ abstract class L10n {
 
   // AI 성좌 (2026-08-29)
   String get skyAction;
+
+  // 글이 가진 두 시각 (2026-08-29)
+  String get timePasted;
+  String timeEdited(String when);
   String get skyTitle;
   String skyCounts(int stars, int links);
   String skyEmpty(int more);
@@ -993,6 +997,7 @@ abstract class L10n {
         'wipeAction': wipeAction,
         'travelAction': travelAction,
         'skyAction': skyAction,
+        'timePasted': timePasted,
         'skyTitle': skyTitle,
         'travelTitle': travelTitle,
         'travelNow': travelNow,

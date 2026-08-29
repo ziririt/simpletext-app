@@ -621,6 +621,11 @@ class L10nEs extends L10n {
 
   @override
   String get skyAction => 'Constelación';
+
+  @override
+  String get timePasted => 'Pegado';
+  @override
+  String timeEdited(String when) => 'editado $when';
   @override
   String get skyTitle => 'Constelación';
   @override

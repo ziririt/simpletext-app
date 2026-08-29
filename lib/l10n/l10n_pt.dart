@@ -621,6 +621,11 @@ class L10nPt extends L10n {
 
   @override
   String get skyAction => 'Constelação';
+
+  @override
+  String get timePasted => 'Colado';
+  @override
+  String timeEdited(String when) => 'editado $when';
   @override
   String get skyTitle => 'Constelação';
   @override

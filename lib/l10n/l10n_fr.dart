@@ -622,6 +622,11 @@ class L10nFr extends L10n {
 
   @override
   String get skyAction => 'Constellation';
+
+  @override
+  String get timePasted => 'Collé';
+  @override
+  String timeEdited(String when) => 'modifié $when';
   @override
   String get skyTitle => 'Constellation';
   @override
