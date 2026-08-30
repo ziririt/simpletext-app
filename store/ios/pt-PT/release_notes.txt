@@ -1,5 +1,5 @@
-A sincronização ficou bastante mais rápida — os dispositivos actualizam-se em segundos.
-A barra de edição foi refeita: localizar e substituir, selector de formato de parágrafo (corpo, títulos, citação, código), três tipos de lista, listas de tarefas com várias linhas, limpar formatação e mover o cursor.
-Premir Enter numa lista continua a numeração ou o marcador.
-Já pode escolher a fonte do corpo (sistema, Noto ou monoespaçada).
-Em ecrãs estreitos a barra abre-se por baixo.
+Deslize o dedo para comparar uma nota antes e depois da limpeza.
+Pode percorrer como este texto cresceu e voltar a qualquer versão.
+Notas parecidas aparecem dispostas como uma constelação.
+Já pode colocar a sua chave de IA na folha de edição.
+As instruções recentes acumulam-se sozinhas à medida que as utiliza.

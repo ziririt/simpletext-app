@@ -1,5 +1,5 @@
-Die Synchronisierung ist deutlich schneller — Geräte gleichen sich in Sekunden ab.
-Die Bearbeitungsleiste wurde neu gebaut: Suchen und Ersetzen, Absatzformat-Auswahl (Fließtext, Überschriften, Zitat, Code), drei Listenarten, mehrzeilige Aufgabenlisten, Formatierung löschen und Cursor-Tasten.
-Die Eingabetaste setzt Nummerierung oder Aufzählung fort.
-Die Textschrift lässt sich wählen (System, Noto, Monospace).
-Auf schmalen Bildschirmen klappt die Leiste nach unten auf.
+Wischen Sie, um eine Notiz vor und nach dem Aufräumen zu vergleichen.
+Sie können nachvollziehen, wie dieser Text gewachsen ist, und jede Fassung wiederherstellen.
+Ähnliche Notizen werden wie ein Sternbild dargestellt.
+Im KI-Bearbeitungsblatt können Sie Ihren eigenen Schlüssel eintragen.
+Zuletzt verwendete Anweisungen sammeln sich von selbst.

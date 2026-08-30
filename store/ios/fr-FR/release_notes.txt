@@ -1,5 +1,5 @@
-La synchronisation est nettement plus rapide — les appareils se mettent à jour en quelques secondes.
-La barre d'édition a été refaite : rechercher et remplacer, sélecteur de format de paragraphe (corps, titres, citation, code), trois styles de liste, listes de tâches multilignes, effacer la mise en forme et déplacement du curseur.
-Appuyer sur Entrée dans une liste poursuit la numérotation ou la puce.
-Vous pouvez choisir la police du corps (système, Noto, monospace).
-Sur les écrans étroits, la barre se déplie en dessous.
+Faites glisser le doigt pour comparer une note avant et après le nettoyage.
+Vous pouvez retracer comment ce texte a grandi et revenir à n’importe quelle version.
+Les notes proches s’affichent comme une constellation.
+Vous pouvez saisir votre clé d’IA directement dans la feuille d’édition.
+Les instructions récentes s’enregistrent d’elles-mêmes à mesure que vous les utilisez.

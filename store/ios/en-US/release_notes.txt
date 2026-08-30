@@ -1,5 +1,5 @@
-Sync is noticeably faster — devices catch up within seconds.
-The editor toolbar was rebuilt: find and replace, a paragraph format picker (body, headings, quote, code), three list styles, multi-line checklists, clear formatting, and caret nudges.
-Pressing return in a list continues the numbering or bullet.
-You can now choose the body font (system, Noto, or monospace).
-On narrow screens the toolbar unfolds below instead of scrolling away.
+Swipe to compare a note before and after cleanup.
+Step back through how this note grew, and restore any version.
+See related notes laid out like a constellation.
+Add your own AI key right in the edit sheet.
+Recent instructions save themselves as you use them.
