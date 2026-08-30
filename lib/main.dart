@@ -1357,6 +1357,23 @@ class AppSettings {
   String bulletChar = '-';
   bool smartDashList = true;
   bool smartFillerHeading = true;
+
+  /// 알아본 소제목을 '## '(제목2)로 만든다. 기본 켬.
+  ///
+  /// 2026-08-30 소유자 지시. 화면에서 크고 굵게 보이는 것은 '## '가
+  /// 붙었을 때다 — 자세한 까닭은 core/tidy_engine.dart 의 headingBig.
+  bool headingBig = true;
+
+  /// 표를 다시 세울 것인가. 기본 켬.
+  bool tableFix = true;
+
+  /// 넓은 표를 어떻게 놓을 것인가. 'auto' | 'aligned' | 'records'.
+  ///
+  /// auto 는 표의 너비를 재서 스스로 고른다(좁으면 칸 맞추기, 넓거나
+  /// 문장이 들었으면 글로 풀어쓰기). 사람이 늘 한쪽을 원하면 여기서
+  /// 못 박는다.
+  String wideTables = 'auto';
+
   bool headingPad = true;
   int headingPadAbove = 2;
   int headingPadBelow = 1;
@@ -1558,6 +1575,13 @@ class AppSettings {
   String adFreeDate = '';
   /// 마법사에서 등록해 둔 지시문. 최근에 쓴 것이 앞이다(core/mru.dart).
   List<String> favPrompts = [];
+
+  /// 최근에 쓴 지시문. 등록을 깜빡한 것을 다시 꺼내 쓰는 자리다.
+  ///
+  /// 2026-08-30 소유자 지시 — "깜빡하고 '자주 쓰는 지시문'에 등록 못한
+  /// 경우, 최근에 쓴 지시문을 통해서 다시 한번 이용하거나 등록할 기회를
+  /// 줘." 등록은 미리 하는 일이라 늘 늦는다. 쓴 것은 저절로 쌓인다.
+  List<String> recentPrompts = [];
   List<CustomRule> customRules = [];
 
   Map<String, dynamic> toJson() => {
@@ -1570,6 +1594,9 @@ class AppSettings {
         'bulletChar': bulletChar,
         'smartDashList': smartDashList,
         'smartFillerHeading': smartFillerHeading,
+        'headingBig': headingBig,
+        'tableFix': tableFix,
+        'wideTables': wideTables,
         'headingPad': headingPad,
         'headingPadAbove': headingPadAbove,
         'headingPadBelow': headingPadBelow,
@@ -1618,6 +1645,7 @@ class AppSettings {
         'filterFolder': filterFolder,
         'folders': folders,
         'favPrompts': favPrompts,
+        'recentPrompts': recentPrompts,
         'customRules': customRules
             .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
             .toList(),
@@ -1672,6 +1700,9 @@ class AppSettings {
     s.bulletChar = (j['bulletChar'] ?? s.bulletChar) as String;
     s.smartDashList = (j['smartDashList'] ?? s.smartDashList) as bool;
     s.smartFillerHeading = (j['smartFillerHeading'] ?? s.smartFillerHeading) as bool;
+    s.headingBig = (j['headingBig'] ?? s.headingBig) as bool;
+    s.tableFix = (j['tableFix'] ?? s.tableFix) as bool;
+    s.wideTables = (j['wideTables'] ?? s.wideTables) as String;
     s.headingPad = (j['headingPad'] ?? s.headingPad) as bool;
     s.headingPadAbove = (j['headingPadAbove'] ?? s.headingPadAbove) as int;
     s.headingPadBelow = (j['headingPadBelow'] ?? s.headingPadBelow) as int;
@@ -1757,6 +1788,8 @@ class AppSettings {
     s.lockGraceSec = normalizeLockDelay((j['lockGraceSec'] ?? s.lockGraceSec) as int);
     s.favPrompts =
         ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
+    s.recentPrompts =
+        ((j['recentPrompts'] ?? []) as List).map((e) => e.toString()).toList();
     s.customRules = ((j['customRules'] ?? []) as List)
         .map((e) => CustomRule(
               find: (e['find'] ?? '') as String,
@@ -2054,6 +2087,12 @@ class Store extends ChangeNotifier {
     if (o.bulletsToDot) o.bulletChar = s.bulletChar;
     if (o.smartDashList) o.smartDashList = s.smartDashList;
     if (o.smartFillerHeading) o.smartFillerHeading = s.smartFillerHeading;
+    // 소제목을 제목2로 — 기호·대괄호를 고른 사람에게는 안 걸린다
+    // (그 판단은 tidy_engine 의 _headingOut 한 곳에서만 한다).
+    if (o.stripHeadings || o.smartFillerHeading) o.headingBig = s.headingBig;
+    // 표 — 다시 세울지, 넓은 표를 어떻게 놓을지.
+    if (o.repairTables) o.repairTables = s.tableFix;
+    o.wideTables = s.wideTables;
     if (o.stripHeadings || o.smartFillerHeading) {
       o.headingPad = s.headingPad;
       o.headingPadAbove = s.headingPadAbove;
@@ -7797,6 +7836,92 @@ static const int kTagScanChars = 3000;
                               ),
                             ),
                     ),
+                    // 2026-08-30 소유자 지시 — 등록을 깜빡한 지시문을
+                    // 다시 꺼내 쓰는 자리. 등록은 미리 하는 일이라 늘
+                    // 늦고, 쓴 것은 저절로 쌓인다. 여기서 바로 다시 쓰거나,
+                    // 별 단추 하나로 위 목록에 올릴 수 있다.
+                    if (store.settings.recentPrompts.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12, bottom: 4),
+                        child: Text(l.recentPromptsTitle,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: context.c.sub)),
+                      ),
+                      Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: context.c.codeBg,
+                          border: Border.all(color: context.c.codeLine),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Scrollbar(
+                          child: ListView.separated(
+                            padding: EdgeInsets.zero,
+                            itemCount: store.settings.recentPrompts.length,
+                            separatorBuilder: (_, __) =>
+                                Divider(height: 1, color: context.c.codeLine),
+                            itemBuilder: (_, i) {
+                              final p = store.settings.recentPrompts[i];
+                              final already = store.settings.favPrompts
+                                  .any((f) => f.trim() == p.trim());
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 4, 2, 4),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(p,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              fontSize: 14, height: 1.3)),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        cmdCtl.text = p;
+                                        cmdCtl.selection =
+                                            TextSelection.collapsed(
+                                                offset: cmdCtl.text.length);
+                                        setD(() {});
+                                      },
+                                      child: Text(l.favUse),
+                                    ),
+                                    IconButton(
+                                      tooltip: l.favAdd,
+                                      visualDensity: VisualDensity.compact,
+                                      icon: Icon(
+                                          already
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_add_outlined,
+                                          size: 18,
+                                          color: already
+                                              ? context.c.accent
+                                              : null),
+                                      onPressed: already
+                                          ? null
+                                          : () async {
+                                              mruInsert(
+                                                  store.settings.favPrompts, p);
+                                              await store.persistSettings();
+                                              setD(() {});
+                                              if (mounted) {
+                                                _toast(
+                                                    context,
+                                                    L10n.of(context)
+                                                        .favSavedToast);
+                                              }
+                                            },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     for (final a in applied)
                       Padding(
@@ -7864,6 +7989,10 @@ static const int kTagScanChars = 3000;
                     ? null
                     : () async {
                         final before = bodyCtl.text;
+                        // 쓴 것은 저절로 쌓인다. 등록을 깜빡해도
+                        // '최근에 쓴 지시문'에서 다시 꺼낼 수 있게.
+                        mruInsert(store.settings.recentPrompts,
+                            cmdCtl.text.trim(), max: 12);
                         final r = applyWizard(
                             command: cmdCtl.text, settings: store.settings, body: before);
                         var text = r.bodyChanged ? r.body : before;
@@ -12116,6 +12245,23 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
             _switchRow(l.headingPadTitle, l.headingPadSub, s.headingPad,
                 (v) => s.headingPad = v),
             _sep(),
+            // 2026-08-30 소유자 지시 — 알아본 소제목을 제목2로.
+            // 여백(위 2줄·아래 1줄)과 한 짝이라 바로 아래에 둔다.
+            _switchRow(l.headingBigTitle, l.headingBigSub, s.headingBig,
+                (v) => s.headingBig = v),
+            _sep(),
+            // 표 둘. '표를 다시 세울까'가 먼저고, '넓은 표를 어떻게
+            // 놓을까'가 그다음이다. 순서를 바꾸면 두 번째 줄이 무엇에
+            // 대한 말인지 모른다.
+            _switchRow(l.tableFixTitle, l.tableFixSub, s.tableFix,
+                (v) => s.tableFix = v),
+            _sep(),
+            _dropRow(l.wideTableTitle, null, s.wideTables, [
+              ('auto', l.wideTableAuto),
+              ('aligned', l.wideTableAligned),
+              ('records', l.wideTableRecords),
+            ], (v) => s.wideTables = v),
+            _sep(),
             _switchRow(l.fillerHeadingTitle, l.fillerHeadingSub, s.smartFillerHeading,
                 (v) => s.smartFillerHeading = v),
             _sep(),
@@ -12792,68 +12938,46 @@ class _SettingsScreenState extends State<SettingsScreen>
                 if (mounted) setState(() {});
               },
             ),
-            // 붙여넣기 물음 안내. 처음 붙여넣을 때 한 번 저절로 뜨지만,
-            // 그때 '나중에'를 눌렀거나 다른 기기에서 다시 필요할 수 있으니
-            // 늘 찾을 수 있는 자리에도 둔다. 아이폰에서만 뜻이 있다.
-            if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-              _sep(),
-              ListTile(
-                leading: Icon(Icons.content_paste_go, color: context.c.sub),
-                title: Text(l.pasteTipTitle,
+            // 2026-08-30 소유자 지시 — 여기 있던 '붙여넣을 때마다 묻지
+            // 않게'는 맨 아래로 내리고, 그 자리에 '나만의 자동 바꾸기
+            // 규칙'을 올린다.
+            //
+            // 옳은 자리다. 둘은 같은 물음에 답한다 — **'정리'를 누르면
+            // 내 글이 어떻게 바뀌나.** 하나는 앱이 아는 규칙이고 하나는
+            // 내가 적어 둔 규칙일 뿐이다. 붙여넣기 물음은 그 물음과
+            // 아무 상관이 없는, 아이폰 운영체제 쪽 이야기였다.
+            _sep(),
+            KeyedSubtree(
+              key: _anchors['rules'],
+              child: ListTile(
+                leading: Icon(Icons.find_replace, color: context.c.sub),
+                title: Text(l.rulesSectionTitle,
                     style: const TextStyle(
                         fontSize: 17, fontWeight: FontWeight.w600)),
-                subtitle: Text(l.pasteTipSub,
+                subtitle: Text(l.rulesSectionDesc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-                trailing: const Icon(Icons.chevron_right, size: 20),
-                onTap: () => showPasteTip(context),
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                  if (s.customRules.isNotEmpty)
+                    Text('${s.customRules.length}',
+                        style: TextStyle(fontSize: 16, color: context.c.sub)),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: context.c.sub),
+                ]),
+                onTap: () async {
+                  await Navigator.push<void>(context,
+                      MaterialPageRoute(builder: (_) => const RulesScreen()));
+                  if (mounted) setState(() {});
+                },
               ),
-            ],
+            ),
           ]),
           _secHeader(l.settingsSecWhen),
           _card([
             // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
             _switchRow(l.previewTitle2, l.previewSub2, s.previewBeforeApply,
                 (v) => s.previewBeforeApply = v),
-          ]),
-          // 2026-08-16 소유자 요청 — 자동 바꾸기 규칙을 AI 위로 올린다.
-          // 정리 규칙 바로 뒤에 붙는 게 맞다. 둘 다 '정리를 누르면 글이
-          // 어떻게 바뀌나'에 답하는 항목이고, AI는 그 다음 이야기다.
-          // 2026-08-18 소유자 지시 — "'자동 바꾸기 규칙'은 설정에 다
-          // 나오게 하지 말고, 한 depth 더 들어가서. 이런 식으로 설정을
-          // 1depth에서 다 설정하게 할 수는 없어."
-          //
-          // 규칙 하나가 입력칸 둘에 체크박스에 지우기 단추까지 네 조각이다.
-          // 열 개를 만들면 설정 화면의 절반이 그 표가 된다. **설정 화면은
-          // 무엇을 정할 수 있는지 훑어보는 곳이지 정하는 곳이 아니다.**
-          // 훑어보는 곳에 정하는 도구가 펼쳐져 있으면 훑어볼 수가 없다.
-          //
-          // 여기 남는 것은 이름과 개수와 꺾쇠 하나다. 몇 개를 만들어
-          // 뒀는지는 여기서 알 수 있고, 손대는 일은 안으로 들어가서 한다.
-          KeyedSubtree(
-              key: _anchors['rules'], child: _secHeader(l.rulesSectionTitle)),
-          _card([
-            ListTile(
-              leading: Icon(Icons.find_replace, color: context.c.sub),
-              title: Text(l.rulesSectionTitle,
-                  style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w600)),
-              subtitle: Text(l.rulesSectionDesc,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                if (s.customRules.isNotEmpty)
-                  Text('${s.customRules.length}',
-                      style: TextStyle(fontSize: 16, color: context.c.sub)),
-                const SizedBox(width: 4),
-                Icon(Icons.chevron_right, color: context.c.sub),
-              ]),
-              onTap: () async {
-                await Navigator.push<void>(context,
-                    MaterialPageRoute(builder: (_) => const RulesScreen()));
-                if (mounted) setState(() {});
-              },
-            ),
           ]),
           // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 이 구역
           // 전체(키 입력·안내·자동 태그 스위치·모델 고르기)가 없다.
@@ -13168,6 +13292,22 @@ class _SettingsScreenState extends State<SettingsScreen>
                 onTap: () => unawaited(launchUrl(
                     Uri.parse(appStoreReviewUrl()),
                     mode: LaunchMode.externalApplication)),
+              ),
+              _sep(),
+            ],
+            // 2026-08-30 소유자 지시로 여기 내려왔다. 이건 정리 규칙이
+            // 아니라 아이폰 운영체제의 물음을 끄는 방법이라, 한 번 하고
+            // 다시 안 여는 일이다. 그런 것은 맨 아래가 제자리다.
+            if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+              ListTile(
+                leading: Icon(Icons.content_paste_go, color: context.c.sub),
+                title: Text(l.pasteTipTitle,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
+                subtitle: Text(l.pasteTipSub,
+                    style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+                trailing: const Icon(Icons.chevron_right, size: 20),
+                onTap: () => showPasteTip(context),
               ),
               _sep(),
             ],

@@ -57,6 +57,17 @@ class TidyOptions {
   bool smartDashList;
   bool smartFillerHeading;
   List<CustomRule>? customRules;
+  /// 알아본 소제목을 '## '(제목2)로 내보낼 것인가.
+  ///
+  /// 2026-08-30 소유자 지시 — "소제목은 자동인식해서 '제목2' 폰트
+  /// 사이즈/볼드체 처리하는 것도 기본은 되게 하되, 옵션으로."
+  ///
+  /// 화면에서 크게·굵게 보이는 것은 '## '가 붙었을 때다(rich_spans).
+  /// 그러니 '크게 만든다'는 일은 글자 크기를 만지는 일이 아니라 **글에
+  /// 제목이라고 적어 두는 일**이다. 복사해 나갈 때는 plain_text 가 그
+  /// 표시를 다시 벗긴다 — 이 앱의 오래된 약속 그대로다.
+  bool headingBig;
+
   bool headingPad;
   int headingPadAbove;
   int headingPadBelow;
@@ -93,6 +104,7 @@ class TidyOptions {
     this.smartDashList = false,
     this.smartFillerHeading = false,
     this.customRules,
+    this.headingBig = false,
     this.headingPad = false,
     this.headingPadAbove = 2,
     this.headingPadBelow = 1,
@@ -129,6 +141,7 @@ class TidyOptions {
     bool? smartDashList,
     bool? smartFillerHeading,
     List<CustomRule>? customRules,
+    bool? headingBig,
     bool? headingPad,
     int? headingPadAbove,
     int? headingPadBelow,
@@ -164,6 +177,7 @@ class TidyOptions {
       smartDashList: smartDashList ?? this.smartDashList,
       smartFillerHeading: smartFillerHeading ?? this.smartFillerHeading,
       customRules: customRules ?? this.customRules,
+      headingBig: headingBig ?? this.headingBig,
       headingPad: headingPad ?? this.headingPad,
       headingPadAbove: headingPadAbove ?? this.headingPadAbove,
       headingPadBelow: headingPadBelow ?? this.headingPadBelow,
@@ -1150,6 +1164,8 @@ String _headingOut(String inner, TidyOptions o, TidyReport rep) {
   rep.headings++;
   if (hm == 'prefix') return '${o.headingSymbol} $inner';
   if (hm == 'bracket') return '[$inner]';
+  // 사람이 기호나 대괄호를 고르지 않았다면, '제목2'로 내보낼 수 있다.
+  if (o.headingBig) return '## $inner';
   return inner;
 }
 

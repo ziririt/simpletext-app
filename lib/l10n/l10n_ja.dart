@@ -378,13 +378,35 @@ class L10nJa extends L10n {
   @override
   String get aiKeyPasteBtn => '貼り付け';
   @override
-  String get aiKeyCost => '料金は各AI会社から直接請求されます。このアプリが間で受け取るものはありません。';
+  String get aiKeyCost => 'すでにお使いのAIサービスを、このアプリからそのまま呼び出します。Gemini・ChatGPT・Claude・Grokのうち、お使いのもののキーを入れてください。';
   @override
   String get aiKeySafe => 'キーはこの端末の中だけに保管します。このアプリのサーバーへは送りません。';
   @override
   String get aiKeyWhere => 'キーの発行先';
   @override
   String get aiKeyStart => 'はじめる';
+  @override
+  String get recentPromptsTitle => '最近使った指示';
+  @override
+  String get recentEmpty => 'まだありません。一度使うとここに残ります';
+  @override
+  String get favAdd => 'よく使う指示に登録';
+  @override
+  String get tableFixTitle => '表の整理';
+  @override
+  String get tableFixSub => '崩れた表を組み直し、桁をそろえます';
+  @override
+  String get wideTableTitle => '幅の広い表';
+  @override
+  String get wideTableAuto => '自動';
+  @override
+  String get wideTableAligned => '桁をそろえる';
+  @override
+  String get wideTableRecords => '文章に開く';
+  @override
+  String get headingBigTitle => '小見出しを見出し2に';
+  @override
+  String get headingBigSub => '見つけた小見出しを大きく太く(見出し2)します';
   @override
   String get aiWorking => 'AIが指示どおりに編集しています。少し時間がかかります…';
   @override
@@ -1467,7 +1489,7 @@ class L10nJa extends L10n {
   @override
   String aiModelSwitched(String model) => '以前のモデルが応答しないため、$model に切り替えました。';
   @override
-  String get rulesSectionTitle => '自動置換ルール';
+  String get rulesSectionTitle => '自分だけの自動置換ルール';
   @override
   String get rulesSectionDesc => '上から順に適用。置換後に \\n を使うと改行。コードブロック内は変更しません。';
   @override

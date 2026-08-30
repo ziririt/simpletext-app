@@ -379,13 +379,35 @@ class L10nPt extends L10n {
   @override
   String get aiKeyPasteBtn => 'Colar';
   @override
-  String get aiKeyCost => 'Cada empresa de IA cobra diretamente de você. Este app não fica com nada.';
+  String get aiKeyCost => 'O app chama diretamente o serviço de IA que você já usa. Coloque a chave do que você tiver: Gemini, ChatGPT, Claude ou Grok.';
   @override
   String get aiKeySafe => 'A chave fica só neste aparelho. Nunca é enviada para os servidores deste app.';
   @override
   String get aiKeyWhere => 'Onde obter uma chave';
   @override
   String get aiKeyStart => 'Começar';
+  @override
+  String get recentPromptsTitle => 'Usados recentemente';
+  @override
+  String get recentEmpty => 'Nada ainda. O que você executar aparece aqui';
+  @override
+  String get favAdd => 'Salvar como favorito';
+  @override
+  String get tableFixTitle => 'Organizar tabelas';
+  @override
+  String get tableFixSub => 'Reconstrói tabelas quebradas e alinha as colunas';
+  @override
+  String get wideTableTitle => 'Tabelas largas';
+  @override
+  String get wideTableAuto => 'Automático';
+  @override
+  String get wideTableAligned => 'Alinhar colunas';
+  @override
+  String get wideTableRecords => 'Escrever como texto';
+  @override
+  String get headingBigTitle => 'Subtítulos como Título 2';
+  @override
+  String get headingBigSub => 'Deixa os subtítulos detectados grandes e em negrito (Título 2)';
   @override
   String get aiWorking => 'A IA está editando conforme suas instruções. Pode demorar um pouco…';
   @override
@@ -1471,7 +1493,7 @@ class L10nPt extends L10n {
   @override
   String aiModelSwitched(String model) => 'O modelo anterior parou de responder; mudou para $model.';
   @override
-  String get rulesSectionTitle => 'Regras de substituição automática';
+  String get rulesSectionTitle => 'Minhas regras de substituição automática';
   @override
   String get rulesSectionDesc =>
       'Aplicadas de cima para baixo. Use \\n na substituição para quebra de linha. Blocos de código não são alterados.';

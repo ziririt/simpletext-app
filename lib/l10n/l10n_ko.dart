@@ -378,13 +378,35 @@ class L10nKo extends L10n {
   @override
   String get aiKeyPasteBtn => '붙여넣기';
   @override
-  String get aiKeyCost => '요금은 각 AI 회사가 회원님께 직접 청구합니다. 이 앱은 중간에서 아무것도 받지 않습니다.';
+  String get aiKeyCost => '회원님이 쓰시는 AI 서비스를 이 앱에서 그대로 불러 씁니다. 제미나이·챗지피티·클로드·그록 가운데 이미 쓰시는 것의 키를 넣으면 됩니다.';
   @override
   String get aiKeySafe => '키는 이 기기 안에만 둡니다. 이 앱의 서버로 보내지 않습니다.';
   @override
   String get aiKeyWhere => '키 발급받는 곳';
   @override
   String get aiKeyStart => '시작하기';
+  @override
+  String get recentPromptsTitle => '최근에 쓴 지시문';
+  @override
+  String get recentEmpty => '아직 없습니다. 한 번 쓰면 여기 남습니다';
+  @override
+  String get favAdd => '자주 쓰기에 등록';
+  @override
+  String get tableFixTitle => '표 정리';
+  @override
+  String get tableFixSub => '깨진 표를 다시 세우고 칸을 맞춥니다';
+  @override
+  String get wideTableTitle => '넓은 표';
+  @override
+  String get wideTableAuto => '자동';
+  @override
+  String get wideTableAligned => '칸 맞추기';
+  @override
+  String get wideTableRecords => '글로 풀어쓰기';
+  @override
+  String get headingBigTitle => '소제목을 제목2로';
+  @override
+  String get headingBigSub => '알아본 소제목을 크고 굵게(제목2) 만듭니다';
   @override
   String get aiWorking => 'AI가 지시대로 편집하고 있습니다. 편집에 시간이 좀 걸립니다…';
   @override
@@ -1467,7 +1489,7 @@ class L10nKo extends L10n {
   @override
   String aiModelSwitched(String model) => '쓰던 모델이 응답하지 않아 $model(으)로 바꿨습니다.';
   @override
-  String get rulesSectionTitle => '자동 바꾸기 규칙';
+  String get rulesSectionTitle => '나만의 자동 바꾸기 규칙';
   @override
   String get rulesSectionDesc => '위에서부터 순서대로 적용. 바꾸기에 \\n을 쓰면 줄바꿈. 코드블록 안은 건드리지 않습니다.';
   @override

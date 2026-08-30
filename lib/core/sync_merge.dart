@@ -233,3 +233,38 @@ RulesMove rulesMove({
   if (remoteStamp < localStamp) return RulesMove.pushLocal;
   return RulesMove.nothing;
 }
+
+/// AI 키를 옮길 때는 규칙과 한 가지가 다르다 — **빈 키는 값이 아니다.**
+///
+/// 2026-08-30 소유자 신고 — "api키도 기기간 동기화하는 것으로 체크해
+/// 뒀는데, 아이폰에서 입력했는데 맥용 앱에 api키가 비어 있다."
+///
+/// 맥의 설정을 열어 보니 그 자리에 답이 있었다. aiKeyStamp 가 **오늘
+/// 아침 시각**으로 찍혀 있었다. 맥은 키가 없는데도 '내가 제일 최근에
+/// 바꿨다'고 주장하고 있었던 것이다.
+///
+/// 어쩌다 그렇게 됐나. 키는 설정이 아니라 키체인에 산다. 맥에서 어떤
+/// 사유로 키체인 것을 잃으면 설정에는 지문(aiKeySig)만 남고 키는 빈
+/// 문자열이 된다. 그러면 '지금 지문'과 '적어 둔 지문'이 달라지고, 옛
+/// 코드는 그 다름을 **"이 기기에서 사람이 방금 고쳤다"**로 읽어 도장을
+/// 지금 시각으로 찍었다. 그 순간부터 맥은 영영 받는 쪽이 못 된다. 올릴
+/// 것도 없어서(빈 키는 안 올린다) 아무 일도 안 일어나고, 사람 눈에는
+/// '동기화가 그냥 안 되는' 것으로 보인다.
+///
+/// 고침은 한 줄로 말할 수 있다. **없는 사람은 말할 자격이 없다.**
+/// 키가 없는 기기는 언제나 듣는 쪽이다.
+RulesMove keyMove({
+  required bool firstRun,
+  required bool hasRemote,
+  required int remoteStamp,
+  required int localStamp,
+  required bool localEmpty,
+}) {
+  if (localEmpty) return hasRemote ? RulesMove.takeRemote : RulesMove.nothing;
+  return rulesMove(
+    firstRun: firstRun,
+    hasRemote: hasRemote,
+    remoteStamp: remoteStamp,
+    localStamp: localStamp,
+  );
+}

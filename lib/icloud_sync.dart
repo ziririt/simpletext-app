@@ -1015,12 +1015,16 @@ class ICloudSync {
       'bulletChar': s.bulletChar,
       'smartDashList': s.smartDashList,
       'smartFillerHeading': s.smartFillerHeading,
+      'headingBig': s.headingBig,
+      'tableFix': s.tableFix,
+      'wideTables': s.wideTables,
       'headingPad': s.headingPad,
       'headingPadAbove': s.headingPadAbove,
       'headingPadBelow': s.headingPadBelow,
       'bulletIndent': s.bulletIndent,
       'removeCitations': s.removeCitations,
       'favPrompts': s.favPrompts,
+      'recentPrompts': s.recentPrompts,
       // 2026-08-20 소유자 신고 — "'API키도 기기끼리 옮기기'를 켰는데도
       // 안드로이드폰에서는 동기화 안 된 듯."
       //
@@ -1198,7 +1202,10 @@ class ICloudSync {
     final localSig = _sig(localBody);
     final firstRun = s.aiKeyStamp == 0;
 
-    if (!firstRun && localSig != s.aiKeySig) {
+    // 빈 키로는 도장을 찍지 않는다. 까닭은 core/sync_merge.dart 의
+    // keyMove 에 적었다 — 2026-08-30 맥에서 키가 안 내려오던 사고.
+    final localEmpty = s.aiKey.trim().isEmpty;
+    if (!firstRun && localSig != s.aiKeySig && !localEmpty) {
       s.aiKeySig = localSig;
       s.aiKeyStamp = DateTime.now().millisecondsSinceEpoch;
       await store.persistSettingsLocalOnly();
@@ -1209,11 +1216,12 @@ class ICloudSync {
     final remote = got.body;
     final remoteStamp = (remote?['stamp'] as int?) ?? -1;
 
-    switch (rulesMove(
+    switch (keyMove(
       firstRun: firstRun,
       hasRemote: remote != null,
       remoteStamp: remoteStamp,
       localStamp: s.aiKeyStamp,
+      localEmpty: localEmpty,
     )) {
       case RulesMove.takeRemote:
         final k = remote!['key'];
@@ -1256,6 +1264,9 @@ class ICloudSync {
     s.bulletChar = pick('bulletChar', s.bulletChar);
     s.smartDashList = pick('smartDashList', s.smartDashList);
     s.smartFillerHeading = pick('smartFillerHeading', s.smartFillerHeading);
+    s.headingBig = pick('headingBig', s.headingBig);
+    s.tableFix = pick('tableFix', s.tableFix);
+    s.wideTables = pick('wideTables', s.wideTables);
     s.headingPad = pick('headingPad', s.headingPad);
     s.headingPadAbove = pick('headingPadAbove', s.headingPadAbove);
     s.headingPadBelow = pick('headingPadBelow', s.headingPadBelow);
@@ -1270,6 +1281,8 @@ class ICloudSync {
     }
     final fp = j['favPrompts'];
     if (fp is List) s.favPrompts = fp.map((e) => e.toString()).toList();
+    final rp = j['recentPrompts'];
+    if (rp is List) s.recentPrompts = rp.map((e) => e.toString()).toList();
     final cr = j['customRules'];
     if (cr is List) {
       s.customRules = cr

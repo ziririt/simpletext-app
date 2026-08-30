@@ -380,13 +380,35 @@ class L10nDe extends L10n {
   @override
   String get aiKeyPasteBtn => 'Einfügen';
   @override
-  String get aiKeyCost => 'Die Rechnung stellt die jeweilige KI-Firma direkt. Diese App bekommt nichts davon.';
+  String get aiKeyCost => 'Die App ruft einfach den KI-Dienst auf, den du ohnehin nutzt. Trag den Schlüssel von dem ein, den du hast: Gemini, ChatGPT, Claude oder Grok.';
   @override
   String get aiKeySafe => 'Der Schlüssel bleibt auf diesem Gerät. Er geht nie an die Server dieser App.';
   @override
   String get aiKeyWhere => 'Wo es Schlüssel gibt';
   @override
   String get aiKeyStart => 'Loslegen';
+  @override
+  String get recentPromptsTitle => 'Zuletzt benutzt';
+  @override
+  String get recentEmpty => 'Noch nichts. Was du ausführst, bleibt hier stehen';
+  @override
+  String get favAdd => 'Als Favorit sichern';
+  @override
+  String get tableFixTitle => 'Tabellen aufräumen';
+  @override
+  String get tableFixSub => 'Baut kaputte Tabellen neu auf und richtet die Spalten aus';
+  @override
+  String get wideTableTitle => 'Breite Tabellen';
+  @override
+  String get wideTableAuto => 'Automatisch';
+  @override
+  String get wideTableAligned => 'Spalten ausrichten';
+  @override
+  String get wideTableRecords => 'Als Text ausschreiben';
+  @override
+  String get headingBigTitle => 'Zwischentitel als Überschrift 2';
+  @override
+  String get headingBigSub => 'Macht erkannte Zwischentitel groß und fett (Überschrift 2)';
   @override
   String get aiWorking => 'Die KI bearbeitet den Text wie gewünscht. Das kann einen Moment dauern…';
   @override
@@ -1472,7 +1494,7 @@ class L10nDe extends L10n {
   @override
   String aiModelSwitched(String model) => 'Das bisherige Modell antwortete nicht mehr – gewechselt zu $model.';
   @override
-  String get rulesSectionTitle => 'Auto-Ersetzungsregeln';
+  String get rulesSectionTitle => 'Meine Auto-Ersetzen-Regeln';
   @override
   String get rulesSectionDesc =>
       'Von oben nach unten angewendet. \\n in der Ersetzung erzeugt einen Zeilenumbruch. Codeblöcke bleiben unberührt.';

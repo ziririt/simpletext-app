@@ -380,13 +380,35 @@ class L10nFr extends L10n {
   @override
   String get aiKeyPasteBtn => 'Coller';
   @override
-  String get aiKeyCost => 'Chaque société d’IA vous facture directement. Cette app ne prend rien au passage.';
+  String get aiKeyCost => 'L’app appelle directement le service d’IA que vous utilisez déjà. Saisissez la clé de celui que vous avez : Gemini, ChatGPT, Claude ou Grok.';
   @override
   String get aiKeySafe => 'La clé reste sur cet appareil. Elle n’est jamais envoyée aux serveurs de cette app.';
   @override
   String get aiKeyWhere => 'Où obtenir une clé';
   @override
   String get aiKeyStart => 'Commencer';
+  @override
+  String get recentPromptsTitle => 'Utilisées récemment';
+  @override
+  String get recentEmpty => 'Rien pour l’instant. Ce que vous lancez apparaît ici';
+  @override
+  String get favAdd => 'Ajouter aux favoris';
+  @override
+  String get tableFixTitle => 'Ranger les tableaux';
+  @override
+  String get tableFixSub => 'Reconstruit les tableaux cassés et aligne les colonnes';
+  @override
+  String get wideTableTitle => 'Tableaux larges';
+  @override
+  String get wideTableAuto => 'Automatique';
+  @override
+  String get wideTableAligned => 'Aligner les colonnes';
+  @override
+  String get wideTableRecords => 'Développer en texte';
+  @override
+  String get headingBigTitle => 'Sous-titres en Titre 2';
+  @override
+  String get headingBigSub => 'Met les sous-titres détectés en grand et en gras (Titre 2)';
   @override
   String get aiWorking => 'L\'IA modifie le texte selon vos instructions. Cela peut prendre un moment…';
   @override
@@ -1472,7 +1494,7 @@ class L10nFr extends L10n {
   @override
   String aiModelSwitched(String model) => "L'ancien modèle ne répondait plus – passage à $model.";
   @override
-  String get rulesSectionTitle => 'Règles de remplacement automatique';
+  String get rulesSectionTitle => 'Mes règles de remplacement automatique';
   @override
   String get rulesSectionDesc =>
       'Appliquées de haut en bas. \\n dans le remplacement crée un saut de ligne. Les blocs de code ne sont pas modifiés.';

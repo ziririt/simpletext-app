@@ -379,13 +379,35 @@ class L10nEs extends L10n {
   @override
   String get aiKeyPasteBtn => 'Pegar';
   @override
-  String get aiKeyCost => 'Cada empresa de IA te cobra directamente. Esta app no se queda con nada.';
+  String get aiKeyCost => 'La app llama directamente al servicio de IA que ya usas. Pon la clave del que tengas: Gemini, ChatGPT, Claude o Grok.';
   @override
   String get aiKeySafe => 'La clave se guarda solo en este dispositivo. Nunca se envía a los servidores de esta app.';
   @override
   String get aiKeyWhere => 'Dónde conseguir una clave';
   @override
   String get aiKeyStart => 'Empezar';
+  @override
+  String get recentPromptsTitle => 'Usados hace poco';
+  @override
+  String get recentEmpty => 'Todavía nada. Lo que ejecutes aparecerá aquí';
+  @override
+  String get favAdd => 'Guardar como favorito';
+  @override
+  String get tableFixTitle => 'Ordenar tablas';
+  @override
+  String get tableFixSub => 'Reconstruye tablas rotas y alinea las columnas';
+  @override
+  String get wideTableTitle => 'Tablas anchas';
+  @override
+  String get wideTableAuto => 'Automático';
+  @override
+  String get wideTableAligned => 'Alinear columnas';
+  @override
+  String get wideTableRecords => 'Desarrollar como texto';
+  @override
+  String get headingBigTitle => 'Subtítulos como Título 2';
+  @override
+  String get headingBigSub => 'Pone los subtítulos detectados grandes y en negrita (Título 2)';
   @override
   String get aiWorking => 'La IA está editando según tus instrucciones. Puede tardar un poco…';
   @override
@@ -1471,7 +1493,7 @@ class L10nEs extends L10n {
   @override
   String aiModelSwitched(String model) => 'El modelo anterior dejó de responder; se cambió a $model.';
   @override
-  String get rulesSectionTitle => 'Reglas de reemplazo automático';
+  String get rulesSectionTitle => 'Mis reglas de reemplazo automático';
   @override
   String get rulesSectionDesc =>
       'Se aplican de arriba abajo. Usa \\n en el reemplazo para saltos de línea. Los bloques de código no se tocan.';

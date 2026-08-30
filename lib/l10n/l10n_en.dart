@@ -379,13 +379,35 @@ class L10nEn extends L10n {
   @override
   String get aiKeyPasteBtn => 'Paste';
   @override
-  String get aiKeyCost => 'Each AI company bills you directly. This app takes nothing in between.';
+  String get aiKeyCost => 'This app simply calls the AI service you already use. Put in the key from whichever you have — Gemini, ChatGPT, Claude or Grok.';
   @override
   String get aiKeySafe => 'The key stays on this device. It is never sent to this app’s servers.';
   @override
   String get aiKeyWhere => 'Where to get a key';
   @override
   String get aiKeyStart => 'Get started';
+  @override
+  String get recentPromptsTitle => 'Recently used';
+  @override
+  String get recentEmpty => 'Nothing yet. What you run shows up here';
+  @override
+  String get favAdd => 'Save as favorite';
+  @override
+  String get tableFixTitle => 'Tidy tables';
+  @override
+  String get tableFixSub => 'Rebuilds broken tables and aligns the columns';
+  @override
+  String get wideTableTitle => 'Wide tables';
+  @override
+  String get wideTableAuto => 'Auto';
+  @override
+  String get wideTableAligned => 'Align columns';
+  @override
+  String get wideTableRecords => 'Write out as text';
+  @override
+  String get headingBigTitle => 'Subheads as Heading 2';
+  @override
+  String get headingBigSub => 'Makes detected subheads large and bold (Heading 2)';
   @override
   String get aiWorking => 'The AI is editing as you asked. This can take a little while…';
   @override
@@ -1471,7 +1493,7 @@ class L10nEn extends L10n {
   @override
   String aiModelSwitched(String model) => 'Switched to $model because the previous model stopped responding.';
   @override
-  String get rulesSectionTitle => 'Auto-replace rules';
+  String get rulesSectionTitle => 'My auto-replace rules';
   @override
   String get rulesSectionDesc =>
       'Applied top to bottom. Use \\n in Replace for a line break. Code blocks are left untouched.';

@@ -226,6 +226,17 @@ abstract class L10n {
   String get aiKeySafe;
   String get aiKeyWhere;
   String get aiKeyStart;
+  String get recentPromptsTitle;
+  String get recentEmpty;
+  String get favAdd;
+  String get tableFixTitle;
+  String get tableFixSub;
+  String get wideTableTitle;
+  String get wideTableAuto;
+  String get wideTableAligned;
+  String get wideTableRecords;
+  String get headingBigTitle;
+  String get headingBigSub;
   String get aiBusyLabel;
 
   /// AI 가 도는 동안 창에 뜨는 줄.
@@ -936,6 +947,17 @@ abstract class L10n {
         'aiKeySafe': aiKeySafe,
         'aiKeyWhere': aiKeyWhere,
         'aiKeyStart': aiKeyStart,
+        'recentPromptsTitle': recentPromptsTitle,
+        'recentEmpty': recentEmpty,
+        'favAdd': favAdd,
+        'tableFixTitle': tableFixTitle,
+        'tableFixSub': tableFixSub,
+        'wideTableTitle': wideTableTitle,
+        'wideTableAuto': wideTableAuto,
+        'wideTableAligned': wideTableAligned,
+        'wideTableRecords': wideTableRecords,
+        'headingBigTitle': headingBigTitle,
+        'headingBigSub': headingBigSub,
         'aiBusyLabel': aiBusyLabel,
         'aiWorking': aiWorking,
         'aiEmptyResponse': aiEmptyResponse,

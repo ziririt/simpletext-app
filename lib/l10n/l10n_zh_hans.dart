@@ -378,13 +378,35 @@ class L10nZhHans extends L10n {
   @override
   String get aiKeyPasteBtn => '粘贴';
   @override
-  String get aiKeyCost => '费用由各 AI 公司直接向您收取。本应用不从中收取任何费用。';
+  String get aiKeyCost => '本应用直接调用您已经在用的 AI 服务。Gemini、ChatGPT、Claude、Grok 中，填入您已有的那一个的密钥即可。';
   @override
   String get aiKeySafe => '密钥只保存在本机，不会发送到本应用的服务器。';
   @override
   String get aiKeyWhere => '密钥申请地址';
   @override
   String get aiKeyStart => '开始使用';
+  @override
+  String get recentPromptsTitle => '最近用过的指令';
+  @override
+  String get recentEmpty => '还没有。用过一次就会留在这里';
+  @override
+  String get favAdd => '存为常用指令';
+  @override
+  String get tableFixTitle => '整理表格';
+  @override
+  String get tableFixSub => '重建错乱的表格并对齐各列';
+  @override
+  String get wideTableTitle => '宽表格';
+  @override
+  String get wideTableAuto => '自动';
+  @override
+  String get wideTableAligned => '对齐各列';
+  @override
+  String get wideTableRecords => '展开成文字';
+  @override
+  String get headingBigTitle => '小标题设为标题2';
+  @override
+  String get headingBigSub => '把识别出的小标题变大加粗(标题2)';
   @override
   String get aiWorking => 'AI 正在按你的指示编辑。这需要一点时间…';
   @override
@@ -1467,7 +1489,7 @@ class L10nZhHans extends L10n {
   @override
   String aiModelSwitched(String model) => '原模型无响应，已切换到 $model。';
   @override
-  String get rulesSectionTitle => '自动替换规则';
+  String get rulesSectionTitle => '我的自动替换规则';
   @override
   String get rulesSectionDesc => '自上而下依次应用。替换内容中的 \\n 表示换行。代码块内不会改动。';
   @override

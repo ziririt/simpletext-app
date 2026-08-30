@@ -335,4 +335,57 @@ void main() {
       expect(r.backups.single.text, '쓰던 글');
     });
   });
+
+  group('AI 키 옮기기 — 빈 키는 값이 아니다', () {
+    test('키가 없는 기기는 도장이 더 새것이어도 받는 쪽이다', () {
+      // 2026-08-30 맥에서 난 사고 그대로다. 맥의 도장이 더 새것이지만
+      // 맥에는 키가 없었다. 그래도 받아야 한다.
+      expect(
+        keyMove(
+          firstRun: false,
+          hasRemote: true,
+          remoteStamp: 1000,
+          localStamp: 9999,
+          localEmpty: true,
+        ),
+        RulesMove.takeRemote,
+      );
+    });
+
+    test('키가 없고 구름에도 없으면 아무 일도 안 한다', () {
+      expect(
+        keyMove(
+          firstRun: false,
+          hasRemote: false,
+          remoteStamp: -1,
+          localStamp: 9999,
+          localEmpty: true,
+        ),
+        RulesMove.nothing,
+      );
+    });
+
+    test('키가 있으면 예전 규칙 그대로 — 새 도장이 이긴다', () {
+      expect(
+        keyMove(
+          firstRun: false,
+          hasRemote: true,
+          remoteStamp: 1000,
+          localStamp: 9999,
+          localEmpty: false,
+        ),
+        RulesMove.pushLocal,
+      );
+      expect(
+        keyMove(
+          firstRun: false,
+          hasRemote: true,
+          remoteStamp: 9999,
+          localStamp: 1000,
+          localEmpty: false,
+        ),
+        RulesMove.takeRemote,
+      );
+    });
+  });
 }
