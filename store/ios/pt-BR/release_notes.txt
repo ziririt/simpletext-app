@@ -1,5 +1,4 @@
-Deslize o dedo para comparar uma nota antes e depois da limpeza.
-Dá para percorrer como este texto cresceu e voltar a qualquer versão.
-Notas parecidas aparecem dispostas como uma constelação.
-Dá para colocar sua chave de IA direto na folha de edição.
-As instruções recentes se acumulam sozinhas conforme você as usa.
+Deslize para comparar a nota antes e depois da limpeza.
+Reveja como esta nota cresceu.
+Notas parecidas aparecem como uma constelação.
+Correções de bugs.

@@ -1,5 +1,4 @@
 Swipe to compare a note before and after cleanup.
-Step back through how this note grew, and restore any version.
-See related notes laid out like a constellation.
-Add your own AI key right in the edit sheet.
-Recent instructions save themselves as you use them.
+Rewind how this note grew.
+Related notes appear as a constellation.
+Bug fixes.

@@ -1,5 +1,4 @@
-Faites glisser le doigt pour comparer une note avant et après le nettoyage.
-Vous pouvez retracer comment ce texte a grandi et revenir à n’importe quelle version.
-Les notes proches s’affichent comme une constellation.
-Vous pouvez saisir votre clé d’IA directement dans la feuille d’édition.
-Les instructions récentes s’enregistrent d’elles-mêmes à mesure que vous les utilisez.
+Faites glisser pour comparer la note avant et après le nettoyage.
+Revivez comment cette note a grandi.
+Les notes proches apparaissent en constellation.
+Corrections de bugs.

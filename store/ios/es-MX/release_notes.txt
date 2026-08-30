@@ -1,5 +1,4 @@
-Desliza el dedo para comparar una nota antes y después de limpiarla.
-Puedes recorrer cómo ha crecido este texto y volver a cualquier versión.
-Las notas parecidas se muestran como una constelación.
-Puedes agregar tu propia clave de IA en la hoja de edición.
-Las instrucciones recientes se guardan solas conforme las usas.
+Desliza para comparar la nota antes y después de limpiarla.
+Recorre cómo creció esta nota.
+Las notas parecidas aparecen como una constelación.
+Corrección de errores.

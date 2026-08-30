@@ -1,5 +1,4 @@
-Wischen Sie, um eine Notiz vor und nach dem Aufräumen zu vergleichen.
-Sie können nachvollziehen, wie dieser Text gewachsen ist, und jede Fassung wiederherstellen.
-Ähnliche Notizen werden wie ein Sternbild dargestellt.
-Im KI-Bearbeitungsblatt können Sie Ihren eigenen Schlüssel eintragen.
-Zuletzt verwendete Anweisungen sammeln sich von selbst.
+Wischen, um die Notiz vor und nach der Bereinigung zu vergleichen.
+Den Werdegang dieser Notiz nachvollziehen.
+Ähnliche Notizen erscheinen als Sternbild.
+Fehlerbehebungen.
