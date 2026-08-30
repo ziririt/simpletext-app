@@ -187,8 +187,14 @@ editorRefresh), sync_merge.dart, auto_meta.dart, auto_tag_gate.dart.
 
 ### 6) 원격(맥) 패치 작업 방식 — 클라우드 세션용
 
-- 수정은 patch_NN.py로: 앵커 문자열의 **개수를 검증**하고 안 맞으면
-  exit 1. 통째 덮어쓰기 금지.
+- **2026-08-30 갱신** — 소유자 맥의 `~/development`가 세션에
+  `~/mnt/development`로 마운트된다. 이제 patch_NN.py를 따로 두지 않고
+  그 자리에서 파일을 읽고 고친다. 다만 **규칙은 그대로**다: 파이썬
+  스크립트로 **앵커 문자열을 `assert`로 확인한 뒤** 치환하고, 통째
+  덮어쓰기는 금지한다. 조용히 빗나간 치환이 제일 나쁘다.
+- 마운트 셸(device_bash)의 sed는 **GNU sed**다 — `sed -i ''`는 실패한다.
+  그리고 **그 셸로 git을 돌리지 마라**: 지울 수 없는 `.git/index.lock`이
+  남는다. git·flutter·빌드는 osascript로.
 - 파이썬 안의 Dart 문자열에서 **`$`를 이스케이프하지 마라** — `\$`는
   글자 그대로 달러가 되어 URL과 앵커를 조용히 망가뜨린다(실제 사고).
 - osascript로 긴 작업 금지: `.sh` + `nohup … &` + 로그 폴링. 한국어
@@ -196,8 +202,9 @@ editorRefresh), sync_merge.dart, auto_meta.dart, auto_tag_gate.dart.
 - `git push` 출력은 반드시 `sed -e 's#https://[^ ]*@#https://***@#g'`로
   마스킹(ezlong 리모트에 토큰이 평문으로 있다). API 키·클라이언트
   시크릿·keystore 비번은 어떤 출력에도 싣지 않는다.
-- 아이폰에는 소유자가 명시적으로 시킬 때만 설치한다(개발 설치가
-  기기 자료를 지운 사고 있음). 안드로이드는 `adb install -r`라 안전.
+- ~~아이폰에는 소유자가 명시적으로 시킬 때만 설치한다~~ —
+  **2026-08-29 소유자 지시로 해제**("아이폰 묻지 말고 넣어도 된다.
+  지침 변경"). 지금은 배포 묶음에 iphone을 늘 포함한다.
 
 ### 7) 소유자와 일하기
 

@@ -92,8 +92,9 @@ cp -R build/macos/Build/Products/Release/simpletext.app "/Applications/심플텍
   SettingsScreen(정리 규칙 + AI 키/모델 + 자동 바꾸기 규칙)
 - test/core/tidy_engine_test.dart — 55개. 기획서 Acceptance Test 01~04 + 사용자 브리핑 fixture
   + 표 정렬 출력 fixture(2026-08-12) 포함
-- 웹(simpletext/index.html)은 같은 엔진의 JS 원본 포함. **엔진 수정 시 반드시 양쪽(JS·Dart) 동일
-  적용 + 양쪽 테스트 통과**가 제1규칙 (웹 테스트: 저장소엔 없음, 로직 대칭만 유지하면 됨)
+- ~~웹(simpletext/index.html)의 JS 원본과 대칭 유지~~ — **2026-08-30 폐기.** 손으로 쓴 JS
+  엔진은 이제 없다. 지금 웹앱은 컴파일된 Flutter 번들 하나(ezlong/skybluenote/web/)이고,
+  정리 엔진의 사본은 존재하지 않는다. 거울을 찾지 마라
 
 ## 6. 확정된 제품 결정 (사용자 확정 사항 — 임의 변경 금지)
 
