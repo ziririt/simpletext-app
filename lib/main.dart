@@ -3351,6 +3351,35 @@ Future<void> openNote(BuildContext context, String id,
   );
 }
 
+/// 지금 오른쪽 칸에 열려 있는 메모의 번호를 목록 쪽으로 물려준다.
+///
+/// 2026-08-31 소유자 신고 — "맥앱과 웹앱에서, 처음 본 노트가 좌측 목록에
+/// 음영으로 남아 있고 다른 노트를 눌러도 그 음영이 안 옮겨간다."
+///
+/// 까닭은 한 줄이었다. 왼쪽 목록을 `const HomeScreen(embedded: true)` 로
+/// 넣어 뒀는데, **const 위젯은 부모가 다시 그려도 그 아래를 다시 그리지
+/// 않는다.** 플러터가 같은 인스턴스임을 알아보고 통째로 건너뛴다(그러라고
+/// 있는 최적화다). 그래서 껍데기가 setState 로 새 번호를 들고 다시 그려도
+/// 목록의 줄들은 옛 번호를 그대로 들고 있었다.
+///
+/// const 를 떼는 것으로도 증상은 사라지지만, 그건 '지금은 우연히 다시
+/// 그려진다'에 기대는 고침이라 다음 사람이 const 를 도로 붙이면 조용히
+/// 되살아난다. 그래서 **의존 관계를 명시**한다 — InheritedWidget 은 값이
+/// 바뀌면 자기를 읽어 간 줄들을 직접 깨운다. 중간에 const 가 몇 겹
+/// 있어도 상관없다.
+class OpenNote extends InheritedWidget {
+  const OpenNote({super.key, required this.id, required super.child});
+
+  /// 지금 열려 있는 메모. 아무것도 안 열었으면 null.
+  final String? id;
+
+  static String? of(BuildContext c) =>
+      c.dependOnInheritedWidgetOfExactType<OpenNote>()?.id;
+
+  @override
+  bool updateShouldNotify(OpenNote old) => old.id != id;
+}
+
 /// 넓은 화면에서 왼쪽에 목록, 오른쪽에 본문을 함께 보여 주는 껍데기.
 ///
 /// 2026-08-16 소유자 요청 — "맥이나 윈도의 경우 왼쪽에 리스트를 보여주면
@@ -3517,7 +3546,10 @@ class SplitShellState extends State<SplitShell> {
                     alignment: Alignment.centerLeft,
                     minWidth: _listW,
                     maxWidth: _listW,
-                    child: const HomeScreen(embedded: true),
+                    child: OpenNote(
+                      id: _openId,
+                      child: const HomeScreen(embedded: true),
+                    ),
                   ),
                 ),
               ),
@@ -5010,8 +5042,13 @@ class _HomeScreenState extends State<HomeScreen>
     // 목록에서는 어느 것인지 알 수 없었다. 애플 메모·메일·파인더가
     // 전부 고른 줄을 칠해 주는 데는 까닭이 있다 — 목록과 본문이 같은
     // 화면에 있으면 '지금 이것'을 잇는 실이 있어야 한다.
+    // shell.openId 를 바로 읽지 않는다. findAncestorStateOfType 은 값을
+    // 가져올 뿐 '이 값을 봤다'고 등록하지 않아서, 값이 바뀌어도 이 줄은
+    // 깨어나지 않는다(2026-08-31 음영이 안 옮겨가던 그 버그). OpenNote 로
+    // 읽으면 바뀔 때마다 이 줄만 정확히 다시 그려진다.
     final shell = SplitShell.of(context);
-    final selected = shell != null && shell.isWide && shell.openId == n.id;
+    final selected =
+        shell != null && shell.isWide && OpenNote.of(context) == n.id;
 
     // 2026-08-16 소유자 요청 — "마우스 오버하거나 선택할 때 색을
     // 스카이블루로."
