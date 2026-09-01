@@ -7106,6 +7106,55 @@ static const int kTagScanChars = 3000;
       }
     }
     await store.persistSettings();
+    if (mounted) _nudgeIfLast(wizard: wizard);
+  }
+
+  /// 마지막 한 번이 남았을 때만 슬쩍 알려 준다.
+  ///
+  /// 2026-09-02 소유자 지시 — "무료 버전 제약에 걸릴 때도 유료로 부드럽게
+  /// 잘 유도해". 지금까지는 **다 쓰고 막힌 뒤에야** 결제 이야기가 나왔다.
+  /// 막힌 사람은 이미 하려던 일을 못 하게 된 사람이라, 그 자리에서 값을
+  /// 보면 안내가 아니라 통행료로 읽힌다.
+  ///
+  /// 그래서 벽에 닿기 **한 걸음 전**에 한 번만 말한다. 남은 횟수가 정확히
+  /// 1일 때다. 2에서도 3에서도 말하면 잔소리가 되고, 0에서 말하면 늦다.
+  /// 하루에 많아야 두 번(정리 한 번·AI 한 번) 뜬다.
+  void _nudgeIfLast({required bool wizard}) {
+    final s = store.settings;
+    if (!limitsApply(
+      paidTierLive: kPaidTierLive,
+      legacyFree: s.legacyFree,
+      premium: s.premium,
+    )) {
+      return;
+    }
+    // 체험 중에는 한도가 없다 — 남은 횟수를 말하면 거짓말이 된다.
+    if (trialOn(s.trialDays)) return;
+    final left = remaining(
+      now: DateTime.now(),
+      savedDate: wizard ? s.wizDate : s.tidyDate,
+      savedCount: wizard ? s.wizCount : s.tidyCount,
+      limit: wizard ? kFreeWizardPerDay : kFreeTidyPerDay,
+      premium: s.premium,
+    );
+    if (left != 1) return;
+    final l = L10n.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(wizard ? l.limitLeftWizard(left) : l.limitLeftTidy(left)),
+        // 단추가 달린 알림은 읽고 누를 시간이 있어야 한다. 정리 완료
+        // 알림(1.1초)보다 길게 두는 까닭이다.
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: l.limitSeePremium,
+          onPressed: () {
+            if (!mounted) return;
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const PremiumScreen()));
+          },
+        ),
+      ));
   }
 
   /// 처음 붙여넣은 글로 돌아간다.
@@ -11743,10 +11792,18 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
 /// const가 아니라 final인 이유: const로 두면 분석기가 아래 코드를 전부
 /// '죽은 코드'로 보고 경고한다. 죽은 게 아니라 **잠깐 꺼 둔 것**이다.
 // 2026-08-26 — 상수를 손으로 고쳤다 되돌리는 짓을 그만둔다. 빌드할 때
-// --dart-define=PAID_TIER=true 를 실으면 켜진다. 샌드박스 검증이 끝나면
-// 여기 기본값을 true 로 바꾼다.
+// --dart-define=PAID_TIER=true 를 실으면 켜진다.
+//
+// 2026-09-02 소유자 지시 — 기본값을 켬으로 바꾼다. 이제 개발 빌드에서도
+// TestFlight 에서도 값이 보이고, 그래야 샌드박스 결제를 손으로 확인할 수
+// 있다. 끄고 싶으면 --dart-define=PAID_TIER=false 를 실으면 된다.
+//
+// 주의 — 이 값이 켜져 있어도 App Store Connect 쪽 상품이 심사를 통과해
+// '판매 준비 완료'가 되어야 실제 값이 내려온다. 아니면 화면에 값 대신
+// 점 세 개만 남는다(디버그 빌드에서는 kDevUsdPrice 가 자리를 채운다).
 // ignore: prefer_const_declarations
-final bool kPaidTierLive = const bool.fromEnvironment('PAID_TIER');
+final bool kPaidTierLive =
+    const bool.fromEnvironment('PAID_TIER', defaultValue: true);
 
 /// 켜고 나면 곧장 결제 화면을 연다 — **디버그 전용**.
 ///
@@ -11903,6 +11960,20 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
+  /// 프리미엄 혜택 한 줄. 가운데 정렬한 문단 사이에서 이 줄들만 왼쪽으로
+  /// 정렬한다 — 목록은 눈이 같은 x좌표에서 다음 줄을 찾기 때문이다.
+  Widget _perk(BuildContext context, IconData icon, String text) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, size: 19, color: context.c.accent),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(fontSize: 15, height: 1.45)),
+          ),
+        ]),
+      );
+
   Widget _sectionTitle(String title, String scope) => Padding(
         padding: const EdgeInsets.only(top: 14, bottom: 8),
         child: Column(
@@ -11945,6 +12016,17 @@ class _PremiumScreenState extends State<PremiumScreen> {
       Text(l.premiumPerks,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13.5, height: 1.4, color: c.accent)),
+      // 2026-09-02 소유자 지시 — "유료의 장점 잘 어필해".
+      //
+      // 한 줄로 '광고 없음 · 무제한'만 적어 두면 읽는 사람은 그것이 자기
+      // 하루에 무엇을 바꾸는지 계산해야 한다. 값을 보기 전에 그 계산을
+      // 대신 끝내 준다. 한도 숫자는 상수에서 가져온다 — 문구에 박아 두면
+      // 상수를 고치는 날 아홉 나라 말이 통째로 거짓말이 된다.
+      const SizedBox(height: 18),
+      _perk(context, Icons.block, l.premiumPerkNoAds),
+      _perk(context, Icons.auto_fix_high, l.premiumPerkTidy(kFreeTidyPerDay)),
+      _perk(context, Icons.auto_awesome, l.premiumPerkWizard(kFreeWizardPerDay)),
+      _perk(context, Icons.favorite_border, l.premiumPerkSupport),
     ];
 
     // 체험 중이면 남은 날을 여기서도 보여 준다. 끝나는 날을 미리 알고 있으면
@@ -11956,6 +12038,17 @@ class _PremiumScreenState extends State<PremiumScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.w700, color: c.accent)),
+      ]);
+    } else if (tier == 0 && s.trialDays == 0) {
+      // 아직 한 번도 안 연 사람(설치 직후 이 화면부터 들른 경우). 값을 먼저
+      // 보고 물러나기 전에, 2주는 그냥 열려 있다는 것을 알려 준다.
+      body.addAll([
+        const SizedBox(height: 10),
+        Text(l.premiumTrialFree,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 14, height: 1.45, fontWeight: FontWeight.w700,
+                color: c.accent)),
       ]);
     }
 
@@ -12703,61 +12796,6 @@ class _SettingsScreenState extends State<SettingsScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          // 2026-08-16 소유자 요청 — 설정 맨 위에 프리미엄(결제) 유도 배너.
-          //
-          // 2026-08-17 — 첫 판은 완전 무료라 이 배너를 끈다. 가격이 적힌
-          // 화면으로 가는 문이 하나라도 열려 있으면 애플이 3.1.1로 본다.
-          if (kPaidTierLive)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-            child: Material(
-              color: context.c.infoBg,
-              borderRadius: BorderRadius.circular(16),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const PremiumScreen())),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(children: [
-                    Icon(Icons.workspace_premium, color: context.c.accent, size: 30),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(l.premiumPitch,
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w800,
-                                    color: context.c.accent)),
-                            const SizedBox(height: 3),
-                            // 체험 중에는 남은 날을 대신 띄운다. 첫날부터
-                            // 보이게 두는 게 핵심이다 — 조용히 끝났다가
-                            // 어느 날 갑자기 막히면 사람은 지갑이 아니라
-                            // 삭제 버튼을 누른다.
-                            Text(
-                                trialOn(store.settings.trialDays)
-                                    ? l.trialBadge(
-                                        trialLeft(store.settings.trialDays))
-                                    : l.premiumPitchSub,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    height: 1.35,
-                                    fontWeight: trialOn(store.settings.trialDays)
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
-                                    color: trialOn(store.settings.trialDays)
-                                        ? context.c.accent
-                                        : context.c.guideInk)),
-                          ]),
-                    ),
-                    Icon(Icons.chevron_right, color: context.c.sub),
-                  ]),
-                ),
-              ),
-            ),
-          ),
           // 2026-08-14 소유자 요청: 설정 메뉴를 그룹으로 묶는다.
           //
           // 전에는 열여섯 줄이 한 줄로 늘어서 있었고, 성격이 다른 것들이 섞여
@@ -13356,6 +13394,65 @@ class _SettingsScreenState extends State<SettingsScreen>
             // 버전은 이 화면 맨 위 오른쪽으로 옮겼다(2026-08-17).
             // 같은 것을 두 곳에 두면 한 곳은 반드시 뒤처진다.
           ]),
+          // ── 프리미엄 ──────────────────────────────────────────────
+          //
+          // 2026-09-02 소유자 지시로 **맨 아래**로 내렸다. 설정을 여는 사람이
+          // 언제나 결제하러 오는 것은 아니다. 첫 줄이 매번 값 이야기면 그건
+          // 안내가 아니라 호객이 된다. 아래에 두면 설정을 한 바퀴 훑어본
+          // 사람 — 이 앱을 계속 쓸 마음이 있는 사람 — 의 눈에 마지막으로
+          // 남는다.
+          if (kPaidTierLive)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 26, 16, 6),
+            child: Material(
+              color: context.c.infoBg,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const PremiumScreen())),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(children: [
+                    Icon(Icons.workspace_premium, color: context.c.accent, size: 30),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l.premiumPitch,
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: context.c.accent)),
+                            const SizedBox(height: 3),
+                            // 체험 중에는 남은 날을 대신 띄운다. 첫날부터
+                            // 보이게 두는 게 핵심이다 — 조용히 끝났다가
+                            // 어느 날 갑자기 막히면 사람은 지갑이 아니라
+                            // 삭제 버튼을 누른다.
+                            Text(
+                                trialOn(store.settings.trialDays)
+                                    ? l.trialBadge(
+                                        trialLeft(store.settings.trialDays))
+                                    : l.premiumPitchSub,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.35,
+                                    fontWeight: trialOn(store.settings.trialDays)
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                    color: trialOn(store.settings.trialDays)
+                                        ? context.c.accent
+                                        : context.c.guideInk)),
+                          ]),
+                    ),
+                    Icon(Icons.chevron_right, color: context.c.sub),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+
           // 바로가기(앵커)가 겨냥한 자리를 화면 '맨 위'에 붙이려면 그 아래에
           // 화면 한 장만큼의 여유가 있어야 한다. 없으면 목록 끝에 가까운
           // 항목은 아무리 스크롤해도 중간까지만 올라온다 — 맥처럼 창이 큰

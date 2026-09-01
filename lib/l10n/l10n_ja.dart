@@ -1425,6 +1425,24 @@ class L10nJa extends L10n {
   String get premiumHave => '現在のプラン';
   @override
   String get premiumLoading => 'ストアから価格を取得しています';
+
+  @override
+  String get premiumPerkNoAds => '広告がなくなります — バナーも、この案内も';
+
+  @override
+  String premiumPerkTidy(int n) => '整理が無制限 — 1日$n回の上限がなくなります';
+
+  @override
+  String premiumPerkWizard(int n) => 'AI編集が無制限 — 1日$n回の上限がなくなります';
+
+  @override
+  String get premiumPerkSupport => '一人で作っているアプリです。一度のご購入が次の版を作ります';
+
+  @override
+  String get premiumTrialFree => 'インストールから2週間はプレミアムのまま無料です。お支払いはその後で決めてください。';
+
+  @override
+  String get sponsorPremiumNote => '一度ご購入いただければ、バナーもこの案内も二度と出ません。';
   @override
   String get premiumTitle => 'プレミアム';
   @override
@@ -1448,6 +1466,12 @@ class L10nJa extends L10n {
       '無料プランでは1日に$n回までAI編集を使えます。明日また開きます — プレミアムなら制限がありません。';
   @override
   String get limitSeePremium => 'プレミアムを見る';
+
+  @override
+  String limitLeftTidy(int n) => '本日の無料整理はあと$n回です。';
+
+  @override
+  String limitLeftWizard(int n) => '本日の無料AI編集はあと$n回です。';
   @override
   String get premiumYearly => '年額';
   @override

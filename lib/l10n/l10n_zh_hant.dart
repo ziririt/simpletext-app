@@ -1425,6 +1425,24 @@ class L10nZhHant extends L10n {
   String get premiumHave => '目前方案';
   @override
   String get premiumLoading => '正在從商店取得價格';
+
+  @override
+  String get premiumPerkNoAds => '不再有廣告 — 橫幅和這個提示都會消失';
+
+  @override
+  String premiumPerkTidy(int n) => '整理無限次 — 每天 $n 次的上限取消';
+
+  @override
+  String premiumPerkWizard(int n) => 'AI 編輯無限次 — 每天 $n 次的上限取消';
+
+  @override
+  String get premiumPerkSupport => '這是一個人做的應用程式。您的一次購買就是下一個版本';
+
+  @override
+  String get premiumTrialFree => '安裝後兩週內是完整的進階版，免費。之後再決定也不遲。';
+
+  @override
+  String get sponsorPremiumNote => '購買一次，橫幅和這個提示都不會再出現。';
   @override
   String get premiumTitle => '進階版';
   @override
@@ -1448,6 +1466,12 @@ class L10nZhHant extends L10n {
       '免費版每天可使用 $n 次 AI 編輯，明天恢復 — 進階版沒有限制。';
   @override
   String get limitSeePremium => '查看進階版';
+
+  @override
+  String limitLeftTidy(int n) => '今天還剩 $n 次免費整理。';
+
+  @override
+  String limitLeftWizard(int n) => '今天還剩 $n 次免費 AI 編輯。';
   @override
   String get premiumYearly => '年付';
   @override

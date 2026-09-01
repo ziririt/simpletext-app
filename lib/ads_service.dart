@@ -370,40 +370,67 @@ class _SponsorSheetState extends State<SponsorSheet> {
                         fontSize: 13.5, color: Theme.of(context).colorScheme.error)),
               ],
               const SizedBox(height: 16),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: _busy ? null : _watch,
-                child: Text(_busy ? l.sponsorLoading : l.sponsorWatch,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l.sponsorSkip),
-              ),
-              // 결제 유도 — 광고가 싫으면 프리미엄이 답이다.
+              // ── 여기가 배너의 X를 누른 사람이 서 있는 자리다 ──────────
               //
-              // 다만 **첫 판에서는 안 보인다.** 소유자 결정으로 이번 판은
-              // 완전 무료라 결제가 안 붙어 있고, 없는 결제로 가는 문을
-              // 열어 두면 애플 심사 2.1(되지 않는 기능)·3.1.1(애플 결제를
-              // 안 쓰는 가격 표시)에 걸린다.
+              // 2026-09-02 소유자 지시로 순서를 뒤집었다. 전에는 '광고 한 편
+              // 보기'가 큰 단추였고 프리미엄은 맨 아래 글자 단추였다. 그런데
+              // 이 사람은 방금 **광고를 끄겠다고** X를 누른 사람이다. 그
+              // 순간에 제일 먼저 보여야 할 답은 '오늘 하루만 없애기'가 아니라
+              // '영영 없애기'다.
               //
-              // 2026-08-17에 이 자리를 뒤늦게 찾았다. kPaidTierLive로 프리미엄
-              // 화면을 껐다고 했는데, 여기 한 군데가 남아 있었다. 스위치를
-              // 만들었으면 그 스위치가 닿아야 할 자리를 **전부** 찾아야
-              // 한다는 것을 다시 배운다.
-              if (kPaidTierLive)
-                TextButton(
+              // 광고 한 편 보기를 없애지는 않는다. 지갑을 열 생각이 없는
+              // 사람에게도 길은 있어야 하고, 그 길이 곧 이 앱의 수입이다.
+              // 자리를 아래로 내리고 테두리 단추로 바꿔 두는 것으로 족하다.
+              if (kPaidTierLive) ...[
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                     Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const PremiumScreen()));
                   },
                   child: Text(l.sponsorGoPremium,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                ),
+                const SizedBox(height: 8),
+                Text(l.sponsorPremiumNote,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 13,
+                        height: 1.45,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 14),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _busy ? null : _watch,
+                  child: Text(_busy ? l.sponsorLoading : l.sponsorWatch,
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
+              ] else
+                // 결제가 꺼진 판(웹·윈도우, 또는 PAID_TIER=false 빌드)에서는
+                // 예전 그대로 광고 한 편 보기가 유일한 답이자 큰 단추다.
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _busy ? null : _watch,
+                  child: Text(_busy ? l.sponsorLoading : l.sponsorWatch,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l.sponsorSkip),
+              ),
             ],
           ),
         ),

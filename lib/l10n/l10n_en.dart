@@ -1429,6 +1429,24 @@ class L10nEn extends L10n {
   String get premiumHave => 'Your plan';
   @override
   String get premiumLoading => 'Getting prices from the store';
+
+  @override
+  String get premiumPerkNoAds => 'No ads — no banner, no interruption';
+
+  @override
+  String premiumPerkTidy(int n) => 'Unlimited tidying — the $n-a-day cap is gone';
+
+  @override
+  String premiumPerkWizard(int n) => 'Unlimited AI editing — the $n-a-day cap is gone';
+
+  @override
+  String get premiumPerkSupport => 'One person makes this app. Your purchase pays for the next version';
+
+  @override
+  String get premiumTrialFree => 'The first 2 weeks are Premium, free. You can decide after that.';
+
+  @override
+  String get sponsorPremiumNote => 'Buy once and neither the banner nor this notice comes back.';
   @override
   String get premiumTitle => 'Premium';
   @override
@@ -1452,6 +1470,12 @@ class L10nEn extends L10n {
       'The free plan includes $n AI edits a day. It resets tomorrow — Premium removes the limit.';
   @override
   String get limitSeePremium => 'See Premium';
+
+  @override
+  String limitLeftTidy(int n) => '$n free tidy left today.';
+
+  @override
+  String limitLeftWizard(int n) => '$n free AI edit left today.';
   @override
   String get premiumYearly => 'Yearly';
   @override

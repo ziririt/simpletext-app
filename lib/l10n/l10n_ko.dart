@@ -1425,6 +1425,24 @@ class L10nKo extends L10n {
   String get premiumHave => '지금 등급';
   @override
   String get premiumLoading => '스토어에서 값을 받아오는 중입니다';
+
+  @override
+  String get premiumPerkNoAds => '광고가 없어집니다 — 배너도, 닫을 때 뜨는 안내도';
+
+  @override
+  String premiumPerkTidy(int n) => '정리 무제한 — 하루 $n번 한도가 풀립니다';
+
+  @override
+  String premiumPerkWizard(int n) => 'AI 편집 무제한 — 하루 $n번 한도가 풀립니다';
+
+  @override
+  String get premiumPerkSupport => '혼자 만드는 앱입니다. 결제 한 번이 다음 판을 만듭니다';
+
+  @override
+  String get premiumTrialFree => '설치하고 2주 동안은 프리미엄 그대로 무료입니다. 값은 그 뒤에 정하셔도 됩니다.';
+
+  @override
+  String get sponsorPremiumNote => '한 번 결제하시면 배너도, 이 창도 다시 보이지 않습니다.';
   @override
   String get premiumTitle => '프리미엄';
   @override
@@ -1448,6 +1466,12 @@ class L10nKo extends L10n {
       '무료로는 하루에 $n번까지 AI 편집을 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String get limitSeePremium => '프리미엄 보기';
+
+  @override
+  String limitLeftTidy(int n) => '오늘 무료 정리가 $n번 남았습니다.';
+
+  @override
+  String limitLeftWizard(int n) => '오늘 무료 AI 편집이 $n번 남았습니다.';
   @override
   String get premiumYearly => '연간';
   @override

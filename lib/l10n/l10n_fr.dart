@@ -1430,6 +1430,24 @@ class L10nFr extends L10n {
   String get premiumHave => 'Votre formule';
   @override
   String get premiumLoading => 'Récupération des prix';
+
+  @override
+  String get premiumPerkNoAds => 'Plus de publicité — ni bannière, ni cet avis';
+
+  @override
+  String premiumPerkTidy(int n) => 'Mise au propre illimitée — la limite de $n par jour disparaît';
+
+  @override
+  String premiumPerkWizard(int n) => 'Édition IA illimitée — la limite de $n par jour disparaît';
+
+  @override
+  String get premiumPerkSupport => 'Une seule personne fait cette application. Votre achat paie la prochaine version';
+
+  @override
+  String get premiumTrialFree => 'Les 2 premières semaines sont Premium, gratuites. Vous déciderez ensuite.';
+
+  @override
+  String get sponsorPremiumNote => 'Achetez une fois et ni la bannière ni cet avis ne reviennent.';
   @override
   String get premiumTitle => 'Premium';
   @override
@@ -1453,6 +1471,12 @@ class L10nFr extends L10n {
       'La version gratuite comprend $n éditions IA par jour. Cela repart demain — Premium supprime la limite.';
   @override
   String get limitSeePremium => 'Voir Premium';
+
+  @override
+  String limitLeftTidy(int n) => 'Il vous reste $n mise au propre gratuite aujourd’hui.';
+
+  @override
+  String limitLeftWizard(int n) => 'Il vous reste $n édition IA gratuite aujourd’hui.';
   @override
   String get premiumYearly => 'Annuel';
   @override

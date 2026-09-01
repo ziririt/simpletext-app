@@ -1425,6 +1425,24 @@ class L10nZhHans extends L10n {
   String get premiumHave => '当前方案';
   @override
   String get premiumLoading => '正在从商店获取价格';
+
+  @override
+  String get premiumPerkNoAds => '不再有广告 — 横幅和这个提示都会消失';
+
+  @override
+  String premiumPerkTidy(int n) => '整理无限次 — 每天 $n 次的上限取消';
+
+  @override
+  String premiumPerkWizard(int n) => 'AI 编辑无限次 — 每天 $n 次的上限取消';
+
+  @override
+  String get premiumPerkSupport => '这是一个人做的应用。您的一次购买就是下一个版本';
+
+  @override
+  String get premiumTrialFree => '安装后两周内是完整的高级版，免费。之后再决定也不迟。';
+
+  @override
+  String get sponsorPremiumNote => '购买一次，横幅和这个提示都不会再出现。';
   @override
   String get premiumTitle => '高级版';
   @override
@@ -1448,6 +1466,12 @@ class L10nZhHans extends L10n {
       '免费版每天可使用 $n 次 AI 编辑，明天恢复 — 高级版没有限制。';
   @override
   String get limitSeePremium => '查看高级版';
+
+  @override
+  String limitLeftTidy(int n) => '今天还剩 $n 次免费整理。';
+
+  @override
+  String limitLeftWizard(int n) => '今天还剩 $n 次免费 AI 编辑。';
   @override
   String get premiumYearly => '年付';
   @override

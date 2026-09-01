@@ -1430,6 +1430,24 @@ class L10nDe extends L10n {
   String get premiumHave => 'Ihr Tarif';
   @override
   String get premiumLoading => 'Preise werden vom Store geladen';
+
+  @override
+  String get premiumPerkNoAds => 'Keine Werbung — kein Banner, kein Hinweis';
+
+  @override
+  String premiumPerkTidy(int n) => 'Unbegrenztes Aufräumen — das Limit von $n pro Tag entfällt';
+
+  @override
+  String premiumPerkWizard(int n) => 'Unbegrenzte KI-Bearbeitung — das Limit von $n pro Tag entfällt';
+
+  @override
+  String get premiumPerkSupport => 'Eine Person macht diese App. Ihr Kauf bezahlt die nächste Version';
+
+  @override
+  String get premiumTrialFree => 'Die ersten 2 Wochen sind Premium, kostenlos. Entscheiden Sie danach.';
+
+  @override
+  String get sponsorPremiumNote => 'Einmal kaufen — Banner und dieser Hinweis kommen nicht wieder.';
   @override
   String get premiumTitle => 'Premium';
   @override
@@ -1453,6 +1471,12 @@ class L10nDe extends L10n {
       'Die kostenlose Version enthält $n KI-Bearbeitungen pro Tag. Morgen geht es weiter — Premium hebt das Limit auf.';
   @override
   String get limitSeePremium => 'Premium ansehen';
+
+  @override
+  String limitLeftTidy(int n) => 'Heute ist noch $n kostenloses Aufräumen übrig.';
+
+  @override
+  String limitLeftWizard(int n) => 'Heute ist noch $n kostenlose KI-Bearbeitung übrig.';
   @override
   String get premiumYearly => 'Jährlich';
   @override
