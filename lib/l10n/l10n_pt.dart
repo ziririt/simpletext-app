@@ -1408,9 +1408,9 @@ class L10nPt extends L10n {
   @override
   String get premiumPerks => 'Sem anúncios · Limpeza ilimitada · Assistente de IA ilimitado';
   @override
-  String get premiumScopeBase => 'Funciona nos aparelhos da loja onde você comprou, e na web.';
+  String get premiumScopeBase => 'Comprado na Apple, abre no iPhone, iPad e Mac. Comprado na Google Play, nos seus aparelhos Android. Nos dois casos o app web está incluído. Não abre na outra família (iPhone ↔ Android) nem no Windows.';
   @override
-  String get premiumScopeAll => 'Funciona em qualquer aparelho que você use.';
+  String get premiumScopeAll => 'Tudo acima mais a outra família — comprado na Apple, funciona também no Android e no Windows, e o contrário também. Escolha este se você mistura iPhone e Android ou usa Windows no trabalho.';
   @override
   String get premiumAutoRenew => 'A assinatura é renovada automaticamente se não for cancelada até 24 horas antes do fim do período. Você pode cancelar quando quiser nos ajustes da conta.';
   @override
@@ -1454,7 +1454,7 @@ class L10nPt extends L10n {
   @override
   String get premiumPitchSub => 'Sem anúncios e ilimitado · mensal, anual ou vitalício';
   @override
-  String get premiumBody => 'O Premium remove anúncios e libera limpeza e assistente de IA sem limite. Dois planos: Padrão, para os aparelhos da loja onde você comprou e a web; e Todos os aparelhos, para qualquer aparelho que você use. Seu apoio constrói a próxima versão.';
+  String get premiumBody => 'O Premium tira os anúncios e remove os limites diários de organização e edição com IA. São dois níveis porque cada loja só aplica a compra nos próprios aparelhos — a Google não tem como ver o que você comprou na Apple. Se usa só uma família, o Básico basta; se mistura iPhone e Android, quer Todos os aparelhos. Seu apoio paga a próxima versão.';
   @override
   String get premiumLifetime => 'Vitalício';
   @override

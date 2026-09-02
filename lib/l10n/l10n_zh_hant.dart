@@ -1404,9 +1404,9 @@ class L10nZhHant extends L10n {
   @override
   String get premiumPerks => '無廣告 · 整理無限 · AI 精靈無限';
   @override
-  String get premiumScopeBase => '在購買所在商店的裝置與網頁版上可用。';
+  String get premiumScopeBase => '在 Apple 購買可在 iPhone、iPad 和 Mac 上使用；在 Google Play 購買可在 Android 裝置上使用。無論從哪邊購買，都包含網頁版。另一個系統（iPhone ↔ Android）和 Windows 電腦不適用。';
   @override
-  String get premiumScopeAll => '在您使用的任何裝置上都可用。';
+  String get premiumScopeAll => '在上述基礎上再加另一個系統 — 在 Apple 購買也能在 Android 和 Windows 上使用，反之亦然。同時使用 iPhone 和 Android，或在公司用 Windows，請選這個。';
   @override
   String get premiumAutoRenew => '訂閱將在到期前 24 小時未取消時自動續訂並按同額計費。您可隨時在帳戶設定中取消。';
   @override
@@ -1450,7 +1450,7 @@ class L10nZhHant extends L10n {
   @override
   String get premiumPitchSub => '無廣告、不限量 · 從月付到買斷';
   @override
-  String get premiumBody => '進階版移除廣告，並解鎖無限整理與 AI 精靈。兩種方案 —「基本版」適用於購買所在商店的裝置與網頁版；「全裝置」適用於您使用的任何裝置。您的支持成就下一次更新。';
+  String get premiumBody => '進階版去除廣告，並解除整理和 AI 編輯的每日次數上限。分成兩檔是因為每個商店只把購買紀錄用在自己的裝置上 — Google 無法知道您在 Apple 買過什麼。只用一個系統選「基本」，同時用 iPhone 和 Android 選「所有裝置」。您的支持成就下一個版本。';
   @override
   String get premiumLifetime => '買斷';
   @override

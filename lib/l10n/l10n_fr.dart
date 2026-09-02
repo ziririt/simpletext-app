@@ -1409,9 +1409,9 @@ class L10nFr extends L10n {
   @override
   String get premiumPerks => 'Sans publicité · Nettoyage illimité · Assistant IA illimité';
   @override
-  String get premiumScopeBase => 'Fonctionne sur les appareils de la boutique d’achat, et sur le web.';
+  String get premiumScopeBase => 'Acheté sur Apple, cela s’ouvre sur iPhone, iPad et Mac. Acheté sur Google Play, sur vos appareils Android. Dans les deux cas l’application web est incluse. Cela ne s’ouvre pas sur l’autre famille (iPhone ↔ Android) ni sur Windows.';
   @override
-  String get premiumScopeAll => 'Sur tous les appareils que vous utilisez.';
+  String get premiumScopeAll => 'Tout ce qui précède, plus l’autre famille — acheté sur Apple, cela fonctionne aussi sur Android et Windows, et inversement. Choisissez ceci si vous mélangez iPhone et Android, ou si vous utilisez Windows au travail.';
   @override
   String get premiumAutoRenew => 'L’abonnement se renouvelle automatiquement s’il n’est pas annulé au moins 24 heures avant la fin de la période. Vous pouvez l’annuler à tout moment dans les réglages du compte.';
   @override
@@ -1455,7 +1455,7 @@ class L10nFr extends L10n {
   @override
   String get premiumPitchSub => 'Sans pub et illimité · mensuel, annuel ou à vie';
   @override
-  String get premiumBody => 'Premium supprime la publicité et débloque le nettoyage et l’assistant IA sans limite. Deux formules : Standard, pour les appareils de la boutique d’achat et le web ; et Tous les appareils, pour tous les appareils que vous utilisez. Votre soutien construit la prochaine version.';
+  String get premiumBody => 'Premium supprime la publicité et lève les limites quotidiennes de mise au propre et d’édition IA. Il y a deux niveaux parce que chaque boutique n’applique l’achat qu’à ses propres appareils — Google ne peut pas voir ce que vous avez acheté chez Apple. Une seule famille : Basique suffit. iPhone et Android mélangés : prenez Tous les appareils. Votre soutien paie la prochaine version.';
   @override
   String get premiumLifetime => 'À vie';
   @override

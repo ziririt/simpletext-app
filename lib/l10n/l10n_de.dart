@@ -1409,9 +1409,9 @@ class L10nDe extends L10n {
   @override
   String get premiumPerks => 'Keine Werbung · Unbegrenzt aufräumen · Unbegrenzter KI-Assistent';
   @override
-  String get premiumScopeBase => 'Gilt für die Geräte des Stores, in dem Sie gekauft haben, plus Web.';
+  String get premiumScopeBase => 'Bei Apple gekauft, öffnet es sich auf iPhone, iPad und Mac. Bei Google Play gekauft, auf Ihren Android-Geräten. In beiden Fällen ist die Web-App enthalten. Auf der anderen Familie (iPhone ↔ Android) und unter Windows öffnet es sich nicht.';
   @override
-  String get premiumScopeAll => 'Auf jedem Gerät, das Sie nutzen.';
+  String get premiumScopeAll => 'Alles oben genannte plus die andere Familie — bei Apple gekauft läuft es auch auf Android und Windows, und umgekehrt genauso. Wählen Sie das, wenn Sie iPhone und Android mischen oder bei der Arbeit Windows nutzen.';
   @override
   String get premiumAutoRenew => 'Abos verlängern sich automatisch, sofern sie nicht mindestens 24 Stunden vor Ablauf gekündigt werden. Sie können jederzeit in den Kontoeinstellungen kündigen.';
   @override
@@ -1455,7 +1455,7 @@ class L10nDe extends L10n {
   @override
   String get premiumPitchSub => 'Werbefrei und unbegrenzt · monatlich, jährlich oder lebenslang';
   @override
-  String get premiumBody => 'Premium entfernt Werbung und öffnet Aufräumen und KI-Assistent unbegrenzt. Zwei Tarife: Standard für die Geräte des Kaufstores plus Web, und Alle Geräte für jedes Gerät, das Sie nutzen. Ihre Unterstützung baut das nächste Update.';
+  String get premiumBody => 'Premium entfernt die Werbung und hebt die Tageslimits für Aufräumen und KI-Bearbeitung auf. Es gibt zwei Stufen, weil jeder Store einen Kauf nur auf seine eigenen Geräte anwendet — Google kann nicht sehen, was Sie bei Apple gekauft haben. Bei nur einer Familie reicht Basis; wer iPhone und Android mischt, will Alle Geräte. Ihre Unterstützung bezahlt die nächste Version.';
   @override
   String get premiumLifetime => 'Lebenslang';
   @override

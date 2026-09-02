@@ -1404,9 +1404,9 @@ class L10nJa extends L10n {
   @override
   String get premiumPerks => '広告なし・整形は無制限・AIウィザードも無制限';
   @override
-  String get premiumScopeBase => '購入したストアの端末とウェブで使えます。';
+  String get premiumScopeBase => 'Appleで購入するとiPhone・iPad・Macで、Google Playで購入するとAndroid端末で使えます。どちらで購入してもWebアプリは含まれます。別系統（iPhone↔Android）とWindowsでは使えません。';
   @override
-  String get premiumScopeAll => 'お使いのどの端末でも使えます。';
+  String get premiumScopeAll => '上に加えて別系統でも使えます — Appleで購入してもAndroidやWindowsで使え、その逆も同じです。iPhoneとAndroidを併用する方、職場でWindowsを使う方はこちらを。';
   @override
   String get premiumAutoRenew => 'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
   @override
@@ -1450,7 +1450,7 @@ class L10nJa extends L10n {
   @override
   String get premiumPitchSub => '広告なしで無制限・月額から買い切りまで';
   @override
-  String get premiumBody => 'プレミアムは広告をなくし、整形とAIウィザードを無制限にします。プランは2つ — 購入したストアの端末とウェブで使う「ベーシック」、お使いのどの端末でも使える「すべての端末」。応援が次の更新をつくります。';
+  String get premiumBody => 'プレミアムは広告をなくし、整理とAI編集の1日の上限を外します。等級が2つあるのは、ストアが購入をそれぞれ自社の端末にしか適用しないからです — Appleで買ったものをGoogleが知る方法はありません。1つの系統だけなら「ベーシック」、iPhoneとAndroidを併用するなら「すべての端末」を。皆さまの応援が次のバージョンを作ります。';
   @override
   String get premiumLifetime => '買い切り';
   @override

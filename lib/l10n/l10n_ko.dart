@@ -681,9 +681,9 @@ class L10nKo extends L10n {
   @override
   String get travelNow => '지금';
   @override
-  String get travelOlder => '이전 판';
+  String get travelOlder => '이전 버전';
   @override
-  String get travelRestore => '이 판으로';
+  String get travelRestore => '이 버전 복원하기';
   @override
   String travelShrank(int n) => '$n자 줄었습니다';
   @override
@@ -1000,7 +1000,7 @@ class L10nKo extends L10n {
 
   @override
   String get historyEmpty =>
-      '아직 되돌릴 판이 없습니다';
+      '아직 되돌릴 버전이 없습니다';
 
   @override
   String get historyRestore =>
@@ -1076,7 +1076,7 @@ class L10nKo extends L10n {
   }
 
   @override
-  String historyUnknownTime(int n) => '이전 판 $n';
+  String historyUnknownTime(int n) => '이전 버전 $n';
 
   @override
   String get selUnitSentence => '문장';
@@ -1404,9 +1404,9 @@ class L10nKo extends L10n {
   @override
   String get premiumPerks => '광고 없음 · 정리 무제한 · AI 마법사 무제한';
   @override
-  String get premiumScopeBase => '결제한 스토어의 기기와 웹에서 열립니다.';
+  String get premiumScopeBase => '애플에서 결제하면 아이폰·아이패드·맥에서, 구글 플레이에서 결제하면 안드로이드 기기에서 열립니다. 어느 쪽으로 사셔도 웹앱은 함께 열립니다. 다른 계열(아이폰↔안드로이드)과 윈도우 PC에서는 열리지 않습니다.';
   @override
-  String get premiumScopeAll => '어느 기기에서나 열립니다.';
+  String get premiumScopeAll => '위에 더해 다른 계열까지 열립니다 — 애플에서 결제해도 안드로이드와 윈도우에서 쓸 수 있고, 반대도 같습니다. 아이폰과 안드로이드를 함께 쓰거나 회사에서 윈도우를 쓰신다면 이쪽입니다.';
   @override
   String get premiumAutoRenew => '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
   @override
@@ -1436,7 +1436,7 @@ class L10nKo extends L10n {
   String premiumPerkWizard(int n) => 'AI 편집 무제한 — 하루 $n번 한도가 풀립니다';
 
   @override
-  String get premiumPerkSupport => '혼자 만드는 앱입니다. 결제 한 번이 다음 판을 만듭니다';
+  String get premiumPerkSupport => '혼자 만드는 앱입니다. 결제 한 번이 다음 버전을 만듭니다';
 
   @override
   String get premiumTrialFree => '설치하고 2주 동안은 프리미엄 그대로 무료입니다. 값은 그 뒤에 정하셔도 됩니다.';
@@ -1450,7 +1450,7 @@ class L10nKo extends L10n {
   @override
   String get premiumPitchSub => '광고 없이 무제한 · 월 구독부터 평생 이용권까지';
   @override
-  String get premiumBody => '프리미엄은 광고를 없애고 정리와 AI 마법사를 무제한으로 열어 줍니다. 등급은 둘입니다 — 결제한 스토어의 기기와 웹에서 쓰는 ‘기본’, 어느 기기에서나 쓰는 ‘모든 기기’. 여러분의 응원이 다음 판을 만듭니다.';
+  String get premiumBody => '프리미엄은 광고를 없애고 정리와 AI 편집을 무제한으로 열어 줍니다. 등급이 둘인 까닭은 스토어가 결제를 자기 기기에만 적용하기 때문입니다 — 애플에서 산 것을 구글이 알아볼 방법이 없습니다. 한 계열만 쓰시면 ‘기본’, 아이폰과 안드로이드를 섞어 쓰시면 ‘모든 기기’입니다. 여러분의 응원이 다음 버전을 만듭니다.';
   @override
   String get premiumLifetime => '평생 이용권';
   @override

@@ -9019,6 +9019,22 @@ static const int kTagScanChars = 3000;
                     ('preview', CupertinoIcons.eye, lm.menuTidyPreview),
                     ('wipe', CupertinoIcons.rectangle_split_3x1, lm.wipeAction),
                   ]),
+                  // 2026-08-29 소유자 지시 — 셋을 하나로 합쳤다.
+                  //
+                  //   버전 기록(목록)  정확하지만 아무 감흥이 없다
+                  //   시간 여행(손잡이) 같은 자료를 훑는다
+                  //   원본 복귀        기록 중 맨 처음으로 가는 일일 뿐이다
+                  //
+                  // 셋은 같은 것을 다르게 부른 이름이었다. 이름은 사람들이
+                  // 아는 '버전 기록'으로 두고, 안에서는 손잡이로 훑는다.
+                  // 원본은 그 길의 첫 정거장이라 따로 둘 자리가 없다.
+                  //
+                  // 2026-09-02 소유자 지시로 정리 셋 **바로 아래**로 올렸다.
+                  // 전에는 삭제 바로 위, 서랍의 한참 아래에 있었다. 그런데
+                  // 버전 기록을 여는 까닭은 거의 언제나 '방금 정리한 것을
+                  // 되돌아보려고'다. 그 일과 붙어 있어야 찾는다.
+                  act('history', CupertinoIcons.clock, lm.historyTitle,
+                      enabled: _canTravel),
                   const PopupMenuDivider(height: 6),
                   act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
                   act('tables', CupertinoIcons.table, lm.tableAction),
@@ -9038,17 +9054,6 @@ static const int kTagScanChars = 3000;
                     ('print', CupertinoIcons.printer, lm.printShort),
                   ]),
                   const PopupMenuDivider(height: 6),
-                  // 2026-08-29 소유자 지시 — 셋을 하나로 합쳤다.
-                  //
-                  //   버전 기록(목록)  정확하지만 아무 감흥이 없다
-                  //   시간 여행(손잡이) 같은 자료를 훑는다
-                  //   원본 복귀        기록 중 맨 처음으로 가는 일일 뿐이다
-                  //
-                  // 셋은 같은 것을 다르게 부른 이름이었다. 이름은 사람들이
-                  // 아는 '버전 기록'으로 두고, 안에서는 손잡이로 훑는다.
-                  // 원본은 그 길의 첫 정거장이라 따로 둘 자리가 없다.
-                  act('history', CupertinoIcons.clock, lm.historyTitle,
-                      enabled: _canTravel),
                   act('delete', CupertinoIcons.trash, lm.delete,
                       tint: ctx.c.danger),
                   const PopupMenuDivider(height: 6),

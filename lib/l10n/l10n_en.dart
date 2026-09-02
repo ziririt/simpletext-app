@@ -1408,9 +1408,9 @@ class L10nEn extends L10n {
   @override
   String get premiumPerks => 'No ads · Unlimited tidy · Unlimited AI wizard';
   @override
-  String get premiumScopeBase => 'Works on the devices of the store you bought from, plus the web.';
+  String get premiumScopeBase => 'Bought on Apple, it opens on iPhone, iPad and Mac. Bought on Google Play, it opens on your Android devices. Either way the web app is included. It does not open on the other family (iPhone ↔ Android) or on Windows.';
   @override
-  String get premiumScopeAll => 'Works on every device you use.';
+  String get premiumScopeAll => 'Everything above, plus the other family — buy on Apple and it still opens on Android and Windows, and the same the other way round. Choose this if you mix iPhone and Android, or use Windows at work.';
   @override
   String get premiumAutoRenew => 'Subscriptions renew automatically unless canceled at least 24 hours before the period ends. You can cancel any time in your account settings.';
   @override
@@ -1454,7 +1454,7 @@ class L10nEn extends L10n {
   @override
   String get premiumPitchSub => 'Ad-free and unlimited · monthly, yearly or lifetime';
   @override
-  String get premiumBody => 'Premium removes ads and unlocks unlimited tidy and AI wizard. Two plans: Standard, for the devices of the store you bought from plus the web; and All Devices, for every device you use. Your support builds the next release.';
+  String get premiumBody => 'Premium removes the ads and lifts the daily caps on tidying and AI editing. There are two tiers because each store only applies a purchase to its own devices — Google has no way to see what you bought on Apple. Stay in one family and Basic is enough; mix iPhone and Android and you want All devices. Your support pays for the next version.';
   @override
   String get premiumLifetime => 'Lifetime';
   @override
