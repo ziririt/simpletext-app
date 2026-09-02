@@ -1402,7 +1402,7 @@ class L10nZhHant extends L10n {
   @override
   String get premiumBestValue => '最划算';
   @override
-  String get premiumPerks => '無廣告 · 整理無限 · AI 精靈無限';
+  String get premiumPerks => '無廣告 · 整理無限 · AI 編輯無限';
   @override
   String get premiumScopeBase => '在 Apple 購買可在 iPhone、iPad 和 Mac 上使用；在 Google Play 購買可在 Android 裝置上使用。無論從哪邊購買，都包含網頁版。另一個系統（iPhone ↔ Android）和 Windows 電腦不適用。';
   @override
@@ -1427,19 +1427,42 @@ class L10nZhHant extends L10n {
   String get premiumLoading => '正在從商店取得價格';
 
   @override
-  String get premiumPerkNoAds => '不再有廣告 — 橫幅和這個提示都會消失';
+  String get premiumPerkNoAds => '無廣告 — 頂部橫幅和關閉時的提示都不再出現';
 
   @override
-  String premiumPerkTidy(int n) => '整理無限次 — 每天 $n 次的上限取消';
+  String get premiumGroupWhat => '進階版能做什麼';
 
   @override
-  String premiumPerkWizard(int n) => 'AI 編輯無限次 — 每天 $n 次的上限取消';
+  String get premiumGroupTiers => '為什麼分兩檔';
 
   @override
-  String get premiumPerkSupport => '這是一個人做的應用程式。您的一次購買就是下一個版本';
+  String get premiumGroupTrial => '最初兩週';
 
   @override
-  String get premiumTrialFree => '安裝後兩週內是完整的進階版，免費。之後再決定也不遲。';
+  String get premiumPerkWeb => '網頁版也一樣 — 瀏覽器裡同樣無廣告';
+
+  @override
+  String get premiumTierWhy => '每個商店只把購買用在自己的裝置上 — Google 無法知道您在 Apple 買過什麼';
+
+  @override
+  String get premiumTierPickBase => '只用 iPhone、iPad 和 Mac → 基本';
+
+  @override
+  String get premiumTierPickAll => '同時用 iPhone 和 Android，或還要 Windows → 所有裝置';
+
+  @override
+  String get premiumTrialAfter => '之後再決定是否付費 — 在此期間一切照常';
+
+  @override
+  String premiumTrialLine(int days) => '實際打開應用程式的 $days 天內，進階版免費';
+
+  @override
+  String premiumPerkTidy(int n) => '整理無限次 — 解除每天 $n 次的上限';
+
+  @override
+  String premiumPerkWizard(int n) => 'AI 編輯無限次 — 解除每天 $n 次的上限';
+
+
 
   @override
   String get sponsorPremiumNote => '購買一次，橫幅和這個提示都不會再出現。';
@@ -1449,8 +1472,6 @@ class L10nZhHant extends L10n {
   String get premiumPitch => '無廣告，不設限';
   @override
   String get premiumPitchSub => '無廣告、不限量 · 從月付到買斷';
-  @override
-  String get premiumBody => '進階版去除廣告，並解除整理和 AI 編輯的每日次數上限。分成兩檔是因為每個商店只把購買紀錄用在自己的裝置上 — Google 無法知道您在 Apple 買過什麼。只用一個系統選「基本」，同時用 iPhone 和 Android 選「所有裝置」。您的支持成就下一個版本。';
   @override
   String get premiumLifetime => '買斷';
   @override

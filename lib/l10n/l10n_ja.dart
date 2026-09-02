@@ -1402,7 +1402,7 @@ class L10nJa extends L10n {
   @override
   String get premiumBestValue => 'いちばんお得';
   @override
-  String get premiumPerks => '広告なし・整形は無制限・AIウィザードも無制限';
+  String get premiumPerks => '広告なし・整理無制限・AI編集無制限';
   @override
   String get premiumScopeBase => 'Appleで購入するとiPhone・iPad・Macで、Google Playで購入するとAndroid端末で使えます。どちらで購入してもWebアプリは含まれます。別系統（iPhone↔Android）とWindowsでは使えません。';
   @override
@@ -1427,19 +1427,42 @@ class L10nJa extends L10n {
   String get premiumLoading => 'ストアから価格を取得しています';
 
   @override
-  String get premiumPerkNoAds => '広告がなくなります — バナーも、この案内も';
+  String get premiumPerkNoAds => '広告なし — 上部バナーも、閉じるときの案内も';
 
   @override
-  String premiumPerkTidy(int n) => '整理が無制限 — 1日$n回の上限がなくなります';
+  String get premiumGroupWhat => 'プレミアムでできること';
 
   @override
-  String premiumPerkWizard(int n) => 'AI編集が無制限 — 1日$n回の上限がなくなります';
+  String get premiumGroupTiers => '等級が2つある理由';
 
   @override
-  String get premiumPerkSupport => '一人で作っているアプリです。一度のご購入が次の版を作ります';
+  String get premiumGroupTrial => '最初の2週間';
 
   @override
-  String get premiumTrialFree => 'インストールから2週間はプレミアムのまま無料です。お支払いはその後で決めてください。';
+  String get premiumPerkWeb => 'Webアプリも — ブラウザでも広告なし';
+
+  @override
+  String get premiumTierWhy => 'ストアは購入をそれぞれ自社の端末にしか適用しない — Appleでの購入をGoogleが知る方法はなし';
+
+  @override
+  String get premiumTierPickBase => 'iPhone・iPad・Macだけ → ベーシック';
+
+  @override
+  String get premiumTierPickAll => 'iPhoneとAndroidを併用、またはWindowsまで → すべての端末';
+
+  @override
+  String get premiumTrialAfter => 'お支払いはその後で判断 — それまで止まるものはなし';
+
+  @override
+  String premiumTrialLine(int days) => '実際にアプリを開いた$days日間、プレミアムのまま無料';
+
+  @override
+  String premiumPerkTidy(int n) => '整理が無制限 — 1日$n回の上限を解除';
+
+  @override
+  String premiumPerkWizard(int n) => 'AI編集が無制限 — 1日$n回の上限を解除';
+
+
 
   @override
   String get sponsorPremiumNote => '一度ご購入いただければ、バナーもこの案内も二度と出ません。';
@@ -1449,8 +1472,6 @@ class L10nJa extends L10n {
   String get premiumPitch => '広告なしで、最後まで';
   @override
   String get premiumPitchSub => '広告なしで無制限・月額から買い切りまで';
-  @override
-  String get premiumBody => 'プレミアムは広告をなくし、整理とAI編集の1日の上限を外します。等級が2つあるのは、ストアが購入をそれぞれ自社の端末にしか適用しないからです — Appleで買ったものをGoogleが知る方法はありません。1つの系統だけなら「ベーシック」、iPhoneとAndroidを併用するなら「すべての端末」を。皆さまの応援が次のバージョンを作ります。';
   @override
   String get premiumLifetime => '買い切り';
   @override

@@ -775,7 +775,6 @@ abstract class L10n {
   String get premiumTitle;
   String get premiumPitch;
   String get premiumPitchSub;
-  String get premiumBody;
   String get premiumLifetime;
   String get premiumMonthly;
   String get premiumComingSoon;
@@ -803,10 +802,17 @@ abstract class L10n {
   String get premiumHave;
   String get premiumLoading;
   String get premiumPerkNoAds;
+  String get premiumGroupWhat;
+  String get premiumGroupTiers;
+  String get premiumGroupTrial;
+  String get premiumPerkWeb;
+  String get premiumTierWhy;
+  String get premiumTierPickBase;
+  String get premiumTierPickAll;
+  String get premiumTrialAfter;
+  String premiumTrialLine(int days);
   String premiumPerkTidy(int n);
   String premiumPerkWizard(int n);
-  String get premiumPerkSupport;
-  String get premiumTrialFree;
   String get sponsorPremiumNote;
   String trialBadge(int days);
   String get trialEndedTitle;
@@ -1295,7 +1301,6 @@ abstract class L10n {
         'premiumTitle': premiumTitle,
         'premiumPitch': premiumPitch,
         'premiumPitchSub': premiumPitchSub,
-        'premiumBody': premiumBody,
         'premiumLifetime': premiumLifetime,
         'premiumMonthly': premiumMonthly,
         'premiumComingSoon': premiumComingSoon,
@@ -1319,8 +1324,14 @@ abstract class L10n {
         'premiumHave': premiumHave,
         'premiumLoading': premiumLoading,
         'premiumPerkNoAds': premiumPerkNoAds,
-        'premiumPerkSupport': premiumPerkSupport,
-        'premiumTrialFree': premiumTrialFree,
+        'premiumGroupWhat': premiumGroupWhat,
+        'premiumGroupTiers': premiumGroupTiers,
+        'premiumGroupTrial': premiumGroupTrial,
+        'premiumPerkWeb': premiumPerkWeb,
+        'premiumTierWhy': premiumTierWhy,
+        'premiumTierPickBase': premiumTierPickBase,
+        'premiumTierPickAll': premiumTierPickAll,
+        'premiumTrialAfter': premiumTrialAfter,
         'sponsorPremiumNote': sponsorPremiumNote,
         'trialEndedTitle': trialEndedTitle,
         'themeTitle': themeTitle,

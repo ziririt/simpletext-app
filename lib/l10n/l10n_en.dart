@@ -1406,7 +1406,7 @@ class L10nEn extends L10n {
   @override
   String get premiumBestValue => 'Best value';
   @override
-  String get premiumPerks => 'No ads · Unlimited tidy · Unlimited AI wizard';
+  String get premiumPerks => 'No ads · Unlimited tidying · Unlimited AI editing';
   @override
   String get premiumScopeBase => 'Bought on Apple, it opens on iPhone, iPad and Mac. Bought on Google Play, it opens on your Android devices. Either way the web app is included. It does not open on the other family (iPhone ↔ Android) or on Windows.';
   @override
@@ -1431,19 +1431,42 @@ class L10nEn extends L10n {
   String get premiumLoading => 'Getting prices from the store';
 
   @override
-  String get premiumPerkNoAds => 'No ads — no banner, no interruption';
+  String get premiumPerkNoAds => 'No ads — the top banner and the close-notice too';
 
   @override
-  String premiumPerkTidy(int n) => 'Unlimited tidying — the $n-a-day cap is gone';
+  String get premiumGroupWhat => 'What Premium does';
 
   @override
-  String premiumPerkWizard(int n) => 'Unlimited AI editing — the $n-a-day cap is gone';
+  String get premiumGroupTiers => 'Why there are two tiers';
 
   @override
-  String get premiumPerkSupport => 'One person makes this app. Your purchase pays for the next version';
+  String get premiumGroupTrial => 'Your first 2 weeks';
 
   @override
-  String get premiumTrialFree => 'The first 2 weeks are Premium, free. You can decide after that.';
+  String get premiumPerkWeb => 'The web app too — no ads in the browser';
+
+  @override
+  String get premiumTierWhy => 'Each store applies a purchase only to its own devices — Google cannot see what you bought on Apple';
+
+  @override
+  String get premiumTierPickBase => 'iPhone, iPad and Mac only → Basic';
+
+  @override
+  String get premiumTierPickAll => 'iPhone and Android together, or Windows as well → All devices';
+
+  @override
+  String get premiumTrialAfter => 'Decide about paying after that — nothing stops working meanwhile';
+
+  @override
+  String premiumTrialLine(int days) => 'Premium, free, for $days days you actually open the app';
+
+  @override
+  String premiumPerkTidy(int n) => 'Unlimited tidying — the $n-a-day cap lifted';
+
+  @override
+  String premiumPerkWizard(int n) => 'Unlimited AI editing — the $n-a-day cap lifted';
+
+
 
   @override
   String get sponsorPremiumNote => 'Buy once and neither the banner nor this notice comes back.';
@@ -1453,8 +1476,6 @@ class L10nEn extends L10n {
   String get premiumPitch => 'No ads. No limits.';
   @override
   String get premiumPitchSub => 'Ad-free and unlimited · monthly, yearly or lifetime';
-  @override
-  String get premiumBody => 'Premium removes the ads and lifts the daily caps on tidying and AI editing. There are two tiers because each store only applies a purchase to its own devices — Google has no way to see what you bought on Apple. Stay in one family and Basic is enough; mix iPhone and Android and you want All devices. Your support pays for the next version.';
   @override
   String get premiumLifetime => 'Lifetime';
   @override

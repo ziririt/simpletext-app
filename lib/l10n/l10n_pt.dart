@@ -1406,7 +1406,7 @@ class L10nPt extends L10n {
   @override
   String get premiumBestValue => 'Melhor valor';
   @override
-  String get premiumPerks => 'Sem anúncios · Limpeza ilimitada · Assistente de IA ilimitado';
+  String get premiumPerks => 'Sem anúncios · Organização ilimitada · Edição com IA ilimitada';
   @override
   String get premiumScopeBase => 'Comprado na Apple, abre no iPhone, iPad e Mac. Comprado na Google Play, nos seus aparelhos Android. Nos dois casos o app web está incluído. Não abre na outra família (iPhone ↔ Android) nem no Windows.';
   @override
@@ -1431,19 +1431,42 @@ class L10nPt extends L10n {
   String get premiumLoading => 'Buscando preços na loja';
 
   @override
-  String get premiumPerkNoAds => 'Sem anúncios — nem o banner, nem este aviso';
+  String get premiumPerkNoAds => 'Sem anúncios — nem o banner de cima, nem o aviso ao fechar';
 
   @override
-  String premiumPerkTidy(int n) => 'Organização ilimitada — o limite de $n por dia acaba';
+  String get premiumGroupWhat => 'O que o Premium faz';
 
   @override
-  String premiumPerkWizard(int n) => 'Edição com IA ilimitada — o limite de $n por dia acaba';
+  String get premiumGroupTiers => 'Por que há dois níveis';
 
   @override
-  String get premiumPerkSupport => 'Uma pessoa faz este app. A sua compra paga a próxima versão';
+  String get premiumGroupTrial => 'Suas primeiras 2 semanas';
 
   @override
-  String get premiumTrialFree => 'As primeiras 2 semanas são Premium, grátis. Você decide depois.';
+  String get premiumPerkWeb => 'O app web também — sem anúncios no navegador';
+
+  @override
+  String get premiumTierWhy => 'Cada loja aplica a compra só nos próprios aparelhos — a Google não tem como ver o que você comprou na Apple';
+
+  @override
+  String get premiumTierPickBase => 'Só iPhone, iPad e Mac → Básico';
+
+  @override
+  String get premiumTierPickAll => 'iPhone e Android juntos, ou Windows também → Todos os aparelhos';
+
+  @override
+  String get premiumTrialAfter => 'Decida sobre pagar depois — nada para de funcionar até lá';
+
+  @override
+  String premiumTrialLine(int days) => 'Premium grátis por $days dias em que você abrir o app';
+
+  @override
+  String premiumPerkTidy(int n) => 'Organização ilimitada — sem o limite de $n por dia';
+
+  @override
+  String premiumPerkWizard(int n) => 'Edição com IA ilimitada — sem o limite de $n por dia';
+
+
 
   @override
   String get sponsorPremiumNote => 'Compre uma vez e nem o banner nem este aviso voltam.';
@@ -1453,8 +1476,6 @@ class L10nPt extends L10n {
   String get premiumPitch => 'Sem anúncios. Sem limites.';
   @override
   String get premiumPitchSub => 'Sem anúncios e ilimitado · mensal, anual ou vitalício';
-  @override
-  String get premiumBody => 'O Premium tira os anúncios e remove os limites diários de organização e edição com IA. São dois níveis porque cada loja só aplica a compra nos próprios aparelhos — a Google não tem como ver o que você comprou na Apple. Se usa só uma família, o Básico basta; se mistura iPhone e Android, quer Todos os aparelhos. Seu apoio paga a próxima versão.';
   @override
   String get premiumLifetime => 'Vitalício';
   @override
