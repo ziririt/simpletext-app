@@ -137,6 +137,9 @@ class L10nEs extends L10n {
   String get deleteTooltip => 'Eliminar';
   @override
   String get titleHint => 'Título (automático)';
+
+  @override
+  String get titleFieldLabel => 'Título';
   @override
   String get titleTapHint => 'Añadir título';
   @override

@@ -137,6 +137,9 @@ class L10nZhHant extends L10n {
   String get deleteTooltip => '刪除';
   @override
   String get titleHint => '標題（自動）';
+
+  @override
+  String get titleFieldLabel => '標題';
   @override
   String get titleTapHint => '輸入標題';
   @override

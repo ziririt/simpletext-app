@@ -137,6 +137,9 @@ class L10nZhHans extends L10n {
   String get deleteTooltip => '删除';
   @override
   String get titleHint => '标题（自动）';
+
+  @override
+  String get titleFieldLabel => '标题';
   @override
   String get titleTapHint => '输入标题';
   @override

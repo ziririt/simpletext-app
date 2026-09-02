@@ -137,6 +137,9 @@ class L10nPt extends L10n {
   String get deleteTooltip => 'Excluir';
   @override
   String get titleHint => 'Título (automático)';
+
+  @override
+  String get titleFieldLabel => 'Título';
   @override
   String get titleTapHint => 'Adicionar título';
   @override

@@ -137,6 +137,9 @@ class L10nFr extends L10n {
   String get deleteTooltip => 'Supprimer';
   @override
   String get titleHint => 'Titre (automatique)';
+
+  @override
+  String get titleFieldLabel => 'Titre';
   @override
   String get titleTapHint => 'Ajouter un titre';
   @override

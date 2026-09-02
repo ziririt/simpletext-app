@@ -1159,13 +1159,26 @@ List<String> _expandDashLists(List<String> lines, TidyOptions o, TidyReport rep)
   return out;
 }
 
-String _headingOut(String inner, TidyOptions o, TidyReport rep) {
+/// 제목 한 줄을 내보낸다.
+///
+/// [level] 2 는 '제목2'(중간제목), 3 은 '제목3'(소제목).
+///
+/// 2026-09-02 소유자 지시 — "소제목은 폰트 사이즈 '제목3'을 적용해.
+/// 그보다 더 큰 중간제목은 '제목2'를 적용해."
+///
+/// 전에는 알아본 제목을 모두 '## '(제목2) 하나로 내보냈다. 그러면 원본에
+/// 큰 제목과 작은 제목이 층을 이루고 있어도 화면에서는 다 같은 크기가
+/// 되어, 글의 뼈대가 뭉개졌다. 원본의 층을 두 단계로 접어 옮긴다 —
+/// 세 단계 이상은 이 앱이 다루는 글(붙여넣은 답변)에서 거의 없고,
+/// 있어도 화면에서 구분이 안 된다.
+String _headingOut(String inner, TidyOptions o, TidyReport rep,
+    {int level = 2}) {
   final hm = o.headingMode.isNotEmpty ? o.headingMode : (o.stripHeadings ? 'strip' : 'keep');
   rep.headings++;
   if (hm == 'prefix') return '${o.headingSymbol} $inner';
   if (hm == 'bracket') return '[$inner]';
-  // 사람이 기호나 대괄호를 고르지 않았다면, '제목2'로 내보낼 수 있다.
-  if (o.headingBig) return '## $inner';
+  // 사람이 기호나 대괄호를 고르지 않았다면 제목 표시를 붙일 수 있다.
+  if (o.headingBig) return '${'#' * (level == 3 ? 3 : 2)} $inner';
   return inner;
 }
 
@@ -1326,13 +1339,29 @@ List<String> _processTextSegment(
   // 빈 줄 또는 투명 문자(ㅤ)로만 이루어진 여백 줄 판정
   bool isSpacer(String l) => l.replaceAll(RegExp('[ㅤ\\s]'), '').isEmpty;
 
+  // 이 줄이 제목으로 나간 줄인가. 여백을 몇 줄 둘지 정하는 데만 쓴다.
+  bool looksHeading(String l) {
+    final t = l.trim();
+    if (t.isEmpty) return false;
+    if (RegExp(r'^#{1,6}\s').hasMatch(t)) return true;
+    if (o.headingSymbol.isNotEmpty && t.startsWith('${o.headingSymbol} ')) {
+      return true;
+    }
+    return RegExp(r'^\[[^\]]+\]$').hasMatch(t);
+  }
+
   void emitHeading(String formatted) {
     if (o.headingPad) {
       final ch = o.headingPadChar.isNotEmpty ? o.headingPadChar : 'ㅤ';
       // 원본에 이미 있던 소제목 주변 여백 줄은 흡수해 두 배가 되지 않게 한다
       while (out.isNotEmpty && isSpacer(out.last)) out.removeLast();
       if (out.isNotEmpty) {
-        for (int k = 0; k < o.headingPadAbove; k++) out.add(ch);
+        // 2026-09-02 소유자 지시 — "중간제목과 소제목이 위아래 나란히 오는
+        // 경우에 2개의 제목 간의 간격은 1줄 여백으로." 두 줄을 띄우면 짝인
+        // 두 제목이 서로 다른 덩어리로 보인다. 제목 아래 곧바로 제목이
+        // 오는 것은 '이 제목의 첫 갈래'라는 뜻이므로 붙어 있어야 한다.
+        final above = looksHeading(out.last) ? 1 : o.headingPadAbove;
+        for (int k = 0; k < above; k++) out.add(ch);
       }
       out.add(formatted);
       for (int k = 0; k < o.headingPadBelow; k++) out.add(ch);
@@ -1403,7 +1432,9 @@ List<String> _processTextSegment(
       final innerT =
           _inlineClean(line.replaceAll(RegExp('[ㅤ]+'), ' '), o, rep).replaceAll(RegExp(r'\s+'), ' ').trim();
       if (innerT.isNotEmpty && innerT.length <= 30) {
-        emitHeading(_headingOut(innerT, o, rep));
+        // 원본에 제목 표시가 없는데 생김새로 알아본 것 — 이런 줄은
+        // 거의 언제나 문단 안의 작은 갈래다. 소제목(제목3)으로 낸다.
+        emitHeading(_headingOut(innerT, o, rep, level: 3));
         continue;
       }
     }
@@ -1415,7 +1446,10 @@ List<String> _processTextSegment(
             ? '${m!.group(1)!} ${_inlineClean(m.group(2)!, o, rep).trim()}'
             : line;
       } else {
-        formatted = _headingOut(_inlineClean(m!.group(2)!, o, rep).trim(), o, rep);
+        // #, ## 는 중간제목(제목2). ### 이하는 소제목(제목3).
+        final depth = m!.group(1)!.length;
+        formatted = _headingOut(_inlineClean(m.group(2)!, o, rep).trim(), o, rep,
+            level: depth >= 3 ? 3 : 2);
       }
       if (o.headingPad) {
         emitHeading(formatted);

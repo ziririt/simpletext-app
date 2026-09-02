@@ -101,6 +101,7 @@ abstract class L10n {
   String get unpinConfirmBody;
   String get deleteTooltip;
   String get titleHint;
+  String get titleFieldLabel;
 
   /// 머리의 빈 제목 자리에 두는 시키는 말. 이름표가 아니다.
   String get titleTapHint;
@@ -896,6 +897,7 @@ abstract class L10n {
         'unpinConfirmBody': unpinConfirmBody,
         'deleteTooltip': deleteTooltip,
         'titleHint': titleHint,
+        'titleFieldLabel': titleFieldLabel,
         'titleTapHint': titleTapHint,
         'sourceNone': sourceNone,
         'sourceOther': sourceOther,

@@ -137,6 +137,9 @@ class L10nKo extends L10n {
   String get deleteTooltip => '삭제';
   @override
   String get titleHint => '제목(자동)';
+
+  @override
+  String get titleFieldLabel => '제목';
   @override
   String get titleTapHint => '제목 입력';
   @override

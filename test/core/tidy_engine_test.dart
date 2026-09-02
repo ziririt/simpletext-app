@@ -554,6 +554,54 @@ table = "A | B"
     });
   });
 
+  group('제목 두 단계 (2026-09-02 소유자 지시)', () {
+    // "소제목은 폰트 사이즈 '제목3'을 적용해. 그보다 더 큰 중간제목은
+    // '제목2'를 적용해. 중간제목과 소제목이 위아래 나란히 오는 경우에
+    // 2개의 제목 간의 간격은 1줄 여백으로 해줘."
+    // ai 프리셋은 stripHeadings: true 다 — 그래야 _headingOut 이 불리고,
+    // headingBig 이 제목 표시를 다시 붙인다. stripHeadings 를 끄면 원본
+    // 줄을 그대로 두는 길로 빠져 이 규칙 자체가 지나간다.
+    final bigOpts = aiOpts().copyWith(headingBig: true, headingPad: true);
+
+    test('#·## 는 중간제목(제목2)로 나간다', () {
+      expect(tidy('# 큰제목\n\n본문.', bigOpts).text.startsWith('## 큰제목'), true);
+      expect(tidy('## 큰제목\n\n본문.', bigOpts).text.startsWith('## 큰제목'), true);
+    });
+
+    test('### 이하는 소제목(제목3)로 나간다', () {
+      expect(
+          tidy('### 작은제목\n\n본문.', bigOpts).text.startsWith('### 작은제목'), true);
+      expect(
+          tidy('#### 더 작은제목\n\n본문.', bigOpts).text.startsWith('### 더 작은제목'),
+          true);
+    });
+
+    test('제목 표시 없이 생김새로 알아본 줄은 소제목(제목3)', () {
+      // 짧은 한 줄 + 뒤에 목록 → 스마트 소제목 경로
+      final r = tidy('ㅤ ㅤ 지수 마감 ㅤ\n– S&P500 7,753.11 – 다우 53,975.98', bigOpts);
+      expect(r.text.startsWith('### 지수 마감'), true);
+    });
+
+    test('제목이 잇달아 서면 사이는 한 줄', () {
+      final r = tidy('도입 문장.\n\n## 중간제목\n\n### 소제목\n\n본문.', bigOpts);
+      // 도입 → (2줄) → 중간제목 → (1줄) → 소제목
+      final lines = r.text.split('\n');
+      final iMid = lines.indexWhere((l) => l.startsWith('## '));
+      final iSub = lines.indexWhere((l) => l.startsWith('### '));
+      expect(iMid > 0, true);
+      expect(iSub > iMid, true);
+      // 두 제목 사이의 여백 줄 수
+      expect(iSub - iMid - 1, 1);
+      // 도입 문장과 중간제목 사이는 두 줄 그대로
+      expect(iMid - 1, 2);
+    });
+
+    test('기호·대괄호를 고르면 제목 표시는 안 붙는다', () {
+      final sym = bigOpts.copyWith(headingMode: 'prefix', headingSymbol: '■');
+      expect(tidy('## 큰제목\n\n본문.', sym).text.startsWith('■ 큰제목'), true);
+    });
+  });
+
   group('v1.4 소제목 여백 + 들여쓰기', () {
     final padOpts = aiOpts().copyWith(headingPad: true, bulletIndent: 2);
     const padIn = '''ㅤ ㅤ 지수 마감 ㅤ

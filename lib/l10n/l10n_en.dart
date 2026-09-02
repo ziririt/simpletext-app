@@ -137,6 +137,9 @@ class L10nEn extends L10n {
   String get deleteTooltip => 'Delete';
   @override
   String get titleHint => 'Title (auto)';
+
+  @override
+  String get titleFieldLabel => 'Title';
   @override
   String get titleTapHint => 'Add a title';
   @override

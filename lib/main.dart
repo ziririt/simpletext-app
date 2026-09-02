@@ -6704,6 +6704,16 @@ class _EditorScreenState extends State<EditorScreen>
     for (final f in [_titleFocus, _bodyFocus, _tagsFocus]) {
       f.addListener(() => setState(() {}));
     }
+    // 2026-09-02 소유자 지시 — "자동제목에서 제목란을 누르면 자동으로
+    // 자동제목은 사라져줘. 자동 제목을 지우고 원하는 제목 입력하려니
+    // 번거롭다."
+    //
+    // 자동으로 붙은 제목은 **우리가 채워 둔 것**이지 사람이 쓴 글이 아니다.
+    // 고쳐 쓰려고 칸을 누른 사람에게 우리가 채운 글을 먼저 지우게 하는 것은
+    // 순서가 뒤집힌 일이다. 눌러 들어오는 순간 비운다.
+    //
+    // 손으로 적은 제목(titleAuto == false)은 절대 건드리지 않는다.
+    _titleFocus.addListener(_clearAutoTitleOnFocus);
     // 본문에서 손을 떼면 기다리지 않고 바로 본다. 붙여넣고 곧장 나가는
     // 사람은 6초를 안 채운다 — 그 사람이야말로 태그가 제일 필요하다.
     _bodyFocus.addListener(() {
@@ -6735,6 +6745,7 @@ class _EditorScreenState extends State<EditorScreen>
     titleCtl.dispose();
     bodyCtl.dispose();
     tagsCtl.dispose();
+    _titleFocus.removeListener(_clearAutoTitleOnFocus);
     _titleFocus.dispose();
     _bodyFocus.dispose();
     _tagsFocus.dispose();
@@ -7044,6 +7055,18 @@ static const int kTagScanChars = 3000;
     await sync.recheck().timeout(const Duration(seconds: 8), onTimeout: () {});
   }
 
+  /// 제목란에 들어오면 자동으로 붙어 있던 제목을 비운다.
+  void _clearAutoTitleOnFocus() {
+    if (!_titleFocus.hasFocus) return;
+    if (!note.titleAuto) return;      // 손으로 적은 제목은 그대로 둔다
+    if (titleCtl.text.isEmpty) return;
+    titleCtl.clear();
+    // note.titleAuto 는 아직 참으로 둔다. 아무것도 안 쓰고 나가면 본문에서
+    // 다시 뽑아 오는 편이 낫다 — 비운 것만으로 '제목 없음'을 뜻하지는
+    // 않는다(core/auto_meta.dart 의 stopAutoTitle 과 같은 판단).
+    if (mounted) setState(() {});
+  }
+
   Future<void> _save() async {
     if (note.body != bodyCtl.text) {
       _bodyTouched = true;
@@ -7056,7 +7079,10 @@ static const int kTagScanChars = 3000;
     if (canRetitle(auto: note.titleAuto)) {
       final t = autoTitle(note.body);
       note.title = t;
-      if (titleCtl.text != t) titleCtl.text = t;
+      // 제목란에 커서가 있는 동안에는 칸을 건드리지 않는다. 안 그러면
+      // 방금 비운 자리에 자동 제목이 곧바로 되돌아와, 사람이 지우는 속도와
+      // 우리가 채우는 속도가 다투게 된다.
+      if (titleCtl.text != t && !_titleFocus.hasFocus) titleCtl.text = t;
     } else {
       note.title = titleCtl.text;
     }
@@ -9136,28 +9162,64 @@ static const int kTagScanChars = 3000;
             // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
             // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
             // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
+            // 2026-09-02 소유자 지시 — "제목 입력란을 입력란처럼 UI를
+            // 해줘. 지금은 아무것도 없어서 이게 제목 입력란인지 헷갈린다."
+            //
+            // 테두리도 바탕도 없이 큰 글자만 놓여 있었다. 그건 입력칸이
+            // 아니라 그냥 제목처럼 보인다 — 눌러서 고칠 수 있다는 것을
+            // 아무도 모른다. 바로 아래 '출처' 칸이 이미 쓰고 있는 방식
+            // (작은 회색 이름표 + 칸)을 그대로 따른다. 한 화면 안에서
+            // 두 칸이 다른 모양이면 그것부터 눈에 걸린다.
             if (_showMeta)
             Padding(
               // 위 여백 0 — 날짜 줄이 이미 띄워 놨다. 여기서 또 띄우면 벌어진다.
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: TextField(
-                controller: titleCtl,
-                focusNode: _titleFocus,
-                decoration: InputDecoration(
-                    hintText: l.titleHint, border: InputBorder.none, isDense: true),
-                // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
-                // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서 -0.02em
-                // 은 약 -0.45다. 본문은 0 그대로 둔다.
-                style: const TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.45),
-                onChanged: (v) {
-                  // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
-                  // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
-                  if (stopAutoTitle(v)) note.titleAuto = false;
-                  _save();
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 5, left: 2),
+                    child: Text(l.titleFieldLabel,
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: context.c.sub)),
+                  ),
+                  TextField(
+                    controller: titleCtl,
+                    focusNode: _titleFocus,
+                    decoration: InputDecoration(
+                      hintText: l.titleHint,
+                      isDense: true,
+                      filled: true,
+                      fillColor: context.c.panel,
+                      contentPadding:
+                          const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: context.c.line),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: context.c.accent, width: 1.8),
+                      ),
+                    ),
+                    // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
+                    // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서
+                    // -0.02em 은 약 -0.45다. 본문은 0 그대로 둔다.
+                    style: const TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.45),
+                    onChanged: (v) {
+                      // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
+                      // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
+                      if (stopAutoTitle(v)) note.titleAuto = false;
+                      _save();
+                    },
+                  ),
+                ],
               ),
             ),
             if (_showMeta)

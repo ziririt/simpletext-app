@@ -137,6 +137,9 @@ class L10nJa extends L10n {
   String get deleteTooltip => '削除';
   @override
   String get titleHint => 'タイトル（自動）';
+
+  @override
+  String get titleFieldLabel => 'タイトル';
   @override
   String get titleTapHint => 'タイトルを入力';
   @override
