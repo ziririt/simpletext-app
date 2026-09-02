@@ -774,10 +774,8 @@ abstract class L10n {
   String get sponsorGoPremium;
   String get premiumTitle;
   String get premiumPitch;
-  String get premiumPitchSub;
   String get premiumLifetime;
   String get premiumMonthly;
-  String get premiumComingSoon;
   String get limitTitle;
   String limitTidyBody(int n);
   String limitWizardBody(int n);
@@ -802,15 +800,30 @@ abstract class L10n {
   String get premiumHave;
   String get premiumLoading;
   String get premiumPerkNoAds;
-  String get premiumGroupWhat;
-  String get premiumGroupTiers;
-  String get premiumGroupTrial;
+  String get premiumGroupPerks;
+  String get premiumHeadline;
+  String get onbTitle1;
+  String get onbBody1;
+  String get onbTitle2;
+  String get onbBody2;
+  String get onbTitle3;
+  String get onbBody3;
+  String get onbTitle4;
+  String get onbNext;
+  String get onbStart;
+  String get onbSkip;
+  String get onbSeePremium;
+  String onbBody4(int days);
+  String get premiumSubhead;
+  String get premiumPerkNew;
+  String get premiumTrustTitle;
+  String get premiumCancelAnytime;
+  String get premiumPerMonth;
+  String get premiumPerYear;
+  String premiumTrialThen(int days);
+  String premiumSave(int pct);
+  String premiumTrustBody(String version);
   String get premiumPerkWeb;
-  String get premiumTierWhy;
-  String get premiumTierPickBase;
-  String get premiumTierPickAll;
-  String get premiumTrialAfter;
-  String premiumTrialLine(int days);
   String premiumPerkTidy(int n);
   String premiumPerkWizard(int n);
   String get sponsorPremiumNote;
@@ -1300,10 +1313,8 @@ abstract class L10n {
         'sponsorGoPremium': sponsorGoPremium,
         'premiumTitle': premiumTitle,
         'premiumPitch': premiumPitch,
-        'premiumPitchSub': premiumPitchSub,
         'premiumLifetime': premiumLifetime,
         'premiumMonthly': premiumMonthly,
-        'premiumComingSoon': premiumComingSoon,
         'limitTitle': limitTitle,
         'limitSeePremium': limitSeePremium,
         'premiumYearly': premiumYearly,
@@ -1324,14 +1335,26 @@ abstract class L10n {
         'premiumHave': premiumHave,
         'premiumLoading': premiumLoading,
         'premiumPerkNoAds': premiumPerkNoAds,
-        'premiumGroupWhat': premiumGroupWhat,
-        'premiumGroupTiers': premiumGroupTiers,
-        'premiumGroupTrial': premiumGroupTrial,
+        'premiumGroupPerks': premiumGroupPerks,
+        'premiumHeadline': premiumHeadline,
+        'onbTitle1': onbTitle1,
+        'onbBody1': onbBody1,
+        'onbTitle2': onbTitle2,
+        'onbBody2': onbBody2,
+        'onbTitle3': onbTitle3,
+        'onbBody3': onbBody3,
+        'onbTitle4': onbTitle4,
+        'onbNext': onbNext,
+        'onbStart': onbStart,
+        'onbSkip': onbSkip,
+        'onbSeePremium': onbSeePremium,
+        'premiumSubhead': premiumSubhead,
+        'premiumPerkNew': premiumPerkNew,
+        'premiumTrustTitle': premiumTrustTitle,
+        'premiumCancelAnytime': premiumCancelAnytime,
+        'premiumPerMonth': premiumPerMonth,
+        'premiumPerYear': premiumPerYear,
         'premiumPerkWeb': premiumPerkWeb,
-        'premiumTierWhy': premiumTierWhy,
-        'premiumTierPickBase': premiumTierPickBase,
-        'premiumTierPickAll': premiumTierPickAll,
-        'premiumTrialAfter': premiumTrialAfter,
         'sponsorPremiumNote': sponsorPremiumNote,
         'trialEndedTitle': trialEndedTitle,
         'themeTitle': themeTitle,

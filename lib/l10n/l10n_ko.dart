@@ -1404,9 +1404,9 @@ class L10nKo extends L10n {
   @override
   String get premiumPerks => '광고 없음 · 정리 무제한 · AI 편집 무제한';
   @override
-  String get premiumScopeBase => '애플에서 결제하면 아이폰·아이패드·맥에서, 구글 플레이에서 결제하면 안드로이드 기기에서 열립니다. 어느 쪽으로 사셔도 웹앱은 함께 열립니다. 다른 계열(아이폰↔안드로이드)과 윈도우 PC에서는 열리지 않습니다.';
+  String get premiumScopeBase => '애플에서 결제하면 아이폰·아이패드·맥에서, 구글 플레이에서 결제하면 안드로이드 기기에서 열립니다. 어느 쪽으로 사셔도 웹앱은 함께 열립니다.';
   @override
-  String get premiumScopeAll => '위에 더해 다른 계열까지 열립니다 — 애플에서 결제해도 안드로이드와 윈도우에서 쓸 수 있고, 반대도 같습니다. 아이폰과 안드로이드를 함께 쓰거나 회사에서 윈도우를 쓰신다면 이쪽입니다.';
+  String get premiumScopeAll => '아이폰과 안드로이드를 함께 쓰셔도 한 번의 결제로 모두 열립니다. 앞으로 늘어나는 기기도 이 등급에 들어옵니다.';
   @override
   String get premiumAutoRenew => '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
   @override
@@ -1427,40 +1427,93 @@ class L10nKo extends L10n {
   String get premiumLoading => '스토어에서 값을 받아오는 중입니다';
 
   @override
-  String get premiumPerkNoAds => '광고 없음 — 상단 배너, 닫을 때 뜨는 안내창까지';
+  String get premiumPerkNoAds => '광고 없음 — 상단 배너도, 닫을 때 뜨는 안내도';
 
   @override
-  String get premiumGroupWhat => '프리미엄이 하는 일';
+  String get premiumGroupPerks => '프리미엄 혜택';
 
   @override
-  String get premiumGroupTiers => '등급이 둘인 까닭';
+  String get premiumHeadline => '한도 없이, 광고 없이';
 
   @override
-  String get premiumGroupTrial => '처음 2주';
+  String get onbTitle1 => '붙여넣으면, 정리됩니다';
+
+  @override
+  String get onbBody1 => 'AI 답변을 그대로 붙여넣어 보세요. 별표와 우물 정, 군더더기 인사말이 한 번에 걷힙니다.';
+
+  @override
+  String get onbTitle2 => '깨진 표가 다시 섭니다';
+
+  @override
+  String get onbBody2 => '줄이 어긋난 표를 맞춰 세우고, 표 단추 한 번이면 엑셀·구글 시트에 그대로 붙습니다.';
+
+  @override
+  String get onbTitle3 => '모든 기기에서 같은 노트';
+
+  @override
+  String get onbBody3 => '아이폰에서 적은 것이 맥에서도, 브라우저에서도 그대로 있습니다. 값은 받지 않습니다.';
+
+  @override
+  String get onbTitle4 => '전부 열어 두었습니다';
+
+  @override
+  String onbBody4(int days) => '$days일 동안 한도 없이 써 보시고, 계속 쓸 만하면 그때 정하시면 됩니다. 지금 결제하실 필요는 없습니다.';
+
+  @override
+  String get onbNext => '다음';
+
+  @override
+  String get onbStart => '시작하기';
+
+  @override
+  String get onbSkip => '건너뛰기';
+
+  @override
+  String get onbSeePremium => '프리미엄 살펴보기';
+
+  @override
+  String get premiumSubhead => 'AI 답변을 매일 다루는 분들을 위한 등급입니다. 정리를 몇 번 누르든 세지 않습니다.';
+
+  @override
+  String get premiumPerkNew => '새 기능 먼저 — 만드는 대로 바로 열립니다';
+
+  @override
+  String get premiumTrustTitle => '계속 만들고 있습니다';
+
+  @override
+  String get premiumCancelAnytime => '언제든지 해지 가능';
+
+  @override
+  String get premiumPerMonth => '월';
+
+  @override
+  String get premiumPerYear => '년';
+
+  @override
+  String premiumTrialThen(int days) => '$days일 무료 체험, 그 후';
+
+  @override
+  String premiumSave(int pct) => '$pct% 아낌';
+
+  @override
+  String premiumTrustBody(String version) => '지금 $version 버전입니다. 들어온 요청은 대개 그 주에 반영하고, 무엇이 바뀌었는지 앱 안에서 바로 보실 수 있습니다.';
+
+
+
 
   @override
   String get premiumPerkWeb => '웹앱까지 — 브라우저에서도 광고 없이';
 
-  @override
-  String get premiumTierWhy => '스토어마다 자기 기기에만 결제 적용 — 애플에서 산 것을 구글이 알아볼 방법 없음';
+
+
+
+
 
   @override
-  String get premiumTierPickBase => '아이폰·아이패드·맥만 쓰는 경우 → 기본';
+  String premiumPerkTidy(int n) => '정리 무제한 — 하루 $n번 한도 없이';
 
   @override
-  String get premiumTierPickAll => '아이폰과 안드로이드를 함께, 또는 윈도우까지 → 모든 기기';
-
-  @override
-  String get premiumTrialAfter => '결제 여부는 그 뒤에 결정 — 그때까지 멈추는 것 없음';
-
-  @override
-  String premiumTrialLine(int days) => '실제로 앱을 연 $days일간 프리미엄 그대로 무료';
-
-  @override
-  String premiumPerkTidy(int n) => '정리 무제한 — 하루 $n번 한도 해제';
-
-  @override
-  String premiumPerkWizard(int n) => 'AI 편집 무제한 — 하루 $n번 한도 해제';
+  String premiumPerkWizard(int n) => 'AI 편집 무제한 — 하루 $n번 한도 없이';
 
 
 
@@ -1471,13 +1524,9 @@ class L10nKo extends L10n {
   @override
   String get premiumPitch => '광고 없이, 끝까지';
   @override
-  String get premiumPitchSub => '광고 없이 무제한 · 월 구독부터 평생 이용권까지';
-  @override
   String get premiumLifetime => '평생 이용권';
   @override
   String get premiumMonthly => '월간';
-  @override
-  String get premiumComingSoon => '결제는 스토어 출시 버전에서 활성화됩니다. 조금만 기다려 주세요.';
   @override
   String get limitTitle => '오늘 무료 사용을 다 쓰셨습니다';
   @override

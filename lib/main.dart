@@ -1478,6 +1478,11 @@ class AppSettings {
   int trialWizTotal = 0;
   bool trialNoticeShown = false;
 
+  /// 첫 실행 안내를 이미 보여 줬는가. **기기마다 따로**다 — 동기화하지
+  /// 않는다. 새 기기에 깐 사람은 그 기기에서 처음 여는 것이고, 처음 여는
+  /// 사람에게는 안내가 필요하다.
+  bool onboardShown = false;
+
   // 2026-08-16 소유자 지적 — "정리 규칙과 자동 바꾸기 규칙은 모든 기기에서
   // 동기화되어야 한다. 매번 기기마다 설정하는 것은 아이클라우드 쓰는 앱으로서
   // 부적절하다." 맞는 말이라 규칙도 동기화 대상에 넣었다(AI 키는 제외).
@@ -1634,6 +1639,7 @@ class AppSettings {
         'trialTidyTotal': trialTidyTotal,
         'trialWizTotal': trialWizTotal,
         'trialNoticeShown': trialNoticeShown,
+        'onboardShown': onboardShown,
         'rulesStamp': rulesStamp,
         'rulesSig': rulesSig,
         'syncBackend': syncBackend,
@@ -1769,6 +1775,7 @@ class AppSettings {
     s.trialTidyTotal = (j['trialTidyTotal'] ?? s.trialTidyTotal) as int;
     s.trialWizTotal = (j['trialWizTotal'] ?? s.trialWizTotal) as int;
     s.trialNoticeShown = (j['trialNoticeShown'] ?? s.trialNoticeShown) as bool;
+    s.onboardShown = (j['onboardShown'] ?? s.onboardShown) as bool;
     s.rulesStamp = (j['rulesStamp'] ?? s.rulesStamp) as int;
     s.rulesSig = (j['rulesSig'] ?? s.rulesSig) as String;
     s.syncBackend = (j['syncBackend'] ?? s.syncBackend) as String;
@@ -3779,6 +3786,9 @@ class _HomeScreenState extends State<HomeScreen>
       // 앱을 켤 때마다 로그인 창이 뜨는 것은 동기화가 아니라 검문이다.
       // 붙든 못 붙든 통로는 끼운다. 못 붙었으면 토큰이 null 이라 이번
       // 차례를 거르고, 설정 화면이 '로그인 필요'로 알려 준다.
+      // 첫 실행 안내 — 노트를 다 읽은 **뒤에** 판단한다. 그 전에는
+      // settings 가 아직 기본값이라 이미 본 사람에게도 다시 뜬다.
+      _maybeOnboard();
       final wantDrive = store.settings.syncBackend == 'gdrive';
       (wantDrive ? DriveAuth.instance.resume() : Future<bool>.value(false))
           .then((_) async {
@@ -3794,6 +3804,47 @@ class _HomeScreenState extends State<HomeScreen>
     if (MacMenu.supported) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _installMacMenu());
     }
+  }
+
+  /// 처음 켠 사람에게만 한 번. 기기마다 따로 센다.
+  void _maybeOnboard() {
+    if (store.settings.onboardShown) return;
+    store.settings.onboardShown = true;
+    unawaited(store.persistSettings());
+    unawaited(_showOnboard());
+  }
+
+  /// 안내를 띄우되, **추적 허용 팝업 뒤에** 띄운다.
+  ///
+  /// 아이폰 첫 실행에서는 ads_service.boot() 가 1초 뒤 ATT 팝업을 올린다.
+  /// 그 위에 안내를 겹쳐 올리면 사람은 두 개를 동시에 읽어야 한다 —
+  /// 시뮬레이터에서 실제로 그렇게 나왔다(2026-09-02).
+  ///
+  /// ATT 를 뒤로 미루는 선택지는 없다. 순서를 바꾸면 "ATT 를 쓰는데 권한
+  /// 요청을 찾을 수 없다"로 심사에서 반려된다(ads_service 머리 주석).
+  /// 그러니 **안내가 기다린다.** 광고 SDK 준비 신호(ready)가 ATT 응답
+  /// 직후에 오므로 그것을 기다리고, 광고가 없는 판에서는 그 신호가 영영
+  /// 오지 않으므로 넉넉한 시간으로 끊는다.
+  Future<void> _showOnboard() async {
+    final ready = AdsService.instance.ready;
+    if (!ready.value) {
+      final done = Completer<void>();
+      void tick() {
+        if (ready.value && !done.isCompleted) done.complete();
+      }
+
+      ready.addListener(tick);
+      await Future.any<void>(<Future<void>>[
+        done.future,
+        Future<void>.delayed(const Duration(seconds: 6)),
+      ]);
+      ready.removeListener(tick);
+    }
+    if (!mounted) return;
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => const OnboardingScreen(),
+      fullscreenDialog: true,
+    ));
   }
 
   @override
@@ -11835,6 +11886,181 @@ String deviceFamily() {
   }
 }
 
+/// 첫 실행 안내.
+///
+/// 2026-09-02 소유자 지시로 만들었다 — "앱 첫 실행시의 프리미엄 유도
+/// 온보딩도 해보자. 그리고 앱 주요 기능을 알려주는 온보딩도 해보자."
+///
+/// 둘을 따로 만들지 않고 한 흐름에 넣었다. 처음 켠 사람에게 안내를 두 번
+/// 들이대면 두 번째는 광고로 읽힌다. 기능 셋을 먼저 보여 주고, 마지막 장에서
+/// "그 셋을 2주 동안 한도 없이 써 보시라"로 넘어간다 — 값 이야기가 아니라
+/// **열어 두었다는 이야기**로 끝나야 다음에 값을 볼 마음이 남는다.
+///
+/// 넉 장을 넘긴 뒤에야 닫히는 벽이 아니다. 어느 장에서든 건너뛸 수 있고,
+/// 한 번 본 사람에게는 다시 뜨지 않는다(settings.onboardShown, 기기별).
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final PageController _pc = PageController();
+  int _i = 0;
+
+  static const int _pages = 4;
+
+  @override
+  void dispose() {
+    _pc.dispose();
+    super.dispose();
+  }
+
+  void _close() {
+    if (Navigator.canPop(context)) Navigator.pop(context);
+  }
+
+  void _next() {
+    if (_i >= _pages - 1) {
+      _close();
+      return;
+    }
+    _pc.nextPage(
+        duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+  }
+
+  Widget _page(IconData icon, String title, String body) {
+    final c = context.c;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 그림 자산이 없다. 아이콘 하나를 크게 세우고 그 뒤에 브랜드
+          // 색을 옅게 깐다 — 빈 네모를 두는 것보다 낫고, 나라마다 글자가
+          // 들어간 그림을 다시 그릴 필요도 없다.
+          Container(
+            width: 132,
+            height: 132,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  c.accent.withValues(alpha: .18),
+                  c.accent.withValues(alpha: .05),
+                ],
+              ),
+            ),
+            child: Icon(icon, size: 62, color: c.accent),
+          ),
+          const SizedBox(height: 40),
+          Text(title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 27,
+                  height: 1.25,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.5)),
+          const SizedBox(height: 16),
+          Text(body,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16.5, height: 1.6)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final c = context.c;
+    final last = _i == _pages - 1;
+    return Scaffold(
+      body: SafeArea(
+        child: Column(children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _close,
+              child: Text(l.onbSkip,
+                  style: TextStyle(fontSize: 15, color: c.sub)),
+            ),
+          ),
+          Expanded(
+            child: PageView(
+              controller: _pc,
+              onPageChanged: (v) => setState(() => _i = v),
+              children: [
+                _page(Icons.content_paste_go, l.onbTitle1, l.onbBody1),
+                _page(Icons.table_chart_outlined, l.onbTitle2, l.onbBody2),
+                _page(Icons.devices, l.onbTitle3, l.onbBody3),
+                _page(Icons.workspace_premium, l.onbTitle4,
+                    l.onbBody4(kTrialActiveDays)),
+              ],
+            ),
+          ),
+          // 점. 몇 장인지 알면 사람은 끝까지 넘긴다 — 끝이 안 보이면 만다.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_pages, (k) {
+              final on = k == _i;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: on ? 22 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: on ? c.accent : c.line,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 14),
+            child: Column(children: [
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _next,
+                  child: Text(last ? l.onbStart : l.onbNext,
+                      style: const TextStyle(
+                          fontSize: 16.5, fontWeight: FontWeight.w800)),
+                ),
+              ),
+              // 마지막 장에서만 값 화면으로 가는 문을 연다. 그 전에 두면
+              // 기능을 보러 온 사람에게 값부터 들이미는 꼴이 된다.
+              if (last && kPaidTierLive)
+                TextButton(
+                  onPressed: () {
+                    _close();
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                            builder: (_) => const PremiumScreen()));
+                  },
+                  child: Text(l.onbSeePremium,
+                      style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: c.accent)),
+                ),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
 /// 설정에 놓이는 프리미엄 배너.
 ///
 /// 2026-09-02 소유자 지적 — "너무 안 이쁘다. 올드한 텍스트배너 같다.
@@ -11963,6 +12189,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
   final PurchaseService _svc = PurchaseService.instance;
   bool _wasPremium = false;
 
+  /// 고르개가 '모든 기기' 쪽인가.
+  bool _allTier = false;
+
+  /// 사람이 고르개를 한 번이라도 만졌는가. 만지기 전에는 상황을 보고
+  /// 우리가 정해 주고(업그레이드 대상이면 '모든 기기'), 만진 뒤에는
+  /// 그 선택을 덮지 않는다.
+  bool _tierTouched = false;
+
   @override
   void initState() {
     super.initState();
@@ -12008,125 +12242,194 @@ class _PremiumScreenState extends State<PremiumScreen> {
     await _svc.buy(p);
   }
 
-  /// 값 한 줄. 스토어가 준 값을 그대로 쓴다 — 나라마다 다르고, 우리가 적어 둔
-  /// 숫자는 반드시 언젠가 실제와 어긋난다.
-  Widget _plan({
-    required String id,
-    required String title,
-    String? note,
-    String? badge,
-    bool filled = false,
-  }) {
-    final c = context.c;
-    final p = _svc.product(id);
-    // 스토어가 준 값이 언제나 먼저다. 개발 중(디버그)에만, 그리고 스토어가
-    // 아직 아무것도 안 줬을 때만 우리가 적어 둔 미국 값으로 자리를 채운다.
-    final price = p?.price ?? (kDebugMode ? kDevUsdPrice[id] : null);
-    final body = Row(children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Flexible(
-                child: Text(title,
+  // ─────────────────────────────────────────────────────────────────
+  // 2026-09-02 소유자 지적 — "이용자 고객용 페이지가 아니라 나(개발자)
+  // 보라고 만든 페이지 같다. 이 페이지는 무료 이용자를 유료 이용자로
+  // 유도하는 마케팅 페이지다."
+  //
+  // 맞는 말이었다. 여태 이 화면은 **설명서**였다. 등급이 왜 둘인지,
+  // 체험이 며칠인지, 스토어가 어떻게 동작하는지 — 전부 만든 사람의
+  // 머릿속 순서다. 사는 사람의 순서는 다르다.
+  //
+  //   1) 뭐가 좋아지나          → 히어로 한 줄 + 혜택 목록
+  //   2) 이 사람들 믿을 만한가  → 계속 만들고 있다는 증거
+  //   3) 얼마인가               → 값 카드
+  //   4) 잘못돼도 되돌릴 수 있나 → 해지·복원
+  //
+  // 참고한 것은 소유자가 보내 온 Bear PRO 와 Xmind 의 결제 화면이다.
+  // 둘 다 (a) 혜택을 아이콘 한 줄씩 구분선으로 끊어 세우고, (b) 값은
+  // 카드 둘을 나란히 놓고 아낀 비율을 배지로 붙이고, (c) 체험 안내를
+  // 값 바로 위에 한 줄로 둔다. 그 뼈대를 그대로 쓴다.
+  // ─────────────────────────────────────────────────────────────────
+
+  /// 이 화면 안에서만 쓰는 작은 섹션 라벨.
+  Widget _label(String t) => Padding(
+        padding: const EdgeInsets.only(top: 30, bottom: 10, left: 4),
+        child: Text(t,
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: context.c.sub)),
+      );
+
+  /// 혜택 한 줄. Bear 처럼 아이콘 + 글 한 줄, 줄 사이는 옅은 구분선.
+  ///
+  /// 색을 지정하지 않는다 — 테마 기본 글자색이 밝은 화면에서 검정,
+  /// 어두운 화면에서 흰색에 가깝다. 대비를 가장 높이는 방법이다.
+  Widget _perkRow(IconData icon, String text, {bool last = false}) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(icon, size: 23, color: context.c.accent),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(text,
                     style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w700)),
+                        fontSize: 16, height: 1.45, fontWeight: FontWeight.w600)),
               ),
-              if (badge != null) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: c.infoBg,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(badge,
-                      style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: c.accent)),
-                ),
-              ],
             ]),
-            if (note != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(note,
-                    style: const TextStyle(fontSize: 14, height: 1.35)),
+          ),
+          if (!last) Divider(height: 1, indent: 53, color: context.c.line),
+        ],
+      );
+
+  /// 등급 고르개. Xmind 의 '매월 / 매년' 알약을 등급에 옮겼다.
+  Widget _tierToggle(L10n l) {
+    final c = context.c;
+    Widget seg(String t, bool on, VoidCallback tap) => Expanded(
+          child: GestureDetector(
+            onTap: tap,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              decoration: BoxDecoration(
+                color: on ? c.accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(11),
               ),
-          ],
-        ),
+              child: Text(t,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: on ? Colors.white : c.sub)),
+            ),
+          ),
+        );
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: c.infoBg,
+        borderRadius: BorderRadius.circular(15),
       ),
-      const SizedBox(width: 10),
-      Text(price ?? '···',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-    ]);
-    final onTap = (_svc.busy || price == null) ? null : () => unawaited(_buy(id));
-    final style = ButtonStyle(
-      padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14)),
-      shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-    );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: filled
-          ? FilledButton(style: style, onPressed: onTap, child: body)
-          : OutlinedButton(style: style, onPressed: onTap, child: body),
+      child: Row(children: [
+        seg(l.premiumPlanBase, !_allTier, () {
+          setState(() {
+            _allTier = false;
+            _tierTouched = true;
+          });
+        }),
+        seg(l.premiumPlanAll, _allTier, () {
+          setState(() {
+            _allTier = true;
+            _tierTouched = true;
+          });
+        }),
+      ]),
     );
   }
 
-  /// 소제목. 2026-09-02 소유자 지시로 이 화면을 '소제목 + 닷불릿'으로
-  /// 다시 짰다. 문단으로 늘어놓으면 읽는 사람이 무엇이 무엇의 설명인지를
-  /// 스스로 나눠야 한다. 나눠 놓은 것을 주는 편이 언제나 빠르다.
-  Widget _groupTitle(String t) => Padding(
-        padding: const EdgeInsets.only(top: 26, bottom: 10),
-        child: Text(t,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-      );
-
-  /// 닷불릿 한 줄.
+  /// 값 카드 하나. 큰 값 + 기간, 우상단에 아낀 비율 배지.
   ///
-  /// 색을 지정하지 않는다 — **그것이 대비를 가장 높이는 방법**이다.
-  /// 테마의 기본 글자색은 밝은 화면에서 검정, 어두운 화면에서 흰색에
-  /// 가깝다. 여기에 accent(하늘색)나 sub(회색)를 얹으면 그 순간 대비가
-  /// 떨어진다. 2026-09-02 소유자 지적이 정확히 그 자리였다.
-  Widget _bullet(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 9),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // 가운뎃점은 글자라 줄 높이를 따라간다. 위 여백으로 첫 줄 가운데에
-          // 맞춘다 — 아이콘을 쓰면 글자 크기를 바꿀 때마다 다시 어긋난다.
-          const Padding(
-            padding: EdgeInsets.only(top: 1),
-            child: Text('·',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(text,
-                style: const TextStyle(fontSize: 16, height: 1.5)),
-          ),
+  /// 값은 언제나 스토어가 준 것을 쓴다. 나라마다 다르고, 우리가 적어 둔
+  /// 숫자는 반드시 언젠가 실제와 어긋난다.
+  Widget _priceCard({
+    required String id,
+    required String per,
+    String? badge,
+    bool highlight = false,
+    String? note,
+  }) {
+    final c = context.c;
+    final p = _svc.product(id);
+    final price = p?.price ?? (kDebugMode ? kDevUsdPrice[id] : null);
+    final on = price != null && !_svc.busy;
+    final bg = highlight ? c.accent : c.panel;
+    final fg = highlight ? Colors.white : null;
+    final card = Container(
+      padding: const EdgeInsets.fromLTRB(14, 18, 14, 16),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: highlight ? c.accent : c.accent.withValues(alpha: .45),
+            width: 1.6),
+      ),
+      child: Column(children: [
+        Text(price ?? '···',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 25, fontWeight: FontWeight.w900, color: fg)),
+        const SizedBox(height: 2),
+        Text('/ $per',
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: fg ?? c.sub)),
+        if (note != null) ...[
+          const SizedBox(height: 6),
+          Text(note,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12.5, color: fg ?? c.sub)),
+        ],
+      ]),
+    );
+    return Opacity(
+      opacity: on ? 1 : .55,
+      child: GestureDetector(
+        onTap: on ? () => unawaited(_buy(id)) : null,
+        child: Stack(clipBehavior: Clip.none, children: [
+          card,
+          if (badge != null)
+            Positioned(
+              top: -9,
+              right: 8,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: highlight ? Colors.white : c.accent,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Text(badge,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: highlight ? c.accent : Colors.white)),
+              ),
+            ),
         ]),
-      );
+      ),
+    );
+  }
 
-  Widget _sectionTitle(String title, String scope) => Padding(
-        padding: const EdgeInsets.only(top: 22, bottom: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 4),
-            // 회색을 걷어냈다 — 이 두 줄이 등급을 고르는 유일한 근거인데
-            // 흐린 색으로 두면 못 읽는다.
-            Text(scope,
-                style: const TextStyle(fontSize: 15, height: 1.5)),
-          ],
-        ),
-      );
+  /// 연간이 월간보다 몇 퍼센트 싼가. 둘 다 스토어에서 받아왔을 때만.
+  ///
+  /// 값을 글자에서 뜯어내지 않는다 — 통화 기호도 자릿점도 나라마다 달라
+  /// 반드시 깨진다. in_app_purchase 가 주는 rawPrice(숫자)로만 센다.
+  int? _savePct(String monthlyId, String yearlyId) {
+    final m = _svc.product(monthlyId)?.rawPrice;
+    final y = _svc.product(yearlyId)?.rawPrice;
+    if (m == null || y == null || m <= 0) return null;
+    final full = m * 12;
+    if (y >= full) return null;
+    final pct = ((full - y) / full * 100).round();
+    return pct <= 0 ? null : pct;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12137,53 +12440,83 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final family = deviceFamily();
     final tier = tierOf(e: s.ent, now: now);
     final offerUp = shouldOfferUpgrade(e: s.ent, family: family, now: now);
+    // 기본 등급을 이미 산 사람이 다른 계열 기기에 서 있으면, 그 사람이
+    // 볼 것은 '모든 기기' 쪽이다. 고르개를 그리로 미리 넘겨 둔다.
+    if (offerUp && !_tierTouched) _allTier = true;
 
     final body = <Widget>[
+      // ── 히어로 ───────────────────────────────────────────────────
       Center(
-        child: CircleAvatar(
-          radius: 34,
-          backgroundColor: c.infoBg,
-          child: Icon(Icons.workspace_premium, size: 38, color: c.accent),
+        child: Container(
+          width: 76,
+          height: 76,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [c.accent, Color.lerp(c.accent, Colors.black, .42)!],
+            ),
+            boxShadow: [
+              BoxShadow(
+                  color: c.accent.withValues(alpha: .34),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10)),
+            ],
+          ),
+          child: const Icon(Icons.workspace_premium,
+              size: 40, color: Colors.white),
         ),
       ),
-      const SizedBox(height: 16),
-      Text(l.premiumPitch,
+      const SizedBox(height: 22),
+      Text(l.premiumHeadline,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 10),
-      // 색을 얹지 않는다 — 기본 글자색이 이 화면에서 가장 진하다.
-      Text(l.premiumPerks,
+          style: const TextStyle(
+              fontSize: 28,
+              height: 1.22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.6)),
+      const SizedBox(height: 12),
+      Text(l.premiumSubhead,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16, height: 1.5)),
+          style: const TextStyle(fontSize: 16, height: 1.55)),
     ];
 
-    // 체험 중이면 남은 날을 여기서도 보여 준다. 끝나는 날을 미리 알고 있으면
-    // 종료가 배신이 아니라 예고가 된다.
     if (trialOn(s.trialDays)) {
       body.addAll([
-        const SizedBox(height: 12),
-        Text(l.trialBadge(trialLeft(s.trialDays)),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w700, color: c.accent)),
+        const SizedBox(height: 14),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            decoration: BoxDecoration(
+              color: c.infoBg,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(l.trialBadge(trialLeft(s.trialDays)),
+                style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    color: c.accent)),
+          ),
+        ),
       ]);
     }
 
-    // 이미 가진 사람에게는 무엇을 가졌는지부터 알려 준다.
     if (tier > 0) {
       body.addAll([
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: c.infoBg,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(children: [
-            Text('${l.premiumHave} · ${tier == 2 ? l.premiumPlanAll : l.premiumPlanBase}',
+            Text(
+                '${l.premiumHave} · ${tier == 2 ? l.premiumPlanAll : l.premiumPlanBase}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             if (offerUp) ...[
               const SizedBox(height: 8),
               Text(l.premiumUpgradeHere,
@@ -12195,68 +12528,66 @@ class _PremiumScreenState extends State<PremiumScreen> {
       ]);
     }
 
-    // ── 구매 복원을 맨 위로 (2026-09-02 소유자 지시) ────────────────
-    //
-    // 여기 서 있는 사람은 둘 중 하나다. 처음 사러 온 사람과, **이미 샀는데
-    // 새 기기라 안 열리는 사람**. 뒤쪽 사람에게 이 화면은 값을 다시 물어
-    // 오는 화면이고, 그 사람이 찾는 단추는 맨 아래 글자 크기로 숨어 있었다.
-    // 돈을 이미 낸 사람을 헤매게 하는 것보다 나쁜 일은 없다.
-    if (_svc.supported) {
-      body.addAll([
-        const SizedBox(height: 22),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-            ),
-            onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
-            icon: const Icon(Icons.restore, size: 20),
-            label: Text(l.premiumRestore,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700)),
-          ),
-        ),
-      ]);
-    }
-
-    // ── 소제목 + 닷불릿 ────────────────────────────────────────────
-    //
-    // 한도 숫자와 체험 날수는 상수에서 가져온다. 문구에 박아 두면 상수를
-    // 고치는 날 아홉 나라 말이 통째로 거짓말이 된다.
+    // ── 혜택 ───────────────────────────────────────────────────────
     body.addAll([
-      _groupTitle(l.premiumGroupWhat),
-      _bullet(l.premiumPerkNoAds),
-      _bullet(l.premiumPerkTidy(kFreeTidyPerDay)),
-      _bullet(l.premiumPerkWizard(kFreeWizardPerDay)),
-      _bullet(l.premiumPerkWeb),
-      _groupTitle(l.premiumGroupTiers),
-      _bullet(l.premiumTierWhy),
-      _bullet(l.premiumTierPickBase),
-      _bullet(l.premiumTierPickAll),
+      _label(l.premiumGroupPerks),
+      Container(
+        decoration: BoxDecoration(
+          color: c.panel,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.line),
+        ),
+        child: Column(children: [
+          _perkRow(Icons.block, l.premiumPerkNoAds),
+          _perkRow(Icons.auto_fix_high, l.premiumPerkTidy(kFreeTidyPerDay)),
+          _perkRow(Icons.auto_awesome, l.premiumPerkWizard(kFreeWizardPerDay)),
+          _perkRow(Icons.language, l.premiumPerkWeb),
+          _perkRow(Icons.rocket_launch, l.premiumPerkNew, last: true),
+        ]),
+      ),
+      // ── 믿을 만한가 ──────────────────────────────────────────────
+      //
+      // 1인 개발이라는 말은 하지 않는다(2026-09-02 소유자 지시). 대신
+      // 지금 몇 번째 판인지와 요청이 얼마 만에 반영되는지를 말한다.
+      // 사람이 보고 싶은 것은 만든 사람의 사정이 아니라 **앞으로도 고쳐질
+      // 물건인가**뿐이다.
+      const SizedBox(height: 22),
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.infoBg,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.verified, size: 22, color: c.accent),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.premiumTrustTitle,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 5),
+                Text(l.premiumTrustBody(appVersion),
+                    style: const TextStyle(fontSize: 14.5, height: 1.5)),
+              ],
+            ),
+          ),
+        ]),
+      ),
     ]);
-
-    // 체험은 아직 안 산 사람에게만 뜻이 있다.
-    if (tier == 0) {
-      body.addAll([
-        _groupTitle(l.premiumGroupTrial),
-        _bullet(l.premiumTrialLine(kTrialActiveDays)),
-        _bullet(l.premiumTrialAfter),
-      ]);
-    }
 
     if (!_svc.supported) {
       // 웹·윈도우에는 붙일 스토어가 없다. 단추를 그려 놓고 눌러도 아무 일이
       // 없게 두는 것보다, 어디서 사면 되는지 말해 주는 편이 정직하다.
       body.addAll([
-        const SizedBox(height: 18),
+        const SizedBox(height: 26),
         Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: c.panel,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: c.glassLine),
           ),
           child: Text(l.premiumNoStore,
@@ -12264,31 +12595,72 @@ class _PremiumScreenState extends State<PremiumScreen> {
         ),
       ]);
     } else {
+      final pct = _allTier
+          ? _savePct(kProductAllMonthly, kProductAllYearly)
+          : _savePct(kProductMonthly, kProductYearly);
       body.addAll([
-        _sectionTitle(l.premiumPlanAll, l.premiumScopeAll),
-        _plan(
-          id: kProductLifetime,
-          title: l.premiumLifetime,
-          note: l.premiumLifetimeNote,
-          filled: true,
+        const SizedBox(height: 32),
+        _tierToggle(l),
+        const SizedBox(height: 12),
+        Text(_allTier ? l.premiumScopeAll : l.premiumScopeBase,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14.5, height: 1.5)),
+        const SizedBox(height: 22),
+        // 체험 안내는 값 **바로 위**에 한 줄. Bear 가 그렇게 둔다 —
+        // 값을 보기 직전이 '지금 당장 돈이 나가지 않는다'는 사실이 가장
+        // 크게 들리는 자리다.
+        if (tier == 0)
+          Text(l.premiumTrialThen(kTrialActiveDays),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.w700, color: c.sub)),
+        if (tier == 0) const SizedBox(height: 14),
+        Row(children: [
+          Expanded(
+            child: _priceCard(
+              id: _allTier ? kProductAllMonthly : kProductMonthly,
+              per: l.premiumPerMonth,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _priceCard(
+              id: _allTier ? kProductAllYearly : kProductYearly,
+              per: l.premiumPerYear,
+              highlight: true,
+              badge: pct != null ? l.premiumSave(pct) : l.premiumBestValue,
+            ),
+          ),
+        ]),
+        if (_allTier) ...[
+          const SizedBox(height: 12),
+          _priceCard(
+            id: kProductLifetime,
+            per: l.premiumLifetime,
+            note: l.premiumLifetimeNote,
+          ),
+        ],
+        const SizedBox(height: 18),
+        // 구매 복원 — Bear 가 값 바로 아래에 두는 자리. 위쪽 앱바에도
+        // 하나 더 있다(이미 산 사람이 값을 지나칠 필요가 없게).
+        Center(
+          child: TextButton(
+            onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
+            child: Text(l.premiumRestore,
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: c.accent)),
+          ),
         ),
-        _plan(
-          id: kProductAllYearly,
-          title: l.premiumYearly,
-          badge: l.premiumBestValue,
-        ),
-        _plan(id: kProductAllMonthly, title: l.premiumMonthly),
-        _sectionTitle(l.premiumPlanBase, l.premiumScopeBase),
-        _plan(id: kProductYearly, title: l.premiumYearly),
-        _plan(id: kProductMonthly, title: l.premiumMonthly),
+        const SizedBox(height: 4),
+        Text(l.premiumCancelAnytime,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: c.sub)),
         const SizedBox(height: 14),
-        // 자동 갱신 고지 — 애플이 결제 화면에서 반드시 찾는 문장이다.
-        // 작은 글씨로 두던 것을 키웠다. 법으로 읽혀야 하는 문장을 못 읽게
-        // 두는 것은 고지가 아니라 알리바이다.
         Text(l.premiumAutoRenew,
-            style: const TextStyle(fontSize: 13.5, height: 1.6)),
-        const SizedBox(height: 6),
-        // 구매 복원은 이 줄에서 빠졌다 — 화면 맨 위로 올라갔다.
+            style: TextStyle(fontSize: 13, height: 1.6, color: c.sub)),
+        const SizedBox(height: 8),
         Wrap(
           alignment: WrapAlignment.center,
           spacing: 6,
@@ -12296,13 +12668,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
             if (_apple)
               TextButton(
                 onPressed: () => unawaited(_open(appleEulaUrl())),
-                child: Text(l.premiumTerms,
-                    style: const TextStyle(fontSize: 15)),
+                child:
+                    Text(l.premiumTerms, style: const TextStyle(fontSize: 15)),
               ),
             TextButton(
               onPressed: () => unawaited(_open(privacyUrl())),
-              child: Text(l.premiumPrivacy,
-                  style: const TextStyle(fontSize: 15)),
+              child:
+                  Text(l.premiumPrivacy, style: const TextStyle(fontSize: 15)),
             ),
           ],
         ),
@@ -12318,9 +12690,24 @@ class _PremiumScreenState extends State<PremiumScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.premiumTitle)),
+      appBar: AppBar(
+        // 제목을 비운다 — 히어로 한 줄이 이 화면의 제목이다. 위아래로
+        // 같은 말이 두 번 서면 둘 다 힘을 잃는다.
+        title: const SizedBox.shrink(),
+        backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        actions: [
+          if (_svc.supported)
+            TextButton(
+              onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
+              child: Text(l.premiumRestore,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 44),
         children: body,
       ),
     );

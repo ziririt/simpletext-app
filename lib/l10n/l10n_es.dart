@@ -1408,9 +1408,9 @@ class L10nEs extends L10n {
   @override
   String get premiumPerks => 'Sin anuncios · Limpieza ilimitada · Edición con IA ilimitada';
   @override
-  String get premiumScopeBase => 'Si compras en Apple, se abre en iPhone, iPad y Mac. Si compras en Google Play, en tus dispositivos Android. En ambos casos la app web está incluida. No se abre en la otra familia (iPhone ↔ Android) ni en Windows.';
+  String get premiumScopeBase => 'Si compras en Apple, se abre en iPhone, iPad y Mac. Si compras en Google Play, en tus dispositivos Android. En ambos casos la app web está incluida.';
   @override
-  String get premiumScopeAll => 'Todo lo anterior más la otra familia: compra en Apple y también funciona en Android y Windows, y al revés igual. Elige esto si mezclas iPhone y Android o usas Windows en el trabajo.';
+  String get premiumScopeAll => 'Una sola compra lo abre todo, aunque uses iPhone y Android a la vez. Los dispositivos que añadas después también entran.';
   @override
   String get premiumAutoRenew => 'La suscripción se renueva automáticamente si no se cancela al menos 24 horas antes del fin del periodo. Puedes cancelarla cuando quieras en los ajustes de tu cuenta.';
   @override
@@ -1434,31 +1434,84 @@ class L10nEs extends L10n {
   String get premiumPerkNoAds => 'Sin anuncios: ni el banner superior ni el aviso al cerrar';
 
   @override
-  String get premiumGroupWhat => 'Qué hace Premium';
+  String get premiumGroupPerks => 'Ventajas de Premium';
 
   @override
-  String get premiumGroupTiers => 'Por qué hay dos niveles';
+  String get premiumHeadline => 'Sin límites. Sin anuncios.';
 
   @override
-  String get premiumGroupTrial => 'Tus primeras 2 semanas';
+  String get onbTitle1 => 'Pega y queda limpio';
+
+  @override
+  String get onbBody1 => 'Pega la respuesta de la IA tal cual. Asteriscos, almohadillas y saludos de relleno se van de una vez.';
+
+  @override
+  String get onbTitle2 => 'Las tablas rotas vuelven a pie';
+
+  @override
+  String get onbBody2 => 'Las tablas descuadradas se rehacen y con un toque se pegan tal cual en Excel o Google Sheets.';
+
+  @override
+  String get onbTitle3 => 'Las mismas notas en todas partes';
+
+  @override
+  String get onbBody3 => 'Lo que escribes en el iPhone está también en el Mac y en el navegador. Eso no se cobra.';
+
+  @override
+  String get onbTitle4 => 'Todo está abierto';
+
+  @override
+  String onbBody4(int days) => 'Úsalo sin límites durante $days días. Decides después, si merece la pena. Ahora no hay que pagar nada.';
+
+  @override
+  String get onbNext => 'Siguiente';
+
+  @override
+  String get onbStart => 'Empezar';
+
+  @override
+  String get onbSkip => 'Saltar';
+
+  @override
+  String get onbSeePremium => 'Ver Premium';
+
+  @override
+  String get premiumSubhead => 'Para quien trabaja con respuestas de IA a diario. Pulsa limpiar las veces que quieras: nadie lleva la cuenta.';
+
+  @override
+  String get premiumPerkNew => 'Novedades primero: en cuanto están listas';
+
+  @override
+  String get premiumTrustTitle => 'Se sigue construyendo';
+
+  @override
+  String get premiumCancelAnytime => 'Cancela cuando quieras';
+
+  @override
+  String get premiumPerMonth => 'mes';
+
+  @override
+  String get premiumPerYear => 'año';
+
+  @override
+  String premiumTrialThen(int days) => '$days días gratis, después';
+
+  @override
+  String premiumSave(int pct) => 'Ahorra $pct%';
+
+  @override
+  String premiumTrustBody(String version) => 'Estás en $version. Las peticiones suelen salir esa misma semana y puedes ver qué cambió dentro de la app.';
+
+
+
 
   @override
   String get premiumPerkWeb => 'También la app web: sin anuncios en el navegador';
 
-  @override
-  String get premiumTierWhy => 'Cada tienda aplica la compra solo a sus propios dispositivos: Google no puede ver lo que compraste en Apple';
 
-  @override
-  String get premiumTierPickBase => 'Solo iPhone, iPad y Mac → Básico';
 
-  @override
-  String get premiumTierPickAll => 'iPhone y Android juntos, o también Windows → Todos los dispositivos';
 
-  @override
-  String get premiumTrialAfter => 'Decide sobre el pago después: mientras tanto nada deja de funcionar';
 
-  @override
-  String premiumTrialLine(int days) => 'Premium gratis durante $days días en los que abras la app';
 
   @override
   String premiumPerkTidy(int n) => 'Limpieza ilimitada: sin el límite de $n al día';
@@ -1475,13 +1528,9 @@ class L10nEs extends L10n {
   @override
   String get premiumPitch => 'Sin anuncios. Sin límites.';
   @override
-  String get premiumPitchSub => 'Sin anuncios e ilimitado · mensual, anual o de por vida';
-  @override
   String get premiumLifetime => 'De por vida';
   @override
   String get premiumMonthly => 'Mensual';
-  @override
-  String get premiumComingSoon => 'Las compras se activarán en la versión de la App Store. Ya falta poco.';
   @override
   String get limitTitle => 'Has agotado los usos gratuitos de hoy';
   @override

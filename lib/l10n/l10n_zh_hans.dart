@@ -1404,9 +1404,9 @@ class L10nZhHans extends L10n {
   @override
   String get premiumPerks => '无广告 · 整理无限 · AI 编辑无限';
   @override
-  String get premiumScopeBase => '在 Apple 购买可在 iPhone、iPad 和 Mac 上使用；在 Google Play 购买可在 Android 设备上使用。无论从哪边购买，都包含网页版。另一个系统（iPhone ↔ Android）和 Windows 电脑不适用。';
+  String get premiumScopeBase => '在 Apple 购买可在 iPhone、iPad 和 Mac 上使用；在 Google Play 购买可在 Android 设备上使用。无论从哪边购买，都包含网页版。';
   @override
-  String get premiumScopeAll => '在上述基础上再加另一个系统 — 在 Apple 购买也能在 Android 和 Windows 上使用，反之亦然。同时使用 iPhone 和 Android，或在公司用 Windows，请选这个。';
+  String get premiumScopeAll => '即使同时使用 iPhone 和 Android，一次购买即可全部开通。日后新增的设备也包含在内。';
   @override
   String get premiumAutoRenew => '订阅将在到期前 24 小时未取消时自动续期并按同额计费。您可随时在账户设置中取消。';
   @override
@@ -1430,37 +1430,90 @@ class L10nZhHans extends L10n {
   String get premiumPerkNoAds => '无广告 — 顶部横幅和关闭时的提示都不再出现';
 
   @override
-  String get premiumGroupWhat => '高级版能做什么';
+  String get premiumGroupPerks => '高级版权益';
 
   @override
-  String get premiumGroupTiers => '为什么分两档';
+  String get premiumHeadline => '无上限，无广告';
 
   @override
-  String get premiumGroupTrial => '最初两周';
+  String get onbTitle1 => '粘贴，就整理好了';
+
+  @override
+  String get onbBody1 => '把 AI 的回答原样粘进来。星号、井号和多余的寒暄一次就清干净。';
+
+  @override
+  String get onbTitle2 => '错乱的表格重新立起';
+
+  @override
+  String get onbBody2 => '把错位的表格重新排好，一键即可原样粘进 Excel 或 Google 表格。';
+
+  @override
+  String get onbTitle3 => '每台设备都是同一份笔记';
+
+  @override
+  String get onbBody3 => '在 iPhone 上写的，Mac 上和浏览器里也一样在。这一项不收费。';
+
+  @override
+  String get onbTitle4 => '全部已经开放';
+
+  @override
+  String onbBody4(int days) => '$days 天内不限次数先用着。觉得值得再决定也不迟，现在不用付费。';
+
+  @override
+  String get onbNext => '下一步';
+
+  @override
+  String get onbStart => '开始使用';
+
+  @override
+  String get onbSkip => '跳过';
+
+  @override
+  String get onbSeePremium => '查看高级版';
+
+  @override
+  String get premiumSubhead => '为每天处理 AI 回答的人准备的档位。整理按多少次都不计数。';
+
+  @override
+  String get premiumPerkNew => '新功能抢先用 — 做好即刻开放';
+
+  @override
+  String get premiumTrustTitle => '仍在持续打磨';
+
+  @override
+  String get premiumCancelAnytime => '随时可取消';
+
+  @override
+  String get premiumPerMonth => '月';
+
+  @override
+  String get premiumPerYear => '年';
+
+  @override
+  String premiumTrialThen(int days) => '免费 $days 天，之后';
+
+  @override
+  String premiumSave(int pct) => '省 $pct%';
+
+  @override
+  String premiumTrustBody(String version) => '您正在使用 $version。收到的建议通常当周就上线，改了什么在应用内即可查看。';
+
+
+
 
   @override
   String get premiumPerkWeb => '网页版也一样 — 浏览器里同样无广告';
 
-  @override
-  String get premiumTierWhy => '每个商店只把购买用在自己的设备上 — Google 无法知道您在 Apple 买过什么';
+
+
+
+
 
   @override
-  String get premiumTierPickBase => '只用 iPhone、iPad 和 Mac → 基础';
+  String premiumPerkTidy(int n) => '整理无限次 — 没有每天 $n 次的上限';
 
   @override
-  String get premiumTierPickAll => '同时用 iPhone 和 Android，或还要 Windows → 所有设备';
-
-  @override
-  String get premiumTrialAfter => '之后再决定是否付费 — 在此期间一切照常';
-
-  @override
-  String premiumTrialLine(int days) => '实际打开应用的 $days 天内，高级版免费';
-
-  @override
-  String premiumPerkTidy(int n) => '整理无限次 — 解除每天 $n 次的上限';
-
-  @override
-  String premiumPerkWizard(int n) => 'AI 编辑无限次 — 解除每天 $n 次的上限';
+  String premiumPerkWizard(int n) => 'AI 编辑无限次 — 没有每天 $n 次的上限';
 
 
 
@@ -1471,13 +1524,9 @@ class L10nZhHans extends L10n {
   @override
   String get premiumPitch => '无广告，不设限';
   @override
-  String get premiumPitchSub => '无广告、不限量 · 从月付到买断';
-  @override
   String get premiumLifetime => '买断';
   @override
   String get premiumMonthly => '月付';
-  @override
-  String get premiumComingSoon => '购买将在 App Store 正式版中开放，敬请期待。';
   @override
   String get limitTitle => '今天的免费次数已用完';
   @override

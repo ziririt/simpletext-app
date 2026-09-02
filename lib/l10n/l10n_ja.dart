@@ -1404,9 +1404,9 @@ class L10nJa extends L10n {
   @override
   String get premiumPerks => '広告なし・整理無制限・AI編集無制限';
   @override
-  String get premiumScopeBase => 'Appleで購入するとiPhone・iPad・Macで、Google Playで購入するとAndroid端末で使えます。どちらで購入してもWebアプリは含まれます。別系統（iPhone↔Android）とWindowsでは使えません。';
+  String get premiumScopeBase => 'Appleで購入するとiPhone・iPad・Macで、Google Playで購入するとAndroid端末で使えます。どちらで購入してもWebアプリは含まれます。';
   @override
-  String get premiumScopeAll => '上に加えて別系統でも使えます — Appleで購入してもAndroidやWindowsで使え、その逆も同じです。iPhoneとAndroidを併用する方、職場でWindowsを使う方はこちらを。';
+  String get premiumScopeAll => 'iPhoneとAndroidを併用しても、一度の購入ですべて使えます。今後増える端末もこの等級に含まれます。';
   @override
   String get premiumAutoRenew => 'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
   @override
@@ -1430,37 +1430,90 @@ class L10nJa extends L10n {
   String get premiumPerkNoAds => '広告なし — 上部バナーも、閉じるときの案内も';
 
   @override
-  String get premiumGroupWhat => 'プレミアムでできること';
+  String get premiumGroupPerks => 'プレミアム特典';
 
   @override
-  String get premiumGroupTiers => '等級が2つある理由';
+  String get premiumHeadline => '上限なし、広告なし';
 
   @override
-  String get premiumGroupTrial => '最初の2週間';
+  String get onbTitle1 => '貼るだけで、整います';
+
+  @override
+  String get onbBody1 => 'AIの回答をそのまま貼ってみてください。アスタリスクや井桁、余計な挨拶が一度で消えます。';
+
+  @override
+  String get onbTitle2 => '崩れた表が立ち直ります';
+
+  @override
+  String get onbBody2 => 'ずれた表を組み直し、ボタンひとつでExcelやGoogleスプレッドシートにそのまま貼れます。';
+
+  @override
+  String get onbTitle3 => 'どの端末でも同じノート';
+
+  @override
+  String get onbBody3 => 'iPhoneで書いたものがMacにも、ブラウザにもそのまま。追加料金はありません。';
+
+  @override
+  String get onbTitle4 => 'すべて開いています';
+
+  @override
+  String onbBody4(int days) => '$days日間、上限なしでお試しください。続けたくなったらそのとき決めれば十分です。今すぐのお支払いは不要です。';
+
+  @override
+  String get onbNext => '次へ';
+
+  @override
+  String get onbStart => 'はじめる';
+
+  @override
+  String get onbSkip => 'スキップ';
+
+  @override
+  String get onbSeePremium => 'プレミアムを見る';
+
+  @override
+  String get premiumSubhead => 'AIの回答を毎日扱う方のための等級です。整理を何回押しても数えません。';
+
+  @override
+  String get premiumPerkNew => '新機能をいち早く — でき次第すぐに';
+
+  @override
+  String get premiumTrustTitle => '作り続けています';
+
+  @override
+  String get premiumCancelAnytime => 'いつでも解約可能';
+
+  @override
+  String get premiumPerMonth => '月';
+
+  @override
+  String get premiumPerYear => '年';
+
+  @override
+  String premiumTrialThen(int days) => '$days日間無料、その後';
+
+  @override
+  String premiumSave(int pct) => '$pct%お得';
+
+  @override
+  String premiumTrustBody(String version) => '現在$versionです。いただいた要望はたいていその週に反映し、何が変わったかはアプリ内で確認できます。';
+
+
+
 
   @override
   String get premiumPerkWeb => 'Webアプリも — ブラウザでも広告なし';
 
-  @override
-  String get premiumTierWhy => 'ストアは購入をそれぞれ自社の端末にしか適用しない — Appleでの購入をGoogleが知る方法はなし';
+
+
+
+
 
   @override
-  String get premiumTierPickBase => 'iPhone・iPad・Macだけ → ベーシック';
+  String premiumPerkTidy(int n) => '整理が無制限 — 1日$n回の上限なし';
 
   @override
-  String get premiumTierPickAll => 'iPhoneとAndroidを併用、またはWindowsまで → すべての端末';
-
-  @override
-  String get premiumTrialAfter => 'お支払いはその後で判断 — それまで止まるものはなし';
-
-  @override
-  String premiumTrialLine(int days) => '実際にアプリを開いた$days日間、プレミアムのまま無料';
-
-  @override
-  String premiumPerkTidy(int n) => '整理が無制限 — 1日$n回の上限を解除';
-
-  @override
-  String premiumPerkWizard(int n) => 'AI編集が無制限 — 1日$n回の上限を解除';
+  String premiumPerkWizard(int n) => 'AI編集が無制限 — 1日$n回の上限なし';
 
 
 
@@ -1471,13 +1524,9 @@ class L10nJa extends L10n {
   @override
   String get premiumPitch => '広告なしで、最後まで';
   @override
-  String get premiumPitchSub => '広告なしで無制限・月額から買い切りまで';
-  @override
   String get premiumLifetime => '買い切り';
   @override
   String get premiumMonthly => '月額';
-  @override
-  String get premiumComingSoon => '購入はApp Store公開版で有効になります。もうしばらくお待ちください。';
   @override
   String get limitTitle => '本日の無料利用を使い切りました';
   @override
