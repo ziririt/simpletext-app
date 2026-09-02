@@ -24,6 +24,7 @@ import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams;
 import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
+import 'core/money.dart';
 import 'core/store_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12370,7 +12371,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final c = context.c;
     final price = _priceOf(id);
     final sel = _sel == id;
-    return GestureDetector(
+    final body = GestureDetector(
       onTap: price == null ? null : () => setState(() => _sel = id),
       behavior: HitTestBehavior.opaque,
       child: Opacity(
@@ -12386,42 +12387,60 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Flexible(
-                  child: Text(price ?? '···',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 21, fontWeight: FontWeight.w900)),
-                ),
-                if (badge != null) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 7, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: c.infoBg,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(badge,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: c.accent)),
-                  ),
-                ],
-              ]),
-              const SizedBox(height: 3),
               Text(label,
-                  style: TextStyle(fontSize: 14.5, color: c.sub)),
+                  style: TextStyle(fontSize: 13.5, color: c.sub)),
+              const SizedBox(height: 3),
+              Text(price ?? '···',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 21, fontWeight: FontWeight.w900)),
               if (note != null) ...[
-                const SizedBox(height: 4),
-                Text(note, style: TextStyle(fontSize: 12.5, color: c.sub)),
+                const SizedBox(height: 3),
+                Text(note, style: TextStyle(fontSize: 13, color: c.sub)),
               ],
             ],
           ),
         ),
       ),
+    );
+    return Stack(clipBehavior: Clip.none, children: [
+      body,
+      // 배지를 카드 **위로** 띄운다(MindNode 의 SAVE 17% 자리).
+      // 카드 안에 넣으면 값과 나란히 서서 어느 쪽을 읽어야 할지 헷갈리고,
+      // 위로 걸치면 '이 카드에 붙은 딱지'로 읽힌다.
+      if (badge != null)
+        Positioned(
+          top: -10,
+          left: 12,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+            decoration: BoxDecoration(
+              color: c.accent,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Text(badge,
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white)),
+          ),
+        ),
+    ]);
+  }
+
+  /// 연간 값을 열둘로 나눈 '월 얼마' — 연간 카드에 함께 적는다.
+  ///
+  /// 셈은 core/money.dart 가 한다(순수 함수, 시험으로 고정). 돈을 적는
+  /// 자리라 나라마다 다른 것 셋 — 소수 자리, 기호 위치, 천 단위 구분 —
+  /// 을 화면 코드 안에 두면 시험할 수가 없다.
+  String? _perMonthOf(String yearlyId) {
+    final p = _svc.product(yearlyId);
+    if (p == null) return null;
+    return perMonthLabel(
+      yearlyRaw: p.rawPrice,
+      shownPrice: p.price,
+      currencySymbol: p.currencySymbol,
     );
   }
 
@@ -12624,11 +12643,25 @@ class _PremiumScreenState extends State<PremiumScreen> {
       body.addAll([
         const SizedBox(height: 32),
         _tierToggle(l),
-        const SizedBox(height: 12),
+        const SizedBox(height: 18),
+        // '어느 기기가 열리는가'를 굵은 제목으로 올린다(MindNode 의
+        // '아이폰, 아이패드, 맥 및 Apple Watch 버전 잠금 해제' 자리).
+        // 회색 설명문으로 두었더니 정작 등급을 고르는 근거가 제일 안
+        // 읽히는 글이 되어 있었다.
+        Text(
+            _allTier
+                ? l.premiumUnlockAll
+                : (family == kFamilyGoogle
+                    ? l.premiumUnlockGoogle
+                    : l.premiumUnlockApple),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontSize: 19, height: 1.35, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 8),
         Text(_allTier ? l.premiumScopeAll : l.premiumScopeBase,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14.5, height: 1.5)),
-        const SizedBox(height: 22),
+            style: TextStyle(fontSize: 14, height: 1.5, color: c.sub)),
+        const SizedBox(height: 24),
         // 체험 안내는 값 **바로 위**에 한 줄. Bear 가 그렇게 둔다 —
         // 값을 보기 직전이 '지금 당장 돈이 나가지 않는다'는 사실이 가장
         // 크게 들리는 자리다.
@@ -12638,7 +12671,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
               style: TextStyle(
                   fontSize: 15, fontWeight: FontWeight.w700, color: c.sub)),
         if (tier == 0) const SizedBox(height: 14),
-        Row(children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Expanded(
             child: _priceCard(
               id: _allTier ? kProductAllMonthly : kProductMonthly,
@@ -12651,6 +12684,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
               id: _allTier ? kProductAllYearly : kProductYearly,
               label: l.premiumYearly,
               badge: pct != null ? l.premiumSave(pct) : l.premiumBestValue,
+              // 연 얼마를 월 얼마로 환산해 함께 적는다 — 옆 카드(월간)와
+              // 같은 단위가 되어야 비로소 견줄 수 있다.
+              note: () {
+                final m = _perMonthOf(
+                    _allTier ? kProductAllYearly : kProductYearly);
+                return m == null ? null : '$m/${l.premiumPerMonth}';
+              }(),
             ),
           ),
         ]),
@@ -12666,9 +12706,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
         // 구매 복원 — Bear 가 값 바로 아래에 두는 자리. 위쪽 앱바에도
         // 하나 더 있다(이미 산 사람이 값을 지나칠 필요가 없게).
         Center(
-          child: TextButton(
+          child: TextButton.icon(
             onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
-            child: Text(l.premiumRestore,
+            icon: Icon(Icons.download_outlined, size: 19, color: c.accent),
+            label: Text(l.premiumRestore,
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,

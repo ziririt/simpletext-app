@@ -1497,6 +1497,15 @@ class L10nEs extends L10n {
   String get premiumPerLifetime => 'De por vida';
 
   @override
+  String get premiumUnlockApple => 'Desbloquea en iPhone, iPad y Mac';
+
+  @override
+  String get premiumUnlockGoogle => 'Desbloquea en tus dispositivos Android';
+
+  @override
+  String get premiumUnlockAll => 'Desbloquea en todos tus dispositivos';
+
+  @override
   String premiumCta(String period, String price) => 'Empezar por $price / $period';
 
   @override

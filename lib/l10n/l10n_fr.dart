@@ -1498,6 +1498,15 @@ class L10nFr extends L10n {
   String get premiumPerLifetime => 'À vie';
 
   @override
+  String get premiumUnlockApple => 'Débloquez sur iPhone, iPad et Mac';
+
+  @override
+  String get premiumUnlockGoogle => 'Débloquez sur vos appareils Android';
+
+  @override
+  String get premiumUnlockAll => 'Débloquez sur tous vos appareils';
+
+  @override
   String premiumCta(String period, String price) => 'Prendre à $price / $period';
 
   @override

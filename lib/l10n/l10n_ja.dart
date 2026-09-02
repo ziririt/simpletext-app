@@ -1493,6 +1493,15 @@ class L10nJa extends L10n {
   String get premiumPerLifetime => '買い切り';
 
   @override
+  String get premiumUnlockApple => 'iPhone・iPad・Macで解除';
+
+  @override
+  String get premiumUnlockGoogle => 'Android端末で解除';
+
+  @override
+  String get premiumUnlockAll => 'お持ちのすべての端末で解除';
+
+  @override
   String premiumCta(String period, String price) => '$period $priceで利用する';
 
   @override

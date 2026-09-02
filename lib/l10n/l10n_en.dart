@@ -1497,6 +1497,15 @@ class L10nEn extends L10n {
   String get premiumPerLifetime => 'Lifetime';
 
   @override
+  String get premiumUnlockApple => 'Unlock on iPhone, iPad and Mac';
+
+  @override
+  String get premiumUnlockGoogle => 'Unlock on your Android devices';
+
+  @override
+  String get premiumUnlockAll => 'Unlock on every device you own';
+
+  @override
   String premiumCta(String period, String price) => 'Get it for $price / $period';
 
   @override

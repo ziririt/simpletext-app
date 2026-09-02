@@ -1497,6 +1497,15 @@ class L10nPt extends L10n {
   String get premiumPerLifetime => 'Vitalício';
 
   @override
+  String get premiumUnlockApple => 'Desbloqueie no iPhone, iPad e Mac';
+
+  @override
+  String get premiumUnlockGoogle => 'Desbloqueie nos seus aparelhos Android';
+
+  @override
+  String get premiumUnlockAll => 'Desbloqueie em todos os seus aparelhos';
+
+  @override
   String premiumCta(String period, String price) => 'Assinar por $price / $period';
 
   @override

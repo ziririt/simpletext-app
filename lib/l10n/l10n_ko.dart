@@ -1493,6 +1493,15 @@ class L10nKo extends L10n {
   String get premiumPerLifetime => '평생';
 
   @override
+  String get premiumUnlockApple => '아이폰 · 아이패드 · 맥에서 잠금 해제';
+
+  @override
+  String get premiumUnlockGoogle => '안드로이드 기기에서 잠금 해제';
+
+  @override
+  String get premiumUnlockAll => '가진 모든 기기에서 잠금 해제';
+
+  @override
   String premiumCta(String period, String price) => '$period $price에 이용하기';
 
   @override

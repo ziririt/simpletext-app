@@ -1498,6 +1498,15 @@ class L10nDe extends L10n {
   String get premiumPerLifetime => 'Einmalig';
 
   @override
+  String get premiumUnlockApple => 'Auf iPhone, iPad und Mac freischalten';
+
+  @override
+  String get premiumUnlockGoogle => 'Auf Ihren Android-Geräten freischalten';
+
+  @override
+  String get premiumUnlockAll => 'Auf allen Ihren Geräten freischalten';
+
+  @override
   String premiumCta(String period, String price) => 'Für $price / $period holen';
 
   @override

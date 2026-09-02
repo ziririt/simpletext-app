@@ -1493,6 +1493,15 @@ class L10nZhHant extends L10n {
   String get premiumPerLifetime => '永久';
 
   @override
+  String get premiumUnlockApple => '在 iPhone、iPad 和 Mac 上解鎖';
+
+  @override
+  String get premiumUnlockGoogle => '在 Android 裝置上解鎖';
+
+  @override
+  String get premiumUnlockAll => '在您的所有裝置上解鎖';
+
+  @override
   String premiumCta(String period, String price) => '以 $price/$period 開始使用';
 
   @override
