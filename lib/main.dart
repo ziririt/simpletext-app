@@ -12192,15 +12192,25 @@ class _PremiumScreenState extends State<PremiumScreen> {
   /// 고르개가 '모든 기기' 쪽인가.
   bool _allTier = false;
 
-  /// 사람이 고르개를 한 번이라도 만졌는가. 만지기 전에는 상황을 보고
-  /// 우리가 정해 주고(업그레이드 대상이면 '모든 기기'), 만진 뒤에는
-  /// 그 선택을 덮지 않는다.
-  bool _tierTouched = false;
+  /// 지금 고른 상품. **누른다고 결제되지 않는다** — 고르기와 사기를
+  /// 갈라 둔 것이 2026-09-02 개편의 핵심이다.
+  ///
+  /// 소유자가 보내 온 Notion·Xmind 결제 화면이 둘 다 그렇게 한다. 값 카드는
+  /// 고르는 자리이고, 결제는 화면 아래에 붙박이로 선 단추 하나가 한다.
+  /// 카드를 누르는 순간 결제창이 뜨면 사람은 값을 견주어 볼 수가 없다 —
+  /// 눌러 봐야 아는데, 눌렀다가는 사게 되니까.
+  String _sel = kProductYearly;
 
   @override
   void initState() {
     super.initState();
-    _wasPremium = Store.instance.settings.premium;
+    final st = Store.instance.settings;
+    _wasPremium = st.premium;
+    // 기본 등급을 이미 산 사람이 다른 계열 기기에 서 있으면, 그 사람이
+    // 볼 것은 '모든 기기' 쪽이다. 고르개를 미리 그리로 넘겨 둔다.
+    _allTier = shouldOfferUpgrade(
+        e: st.ent, family: deviceFamily(), now: DateTime.now());
+    _sel = _allTier ? kProductAllYearly : kProductYearly;
     _svc.revision.addListener(_tick);
     Store.instance.addListener(_tick);
     // 화면에 들어온 김에 값을 한 번 더 받아 온다. 처음 시동 때 스토어가
@@ -12329,92 +12339,104 @@ class _PremiumScreenState extends State<PremiumScreen> {
         seg(l.premiumPlanBase, !_allTier, () {
           setState(() {
             _allTier = false;
-            _tierTouched = true;
+            _sel = kProductYearly;
           });
         }),
         seg(l.premiumPlanAll, _allTier, () {
           setState(() {
             _allTier = true;
-            _tierTouched = true;
+            _sel = kProductAllYearly;
           });
         }),
       ]),
     );
   }
 
-  /// 값 카드 하나. 큰 값 + 기간, 우상단에 아낀 비율 배지.
+  /// 값 카드 하나 — **고르는 자리**다. 누른다고 결제되지 않는다.
+  ///
+  /// Notion 의 배치를 따랐다: 큰 금액이 위, 기간 이름이 아래 회색,
+  /// 아낀 비율은 금액 오른쪽에 옅은 배지. 고른 카드는 테두리를 굵게 하고
+  /// 바탕을 아주 옅게 물들인다 — 색을 진하게 채우면 두 카드의 값을
+  /// 견주어 보기가 어려워진다.
   ///
   /// 값은 언제나 스토어가 준 것을 쓴다. 나라마다 다르고, 우리가 적어 둔
   /// 숫자는 반드시 언젠가 실제와 어긋난다.
   Widget _priceCard({
     required String id,
-    required String per,
+    required String label,
     String? badge,
-    bool highlight = false,
     String? note,
   }) {
     final c = context.c;
-    final p = _svc.product(id);
-    final price = p?.price ?? (kDebugMode ? kDevUsdPrice[id] : null);
-    final on = price != null && !_svc.busy;
-    final bg = highlight ? c.accent : c.panel;
-    final fg = highlight ? Colors.white : null;
-    final card = Container(
-      padding: const EdgeInsets.fromLTRB(14, 18, 14, 16),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: highlight ? c.accent : c.accent.withValues(alpha: .45),
-            width: 1.6),
-      ),
-      child: Column(children: [
-        Text(price ?? '···',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 25, fontWeight: FontWeight.w900, color: fg)),
-        const SizedBox(height: 2),
-        Text('/ $per',
-            style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: fg ?? c.sub)),
-        if (note != null) ...[
-          const SizedBox(height: 6),
-          Text(note,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: fg ?? c.sub)),
-        ],
-      ]),
-    );
-    return Opacity(
-      opacity: on ? 1 : .55,
-      child: GestureDetector(
-        onTap: on ? () => unawaited(_buy(id)) : null,
-        child: Stack(clipBehavior: Clip.none, children: [
-          card,
-          if (badge != null)
-            Positioned(
-              top: -9,
-              right: 8,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(
-                  color: highlight ? Colors.white : c.accent,
-                  borderRadius: BorderRadius.circular(9),
+    final price = _priceOf(id);
+    final sel = _sel == id;
+    return GestureDetector(
+      onTap: price == null ? null : () => setState(() => _sel = id),
+      behavior: HitTestBehavior.opaque,
+      child: Opacity(
+        opacity: price == null ? .5 : 1,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 15, 12, 14),
+          decoration: BoxDecoration(
+            color: sel ? c.accent.withValues(alpha: .09) : c.panel,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: sel ? c.accent : c.line, width: sel ? 2 : 1.2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Flexible(
+                  child: Text(price ?? '···',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 21, fontWeight: FontWeight.w900)),
                 ),
-                child: Text(badge,
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: highlight ? c.accent : Colors.white)),
-              ),
-            ),
-        ]),
+                if (badge != null) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: c.infoBg,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(badge,
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: c.accent)),
+                  ),
+                ],
+              ]),
+              const SizedBox(height: 3),
+              Text(label,
+                  style: TextStyle(fontSize: 14.5, color: c.sub)),
+              if (note != null) ...[
+                const SizedBox(height: 4),
+                Text(note, style: TextStyle(fontSize: 12.5, color: c.sub)),
+              ],
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  /// 이 상품의 값 글자. 스토어가 준 것이 언제나 먼저다. 개발 중(디버그)에만,
+  /// 그리고 스토어가 아직 아무것도 안 줬을 때만 적어 둔 미국 값으로 채운다.
+  String? _priceOf(String id) =>
+      _svc.product(id)?.price ?? (kDebugMode ? kDevUsdPrice[id] : null);
+
+  /// 고른 상품의 기간 이름 — 아래 붙박이 단추의 문구에 들어간다.
+  String _periodOf(L10n l, String id) {
+    if (id == kProductLifetime) return l.premiumPerLifetime;
+    if (id == kProductYearly || id == kProductAllYearly) {
+      return l.premiumPerYear;
+    }
+    return l.premiumPerMonth;
   }
 
   /// 연간이 월간보다 몇 퍼센트 싼가. 둘 다 스토어에서 받아왔을 때만.
@@ -12440,9 +12462,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final family = deviceFamily();
     final tier = tierOf(e: s.ent, now: now);
     final offerUp = shouldOfferUpgrade(e: s.ent, family: family, now: now);
-    // 기본 등급을 이미 산 사람이 다른 계열 기기에 서 있으면, 그 사람이
-    // 볼 것은 '모든 기기' 쪽이다. 고르개를 그리로 미리 넘겨 둔다.
-    if (offerUp && !_tierTouched) _allTier = true;
 
     final body = <Widget>[
       // ── 히어로 ───────────────────────────────────────────────────
@@ -12538,11 +12557,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
           border: Border.all(color: c.line),
         ),
         child: Column(children: [
-          _perkRow(Icons.block, l.premiumPerkNoAds),
-          _perkRow(Icons.auto_fix_high, l.premiumPerkTidy(kFreeTidyPerDay)),
-          _perkRow(Icons.auto_awesome, l.premiumPerkWizard(kFreeWizardPerDay)),
-          _perkRow(Icons.language, l.premiumPerkWeb),
-          _perkRow(Icons.rocket_launch, l.premiumPerkNew, last: true),
+          // 아이콘을 다섯 개 다르게 쓰던 것을 체크 하나로 통일했다.
+          // Notion·Xmind 둘 다 그렇게 한다 — 아이콘이 제각각이면 눈이
+          // 그림을 하나씩 해석하느라 정작 글을 안 읽는다. 같은 체크가
+          // 다섯 번 서면 그 줄들이 '받는 것의 목록'으로 한 번에 읽힌다.
+          _perkRow(Icons.check, l.premiumPerkNoAds),
+          _perkRow(Icons.check, l.premiumPerkTidy(kFreeTidyPerDay)),
+          _perkRow(Icons.check, l.premiumPerkWizard(kFreeWizardPerDay)),
+          _perkRow(Icons.check, l.premiumPerkWeb),
+          _perkRow(Icons.check, l.premiumPerkNew, last: true),
         ]),
       ),
       // ── 믿을 만한가 ──────────────────────────────────────────────
@@ -12619,15 +12642,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
           Expanded(
             child: _priceCard(
               id: _allTier ? kProductAllMonthly : kProductMonthly,
-              per: l.premiumPerMonth,
+              label: l.premiumMonthly,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: _priceCard(
               id: _allTier ? kProductAllYearly : kProductYearly,
-              per: l.premiumPerYear,
-              highlight: true,
+              label: l.premiumYearly,
               badge: pct != null ? l.premiumSave(pct) : l.premiumBestValue,
             ),
           ),
@@ -12636,11 +12658,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
           const SizedBox(height: 12),
           _priceCard(
             id: kProductLifetime,
-            per: l.premiumLifetime,
+            label: l.premiumLifetime,
             note: l.premiumLifetimeNote,
           ),
         ],
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
         // 구매 복원 — Bear 가 값 바로 아래에 두는 자리. 위쪽 앱바에도
         // 하나 더 있다(이미 산 사람이 값을 지나칠 필요가 없게).
         Center(
@@ -12653,11 +12675,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     color: c.accent)),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(l.premiumCancelAnytime,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: c.sub)),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Text(l.premiumAutoRenew,
             style: TextStyle(fontSize: 13, height: 1.6, color: c.sub)),
         const SizedBox(height: 8),
@@ -12689,6 +12707,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
       }
     }
 
+    final selPrice = _priceOf(_sel);
+    final selPeriod = _periodOf(l, _sel);
+
     return Scaffold(
       appBar: AppBar(
         // 제목을 비운다 — 히어로 한 줄이 이 화면의 제목이다. 위아래로
@@ -12696,20 +12717,77 @@ class _PremiumScreenState extends State<PremiumScreen> {
         title: const SizedBox.shrink(),
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        // Notion·Xmind 둘 다 왼쪽 위에 동그란 X 를 둔다. 값을 보러 들어온
+        // 사람에게 '나갈 문이 어디인지'가 먼저 보이는 편이 낫다 — 갇힌
+        // 느낌이 드는 순간 값을 읽지 않는다.
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         actions: [
           if (_svc.supported)
             TextButton(
               onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
               child: Text(l.premiumRestore,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w700)),
             ),
           const SizedBox(width: 4),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(22, 8, 22, 44),
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
         children: body,
       ),
+      // ── 아래 붙박이 결제 바 ────────────────────────────────────────
+      //
+      // 값 카드는 고르는 자리이고, 사는 일은 여기 단추 하나가 한다.
+      // 스크롤을 어디까지 내렸든 늘 보인다 — 혜택을 읽다가 마음이 선
+      // 순간에 단추를 찾아 다시 내려갈 필요가 없다.
+      //
+      // 단추 글에 **고른 값이 그대로 들어간다**('연 ₩19,900에 이용하기').
+      // 얼마가 빠져나가는지 모른 채 누르는 단추를 만들지 않는다.
+      bottomNavigationBar: !_svc.supported
+          ? null
+          : SafeArea(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+                decoration: BoxDecoration(
+                  color: c.bg,
+                  border: Border(top: BorderSide(color: c.line)),
+                ),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                      ),
+                      onPressed: (selPrice == null || _svc.busy)
+                          ? null
+                          : () => unawaited(_buy(_sel)),
+                      child: Text(
+                          selPrice == null
+                              ? l.premiumLoading
+                              : l.premiumCta(selPeriod, selPrice),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                      _sel == kProductLifetime
+                          ? l.premiumLifetimeNote
+                          : '${selPrice == null ? '' : '${l.premiumChargeNote(selPeriod, selPrice)} '}${l.premiumCancelAnytime}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 12.5, height: 1.45, color: c.sub)),
+                ]),
+              ),
+            ),
     );
   }
 }

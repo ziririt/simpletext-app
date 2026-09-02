@@ -820,6 +820,9 @@ abstract class L10n {
   String get premiumCancelAnytime;
   String get premiumPerMonth;
   String get premiumPerYear;
+  String get premiumPerLifetime;
+  String premiumCta(String period, String price);
+  String premiumChargeNote(String period, String price);
   String premiumTrialThen(int days);
   String premiumSave(int pct);
   String premiumTrustBody(String version);
@@ -1354,6 +1357,7 @@ abstract class L10n {
         'premiumCancelAnytime': premiumCancelAnytime,
         'premiumPerMonth': premiumPerMonth,
         'premiumPerYear': premiumPerYear,
+        'premiumPerLifetime': premiumPerLifetime,
         'premiumPerkWeb': premiumPerkWeb,
         'sponsorPremiumNote': sponsorPremiumNote,
         'trialEndedTitle': trialEndedTitle,

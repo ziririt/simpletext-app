@@ -1490,6 +1490,15 @@ class L10nJa extends L10n {
   String get premiumPerYear => '年';
 
   @override
+  String get premiumPerLifetime => '買い切り';
+
+  @override
+  String premiumCta(String period, String price) => '$period $priceで利用する';
+
+  @override
+  String premiumChargeNote(String period, String price) => '$period $priceが請求されます。';
+
+  @override
   String premiumTrialThen(int days) => '$days日間無料、その後';
 
   @override

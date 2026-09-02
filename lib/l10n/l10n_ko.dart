@@ -1487,7 +1487,16 @@ class L10nKo extends L10n {
   String get premiumPerMonth => '월';
 
   @override
-  String get premiumPerYear => '년';
+  String get premiumPerYear => '연';
+
+  @override
+  String get premiumPerLifetime => '평생';
+
+  @override
+  String premiumCta(String period, String price) => '$period $price에 이용하기';
+
+  @override
+  String premiumChargeNote(String period, String price) => '$period 요금 $price이 청구됩니다.';
 
   @override
   String premiumTrialThen(int days) => '$days일 무료 체험, 그 후';

@@ -1495,6 +1495,15 @@ class L10nFr extends L10n {
   String get premiumPerYear => 'an';
 
   @override
+  String get premiumPerLifetime => 'À vie';
+
+  @override
+  String premiumCta(String period, String price) => 'Prendre à $price / $period';
+
+  @override
+  String premiumChargeNote(String period, String price) => '$price vous sera facturé par $period.';
+
+  @override
   String premiumTrialThen(int days) => '$days jours gratuits, puis';
 
   @override

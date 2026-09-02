@@ -1490,6 +1490,15 @@ class L10nZhHans extends L10n {
   String get premiumPerYear => '年';
 
   @override
+  String get premiumPerLifetime => '永久';
+
+  @override
+  String premiumCta(String period, String price) => '以 $price/$period 开始使用';
+
+  @override
+  String premiumChargeNote(String period, String price) => '将按 $period 收取 $price。';
+
+  @override
   String premiumTrialThen(int days) => '免费 $days 天，之后';
 
   @override

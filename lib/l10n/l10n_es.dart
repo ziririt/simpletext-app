@@ -1494,6 +1494,15 @@ class L10nEs extends L10n {
   String get premiumPerYear => 'año';
 
   @override
+  String get premiumPerLifetime => 'De por vida';
+
+  @override
+  String premiumCta(String period, String price) => 'Empezar por $price / $period';
+
+  @override
+  String premiumChargeNote(String period, String price) => 'Se te cobrará $price por $period.';
+
+  @override
   String premiumTrialThen(int days) => '$days días gratis, después';
 
   @override
