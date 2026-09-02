@@ -1456,7 +1456,7 @@ class L10nFr extends L10n {
   String get onbTitle3 => 'Les mêmes notes partout';
 
   @override
-  String get onbBody3 => 'Ce que vous écrivez sur iPhone est aussi sur le Mac et dans le navigateur. Cela ne se paie pas.';
+  String get onbBody3 => 'iPhone, iPad, Mac, Android et l’application web dans le navigateur affichent les mêmes notes. Modifiez d’un côté, le reste suit.';
 
   @override
   String get onbTitle4 => 'Tout est ouvert';
@@ -1477,7 +1477,7 @@ class L10nFr extends L10n {
   String get onbSeePremium => 'Voir Premium';
 
   @override
-  String get premiumSubhead => 'Pour celles et ceux qui manipulent des réponses d’IA tous les jours. Appuyez sur la mise au propre autant que vous voulez, personne ne compte.';
+  String get premiumSubhead => 'Rien qui couvre l’écran, rien à compter. Vous collez, vous appuyez, c’est fini.';
 
   @override
   String get premiumPerkNew => 'Les nouveautés d’abord — dès qu’elles sont prêtes';

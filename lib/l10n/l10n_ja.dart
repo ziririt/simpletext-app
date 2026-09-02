@@ -1451,7 +1451,7 @@ class L10nJa extends L10n {
   String get onbTitle3 => 'どの端末でも同じノート';
 
   @override
-  String get onbBody3 => 'iPhoneで書いたものがMacにも、ブラウザにもそのまま。追加料金はありません。';
+  String get onbBody3 => 'iPhone・iPad・Mac・Android、そしてブラウザで開くWebアプリまで同じノートを見ます。一つ直せば残りもついてきます。';
 
   @override
   String get onbTitle4 => 'すべて開いています';
@@ -1472,7 +1472,7 @@ class L10nJa extends L10n {
   String get onbSeePremium => 'プレミアムを見る';
 
   @override
-  String get premiumSubhead => 'AIの回答を毎日扱う方のための等級です。整理を何回押しても数えません。';
+  String get premiumSubhead => '画面を覆うものも、数えるものもありません。貼って、押せば、それで終わりです。';
 
   @override
   String get premiumPerkNew => '新機能をいち早く — でき次第すぐに';

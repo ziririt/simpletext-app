@@ -1451,7 +1451,7 @@ class L10nZhHans extends L10n {
   String get onbTitle3 => '每台设备都是同一份笔记';
 
   @override
-  String get onbBody3 => '在 iPhone 上写的，Mac 上和浏览器里也一样在。这一项不收费。';
+  String get onbBody3 => 'iPhone、iPad、Mac、Android，还有在浏览器里打开的网页版，看到的都是同一份笔记。改一处，其余跟着变。';
 
   @override
   String get onbTitle4 => '全部已经开放';
@@ -1472,7 +1472,7 @@ class L10nZhHans extends L10n {
   String get onbSeePremium => '查看高级版';
 
   @override
-  String get premiumSubhead => '为每天处理 AI 回答的人准备的档位。整理按多少次都不计数。';
+  String get premiumSubhead => '没有遮挡屏幕的东西，也没有要数的次数。粘贴，按一下，就结束了。';
 
   @override
   String get premiumPerkNew => '新功能抢先用 — 做好即刻开放';

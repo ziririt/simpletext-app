@@ -1455,7 +1455,7 @@ class L10nPt extends L10n {
   String get onbTitle3 => 'As mesmas notas em todo lugar';
 
   @override
-  String get onbBody3 => 'O que você escreve no iPhone está também no Mac e no navegador. Isso não é cobrado.';
+  String get onbBody3 => 'iPhone, iPad, Mac, Android e o app web no navegador mostram as mesmas notas. Mude num lugar e o resto acompanha.';
 
   @override
   String get onbTitle4 => 'Tudo está aberto';
@@ -1476,7 +1476,7 @@ class L10nPt extends L10n {
   String get onbSeePremium => 'Ver Premium';
 
   @override
-  String get premiumSubhead => 'Para quem lida com respostas de IA todo dia. Aperte organizar quantas vezes quiser — ninguém está contando.';
+  String get premiumSubhead => 'Nada cobrindo a tela, nada para contar. Cola, aperta e pronto.';
 
   @override
   String get premiumPerkNew => 'Novidades primeiro — assim que ficam prontas';

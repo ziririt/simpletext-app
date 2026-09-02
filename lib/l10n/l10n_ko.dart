@@ -1451,7 +1451,7 @@ class L10nKo extends L10n {
   String get onbTitle3 => '모든 기기에서 같은 노트';
 
   @override
-  String get onbBody3 => '아이폰에서 적은 것이 맥에서도, 브라우저에서도 그대로 있습니다. 값은 받지 않습니다.';
+  String get onbBody3 => '아이폰·아이패드·맥·안드로이드, 그리고 브라우저에서 여는 웹앱까지 같은 노트를 봅니다. 한쪽에서 고치면 나머지도 따라옵니다.';
 
   @override
   String get onbTitle4 => '전부 열어 두었습니다';
@@ -1472,7 +1472,7 @@ class L10nKo extends L10n {
   String get onbSeePremium => '프리미엄 살펴보기';
 
   @override
-  String get premiumSubhead => 'AI 답변을 매일 다루는 분들을 위한 등급입니다. 정리를 몇 번 누르든 세지 않습니다.';
+  String get premiumSubhead => '화면을 가리는 것도, 세어야 할 것도 없습니다. 붙여넣고 누르면 그걸로 끝입니다.';
 
   @override
   String get premiumPerkNew => '새 기능 먼저 — 만드는 대로 바로 열립니다';
