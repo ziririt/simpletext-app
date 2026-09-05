@@ -150,12 +150,23 @@ def show():
     print('다음 판 이름이 될 값: %s' % next_name(vs))
 
 
-def editable(aid):
-    """지금 고칠 수 있는 판. 없으면 None."""
+# 아직 심사 줄에 서지 않은 판의 상태들.
+#
+# READY_FOR_REVIEW 는 '냈다'가 아니라 **'낼 준비가 끝났다'**이다.
+# 2026-09-02에 인앱 상품 넣기가 중간에 실패해 제출함만 만들어진 채
+# 멈췄더니, 판이 이 상태로 남고 --submit 이 '낼 판이 없다'고 했다.
+# 그때 사람이 할 수 있는 일이 없어진다 — 낼 판은 분명히 있는데.
+_OPEN_STATES = (
+    'PREPARE_FOR_SUBMISSION', 'REJECTED', 'METADATA_REJECTED',
+    'DEVELOPER_REJECTED', 'READY_FOR_REVIEW',
+)
+
+
+def editable(aid, states=None):
+    """지금 손댈 수 있는 판. 없으면 None."""
+    want = states or _OPEN_STATES
     for v in versions(aid):
-        if v['attributes'].get('appStoreState') in (
-                'PREPARE_FOR_SUBMISSION', 'REJECTED', 'METADATA_REJECTED',
-                'DEVELOPER_REJECTED'):
+        if v['attributes'].get('appStoreState') in want:
             return v
     return None
 
@@ -163,7 +174,10 @@ def editable(aid):
 def prepare():
     aid = app_id()
     vs = versions(aid)
-    v = editable(aid)
+    # 준비 단계는 글을 고치는 일이라 READY_FOR_REVIEW 는 대상이 아니다.
+    v = editable(aid, states=(
+        'PREPARE_FOR_SUBMISSION', 'REJECTED', 'METADATA_REJECTED',
+        'DEVELOPER_REJECTED'))
     if v is None:
         name = next_name(vs)
         body = {'data': {'type': 'appStoreVersions',
@@ -210,6 +224,48 @@ def prepare():
     print('\n준비 끝. 낼 때는 tool/submit_next.py --submit')
 
 
+def pending_iaps(aid):
+    """아직 한 번도 심사를 안 거친 인앱 상품.
+
+    2026-09-02 신설. 프리미엄을 켜면서 상품 다섯을 처음 내보내는데,
+    **판만 내고 상품을 안 내면** 심사원 손에 값이 안 뜨는 앱이 간다.
+    그건 2.1(되지 않는 기능)로 반려되는 지름길이다.
+
+    이미 승인된 상품은 다시 넣지 않는다 — 넣으면 제출함이 거부한다.
+    그래서 READY_TO_SUBMIT 인 것만 고른다.
+
+    돌려주는 것: (제출 창구, 관계 이름, 타입, id, 상품 이름) 목록.
+
+    **인앱 상품은 판과 같은 제출함(reviewSubmissionItems)에 못 넣는다.**
+    2026-09-02에 넣어 봤다가 409 로 거절당했다 —
+      'inAppPurchaseV2' is not a relationship on the resource
+      'reviewSubmissionItems'
+    애플은 상품마다 따로 창구를 둔다: 일회성은 inAppPurchaseSubmissions,
+    구독은 subscriptionSubmissions. 판 제출과 나란히 부르면 된다.
+    """
+    out = []
+    st, r = api('GET', '/v1/apps/%s/inAppPurchasesV2?limit=200' % aid)
+    if st < 300:
+        for d in r.get('data', []):
+            if d['attributes'].get('state') == 'READY_TO_SUBMIT':
+                out.append(('inAppPurchaseSubmissions', 'inAppPurchaseV2',
+                            'inAppPurchases', d['id'],
+                            d['attributes'].get('productId')))
+    st, g = api('GET', '/v1/apps/%s/subscriptionGroups?limit=50' % aid)
+    if st < 300:
+        for grp in g.get('data', []):
+            st2, s2 = api('GET',
+                          '/v1/subscriptionGroups/%s/subscriptions?limit=50' % grp['id'])
+            if st2 >= 300:
+                continue
+            for x in s2.get('data', []):
+                if x['attributes'].get('state') == 'READY_TO_SUBMIT':
+                    out.append(('subscriptionSubmissions', 'subscription',
+                                'subscriptions', x['id'],
+                                x['attributes'].get('productId')))
+    return out
+
+
 def submit():
     aid = app_id()
     v = editable(aid)
@@ -238,6 +294,24 @@ def submit():
                               'appStoreVersion': {'data': {'type': 'appStoreVersions', 'id': vid}}}}})
     if st >= 300:
         print('항목 넣기 경고(%s): %s' % (st, json.dumps(r)[:300]))
+
+    # 인앱 상품도 같은 제출함에 넣는다. 판만 내면 심사원 손에는 값이 안
+    # 뜨는 앱이 간다 — 그 상태로 '결제가 안 된다'고 반려된다.
+    iaps = pending_iaps(aid)
+    if iaps:
+        print('처음 내는 인앱 상품 %d개를 각자 창구로 낸다:' % len(iaps))
+        for endpoint, rel, typ, iid, pid in iaps:
+            st, r = api('POST', '/v1/%s' % endpoint,
+                        {'data': {'type': endpoint,
+                                  'relationships': {
+                                      rel: {'data': {'type': typ, 'id': iid}}}}})
+            if st >= 300:
+                # 여기서 멈춘다. 상품 하나라도 못 낸 채 판을 내면, 값이
+                # 반쪽만 뜨는 앱이 심사에 들어간다. 돈이 걸린 자리에서는
+                # '경고 찍고 계속'이 제일 나쁜 선택이다.
+                die('  %s 내기 실패(%s): %s' % (pid, st, json.dumps(r)[:400]))
+            print('  %s 냈다' % pid)
+
     st, r = api('PATCH', '/v1/reviewSubmissions/%s' % sub,
                 {'data': {'type': 'reviewSubmissions', 'id': sub,
                           'attributes': {'submitted': True}}})

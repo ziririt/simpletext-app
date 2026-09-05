@@ -1,4 +1,5 @@
-Swipe to compare a note before and after cleanup.
-Rewind how this note grew.
-Related notes appear as a constellation.
-Bug fixes.
+Premium is here. No ads, and no daily caps on tidying or AI editing.
+The first 2 weeks are Premium, free.
+A short tour on first launch.
+Cleanup now tells larger headings from smaller ones.
+Tap the title field to rewrite it right away.
