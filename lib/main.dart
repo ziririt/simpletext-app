@@ -4247,12 +4247,7 @@ class _HomeScreenState extends State<HomeScreen>
                 // 고정 목록도 같은 규칙이다(2026-08-17 소유자 지시).
                 // 고정을 스무 개씩 해 두는 사람에게는 고정 목록이 곧
                 // '그 사람의 목록'이라, 거기를 안 지나면 아무 데도 안 지난다.
-                if (pinned.length >= 10) ...[
-                  _groupCard(pinned.take(5).toList()),
-                  const SliverToBoxAdapter(
-                      child: InlineAdBlock(gapAbove: 20, wide: true)),
-                  _groupCard(pinned.skip(5).toList()),
-                ] else if (pinned.isNotEmpty)
+                if (pinned.isNotEmpty)
                   _groupCard(pinned),
                 // 고르는 중이면 메모가 하나도 안 남아도 이 줄은 남긴다.
                 // 여기에 '삭제완료'가 달려 있어서, 이 줄이 사라지면 고르기
@@ -4285,23 +4280,12 @@ class _HomeScreenState extends State<HomeScreen>
                 //
                 // 고정된 메모는 셈에 안 넣는다. 그건 늘 맨 위에 붙어 있는
                 // 몇 개라 '목록이 길다'의 근거가 못 된다.
-                if (rest.length >= 10) ...[
-                  _groupCard(rest.take(5).toList()),
-                  // 카드와 카드 사이. 광고 판이 스스로 자르는 선과 다른
-                  // 바탕색을 갖고 있어 여백은 조금이면 된다.
+                if (rest.isNotEmpty) _groupCard(rest),
+                // 2026-09-06 소유자 지시 — 목록 중간에 끼우던 광고를 뺐다.
+                // 맨 아래 광고 하나만, 목록이 짧을 때만 남긴다.
+                if (rest.length < 10 && pinned.length < 10)
                   const SliverToBoxAdapter(
-                      child: InlineAdBlock(gapAbove: 20, wide: true)),
-                  _groupCard(rest.skip(5).toList()),
-                ] else ...[
-                  if (rest.isNotEmpty) _groupCard(rest),
-                  // 맨 아래 광고는 **중간에 하나도 안 넣었을 때만** 놓는다.
-                  // 한 화면에 큰 광고 둘은 앱이 아니라 광고판이다.
-                  // 목록에서 두 줄쯤 떨어뜨린다 — 바짝 붙으면 광고가
-                  // '목록의 다음 항목'처럼 보인다.
-                  if (pinned.length < 10)
-                    const SliverToBoxAdapter(
-                        child: InlineAdBlock(gapAbove: 120)),
-                ],
+                      child: InlineAdBlock(gapAbove: 120)),
                 // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
                 // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
                 // 떠 있는 단추(56)에 위아래 여백을 더한 높이.
@@ -12255,15 +12239,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
   /// 고르개가 '모든 기기' 쪽인가.
   bool _allTier = false;
 
-  /// 지금 고른 상품. **누른다고 결제되지 않는다** — 고르기와 사기를
-  /// 갈라 둔 것이 2026-09-02 개편의 핵심이다.
-  ///
-  /// 소유자가 보내 온 Notion·Xmind 결제 화면이 둘 다 그렇게 한다. 값 카드는
-  /// 고르는 자리이고, 결제는 화면 아래에 붙박이로 선 단추 하나가 한다.
-  /// 카드를 누르는 순간 결제창이 뜨면 사람은 값을 견주어 볼 수가 없다 —
-  /// 눌러 봐야 아는데, 눌렀다가는 사게 되니까.
-  String _sel = kProductYearly;
-
   @override
   void initState() {
     super.initState();
@@ -12273,7 +12248,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
     // 볼 것은 '모든 기기' 쪽이다. 고르개를 미리 그리로 넘겨 둔다.
     _allTier = shouldOfferUpgrade(
         e: st.ent, family: deviceFamily(), now: DateTime.now());
-    _sel = _allTier ? kProductAllYearly : kProductYearly;
     _svc.revision.addListener(_tick);
     Store.instance.addListener(_tick);
     // 화면에 들어온 김에 값을 한 번 더 받아 온다. 처음 시동 때 스토어가
@@ -12402,13 +12376,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
         seg(l.premiumPlanBase, !_allTier, () {
           setState(() {
             _allTier = false;
-            _sel = kProductYearly;
           });
         }),
         seg(l.premiumPlanAll, _allTier, () {
           setState(() {
             _allTier = true;
-            _sel = kProductAllYearly;
           });
         }),
       ]),
@@ -12432,26 +12404,52 @@ class _PremiumScreenState extends State<PremiumScreen> {
   }) {
     final c = context.c;
     final price = _priceOf(id);
-    final sel = _sel == id;
-    final body = GestureDetector(
-      onTap: price == null ? null : () => setState(() => _sel = id),
+    // 2026-09-06 소유자 지시·신고 — 카드를 바로 사는 단추로. 그리고 두 단추가
+    // 좌측에서 겹치던 버그를 잡는다. 원인은 이 위젯을 Stack으로 감싼 것:
+    // Stack이 느슨한 제약을 줘서 카드가 내용 너비로 쪼그라들어 칸을 안 채웠다.
+    // Stack을 없애고 Container(width: double.infinity)로 칸을 꽉 채운다.
+    // 배지는 이름표 옆으로 옮긴다.
+    return GestureDetector(
+      onTap: (price == null || _svc.busy) ? null : () => unawaited(_buy(id)),
       behavior: HitTestBehavior.opaque,
       child: Opacity(
         opacity: price == null ? .5 : 1,
         child: Container(
+          width: double.infinity,
           padding: const EdgeInsets.fromLTRB(14, 15, 12, 14),
           decoration: BoxDecoration(
-            color: sel ? c.accent.withValues(alpha: .09) : c.panel,
+            color: c.accent.withValues(alpha: .06),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: sel ? c.accent : c.line, width: sel ? 2 : 1.2),
+            border: Border.all(color: c.accent, width: 1.6),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: TextStyle(fontSize: 13.5, color: c.sub)),
-              const SizedBox(height: 3),
+              Row(children: [
+                Flexible(
+                  child: Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13.5, color: c.sub)),
+                ),
+                if (badge != null) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: c.accent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(badge,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white)),
+                  ),
+                ],
+              ]),
+              const SizedBox(height: 4),
               Text(price ?? '···',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -12466,29 +12464,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
         ),
       ),
     );
-    return Stack(clipBehavior: Clip.none, children: [
-      body,
-      // 배지를 카드 **위로** 띄운다(MindNode 의 SAVE 17% 자리).
-      // 카드 안에 넣으면 값과 나란히 서서 어느 쪽을 읽어야 할지 헷갈리고,
-      // 위로 걸치면 '이 카드에 붙은 딱지'로 읽힌다.
-      if (badge != null)
-        Positioned(
-          top: -10,
-          left: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-            decoration: BoxDecoration(
-              color: c.accent,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Text(badge,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white)),
-          ),
-        ),
-    ]);
   }
 
   /// 연간 값을 열둘로 나눈 '월 얼마' — 연간 카드에 함께 적는다.
@@ -12510,15 +12485,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
   /// 그리고 스토어가 아직 아무것도 안 줬을 때만 적어 둔 미국 값으로 채운다.
   String? _priceOf(String id) =>
       _svc.product(id)?.price ?? (kDebugMode ? kDevUsdPrice[id] : null);
-
-  /// 고른 상품의 기간 이름 — 아래 붙박이 단추의 문구에 들어간다.
-  String _periodOf(L10n l, String id) {
-    if (id == kProductLifetime) return l.premiumPerLifetime;
-    if (id == kProductYearly || id == kProductAllYearly) {
-      return l.premiumPerYear;
-    }
-    return l.premiumPerMonth;
-  }
 
   /// 연간이 월간보다 몇 퍼센트 싼가. 둘 다 스토어에서 받아왔을 때만.
   ///
@@ -12810,9 +12776,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
       }
     }
 
-    final selPrice = _priceOf(_sel);
-    final selPeriod = _periodOf(l, _sel);
-
     return Scaffold(
       appBar: AppBar(
         // 제목을 비운다 — 히어로 한 줄이 이 화면의 제목이다. 위아래로
@@ -12842,55 +12805,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
         padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
         children: body,
       ),
-      // ── 아래 붙박이 결제 바 ────────────────────────────────────────
-      //
-      // 값 카드는 고르는 자리이고, 사는 일은 여기 단추 하나가 한다.
-      // 스크롤을 어디까지 내렸든 늘 보인다 — 혜택을 읽다가 마음이 선
-      // 순간에 단추를 찾아 다시 내려갈 필요가 없다.
-      //
-      // 단추 글에 **고른 값이 그대로 들어간다**('연 ₩19,900에 이용하기').
-      // 얼마가 빠져나가는지 모른 채 누르는 단추를 만들지 않는다.
-      bottomNavigationBar: !_svc.supported
-          ? null
-          : SafeArea(
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-                decoration: BoxDecoration(
-                  color: c.bg,
-                  border: Border(top: BorderSide(color: c.line)),
-                ),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                      ),
-                      onPressed: (selPrice == null || _svc.busy)
-                          ? null
-                          : () => unawaited(_buy(_sel)),
-                      child: Text(
-                          selPrice == null
-                              ? l.premiumLoading
-                              : l.premiumCta(selPeriod, selPrice),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w800)),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                      _sel == kProductLifetime
-                          ? l.premiumLifetimeNote
-                          : '${selPrice == null ? '' : '${l.premiumChargeNote(selPeriod, selPrice)} '}${l.premiumCancelAnytime}',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 12.5, height: 1.45, color: c.sub)),
-                ]),
-              ),
-            ),
     );
   }
 }

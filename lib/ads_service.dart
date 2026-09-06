@@ -167,6 +167,9 @@ class _TopBannerBarState extends State<TopBannerBar> {
   BannerAd? _ad;
   bool _loaded = false;
   bool _creating = false;
+  // 로드 뒤 광고판이 실제로 준 크기. 인라인 어댑티브라 요청과 다를 수 있어,
+  // 자리는 이 값으로 잡는다.
+  AdSize? _shownSize;
 
   @override
   void initState() {
@@ -182,19 +185,31 @@ class _TopBannerBarState extends State<TopBannerBar> {
   Future<void> _create(double width) async {
     if (_creating || _ad != null) return;
     _creating = true;
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-        width.truncate());
-    if (size == null || !mounted) {
+    final w = width.truncate();
+    // 2026-09-06 소유자 지시 — 배너를 20% 키운다. 높이가 고정된 앵커드 대신
+    // 인라인 어댑티브를 쓰면 최대 높이를 우리가 정할 수 있어, 소재가 그만큼
+    // 큰 것으로 온다. 실제 높이는 로드 뒤 getPlatformAdSize로 받는다(아래 build).
+    final anchored =
+        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
+    if (anchored == null || !mounted) {
       _creating = false;
       return;
     }
+    final size = AdSize.getInlineAdaptiveBannerAdSize(
+        w, (anchored.height * 1.2).round());
     final ad = BannerAd(
       adUnitId: bannerUnitId,
       size: size,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: (_) {
-          if (mounted) setState(() => _loaded = true);
+        onAdLoaded: (loaded) async {
+          final shown = await (loaded as BannerAd).getPlatformAdSize();
+          if (mounted) {
+            setState(() {
+              _loaded = true;
+              if (shown != null) _shownSize = shown;
+            });
+          }
         },
         onAdFailedToLoad: (ad, err) {
           ad.dispose();
@@ -267,8 +282,8 @@ class _TopBannerBarState extends State<TopBannerBar> {
         border: Border(bottom: BorderSide(color: c.glassLine)),
       ),
       child: SizedBox(
-      width: _ad!.size.width.toDouble(),
-      height: _ad!.size.height.toDouble(),
+      width: (_shownSize ?? _ad!.size).width.toDouble(),
+      height: (_shownSize ?? _ad!.size).height.toDouble(),
       child: Stack(
         children: [
           // Long Time 실측 사고(2026-07-31): 크리에이티브가 프레임 밖까지
