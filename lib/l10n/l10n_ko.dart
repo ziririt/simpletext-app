@@ -1430,7 +1430,7 @@ class L10nKo extends L10n {
   String get premiumLoading => '스토어에서 값을 받아오는 중입니다';
 
   @override
-  String get premiumPerkNoAds => '광고 없음 — 상단 배너도, 닫을 때 뜨는 안내도';
+  String get premiumPerkNoAds => '광고 배너 없음';
 
   @override
   String get premiumGroupPerks => '프리미엄 혜택';
@@ -1514,7 +1514,7 @@ class L10nKo extends L10n {
   String premiumTrialThen(int days) => '$days일 무료 체험, 그 후';
 
   @override
-  String premiumSave(int pct) => '$pct% 아낌';
+  String premiumSave(int pct) => '$pct% 절약';
 
   @override
   String premiumTrustBody(String version) => '지금 $version 버전입니다. 들어온 요청은 대개 그 주에 반영하고, 무엇이 바뀌었는지 앱 안에서 바로 보실 수 있습니다.';

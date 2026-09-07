@@ -12225,6 +12225,55 @@ class _PremiumBanner extends StatelessWidget {
 ///
 /// 2026-08-17 — 지금은 **아무 데서도 부르지 않는다**([kPaidTierLive]).
 /// StoreKit이 붙는 날 다시 연결한다.
+/// 눌린 느낌 — 누르는 순간 살짝 작아졌다 놓으면 튀어오른다.
+/// 2026-09-07 소유자 지시. GestureDetector 만으로는 시각 반응이 없어 '눌렀나?'
+/// 싶다. 값 단추처럼 바로 사는 자리에서는 이 반응이 특히 중요하다.
+/// 눌린 느낌 — 누르는 동안 바탕이 진해지고 테두리가 굵어진다. 놓으면 돌아온다.
+/// 2026-09-07 소유자 지시. 처음엔 크기를 줄이는(scale) 방식을 넣었다가 값
+/// 단추가 화면에서 사라지는 사고가 났다(Row 스트레치와 Transform 충돌). 그래서
+/// 레이아웃을 건드리지 않는 색 변화로만 눌림을 표현한다.
+class _Pressable extends StatefulWidget {
+  const _Pressable({required this.builder, this.onTap});
+  final Widget Function(bool pressed) builder;
+  final VoidCallback? onTap;
+  @override
+  State<_Pressable> createState() => _PressableState();
+}
+
+class _PressableState extends State<_Pressable> {
+  bool _down = false;
+  DateTime? _at;
+
+  void _press() {
+    _at = DateTime.now();
+    if (mounted && !_down) setState(() => _down = true);
+  }
+
+  // 손을 떼도 최소 130ms 는 눌린 상태를 유지한다. 안 그러면 톡 치는 순간
+  // 눌림이 몇 ms 만에 지나가 눈에 안 들어온다.
+  void _release() {
+    final held =
+        DateTime.now().difference(_at ?? DateTime.now()).inMilliseconds;
+    final wait = held < 130 ? 130 - held : 0;
+    Future<void>.delayed(Duration(milliseconds: wait), () {
+      if (mounted && _down) setState(() => _down = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onTap != null;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      onTapDown: enabled ? (_) => _press() : null,
+      onTapUp: enabled ? (_) => _release() : null,
+      onTapCancel: _release,
+      child: widget.builder(_down),
+    );
+  }
+}
+
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
 
@@ -12409,18 +12458,22 @@ class _PremiumScreenState extends State<PremiumScreen> {
     // Stack이 느슨한 제약을 줘서 카드가 내용 너비로 쪼그라들어 칸을 안 채웠다.
     // Stack을 없애고 Container(width: double.infinity)로 칸을 꽉 채운다.
     // 배지는 이름표 옆으로 옮긴다.
-    return GestureDetector(
+    return _Pressable(
       onTap: (price == null || _svc.busy) ? null : () => unawaited(_buy(id)),
-      behavior: HitTestBehavior.opaque,
-      child: Opacity(
+      builder: (pressed) => Opacity(
         opacity: price == null ? .5 : 1,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          curve: Curves.easeOut,
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(14, 15, 12, 14),
           decoration: BoxDecoration(
-            color: c.accent.withValues(alpha: .06),
+            // 2026-09-07 소유자 신고 — 눌림이 흐릿했다. 반투명 대신
+            // 눌리면 강조색으로 꽉 채우고 글자를 흰색으로 뒤집는다.
+            // 테두리 두께는 고정해 흔들림을 없앤다.
+            color: pressed ? c.accent : c.accent.withValues(alpha: .06),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: c.accent, width: 1.6),
+            border: Border.all(color: c.accent, width: 1.8),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -12430,7 +12483,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   child: Text(label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13.5, color: c.sub)),
+                      style: TextStyle(
+                          fontSize: 13.5,
+                          color: pressed ? Colors.white : c.sub)),
                 ),
                 if (badge != null) ...[
                   const SizedBox(width: 6),
@@ -12438,14 +12493,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: c.accent,
+                      color: pressed ? Colors.white : c.accent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(badge,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white)),
+                            color: pressed ? c.accent : Colors.white)),
                   ),
                 ],
               ]),
@@ -12453,11 +12508,16 @@ class _PremiumScreenState extends State<PremiumScreen> {
               Text(price ?? '···',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 21, fontWeight: FontWeight.w900)),
+                  style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.w900,
+                      color: pressed ? Colors.white : null)),
               if (note != null) ...[
                 const SizedBox(height: 3),
-                Text(note, style: TextStyle(fontSize: 13, color: c.sub)),
+                Text(note,
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: pressed ? Colors.white : c.sub)),
               ],
             ],
           ),
@@ -12611,41 +12671,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
           _perkRow(Icons.check, l.premiumPerkNoAds),
           _perkRow(Icons.check, l.premiumPerkTidy(kFreeTidyPerDay)),
           _perkRow(Icons.check, l.premiumPerkWizard(kFreeWizardPerDay)),
-          _perkRow(Icons.check, l.premiumPerkWeb),
-          _perkRow(Icons.check, l.premiumPerkNew, last: true),
+          _perkRow(Icons.check, l.premiumPerkWeb, last: true),
         ]),
       ),
-      // ── 믿을 만한가 ──────────────────────────────────────────────
-      //
-      // 1인 개발이라는 말은 하지 않는다(2026-09-02 소유자 지시). 대신
-      // 지금 몇 번째 판인지와 요청이 얼마 만에 반영되는지를 말한다.
-      // 사람이 보고 싶은 것은 만든 사람의 사정이 아니라 **앞으로도 고쳐질
-      // 물건인가**뿐이다.
-      const SizedBox(height: 22),
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: c.infoBg,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(Icons.verified, size: 22, color: c.accent),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l.premiumTrustTitle,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 5),
-                Text(l.premiumTrustBody(appVersion),
-                    style: const TextStyle(fontSize: 14.5, height: 1.5)),
-              ],
-            ),
-          ),
-        ]),
-      ),
+      // '믿을 만한가' 블록 삭제(2026-09-07 소유자 지시): '계속 만들고
+      // 있습니다'가 오히려 버그가 계속 있다는 뉘앙스로 읽힌다는 판단.
     ]);
 
     if (!_svc.supported) {
@@ -12699,7 +12729,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
               style: TextStyle(
                   fontSize: 15, fontWeight: FontWeight.w700, color: c.sub)),
         if (tier == 0) const SizedBox(height: 14),
-        Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        // 두 카드 높이를 같게(stretch) 하되, 세로 ListView 안에서는
+        // 높이 제약이 없어 stretch가 무한대로 늘어난다(스크롤 끝=무한대,
+        // 하단 무한 여백의 진짜 원인). IntrinsicHeight로 높이를 '큰 카드'
+        // 기준으로 확정해 무한대를 없앤다.
+        IntrinsicHeight(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Expanded(
             child: _priceCard(
               id: _allTier ? kProductAllMonthly : kProductMonthly,
@@ -12721,7 +12756,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
               }(),
             ),
           ),
-        ]),
+          ]),
+        ),
         if (_allTier) ...[
           const SizedBox(height: 12),
           _priceCard(
@@ -12802,7 +12838,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
+        // 클램프로 iOS 바운스 제거, 아래 여백은 서너 줄(56)만.
+        physics: const ClampingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 56),
         children: body,
       ),
     );
