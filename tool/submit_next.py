@@ -26,11 +26,17 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.expanduser('~/.appstoreconnect'))
+# 열쇠 꾸러미는 ziririt 홈에 있다. 맥 자동 실행꾼이 다른 계정으로 돌 때도
+# 찾아야 해서 후보를 차례로 본다(2026-09-07). 값은 여기 없고, 자리만 있다.
+for _cand in (os.environ.get('SKY_SECRETS_HOME'), os.path.expanduser('~'),
+              '/Users/ziririt'):
+    if _cand and os.path.isdir(os.path.join(_cand, '.appstoreconnect')):
+        sys.path.insert(0, os.path.join(_cand, '.appstoreconnect'))
+        break
 try:
     from asc import api
 except Exception as e:  # noqa: BLE001
-    print('열쇠 꾸러미를 못 읽었다(~/.appstoreconnect): %s' % e)
+    print('열쇠 꾸러미를 못 읽었다(.appstoreconnect): %s' % e)
     raise SystemExit(2)
 
 BUNDLE = 'com.ziririt.simpletext'
@@ -224,6 +230,36 @@ def prepare():
     print('\n준비 끝. 낼 때는 tool/submit_next.py --submit')
 
 
+def cancel():
+    """심사 줄에 서 있는 판을 뺀다 — 새 빌드를 붙이려면 먼저 이걸 한다.
+
+    2026-09-07 소유자 지시. 1.5 가 줄 서 있는 동안 급한 고침이 나왔다.
+    애플은 심사에 들어간 판에 새 빌드를 못 붙인다. 제출함을 취소해 판을
+    PREPARE_FOR_SUBMISSION 으로 되돌린 뒤 빌드를 갈아 끼운다.
+
+    **줄 자리를 잃는다.** 다시 처음부터 기다린다 — 알고 하는 일이다.
+    """
+    aid = app_id()
+    st, r = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
+    ok(st, r, '제출함 목록')
+    live = [d for d in r['data'] if d['attributes'].get('state') in
+            ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'READY_FOR_REVIEW',
+             'UNRESOLVED_ISSUES')]
+    if not live:
+        die('심사 줄에 서 있는 제출함이 없다. 뺄 것이 없다.')
+    for d in live:
+        sid = d['id']
+        was = d['attributes'].get('state')
+        st, rr = api('PATCH', '/v1/reviewSubmissions/%s' % sid,
+                     {'data': {'type': 'reviewSubmissions', 'id': sid,
+                               'attributes': {'canceled': True}}})
+        if st >= 300:
+            die('제출함 %s(%s) 빼기 실패(%s): %s'
+                % (sid, was, st, json.dumps(rr)[:400]))
+        print('제출함 %s (%s) 를 뺐다' % (sid, was))
+    print('이제 --prepare 로 글과 빌드를 갈아 끼운다.')
+
+
 def pending_iaps(aid):
     """아직 한 번도 심사를 안 거친 인앱 상품.
 
@@ -322,10 +358,13 @@ def submit():
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
+    ap.add_argument('--cancel', action='store_true')
     ap.add_argument('--prepare', action='store_true')
     ap.add_argument('--submit', action='store_true')
     a = ap.parse_args()
-    if a.prepare:
+    if a.cancel:
+        cancel()
+    elif a.prepare:
         prepare()
     elif a.submit:
         submit()

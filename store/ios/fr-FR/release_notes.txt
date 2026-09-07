@@ -3,3 +3,4 @@ Les 2 premières semaines sont Premium, gratuites.
 Une courte présentation au premier lancement.
 La mise au propre distingue désormais les grands titres des petits.
 Touchez le champ du titre pour le réécrire aussitôt.
+Améliorations de l’écran d’achat et de la sélection de texte.

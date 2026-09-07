@@ -3,3 +3,4 @@ Las primeras 2 semanas son Premium, gratis.
 Un recorrido breve la primera vez que abres la app.
 Al limpiar, ahora se distinguen los títulos grandes de los pequeños.
 Toca el campo del título para reescribirlo al momento.
+Mejoras en la pantalla de compra y en la selección de texto.
