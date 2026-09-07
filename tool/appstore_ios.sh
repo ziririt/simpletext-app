@@ -31,7 +31,9 @@ log() { echo "[$(date '+%H:%M:%S')] $*"; }
 log "스토어 빌드 $NAME ($NUM)"
 
 DEFINES="--dart-define=REAL_ADS=true"
-KEYS="$HOME/development/_patch/skyblue_keys.env"
+# 열쇠가 다른 계정 홈에 있을 때(예: aladin 이 돌리고 열쇠는 ziririt) 덮어쓸 수 있게.
+SECHOME="${SKY_SECRETS_HOME:-$HOME}"
+KEYS="$SECHOME/development/_patch/skyblue_keys.env"
 if [ -f "$KEYS" ]; then
   # shellcheck source=/dev/null
   . "$KEYS"
@@ -67,8 +69,8 @@ fi
 # 서명·내보내기는 App Store Connect API 키로 한다. Xcode 에 로그인된 계정이
 # 없어도 되고, 사람이 창을 열 필요도 없다.
 # shellcheck source=/dev/null
-. "$HOME/.appstoreconnect/asc.env"
-P8="$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+. "$SECHOME/.appstoreconnect/asc.env"
+P8="$SECHOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
 cat > /tmp/ExportAuto.plist <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
