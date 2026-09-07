@@ -16,6 +16,7 @@ import 'package:flutter/cupertino.dart'
 // 2026-08-14에 이걸 몰라서 analyze가 undefined_identifier로 잡았다.
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderEditable;
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart' show openFiles, XFile;
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -6030,6 +6031,52 @@ class _EditorScreenState extends State<EditorScreen>
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
   final GlobalKey _bodyKey = GlobalKey();
 
+  // ── 선택 핸들 끌기 vs 바깥 스크롤 (2026-09-07 소유자 신고) ──────────
+  //
+  // 본문 TextField는 maxLines:null 로 글 길이만큼 늘어나고 굴리는 일은
+  // 바깥 SingleChildScrollView 가 맡는다. 그래서 핸들을 위아래로 끌면
+  // '핸들 끌기'와 '스크롤'이 같은 손가락을 놓고 경쟁하는데, 스크롤은
+  // 18px(touch slop)만 움직여도 손가락을 가져가고 핸들은 36px(pan slop)
+  // 을 기다려서 거의 늘 스크롤이 이긴다. 아이폰용 핸들은 가늘어서 더
+  // 자주 빗나간다. 애플 메모는 UIKit 이 핸들에 무조건 우선권을 준다.
+  //
+  // 해법: 블록이 잡힌 상태에서 손가락이 핸들 근처에 닿으면 그 손짓 동안만
+  // 바깥 스크롤을 잠근다(NeverScrollable). 경쟁 상대가 사라져 핸들이
+  // 이긴다. 손가락을 떼면 바로 푼다. 캐럿을 화면 안에 두려는 프로그램
+  // 스크롤(ensureVisible)은 물리 잠금과 무관해 그대로 따라간다.
+  bool _selHandleDrag = false;
+
+  /// 손가락(전역 좌표)이 선택 끝점 핸들 근처인가. 블록이 잡혀 있을 때만.
+  bool _nearSelectionHandle(Offset global) {
+    final sel = bodyCtl.selection;
+    if (!sel.isValid || sel.isCollapsed) return false;
+    final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
+    if (ed == null) return false;
+    for (final p in ed.getEndpointsForSelection(sel)) {
+      final g = ed.localToGlobal(p.point);
+      // 핸들은 줄 위(시작)/아래(끝)로 튀어나와 있어 세로로 넉넉히 본다.
+      if ((g.dx - global.dx).abs() <= 36 && (g.dy - global.dy).abs() <= 64) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static RenderEditable? _findEditable(RenderObject? r) {
+    if (r == null) return null;
+    if (r is RenderEditable) return r;
+    RenderEditable? found;
+    r.visitChildren((c) {
+      found ??= _findEditable(c);
+    });
+    return found;
+  }
+
+  void _setSelHandleDrag(bool v) {
+    if (_selHandleDrag == v || !mounted) return;
+    setState(() => _selHandleDrag = v);
+  }
+
   /// 직전 선택 범위. '방금 무엇이 바뀌었나'를 알려면 이전 값이 있어야 한다.
   TextSelection _lastSel = const TextSelection.collapsed(offset: -1);
 
@@ -9430,9 +9477,20 @@ static const int kTagScanChars = 3000;
                       color: context.c.accent,
                       backgroundColor: context.c.panel,
                       displacement: 24,
-                      child: SingleChildScrollView(
+                      child: Listener(
+                        onPointerDown: (e) {
+                          if (_nearSelectionHandle(e.position)) {
+                            _setSelHandleDrag(true);
+                          }
+                        },
+                        onPointerUp: (_) => _setSelHandleDrag(false),
+                        onPointerCancel: (_) => _setSelHandleDrag(false),
+                        child: SingleChildScrollView(
                       controller: _bodyScroll,
-                      physics: const AlwaysScrollableScrollPhysics(),
+                      // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
+                      physics: _selHandleDrag
+                          ? const NeverScrollableScrollPhysics()
+                          : const AlwaysScrollableScrollPhysics(),
                       // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
                       // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
                       // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
@@ -9604,7 +9662,7 @@ static const int kTagScanChars = 3000;
                           const InlineAdBlock(),
                         ],
                       ),
-                      ),
+                      )),
                     );
                   }),
                 ]),
