@@ -238,13 +238,35 @@ def cancel():
     PREPARE_FOR_SUBMISSION 으로 되돌린 뒤 빌드를 갈아 끼운다.
 
     **줄 자리를 잃는다.** 다시 처음부터 기다린다 — 알고 하는 일이다.
+
+    ── 그보다 훨씬 비싼 대가가 하나 더 있다 (2026-09-07에 치렀다) ──────
+    제출함을 취소하면 그 안에 담긴 **모든 항목이 함께 취소된다.** 판만이
+    아니다. 인앱 상품·구독까지 '개발자가 취소함'으로 떨어진다.
+
+    그리고 되돌릴 때, 판은 API 로 다시 넣을 수 있지만 **상품은 못 넣는다.**
+    reviewSubmissionItems 는 상품을 아예 받지 않고
+      'inAppPurchaseV2' is not a relationship on the resource
+      'reviewSubmissionItems'
+    상품 전용 창구(inAppPurchaseSubmissions)도 거절한다
+      'has no pending version for submission'
+    애플 규칙이 '첫 구독 그룹은 새 앱 버전과 **한 제출함에** 담겨야 한다'
+    이기 때문이다. 그 조립은 App Store Connect 웹 화면에서만 된다
+    (상품 화면 → '심사에 추가' → 판이 담긴 초안 고르기).
+
+    그날 원래 제출은 7개 항목이었다: 판 1 + 구독 그룹 1 + 구독 4 + 평생 1.
+    API 로 다시 낸 것은 1개 항목(판만)이었고, 그대로 심사에 들어갔으면
+    심사원 화면에는 값이 안 뜨는 결제 화면이 보였을 것이다.
+
+    **그러니 상품이 걸린 판을 취소하기 전에 각오할 것:** 되돌리는 마지막
+    조립은 사람이 웹 화면에서 해야 한다. 판만 있는 앱이면 상관없다.
     """
     aid = app_id()
     st, r = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
     ok(st, r, '제출함 목록')
+    # 초안(READY_FOR_REVIEW)은 건드리지 않는다. 조립 중인 제출함을 여기서
+    # 지워 버리면 방금 넣은 상품이 통째로 날아간다.
     live = [d for d in r['data'] if d['attributes'].get('state') in
-            ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'READY_FOR_REVIEW',
-             'UNRESOLVED_ISSUES')]
+            ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES')]
     if not live:
         die('심사 줄에 서 있는 제출함이 없다. 뺄 것이 없다.')
     for d in live:
@@ -258,6 +280,34 @@ def cancel():
                 % (sid, was, st, json.dumps(rr)[:400]))
         print('제출함 %s (%s) 를 뺐다' % (sid, was))
     print('이제 --prepare 로 글과 빌드를 갈아 끼운다.')
+
+
+def tidy():
+    """항목이 하나도 없는 초안만 치운다.
+
+    2026-09-07. 제출이 중간에 죽을 때마다 빈 제출함이 하나씩 남는다.
+    ASC 화면에 '제출 초안(N개)'로 뜨는데 안은 비어 있어, 다음에 조립할 때
+    어느 것이 진짜인지 헷갈린다. **항목이 있는 것은 절대 건드리지 않는다.**
+    """
+    aid = app_id()
+    st, r = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
+    ok(st, r, '제출함 목록')
+    n = 0
+    for d in r['data']:
+        if d['attributes'].get('state') != 'READY_FOR_REVIEW':
+            continue
+        st2, it = api('GET', '/v1/reviewSubmissions/%s/items?limit=10' % d['id'])
+        cnt = len(it.get('data', [])) if st2 < 300 else -1
+        if cnt != 0:
+            print('  %s 항목 %d개 — 그대로 둔다' % (d['id'], cnt))
+            continue
+        st3, rr = api('PATCH', '/v1/reviewSubmissions/%s' % d['id'],
+                      {'data': {'type': 'reviewSubmissions', 'id': d['id'],
+                                'attributes': {'canceled': True}}})
+        print('  %s 빈 초안 %s' % (d['id'],
+                                '치웠다' if st3 < 300 else '실패 %s' % st3))
+        n += 1
+    print('빈 초안 %d개 처리.' % n)
 
 
 def iaps_report():
@@ -539,6 +589,7 @@ if __name__ == '__main__':
     ap.add_argument('--iaps', action='store_true')
     ap.add_argument('--iapprobe', action='store_true')
     ap.add_argument('--why', action='store_true')
+    ap.add_argument('--tidy', action='store_true')
     ap.add_argument('--cancel', action='store_true')
     ap.add_argument('--prepare', action='store_true')
     ap.add_argument('--submit', action='store_true')
@@ -549,6 +600,8 @@ if __name__ == '__main__':
         iap_probe()
     elif a.why:
         why()
+    elif a.tidy:
+        tidy()
     elif a.cancel:
         cancel()
     elif a.prepare:
