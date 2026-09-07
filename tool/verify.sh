@@ -32,6 +32,7 @@ echo "심플텍스트 검사 — CI와 같은 순서"
 run "다국어 정합성 (l10n_check)"   python3 tool/l10n_check.py
 run "버전 표기 일치 (version_check)" python3 tool/version_check.py
 run "스토어 등록정보 (store_check)"  python3 tool/store_check.py
+run "인수인계서 신선도 (handoff_check)" python3 tool/handoff_check.py
 
 # flutter가 있는 환경에서만 돈다. 클라우드 세션 컨테이너는 pub.dev가 막혀 있어
 # flutter 명령을 못 돌린다 — 그 경우는 CI가 대신 본다(CLAUDE.md 작업 규칙).
