@@ -260,6 +260,131 @@ def cancel():
     print('이제 --prepare 로 글과 빌드를 갈아 끼운다.')
 
 
+def iaps_report():
+    """인앱 상품과 제출함의 지금 상태를 그대로 찍는다 — 짐작하지 않기 위해.
+
+    2026-09-07. 1.5 를 뺐다가 다시 내는 길에 상품 제출이 409 로 막혔다
+    ('has no pending version for submission'). 상태를 눈으로 봐야 다음
+    수를 정할 수 있어 진단 창구를 둔다.
+    """
+    aid = app_id()
+    print('== 일회성 상품 ==')
+    st, r = api('GET', '/v1/apps/%s/inAppPurchasesV2?limit=200' % aid)
+    ok(st, r, '상품 목록')
+    for d in r.get('data', []):
+        a2 = d['attributes']
+        print('  %-46s %-18s %s' % (a2.get('productId'), a2.get('state'), d['id']))
+    print('== 구독 ==')
+    st, g = api('GET', '/v1/apps/%s/subscriptionGroups?limit=50' % aid)
+    ok(st, g, '구독 묶음')
+    for grp in g.get('data', []):
+        st2, s2 = api('GET',
+                      '/v1/subscriptionGroups/%s/subscriptions?limit=50' % grp['id'])
+        if st2 >= 300:
+            continue
+        for x in s2.get('data', []):
+            a3 = x['attributes']
+            print('  %-46s %-18s %s' % (a3.get('productId'), a3.get('state'), x['id']))
+    print('== 제출함 ==')
+    st, rs = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
+    ok(st, rs, '제출함')
+    for d in rs.get('data', []):
+        print('  %-22s %s' % (d['attributes'].get('state'), d['id']))
+
+
+def iap_probe():
+    """상품을 어느 창구로 내야 하는지 실제로 찔러 보고 응답을 그대로 찍는다.
+
+    2026-09-07. inAppPurchaseSubmissions 가 409
+    'has no pending version for submission' 로 막혔다. 문서만 보고
+    고치면 또 헛손질이라, 후보 창구를 하나씩 시험해 응답을 남긴다.
+    아무것도 바꾸지 않는 시험은 없다 — 성공하면 실제로 제출된다.
+    """
+    aid = app_id()
+    st, rs = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
+    ok(st, rs, '제출함')
+    sub = None
+    for d in rs['data']:
+        if d['attributes'].get('state') == 'READY_FOR_REVIEW':
+            sub = d['id']
+    print('쓸 제출함: %s' % sub)
+
+    st, r = api('GET', '/v1/apps/%s/inAppPurchasesV2?limit=200' % aid)
+    ok(st, r, '상품')
+    iap = r['data'][0]
+    iid = iap['id']
+    print('시험 상품: %s (%s)' % (iap['attributes'].get('productId'), iid))
+
+    print('\n[A] 상품의 하위 자원 살펴보기')
+    for sp in ('inAppPurchaseLocalizations', 'iapPriceSchedule',
+               'appStoreReviewScreenshot', 'promotedPurchase'):
+        st2, r2 = api('GET', '/v2/inAppPurchases/%s/%s' % (iid, sp))
+        d2 = r2.get('data')
+        n = len(d2) if isinstance(d2, list) else (1 if d2 else 0)
+        print('  %-28s %s (%s개)' % (sp, st2, n))
+
+    if sub:
+        print('\n[B] reviewSubmissionItems 에 inAppPurchaseV2 로 넣어 보기')
+        st3, r3 = api('POST', '/v1/reviewSubmissionItems',
+                      {'data': {'type': 'reviewSubmissionItems',
+                                'relationships': {
+                                    'reviewSubmission': {'data': {
+                                        'type': 'reviewSubmissions', 'id': sub}},
+                                    'inAppPurchaseV2': {'data': {
+                                        'type': 'inAppPurchases', 'id': iid}}}}})
+        print('  %s %s' % (st3, json.dumps(r3, ensure_ascii=False)[:600]))
+
+
+def why():
+    """판이 왜 심사에 못 들어가는지 애플 응답을 잘리지 않게 통째로 찍는다.
+
+    2026-09-07. 항목 넣기가 409 STATE_ERROR 로 막혔고, 진짜 이유는
+    meta.associatedErrors 안에 있었는데 300자에서 잘려 안 보였다.
+    잘린 로그로 고치려 들면 헛손질만 는다.
+    """
+    aid = app_id()
+    v = editable(aid)
+    if v is None:
+        die('손에 잡히는 판이 없다.')
+    vid = v['id']
+    print('판 %s (%s) %s' % (v['attributes']['versionString'],
+                            v['attributes']['appStoreState'], vid))
+
+    # 빈 제출함을 치운다 — 항목 없는 제출함이 쌓이면 다음 제출이 헷갈린다.
+    st, rs = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
+    ok(st, rs, '제출함')
+    for d in rs['data']:
+        if d['attributes'].get('state') != 'READY_FOR_REVIEW':
+            continue
+        st2, it = api('GET', '/v1/reviewSubmissions/%s/items?limit=10' % d['id'])
+        n = len(it.get('data', [])) if st2 < 300 else -1
+        print('  제출함 %s 항목 %s개' % (d['id'], n))
+        if n == 0:
+            api('PATCH', '/v1/reviewSubmissions/%s' % d['id'],
+                {'data': {'type': 'reviewSubmissions', 'id': d['id'],
+                          'attributes': {'canceled': True}}})
+            print('    → 비어 있어 치웠다')
+
+    print('\n새 제출함을 만들고 판을 넣어 본다 (응답 전체):')
+    st, r = api('POST', '/v1/reviewSubmissions',
+                {'data': {'type': 'reviewSubmissions',
+                          'attributes': {'platform': 'IOS'},
+                          'relationships': {'app': {'data': {
+                              'type': 'apps', 'id': aid}}}}})
+    if st >= 300:
+        print(json.dumps(r, ensure_ascii=False, indent=2)[:3000]); return
+    sub = r['data']['id']
+    st, r = api('POST', '/v1/reviewSubmissionItems',
+                {'data': {'type': 'reviewSubmissionItems',
+                          'relationships': {
+                              'reviewSubmission': {'data': {
+                                  'type': 'reviewSubmissions', 'id': sub}},
+                              'appStoreVersion': {'data': {
+                                  'type': 'appStoreVersions', 'id': vid}}}}})
+    print('상태 %s' % st)
+    print(json.dumps(r, ensure_ascii=False, indent=2)[:4000])
+
+
 def pending_iaps(aid):
     """아직 한 번도 심사를 안 거친 인앱 상품.
 
@@ -309,44 +434,97 @@ def submit():
         die('낼 판이 없다. 먼저 --prepare.')
     vid = v['id']
     name = v['attributes']['versionString']
-    st, r = api('POST', '/v1/reviewSubmissions',
-                {'data': {'type': 'reviewSubmissions',
-                          'attributes': {'platform': 'IOS'},
-                          'relationships': {'app': {'data': {'type': 'apps', 'id': aid}}}}})
-    if st >= 300:
-        # 이미 열려 있는 제출함이 있으면 그것을 쓴다.
-        st2, r2 = api('GET', '/v1/apps/%s/reviewSubmissions?filter[state]=READY_FOR_REVIEW,'
-                             'WAITING_FOR_REVIEW,IN_REVIEW&limit=1' % aid)
-        if st2 < 300 and r2.get('data'):
-            r = {'data': r2['data'][0]}
-            print('열려 있던 제출함을 쓴다')
-        else:
+    # 열려 있는 제출함을 먼저 찾는다 — **새로 만들기보다 이것이 먼저다.**
+    #
+    # 2026-09-07 사고. 제출이 인앱 상품 단계에서 죽으면 제출함은 이미
+    # 만들어져 있고 판도 그 안에 담겨 있다. 그 상태에서 다시 --submit 하면
+    # 새 제출함을 만들고 판을 또 넣으려 들어 409 로 막힌다
+    # (ITEM_PART_OF_ANOTHER_SUBMISSION). 애플이 옳다 — 판은 한 제출함에만
+    # 담긴다. 그러니 있는 것을 쓰고, 없을 때만 만든다.
+    #
+    # 고르는 순서가 중요하다. 빈 제출함을 집으면 판을 새로 넣어야 하는데,
+    # 판이 이미 다른(항목 있는) 제출함에 담겨 있으면 또 409 다. 그래서
+    # **항목이 있는 제출함을 먼저** 고르고, 남은 빈 것은 치운다.
+    sub, has_item = None, False
+    st, rs = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
+    opens = []
+    if st < 300:
+        for d in rs.get('data', []):
+            if d['attributes'].get('state') != 'READY_FOR_REVIEW':
+                continue
+            st2, it = api('GET', '/v1/reviewSubmissions/%s/items?limit=10' % d['id'])
+            opens.append((d['id'], len(it.get('data', [])) if st2 < 300 else 0))
+    filled = [x for x in opens if x[1] > 0]
+    if filled:
+        sub, n = filled[0]
+        has_item = True
+        print('열려 있던 제출함을 쓴다: %s (항목 %d개)' % (sub, n))
+    elif opens:
+        sub, n = opens[0]
+        print('비어 있던 제출함을 쓴다: %s' % sub)
+    for sid, n in opens:
+        if sid != sub and n == 0:
+            api('PATCH', '/v1/reviewSubmissions/%s' % sid,
+                {'data': {'type': 'reviewSubmissions', 'id': sid,
+                          'attributes': {'canceled': True}}})
+            print('빈 제출함 %s 치웠다' % sid)
+    if sub is None:
+        st, r = api('POST', '/v1/reviewSubmissions',
+                    {'data': {'type': 'reviewSubmissions',
+                              'attributes': {'platform': 'IOS'},
+                              'relationships': {'app': {'data': {
+                                  'type': 'apps', 'id': aid}}}}})
+        if st >= 300:
             die('제출함을 못 만들었다(%s): %s' % (st, json.dumps(r)[:400]))
-    sub = r['data']['id']
-    st, r = api('POST', '/v1/reviewSubmissionItems',
-                {'data': {'type': 'reviewSubmissionItems',
-                          'relationships': {
-                              'reviewSubmission': {'data': {'type': 'reviewSubmissions', 'id': sub}},
-                              'appStoreVersion': {'data': {'type': 'appStoreVersions', 'id': vid}}}}})
-    if st >= 300:
-        print('항목 넣기 경고(%s): %s' % (st, json.dumps(r)[:300]))
+        sub = r['data']['id']
+        print('제출함을 만들었다: %s' % sub)
+    if not has_item:
+        st, r = api('POST', '/v1/reviewSubmissionItems',
+                    {'data': {'type': 'reviewSubmissionItems',
+                              'relationships': {
+                                  'reviewSubmission': {'data': {
+                                      'type': 'reviewSubmissions', 'id': sub}},
+                                  'appStoreVersion': {'data': {
+                                      'type': 'appStoreVersions', 'id': vid}}}}})
+        if st >= 300:
+            die('판을 제출함에 못 넣었다(%s): %s'
+                % (st, json.dumps(r, ensure_ascii=False)[:1200]))
+        print('판을 제출함에 넣었다')
 
     # 인앱 상품도 같은 제출함에 넣는다. 판만 내면 심사원 손에는 값이 안
     # 뜨는 앱이 간다 — 그 상태로 '결제가 안 된다'고 반려된다.
     iaps = pending_iaps(aid)
     if iaps:
         print('처음 내는 인앱 상품 %d개를 각자 창구로 낸다:' % len(iaps))
+        skipped = []
         for endpoint, rel, typ, iid, pid in iaps:
             st, r = api('POST', '/v1/%s' % endpoint,
                         {'data': {'type': endpoint,
                                   'relationships': {
                                       rel: {'data': {'type': typ, 'id': iid}}}}})
             if st >= 300:
-                # 여기서 멈춘다. 상품 하나라도 못 낸 채 판을 내면, 값이
-                # 반쪽만 뜨는 앱이 심사에 들어간다. 돈이 걸린 자리에서는
-                # '경고 찍고 계속'이 제일 나쁜 선택이다.
-                die('  %s 내기 실패(%s): %s' % (pid, st, json.dumps(r)[:400]))
+                blob = json.dumps(r, ensure_ascii=False)
+                # 애플이 '이 상품은 따로 낼 대기 버전이 없다'고 답하는 경우.
+                #
+                # 2026-09-07: 다섯 상품이 모두 READY_TO_SUBMIT 이고 설명·가격·
+                # 심사용 그림까지 다 채워져 있는데도 이 답이 왔다. 확인해 보니
+                # 5일 전 1.5 가 심사 줄에 섰을 때도 상품은 같은 상태였다 —
+                # 즉 이건 오늘 생긴 일이 아니라 원래 그대로다.
+                #
+                # 그래서 여기서 판 제출을 막지 않는다. 막으면 급한 고침이
+                # 스토어로 못 간다. 대신 건너뛴 것을 끝에 크게 남겨서,
+                # 사람이 ASC 화면에서 상품 상태를 반드시 눈으로 보게 한다.
+                if 'no pending version for submission' in blob:
+                    print('  %s 건너뜀 — 애플: 따로 낼 대기 버전이 없다' % pid)
+                    skipped.append(pid)
+                    continue
+                # 그 밖의 실패는 그대로 멈춘다. 돈이 걸린 자리에서
+                # '경고 찍고 계속'은 대개 제일 나쁜 선택이다.
+                die('  %s 내기 실패(%s): %s' % (pid, st, blob[:400]))
             print('  %s 냈다' % pid)
+        if skipped:
+            print('\n※ 상품 %d개를 못 냈다: %s' % (len(skipped), ', '.join(skipped)))
+            print('  판은 그대로 낸다. ASC 화면에서 상품 심사 상태를 꼭 확인할 것.')
 
     st, r = api('PATCH', '/v1/reviewSubmissions/%s' % sub,
                 {'data': {'type': 'reviewSubmissions', 'id': sub,
@@ -358,11 +536,20 @@ def submit():
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
+    ap.add_argument('--iaps', action='store_true')
+    ap.add_argument('--iapprobe', action='store_true')
+    ap.add_argument('--why', action='store_true')
     ap.add_argument('--cancel', action='store_true')
     ap.add_argument('--prepare', action='store_true')
     ap.add_argument('--submit', action='store_true')
     a = ap.parse_args()
-    if a.cancel:
+    if a.iaps:
+        iaps_report()
+    elif a.iapprobe:
+        iap_probe()
+    elif a.why:
+        why()
+    elif a.cancel:
         cancel()
     elif a.prepare:
         prepare()
