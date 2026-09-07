@@ -1,6 +1,6 @@
 # HANDOFF — Skyblue Note (simpletext_app)
 
-최종 갱신: 2026-09-05 (KST)
+최종 갱신: 2026-09-08 (KST)
 이 문서는 누적 기록이 아니라 **현재 상태 한 장**이다. 다음 담당자는 이 문서 하나만 읽고 바로 이어서 작업할 수 있어야 한다.
 갱신할 때는 밑에 덧붙이지 말고 **통째로 덮어쓴다.**
 
@@ -20,8 +20,9 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.17.0+222** (`pubspec.yaml`, `lib/version.dart`)
-- App Store 마케팅 버전: **1.5** (앱 버전과 다른 계통이다. 헷갈리지 말 것)
+- 현재 버전: **3.17.1+223** (`pubspec.yaml`, `lib/version.dart`)
+- App Store 마케팅 버전: **1.5** — 2026-09-07 재제출, 현재 심사 대기
+  (앱 버전 3.17.1과 다른 계통이다. 헷갈리지 말 것)
 - 소개 페이지: https://ezlong.com/skybluenote/
 
 자매 프로젝트(별도 저장소, 자주 같이 건드린다)
@@ -38,23 +39,38 @@
 
 ## 2. 작업 환경 — 이것부터 이해할 것
 
-### 2.1 맥 계정이 둘이다 (2026-09-05 확인)
+### 2.1 맥 계정이 둘이다 — 소유권 사고의 진원지 (2026-09-08 갱신)
 
-이 맥북에어에는 macOS 로컬 계정이 **`ziririt`와 `aladin` 두 개** 있고, 프로젝트가 갈려 있다.
+이 맥북에어에는 macOS 로컬 계정이 **`ziririt`와 `aladin` 두 개** 있다.
+저장소는 `/Users/ziririt/` 아래 있지만, **어느 계정에서 코워크를 돌리느냐에 따라
+새로 쓰인 파일의 소유자가 그 계정으로 바뀐다.** 그러면 다른 계정에서는
+`-rw-------` 파일을 읽지도 못하고, 폴더에 쓰지도 못한다.
 
-- `/Users/ziririt/development/` — 소유자 `ziririt`. **simpletext_app이 여기 있다. 읽기·쓰기·git 전부 된다.**
-- `/Users/ziririt/Developer/` — 디렉터리와 내용물의 소유자가 **`aladin`**. ezlong, flipzen-weather-app이 여기 있다.
-  파일 내용은 읽히지만 `.git/config`가 600/aladin이라 **`ziririt` 계정으로는 git 명령이 전부 실패한다**
-  (`unable to access '.git/config': Permission denied`, `detected dubious ownership`).
-- `/Users/ziririt/ezlong-live/` — 2026-08-20에 멈춘 **옛 복사본**이다. 최신 아니다. 여기서 작업하지 말 것.
+실제로 두 번 겪었다.
 
-그래서 지금 붙어 있는 세션(계정 `ziririt`)에서는
+- 2026-09-05 `aladin` 계정 세션이 작업 → `simpletext_app` 7,445개 파일이 aladin 소유가 됨
+  → `ziririt` 세션에서 `lib/main.dart`, `pubspec.yaml`을 못 읽어 개발이 완전히 멈춤
+- 2026-09-08 아래 한 줄로 복구
 
-- Skyblue Note: 커밋·푸시·빌드·스토어 제출까지 **전부 가능**
-- ezlong / flipzen: 파일 편집은 되지만 **커밋·푸시 불가.** 웹 배포가 필요하면 소유자에게
-  `aladin` 계정에서 Claude 데스크톱 앱을 띄워 달라고 요청한다.
+```
+sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
+```
 
-**다른 코워크 세션이 "로컬에 파일이 없다"고 하면 십중팔구 계정이 다르거나 폴더가 연결 안 된 것이다.**
+**그러니 계정을 하나로 정해서 쓴다.** 옮겨야 하면 옮긴 뒤 위 명령으로 소유권을 맞춘다.
+`ziririt`는 admin 그룹에 있어 sudo가 된다. 비밀번호는 소유자가 직접 친다 — 담당자가 대신 넣지 않는다.
+
+증상으로 알아보는 법
+
+- `git log`는 되는데 `cat lib/main.dart`가 `Permission denied`
+- `ls -l`에 소유자가 다른 계정 이름으로 찍힘
+- 다른 코워크 세션이 "로컬에 파일이 없다"고 말함 — 폴더 미연결이거나 이 문제다
+
+경로 정리
+
+- `/Users/ziririt/development/` — simpletext_app(Skyblue Note)
+- `/Users/ziririt/Developer/` — ezlong(호스팅), flipzen-weather-app(Long Time)
+- `/Users/ziririt/ezlong-live/` — 2026-08-20에 멈춘 **옛 복사본**. 최신 아니다. 여기서 작업하지 말 것
+
 연결돼야 하는 폴더는 `/Users/ziririt/development`, `/Users/ziririt/Developer` 둘이다.
 
 ### 2.2 셸이 세 개다. 헷갈리면 하루를 날린다
@@ -85,7 +101,7 @@
 
 ## 3. 지금까지 완성된 것
 
-### 3.1 유료화(프리미엄) — 코드는 전부 완성. 스토어 제출만 남았다
+### 3.1 유료화(프리미엄) — 코드 완성, 스토어 제출까지 마침(심사 대기)
 
 `lib/core/purchase_gate.dart` — 상품 5종
 
@@ -156,7 +172,7 @@
 - 편집기 드로어의 '버전 기록'은 `정리방식 고르기 / 정리 미리보기 / 정리 전후보기` **바로 아래**
 - 프리미엄 배너는 '동기화' 그룹 바로 아래
 
-### 3.6 웹 (ezlong 저장소 — 이 계정에서는 커밋 불가, §2.1 참조)
+### 3.6 웹 (ezlong 저장소 — 소유권이 맞아야 커밋된다, §2.1 참조)
 
 - `/skybluenote/` — `#features` 앞에 `<section id="sync">` 추가.
   애플만 쓰면 iCloud, 안드로이드·웹까지 쓰면 구글 로그인, 둘 다 공짜라는 점이 핵심 소구.
@@ -177,41 +193,56 @@
 
 ---
 
+### 3.7 2026-09-07에 더한 것
+
+- 프리미엄 화면 — 두 단추를 나란히 놓아 겹침을 없앴다. 하단 붙박이 바는 뺐다.
+  가격 Row에 `IntrinsicHeight`를 물려 하단이 무한 스크롤되던 것을 잡았다.
+  요금 카드에 누름 피드백을 넣고 기본 선택을 월간으로 바꿨다
+- 광고 — 최상단 배너를 20%로 줄이고 목록 중간 광고를 뺐다
+- 편집기 — 선택 핸들을 끌 때 바깥 스크롤에 밀리던 문제. 핸들 근처를 만지면 스크롤을 잠근다
+- 설정 — '붙여넣을 때마다 묻지 않게'를 '정리할 때' 묶음의 미리보기 아래로 옮겼다
+- `tool/submit_next.py` — 진단·정리 옵션이 늘었다(§7). 취소의 함정이 코드 주석에 박혔다(§4.1-1)
+
+---
+
 ## 4. 하다 만 것 — 정확한 현재 상태
 
-### 4.1 App Store 1.5 심사 제출 (**막혀 있다. 최우선.**)
+### 4.1 App Store 1.5 — 재제출 완료, 심사 대기 중
 
-여기까지 됐다
+- 2026-09-05 최초 제출 → 09-07 오전 **거절**
+  사유: 자동 갱신 구독을 파는데 **App Store 제품 페이지 메타데이터에 이용약관(EULA) 링크가 없다**
+  (앱 안 결제 화면에는 이미 있었다. `lib/core/store_links.dart`의 `appleEulaUrl()`·`privacyUrl()`을
+  `_PremiumScreenState`가 쓰고 있다. 문제는 오직 스토어 소개말이었다)
+- 조치: 11개 언어 **소개말(description) 끝에** 구독 안내 문단과 두 링크를 붙였다
+  - 이용약관 `https://www.apple.com/legal/internet-services/itunes/dev/stdeula/`
+  - 개인정보 처리방침 `https://ezlong.com/skybluenote/privacy/`
+  - 등급 3종(기본·모든 기기·평생), 자동 갱신 조건, 해지 경로를 각 언어로 적었다
+  - **주의**: `tool/submit_next.py`는 `whatsNew`(릴리스 노트)만 밀어 넣는다.
+    소개말(description)은 자동으로 안 올라간다. 스토어에 반영하려면 따로
+    `appStoreVersionLocalizations`의 `description`을 PATCH해야 한다
+- 빌드 223(버전 3.17.1)로 올려 재제출. **현재 판 1.5와 인앱 상품 5종 모두 `WAITING_FOR_REVIEW`**
+- 심사 결과를 기다리는 것 외에 할 일 없음. 확인은 `python3 tool/review_status.py`
 
-- 빌드 222 업로드 완료, 상태 VALID
-- 버전 1.5 생성 완료. `appStoreVersions` id `418dc745-ec6b-479e-988e-6e8366350ffd`
-  (로그에는 숫자 id `890683371`도 나온다)
-- 11개 로케일 릴리스 노트 입력 완료 (`store/ios/*/release_notes.txt`)
-- 빌드 222 연결 완료
-- **앱 상태 `READY_FOR_REVIEW` — 아직 안 냈다** (2026-09-05 `tool/review_status.py`로 확인)
-- 인앱결제 5종 전부 `READY_TO_SUBMIT`
-- 심사 제출함 `e1d4caa3-60c1-4e51-9f98-8e92a639aa86`가 열려 있고 항목 1개(버전)를 물고 있다.
-  상태 READY_FOR_REVIEW, `submitted=None`
+### 4.1-1 재제출 과정에서 크게 데인 것 — 반드시 읽을 것
 
-막힌 지점 — 409 두 개
+거절된 제출함을 API로 되살리려다 **인앱 상품 5종을 통째로 날렸다.** 전말은
+`tool/submit_next.py`의 `cancel()` 주석에 그대로 박아 뒀고, 요지는 이렇다.
 
-1. `STATE_ERROR.FIRST_NON_CONSUMABLE_MUST_BE_SUBMITTED_ON_VERSION`
-   "The first Non-Consumable In-App Purchase for this app must be submitted for review
-   at the same time that you submit an app version."
-   → 첫 비소모성 상품 `premium.lifetime`(ASC id `6805480790`)을
-   **버전 1.5에 붙여서 같이** 내야 한다. 따로 못 낸다
-2. 버전 항목을 다시 넣으면 `STATE_ERROR.ENTITY_STATE_INVALID` on `appStoreVersions id 890683371`.
-   `associatedErrors`가 잘려서 원인 불명
+- 거절(UNRESOLVED_ISSUES)된 제출함은 항목을 빼거나 더할 수 없다.
+  `제출함 상태가 항목 추가를 허용하지 않는다`가 뜬다
+- 그래서 취소하고 새로 만들게 되는데, **제출함을 취소하면 안에 담긴 모든 항목이 함께 취소된다.**
+  판만이 아니라 구독 그룹·구독·비소모성까지 전부 '개발자가 취소함'으로 떨어진다
+- 되돌릴 때 판은 API로 다시 넣을 수 있지만 **상품은 API로 못 넣는다**
+  - `reviewSubmissionItems`는 상품을 안 받는다 — `'inAppPurchaseV2' is not a relationship`
+  - 상품 전용 창구 `inAppPurchaseSubmissions`도 거절한다 — `has no pending version for submission`
+  - 애플 규칙이 '첫 구독 그룹은 새 앱 버전과 **한 제출함에** 담겨야 한다'이기 때문
+- **마지막 조립은 App Store Connect 웹 화면에서 사람이 해야 한다.**
+  상품 화면 → '심사에 추가' → 판이 담긴 초안 고르기
+- 그날 원래 제출은 7개 항목이었다: 판 1 + 구독 그룹 1 + 구독 4 + 평생 1.
+  API로 다시 낸 것은 판 하나뿐이었다. 그대로 심사에 들어갔으면
+  심사원 화면에는 **값이 안 뜨는 결제 화면**이 보였을 것이다
 
-시도해 본 것
-
-- `reviewSubmissionItems`에 `inAppPurchaseV2` 관계로 붙이기 → 409 `ENTITY_ERROR.RELATIONSHIP.UNKNOWN`.
-  그 리소스에 그런 관계가 없다
-- 전용 엔드포인트 `/v1/inAppPurchaseSubmissions`, `/v1/subscriptionSubmissions`로 전환 → 위 1번 에러
-
-**가장 확실한 우회로**: API로 계속 싸우지 말고, 소유자에게 App Store Connect의 1.5 버전 페이지에서
-인앱결제 5종 체크박스를 직접 켜 달라고 부탁한 뒤 제출한다.
-웹 UI 조작은 담당자가 대신 할 수 없다(§6 보안).
+**교훈: 상품이 걸린 판은 함부로 취소하지 않는다.** 판만 있는 앱이면 상관없다.
 
 ### 4.2 Google Play
 
@@ -237,20 +268,16 @@
 
 ## 5. 다음 사람이 할 일 — 순서대로
 
-1. **환경 확인.** `mcp__remote-devices__get_device_info`로 연결 폴더가
-   `/Users/ziririt/development`, `/Users/ziririt/Developer` 둘 다인지 본다.
-   ezlong 작업이 필요하면 §2.1을 먼저 읽는다
-2. **저장소 상태 확인.** `git status`, `git log --oneline -20`
-3. **1.5 심사 제출 마무리** — §4.1대로.
-   API로 `premium.lifetime`을 버전에 붙일 길이 있으면 붙이고
-   `reviewSubmissions/e1d4caa3-60c1-4e51-9f98-8e92a639aa86`을 `submitted: true`로 PATCH.
-   길이 없으면 소유자에게 App Store Connect 화면에서 인앱결제 5종을 켜 달라고 정확히 요청한 뒤 제출
-4. **제출 후 상태 확인** — `/usr/bin/python3 tool/review_status.py`
-5. **Play 비공개 테스터 추가** — 소유자에게 클릭을 요청하거나 API 경로 확보
-6. **테스터 12명 모집 지원** — 홍보글의 남은 인원 숫자 채우기, Play 옵트인 URL 전환 제안
-7. 승인 나면 §4.4의 옵션 항목을 소유자에게 물어보고 진행
-
----
+1. **환경 확인.** 연결 폴더가 `/Users/ziririt/development`, `/Users/ziririt/Developer` 둘인지 본다.
+   파일이 안 읽히면 §2.1의 소유권 문제다. `ls -l`로 소유자부터 본다
+2. **저장소 상태 확인.** `git status`, `git log --oneline -10`
+3. **애플 심사 결과 확인** — `python3 tool/review_status.py`
+   - 승인되면 출시 후 상태 확인, HANDOFF.md 갱신
+   - 다시 거절되면 사유를 그대로 읽고 §4.1-1을 먼저 읽은 뒤 움직인다.
+     **취소 버튼에 손대기 전에 상품이 걸려 있는지부터 본다**
+4. **Play 비공개 테스터 추가** — 소유자에게 클릭을 요청하거나 Play Developer API 경로 확보
+5. **테스터 12명 모집 지원** — 홍보글의 남은 인원 숫자 채우기, Play 옵트인 URL 전환 제안
+6. 승인 나면 §4.4의 옵션 항목을 소유자에게 물어보고 진행
 
 ## 6. 조심할 점 / 건드리면 안 되는 것
 
@@ -331,10 +358,25 @@ tool/appstore_ios.sh      # App Store용 iOS 빌드
 tool/screenshots.sh       # 스토어 스크린샷 촬영
 tool/android_target.sh    # 안드로이드 타깃 확인
 
-/usr/bin/python3 tool/submit_next.py            # 버전 준비
-/usr/bin/python3 tool/submit_next.py --submit   # 심사 제출
-/usr/bin/python3 tool/review_status.py          # 심사 상태 확인
+/usr/bin/python3 tool/review_status.py          # 심사 상태 확인 (두 앱 다 나온다)
+
+/usr/bin/python3 tool/submit_next.py            # 지금 상태만 본다
+/usr/bin/python3 tool/submit_next.py --why      # 왜 못 내는지 진단
+/usr/bin/python3 tool/submit_next.py --iaps     # 인앱 상품 상태
+/usr/bin/python3 tool/submit_next.py --iapprobe # 상품 제출 창구 찔러보기
+/usr/bin/python3 tool/submit_next.py --tidy     # 항목 0개인 빈 초안만 치운다
+/usr/bin/python3 tool/submit_next.py --prepare  # 판을 만들고 릴리스 노트와 빌드를 붙인다
+/usr/bin/python3 tool/submit_next.py --submit   # 심사에 낸다
+/usr/bin/python3 tool/submit_next.py --cancel   # 줄에서 뺀다. 아래 경고를 읽고 칠 것
 ```
+
+- `--submit`은 **소유자가 말했을 때만** 친다. 준비는 되돌릴 수 있지만 제출은 사람의 결정이다
+- `--cancel`은 줄 자리를 잃는다. 그리고 **상품이 걸려 있으면 상품까지 취소된다**(§4.1-1).
+  치기 전에 `--iaps`로 무엇이 걸려 있는지 먼저 본다
+- `--tidy`는 항목이 하나도 없는 초안만 지운다. 항목이 있는 것은 건드리지 않는다
+- `--prepare`가 밀어 넣는 것은 **릴리스 노트(whatsNew)와 빌드뿐이다.**
+  소개말(description)·부제·키워드는 자동으로 안 올라간다. 스토어 소개말을 고쳤으면
+  `appStoreVersionLocalizations`의 `description`을 따로 PATCH해야 한다
 
 스토어 스크립트는 반드시 `/usr/bin/python3`. 홈브루 파이썬에는 `jwt` 모듈이 없다.
 
