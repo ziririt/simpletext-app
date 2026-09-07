@@ -13812,6 +13812,24 @@ class _SettingsScreenState extends State<SettingsScreen>
             // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
             _switchRow(l.previewTitle2, l.previewSub2, s.previewBeforeApply,
                 (v) => s.previewBeforeApply = v),
+            // 2026-09-07 소유자 지시 — '앱 공유·평가' 아래에 있던 것을 여기로
+            // 올린다. 앞서(2026-08-30) 맨 아래로 내린 판단을 뒤집는다:
+            // 붙여넣기 물음을 끄는 일은 결국 '정리하기 직전에 겪는 마찰'이라
+            // 정리 묶음 안에서 읽혀야 뜬금없지 않다. 공유·평가는 앱 밖으로
+            // 나가는 일이라 그 사이에 끼면 갈래가 섞인다.
+            if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+              _sep(),
+              ListTile(
+                leading: Icon(Icons.content_paste_go, color: context.c.sub),
+                title: Text(l.pasteTipTitle,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
+                subtitle: Text(l.pasteTipSub,
+                    style: TextStyle(fontSize: 14, color: context.c.guideInk)),
+                trailing: const Icon(Icons.chevron_right, size: 20),
+                onTap: () => showPasteTip(context),
+              ),
+            ],
           ]),
           // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 이 구역
           // 전체(키 입력·안내·자동 태그 스위치·모델 고르기)가 없다.
@@ -14126,22 +14144,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                 onTap: () => unawaited(launchUrl(
                     Uri.parse(appStoreReviewUrl()),
                     mode: LaunchMode.externalApplication)),
-              ),
-              _sep(),
-            ],
-            // 2026-08-30 소유자 지시로 여기 내려왔다. 이건 정리 규칙이
-            // 아니라 아이폰 운영체제의 물음을 끄는 방법이라, 한 번 하고
-            // 다시 안 여는 일이다. 그런 것은 맨 아래가 제자리다.
-            if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-              ListTile(
-                leading: Icon(Icons.content_paste_go, color: context.c.sub),
-                title: Text(l.pasteTipTitle,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w600)),
-                subtitle: Text(l.pasteTipSub,
-                    style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-                trailing: const Icon(Icons.chevron_right, size: 20),
-                onTap: () => showPasteTip(context),
               ),
               _sep(),
             ],
