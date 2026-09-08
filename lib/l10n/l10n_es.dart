@@ -1411,9 +1411,9 @@ class L10nEs extends L10n {
   @override
   String get premiumPerks => 'Sin anuncios · Limpieza ilimitada · Edición con IA ilimitada';
   @override
-  String get premiumScopeBase => 'Si compras en Apple, se abre en iPhone, iPad y Mac. Si compras en Google Play, en tus dispositivos Android. En ambos casos la app web está incluida.';
+  String get premiumScopeBase => 'Se abre en los dispositivos ligados a la tienda donde compraste. En ambos casos la app web está incluida.';
   @override
-  String get premiumScopeAll => 'Una sola compra lo abre todo, aunque uses iPhone y Android a la vez. Los dispositivos que añadas después también entran.';
+  String get premiumScopeAll => 'Una sola compra lo abre todo, aunque uses un teléfono y un ordenador a la vez. Los dispositivos que añadas después también entran.';
   @override
   String get premiumAutoRenew => 'La suscripción se renueva automáticamente si no se cancela al menos 24 horas antes del fin del periodo. Puedes cancelarla cuando quieras en los ajustes de tu cuenta.';
   @override
@@ -1458,7 +1458,7 @@ class L10nEs extends L10n {
   String get onbTitle3 => 'Las mismas notas en todas partes';
 
   @override
-  String get onbBody3 => 'iPhone, iPad, Mac, Android y la app web del navegador muestran las mismas notas. Cambia en una y las demás siguen.';
+  String get onbBody3 => 'iPhone, iPad, Mac y la app web del navegador muestran las mismas notas. Los demás dispositivos que uses a la vez también siguen el ritmo. Cambia en una y las demás siguen.';
 
   @override
   String get onbTitle4 => 'Todo está abierto';
@@ -1503,7 +1503,7 @@ class L10nEs extends L10n {
   String get premiumUnlockApple => 'Desbloquea en iPhone, iPad y Mac';
 
   @override
-  String get premiumUnlockGoogle => 'Desbloquea en tus dispositivos Android';
+  String get premiumUnlockGoogle => 'Desbloquea en los dispositivos de tu tienda';
 
   @override
   String get premiumUnlockAll => 'Desbloquea en todos tus dispositivos';

@@ -1407,9 +1407,9 @@ class L10nJa extends L10n {
   @override
   String get premiumPerks => '広告なし・整理無制限・AI編集無制限';
   @override
-  String get premiumScopeBase => 'Appleで購入するとiPhone・iPad・Macで、Google Playで購入するとAndroid端末で使えます。どちらで購入してもWebアプリは含まれます。';
+  String get premiumScopeBase => 'ご購入されたストアの端末で使えます。どちらで購入してもWebアプリは含まれます。';
   @override
-  String get premiumScopeAll => 'iPhoneとAndroidを併用しても、一度の購入ですべて使えます。今後増える端末もこの等級に含まれます。';
+  String get premiumScopeAll => 'スマートフォンとパソコンを併用しても、一度の購入ですべて使えます。今後増える端末もこの等級に含まれます。';
   @override
   String get premiumAutoRenew => 'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
   @override
@@ -1454,7 +1454,7 @@ class L10nJa extends L10n {
   String get onbTitle3 => 'どの端末でも同じノート';
 
   @override
-  String get onbBody3 => 'iPhone・iPad・Mac・Android、そしてブラウザで開くWebアプリまで同じノートを見ます。一つ直せば残りもついてきます。';
+  String get onbBody3 => 'iPhone・iPad・Mac、そしてブラウザで開くWebアプリまで同じノートを見ます。併用しているほかの端末もついてきます。一つ直せば残りもついてきます。';
 
   @override
   String get onbTitle4 => 'すべて開いています';
@@ -1499,7 +1499,7 @@ class L10nJa extends L10n {
   String get premiumUnlockApple => 'iPhone・iPad・Macで解除';
 
   @override
-  String get premiumUnlockGoogle => 'Android端末で解除';
+  String get premiumUnlockGoogle => '購入したストアの端末で解除';
 
   @override
   String get premiumUnlockAll => 'お持ちのすべての端末で解除';

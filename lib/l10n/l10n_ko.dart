@@ -1407,9 +1407,9 @@ class L10nKo extends L10n {
   @override
   String get premiumPerks => '광고 없음 · 정리 무제한 · AI 편집 무제한';
   @override
-  String get premiumScopeBase => '애플에서 결제하면 아이폰·아이패드·맥에서, 구글 플레이에서 결제하면 안드로이드 기기에서 열립니다. 어느 쪽으로 사셔도 웹앱은 함께 열립니다.';
+  String get premiumScopeBase => '결제하신 스토어의 기기에서 열립니다. 어느 쪽으로 사셔도 웹앱은 함께 열립니다.';
   @override
-  String get premiumScopeAll => '아이폰과 안드로이드를 함께 쓰셔도 한 번의 결제로 모두 열립니다. 앞으로 늘어나는 기기도 이 등급에 들어옵니다.';
+  String get premiumScopeAll => '휴대폰과 컴퓨터를 함께 쓰셔도 한 번의 결제로 모두 열립니다. 앞으로 늘어나는 기기도 이 등급에 들어옵니다.';
   @override
   String get premiumAutoRenew => '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
   @override
@@ -1454,7 +1454,7 @@ class L10nKo extends L10n {
   String get onbTitle3 => '모든 기기에서 같은 노트';
 
   @override
-  String get onbBody3 => '아이폰·아이패드·맥·안드로이드, 그리고 브라우저에서 여는 웹앱까지 같은 노트를 봅니다. 한쪽에서 고치면 나머지도 따라옵니다.';
+  String get onbBody3 => '아이폰·아이패드·맥, 그리고 브라우저에서 여는 웹앱까지 같은 노트를 봅니다. 함께 쓰시는 다른 기기도 이어집니다. 한쪽에서 고치면 나머지도 따라옵니다.';
 
   @override
   String get onbTitle4 => '전부 열어 두었습니다';
@@ -1499,7 +1499,7 @@ class L10nKo extends L10n {
   String get premiumUnlockApple => '아이폰 · 아이패드 · 맥에서 잠금 해제';
 
   @override
-  String get premiumUnlockGoogle => '안드로이드 기기에서 잠금 해제';
+  String get premiumUnlockGoogle => '결제한 스토어의 기기에서 잠금 해제';
 
   @override
   String get premiumUnlockAll => '가진 모든 기기에서 잠금 해제';

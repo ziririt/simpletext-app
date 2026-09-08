@@ -1412,9 +1412,9 @@ class L10nDe extends L10n {
   @override
   String get premiumPerks => 'Keine Werbung · Unbegrenztes Aufräumen · Unbegrenzte KI-Bearbeitung';
   @override
-  String get premiumScopeBase => 'Bei Apple gekauft, öffnet es sich auf iPhone, iPad und Mac. Bei Google Play gekauft, auf Ihren Android-Geräten. In beiden Fällen ist die Web-App enthalten.';
+  String get premiumScopeBase => 'Es öffnet sich auf den Geräten des Stores, in dem Sie gekauft haben. In beiden Fällen ist die Web-App enthalten.';
   @override
-  String get premiumScopeAll => 'Ein Kauf öffnet alles, auch wenn Sie iPhone und Android nebeneinander nutzen. Später hinzukommende Geräte sind eingeschlossen.';
+  String get premiumScopeAll => 'Ein Kauf öffnet alles, auch wenn Sie Telefon und Computer nebeneinander nutzen. Später hinzukommende Geräte sind eingeschlossen.';
   @override
   String get premiumAutoRenew => 'Abos verlängern sich automatisch, sofern sie nicht mindestens 24 Stunden vor Ablauf gekündigt werden. Sie können jederzeit in den Kontoeinstellungen kündigen.';
   @override
@@ -1459,7 +1459,7 @@ class L10nDe extends L10n {
   String get onbTitle3 => 'Überall dieselben Notizen';
 
   @override
-  String get onbBody3 => 'iPhone, iPad, Mac, Android und die Web-App im Browser zeigen dieselben Notizen. Ändern Sie es an einer Stelle, der Rest folgt.';
+  String get onbBody3 => 'iPhone, iPad, Mac und die Web-App im Browser zeigen dieselben Notizen. Andere Geräte, die Sie parallel nutzen, ziehen ebenfalls mit. Ändern Sie es an einer Stelle, der Rest folgt.';
 
   @override
   String get onbTitle4 => 'Alles ist offen';
@@ -1504,7 +1504,7 @@ class L10nDe extends L10n {
   String get premiumUnlockApple => 'Auf iPhone, iPad und Mac freischalten';
 
   @override
-  String get premiumUnlockGoogle => 'Auf Ihren Android-Geräten freischalten';
+  String get premiumUnlockGoogle => 'Auf den Geräten Ihres Stores freischalten';
 
   @override
   String get premiumUnlockAll => 'Auf allen Ihren Geräten freischalten';

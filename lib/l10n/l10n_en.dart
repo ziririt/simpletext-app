@@ -1411,9 +1411,9 @@ class L10nEn extends L10n {
   @override
   String get premiumPerks => 'No ads · Unlimited tidying · Unlimited AI editing';
   @override
-  String get premiumScopeBase => 'Bought on Apple, it opens on iPhone, iPad and Mac. Bought on Google Play, on your Android devices. Either way the web app is included.';
+  String get premiumScopeBase => 'It opens on the devices tied to the store you bought from. Either way the web app is included.';
   @override
-  String get premiumScopeAll => 'One purchase opens everything, even if you use iPhone and Android side by side. Devices added later are included too.';
+  String get premiumScopeAll => 'One purchase opens everything, even when you use a phone and a computer side by side. Devices added later are included too.';
   @override
   String get premiumAutoRenew => 'Subscriptions renew automatically unless canceled at least 24 hours before the period ends. You can cancel any time in your account settings.';
   @override
@@ -1458,7 +1458,7 @@ class L10nEn extends L10n {
   String get onbTitle3 => 'The same notes everywhere';
 
   @override
-  String get onbBody3 => 'iPhone, iPad, Mac, Android and the web app in your browser all show the same notes. Fix it in one place and the rest follow.';
+  String get onbBody3 => 'iPhone, iPad, Mac and the web app in your browser all show the same notes. Other devices you use alongside them keep up as well. Fix it in one place and the rest follow.';
 
   @override
   String get onbTitle4 => 'Everything is open';
@@ -1503,7 +1503,7 @@ class L10nEn extends L10n {
   String get premiumUnlockApple => 'Unlock on iPhone, iPad and Mac';
 
   @override
-  String get premiumUnlockGoogle => 'Unlock on your Android devices';
+  String get premiumUnlockGoogle => 'Unlock on the devices tied to your store';
 
   @override
   String get premiumUnlockAll => 'Unlock on every device you own';

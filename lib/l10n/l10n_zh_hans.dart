@@ -1407,9 +1407,9 @@ class L10nZhHans extends L10n {
   @override
   String get premiumPerks => '无广告 · 整理无限 · AI 编辑无限';
   @override
-  String get premiumScopeBase => '在 Apple 购买可在 iPhone、iPad 和 Mac 上使用；在 Google Play 购买可在 Android 设备上使用。无论从哪边购买，都包含网页版。';
+  String get premiumScopeBase => '在你购买所用商店对应的设备上使用。无论从哪边购买，都包含网页版。';
   @override
-  String get premiumScopeAll => '即使同时使用 iPhone 和 Android，一次购买即可全部开通。日后新增的设备也包含在内。';
+  String get premiumScopeAll => '即使手机和电脑一起用，一次购买即可全部开通。日后新增的设备也包含在内。';
   @override
   String get premiumAutoRenew => '订阅将在到期前 24 小时未取消时自动续期并按同额计费。您可随时在账户设置中取消。';
   @override
@@ -1454,7 +1454,7 @@ class L10nZhHans extends L10n {
   String get onbTitle3 => '每台设备都是同一份笔记';
 
   @override
-  String get onbBody3 => 'iPhone、iPad、Mac、Android，还有在浏览器里打开的网页版，看到的都是同一份笔记。改一处，其余跟着变。';
+  String get onbBody3 => 'iPhone、iPad、Mac，还有在浏览器里打开的网页版，看到的都是同一份笔记。同时使用的其他设备也会跟上。改一处，其余跟着变。';
 
   @override
   String get onbTitle4 => '全部已经开放';
@@ -1499,7 +1499,7 @@ class L10nZhHans extends L10n {
   String get premiumUnlockApple => '在 iPhone、iPad 和 Mac 上解锁';
 
   @override
-  String get premiumUnlockGoogle => '在 Android 设备上解锁';
+  String get premiumUnlockGoogle => '在购买所用商店的设备上解锁';
 
   @override
   String get premiumUnlockAll => '在您的所有设备上解锁';

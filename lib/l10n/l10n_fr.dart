@@ -1412,9 +1412,9 @@ class L10nFr extends L10n {
   @override
   String get premiumPerks => 'Sans publicité · Mise au propre illimitée · Édition IA illimitée';
   @override
-  String get premiumScopeBase => 'Acheté sur Apple, cela s’ouvre sur iPhone, iPad et Mac. Acheté sur Google Play, sur vos appareils Android. Dans les deux cas l’application web est incluse.';
+  String get premiumScopeBase => 'Cela s’ouvre sur les appareils liés à la boutique où vous avez acheté. Dans les deux cas l’application web est incluse.';
   @override
-  String get premiumScopeAll => 'Un seul achat ouvre tout, même si vous utilisez iPhone et Android en parallèle. Les appareils ajoutés plus tard sont inclus.';
+  String get premiumScopeAll => 'Un seul achat ouvre tout, même si vous utilisez un téléphone et un ordinateur en parallèle. Les appareils ajoutés plus tard sont inclus.';
   @override
   String get premiumAutoRenew => 'L’abonnement se renouvelle automatiquement s’il n’est pas annulé au moins 24 heures avant la fin de la période. Vous pouvez l’annuler à tout moment dans les réglages du compte.';
   @override
@@ -1459,7 +1459,7 @@ class L10nFr extends L10n {
   String get onbTitle3 => 'Les mêmes notes partout';
 
   @override
-  String get onbBody3 => 'iPhone, iPad, Mac, Android et l’application web dans le navigateur affichent les mêmes notes. Modifiez d’un côté, le reste suit.';
+  String get onbBody3 => 'iPhone, iPad, Mac et l’application web dans le navigateur affichent les mêmes notes. Les autres appareils utilisés en parallèle suivent aussi. Modifiez d’un côté, le reste suit.';
 
   @override
   String get onbTitle4 => 'Tout est ouvert';
@@ -1504,7 +1504,7 @@ class L10nFr extends L10n {
   String get premiumUnlockApple => 'Débloquez sur iPhone, iPad et Mac';
 
   @override
-  String get premiumUnlockGoogle => 'Débloquez sur vos appareils Android';
+  String get premiumUnlockGoogle => 'Débloquez sur les appareils de votre boutique';
 
   @override
   String get premiumUnlockAll => 'Débloquez sur tous vos appareils';
