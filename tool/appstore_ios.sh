@@ -23,6 +23,15 @@
 #    kPaidTierLive 머리말 참고). 켤 때가 오면 여기 한 줄이 는다.
 set -u
 cd "$(dirname "$0")/.." || exit 1
+
+# 로그와 임시 plist 자리. 예전에는 /tmp 에 고정 이름으로 뒀는데, 이 맥은
+# 계정이 둘이라(HANDOFF.md 2.1절) 다른 계정이 먼저 만든 /tmp/appstore_ios_*.log
+# 를 덮어쓰지 못해 **빌드가 시작도 못 하고 죽었다**(2026-09-09).
+# macOS 의 TMPDIR 은 계정마다 다른 자리라 부딪히지 않는다. 다만 nohup 으로
+# 띄우면 TMPDIR 이 비어 있을 수 있어, 그때는 /tmp 가 아니라 홈 밑으로 간다.
+WORK="${TMPDIR:-$HOME/.cache/skyblue/}"
+case "$WORK" in */) ;; *) WORK="$WORK/" ;; esac
+mkdir -p "$WORK" || { echo "임시 자리를 못 만들었다: $WORK" >&2; exit 1; }
 export PATH="$HOME/development/flutter/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 NAME="${1:-$(sed -n "s/^const String appVersion = '\(.*\)';/\1/p" lib/version.dart)}"
@@ -57,12 +66,12 @@ printf '// tool 이 만든 파일이다. 손으로 고치지 말 것.\nGOOGLE_IO
 log "flutter build ipa…"
 # shellcheck disable=SC2086
 flutter build ipa --release --build-name="$NAME" --build-number="$NUM" $DEFINES \
-  > /tmp/appstore_ios_build.log 2>&1
+  > ${WORK}appstore_ios_build.log 2>&1
 RC=$?
 log "빌드 끝 rc=$RC"
 if [ ! -d build/ios/archive/Runner.xcarchive ]; then
-  echo "아카이브가 없다. /tmp/appstore_ios_build.log 를 볼 것." >&2
-  tail -20 /tmp/appstore_ios_build.log >&2
+  echo "아카이브가 없다. ${WORK}appstore_ios_build.log 를 볼 것." >&2
+  tail -20 ${WORK}appstore_ios_build.log >&2
   exit 1
 fi
 
@@ -71,7 +80,7 @@ fi
 # shellcheck source=/dev/null
 . "$SECHOME/.appstoreconnect/asc.env"
 P8="$SECHOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
-cat > /tmp/ExportAuto.plist <<'PLIST'
+cat > ${WORK}ExportAuto.plist <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
@@ -87,23 +96,23 @@ log "아카이브 내보내기…"
 xcodebuild -exportArchive \
   -archivePath build/ios/archive/Runner.xcarchive \
   -exportPath build/ios/ipa \
-  -exportOptionsPlist /tmp/ExportAuto.plist \
+  -exportOptionsPlist ${WORK}ExportAuto.plist \
   -allowProvisioningUpdates \
   -authenticationKeyPath "$P8" \
   -authenticationKeyID "$ASC_KEY_ID" \
-  -authenticationKeyIssuerID "$ASC_ISSUER_ID" > /tmp/appstore_ios_export.log 2>&1
+  -authenticationKeyIssuerID "$ASC_ISSUER_ID" > ${WORK}appstore_ios_export.log 2>&1
 log "내보내기 rc=$?"
 
 IPA=$(ls build/ios/ipa/*.ipa 2>/dev/null | head -1)
 if [ -z "$IPA" ]; then
-  echo "IPA 가 안 나왔다. /tmp/appstore_ios_export.log 를 볼 것." >&2
-  tail -20 /tmp/appstore_ios_export.log >&2
+  echo "IPA 가 안 나왔다. ${WORK}appstore_ios_export.log 를 볼 것." >&2
+  tail -20 ${WORK}appstore_ios_export.log >&2
   exit 1
 fi
 log "올린다: $IPA"
 xcrun altool --upload-app -f "$IPA" -t ios \
   --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" \
-  >> /tmp/appstore_ios_export.log 2>&1
+  >> ${WORK}appstore_ios_export.log 2>&1
 log "업로드 rc=$?"
-tail -3 /tmp/appstore_ios_export.log
+tail -3 ${WORK}appstore_ios_export.log
 log "끝. 애플이 처리하는 데 5~30분 걸린다 — python3 tool/review_status.py 로 확인."
