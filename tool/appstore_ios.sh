@@ -63,9 +63,22 @@ REV="com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_ID%%.apps.googleusercontent.
 printf '// tool 이 만든 파일이다. 손으로 고치지 말 것.\nGOOGLE_IOS_REVERSED = %s\n' \
   "$REV" > ios/Flutter/Skyblue.xcconfig
 
+# 옛 아카이브를 먼저 지운다. 남겨 두면 이번 빌드가 실패해도 '아카이브가
+# 있다'가 되어 **지난번 판이 스토어로 나간다**(2026-09-09 사고, 아래).
+rm -rf build/ios/archive
+
 log "flutter build ipa…"
+# --no-codesign 인 까닭 (2026-09-09):
+#   flutter build ipa 는 아카이브를 만든 뒤 제 손으로 서명까지 하려 든다.
+#   그때 맥의 Xcode 에 로그인된 개발 계정과 유효한 Apple Development 인증서를
+#   찾는다. 이 맥에는 둘 다 없다 —
+#     Signing certificate ... is not valid for code signing.
+#     No Accounts: Add a new account in Accounts settings.
+#   그런데 우리는 그 서명이 필요 없다. 스토어로 갈 서명은 바로 아래에서
+#   App Store Connect API 키로 한다. 그래서 여기서는 아예 서명하지 않는다.
 # shellcheck disable=SC2086
-flutter build ipa --release --build-name="$NAME" --build-number="$NUM" $DEFINES \
+flutter build ipa --release --no-codesign \
+  --build-name="$NAME" --build-number="$NUM" $DEFINES \
   > ${WORK}appstore_ios_build.log 2>&1
 RC=$?
 log "빌드 끝 rc=$RC"
@@ -74,6 +87,31 @@ if [ ! -d build/ios/archive/Runner.xcarchive ]; then
   tail -20 ${WORK}appstore_ios_build.log >&2
   exit 1
 fi
+
+# ── 아카이브가 정말 이번 것인지 확인한다 (2026-09-09 사고) ────────────
+#
+# 그날 무슨 일이 있었나. flutter build ipa 가 서명에서 실패했는데 이 자리의
+# 검사가 '폴더가 있느냐' 하나뿐이었다. 이틀 전 아카이브가 남아 있었고,
+# 그래서 검사를 통과했다. 그 옛 판이 내보내져 스토어로 올라갔고 **애플
+# 심사까지 통과해 출시됐다.** 그 안에는 그날 고친 코드가 없었다.
+#
+# 올라간 뒤에야 알았다 — App Store Connect 에서 빌드 224 의 버전 문자열이
+# 3.17.2 가 아니라 223 과 같은 3.17.1 이었다.
+#
+# 빌드가 실패하는 것은 괜찮다. 고치면 된다. **실패했는데 성공한 것처럼
+# 보이는 것**이 값비싸다. 그러니 여기서 판을 직접 열어 확인한다.
+PLIST=build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app/Info.plist
+GOT_NAME=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST" 2>/dev/null)
+GOT_NUM=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST" 2>/dev/null)
+if [ "$GOT_NAME" != "$NAME" ] || [ "$GOT_NUM" != "$NUM" ]; then
+  echo "아카이브 안의 판이 다르다. 지난 아카이브를 올릴 뻔했다." >&2
+  echo "  바란 것: $NAME ($NUM)" >&2
+  echo "  들어 있는 것: ${GOT_NAME:-없음} (${GOT_NUM:-없음})" >&2
+  echo "  ${WORK}appstore_ios_build.log 를 볼 것." >&2
+  tail -20 ${WORK}appstore_ios_build.log >&2
+  exit 1
+fi
+log "아카이브 확인: $GOT_NAME ($GOT_NUM)"
 
 # 서명·내보내기는 App Store Connect API 키로 한다. Xcode 에 로그인된 계정이
 # 없어도 되고, 사람이 창을 열 필요도 없다.
