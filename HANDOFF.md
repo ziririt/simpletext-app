@@ -1,6 +1,6 @@
 # HANDOFF — Skyblue Note (simpletext_app)
 
-최종 갱신: 2026-09-08 (KST)
+최종 갱신: 2026-09-09 (KST)
 이 문서는 누적 기록이 아니라 **현재 상태 한 장**이다. 다음 담당자는 이 문서 하나만 읽고 바로 이어서 작업할 수 있어야 한다.
 갱신할 때는 밑에 덧붙이지 말고 **통째로 덮어쓴다.**
 
@@ -69,8 +69,8 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.17.1+223** (`pubspec.yaml`, `lib/version.dart`)
-- App Store 마케팅 버전: **1.5** — 2026-09-07 재제출, 현재 심사 대기
+- 현재 버전: **3.17.2+224** (`pubspec.yaml`, `lib/version.dart`)
+- App Store 마케팅 버전: **1.5** — 2026-09-09 세 번째 제출, 현재 심사 대기
   (앱 버전 3.17.1과 다른 계통이다. 헷갈리지 말 것)
 - 소개 페이지: https://ezlong.com/skybluenote/
 
@@ -88,7 +88,7 @@
 
 ## 2. 작업 환경 — 이것부터 이해할 것
 
-### 2.1 맥 계정이 둘이다 — 소유권 사고의 진원지 (2026-09-08 갱신)
+### 2.1 맥 계정이 둘이다 — 소유권 사고의 진원지
 
 이 맥북에어에는 macOS 로컬 계정이 **`ziririt`와 `aladin` 두 개** 있다.
 저장소는 `/Users/ziririt/` 아래 있지만, **어느 계정에서 코워크를 돌리느냐에 따라
@@ -242,7 +242,7 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 
 ---
 
-### 3.7 2026-09-07에 더한 것
+### 3.7 2026-09-07~09에 더한 것
 
 - 프리미엄 화면 — 두 단추를 나란히 놓아 겹침을 없앴다. 하단 붙박이 바는 뺐다.
   가격 Row에 `IntrinsicHeight`를 물려 하단이 무한 스크롤되던 것을 잡았다.
@@ -251,26 +251,54 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 - 편집기 — 선택 핸들을 끌 때 바깥 스크롤에 밀리던 문제. 핸들 근처를 만지면 스크롤을 잠근다
 - 설정 — '붙여넣을 때마다 묻지 않게'를 '정리할 때' 묶음의 미리보기 아래로 옮겼다
 - `tool/submit_next.py` — 진단·정리 옵션이 늘었다(§7). 취소의 함정이 코드 주석에 박혔다(§4.1-1)
+- `tool/appstore_ios.sh` — 로그 자리를 `/tmp` 고정에서 계정별 자리로 옮겼다.
+  다른 계정이 만든 `/tmp/appstore_ios_*.log` 때문에 빌드가 시작도 못 하고 죽었고,
+  더 나쁘게는 예전 로그를 그대로 뿌려 **성공한 것처럼 보였다**
+- 결제 화면·첫 실행 안내에서 플랫폼 이름을 걷어냈다(§4.1)
 
 ---
 
 ## 4. 하다 만 것 — 정확한 현재 상태
 
-### 4.1 App Store 1.5 — 재제출 완료, 심사 대기 중
+### 4.1 App Store 1.5 — 세 번째 제출, 심사 대기 중
 
-- 2026-09-05 최초 제출 → 09-07 오전 **거절**
-  사유: 자동 갱신 구독을 파는데 **App Store 제품 페이지 메타데이터에 이용약관(EULA) 링크가 없다**
-  (앱 안 결제 화면에는 이미 있었다. `lib/core/store_links.dart`의 `appleEulaUrl()`·`privacyUrl()`을
-  `_PremiumScreenState`가 쓰고 있다. 문제는 오직 스토어 소개말이었다)
+거절을 두 번 받았다. 사유가 서로 달랐다.
+
+**1차 거절 (2026-09-07) — 자동 메시지**
+
+- 자동 갱신 구독을 파는데 **App Store 제품 페이지 메타데이터에 이용약관(EULA) 링크가 없다**
+- 앱 안 결제 화면에는 이미 있었다(`lib/core/store_links.dart`의 `appleEulaUrl()`·`privacyUrl()`).
+  문제는 오직 스토어 소개말이었다
 - 조치: 11개 언어 **소개말(description) 끝에** 구독 안내 문단과 두 링크를 붙였다
   - 이용약관 `https://www.apple.com/legal/internet-services/itunes/dev/stdeula/`
   - 개인정보 처리방침 `https://ezlong.com/skybluenote/privacy/`
-  - 등급 3종(기본·모든 기기·평생), 자동 갱신 조건, 해지 경로를 각 언어로 적었다
-  - **주의**: `tool/submit_next.py`는 `whatsNew`(릴리스 노트)만 밀어 넣는다.
-    소개말(description)은 자동으로 안 올라간다. 스토어에 반영하려면 따로
-    `appStoreVersionLocalizations`의 `description`을 PATCH해야 한다
-- 빌드 223(버전 3.17.1)로 올려 재제출. **현재 판 1.5와 인앱 상품 5종 모두 `WAITING_FOR_REVIEW`**
-- 심사 결과를 기다리는 것 외에 할 일 없음. 확인은 `python3 tool/review_status.py`
+  - 등급 3종, 자동 갱신 조건, 해지 경로를 각 언어로 적었다
+- **주의**: `tool/submit_next.py --prepare`는 `whatsNew`(릴리스 노트)와 빌드만 밀어 넣는다.
+  소개말(description)은 자동으로 안 올라간다. 고쳤으면
+  `appStoreVersionLocalizations`의 `description`을 따로 PATCH해야 한다
+
+**2차 거절 (2026-09-08) — 가이드라인 2.3.10 Accurate Metadata**
+
+- 원문: "The app or metadata includes information about third-party platforms
+  that may not be relevant for App Store users."
+- 조치 지시: "Revise the app's In-App Purchases to remove Android references."
+- 심사 기기 iPhone 17 Pro Max, 제출 ID `a330d569-...`
+- 안드로이드가 나오는 자리가 셋이었다
+  1. 인앱결제 '프리미엄 월간 · 모든 기기'의 한국어 설명
+     '아이폰·안드로이드·PC·웹 어디서나 무제한.'
+  2. 결제 화면 — `premiumScopeBase` / `premiumScopeAll` / `premiumUnlockGoogle`
+  3. 첫 실행 안내 3번째 장 — `onbBody3`
+- 애플이 콕 집은 것은 1번뿐이지만 **소유자 결정으로 셋 다 중립화**했다.
+  심사원은 아이폰에서 결제 화면을 본다. 거기 '구글 플레이에서 결제하면 안드로이드 기기에서'와
+  '안드로이드 기기에서 잠금 해제'가 그대로 떠 있었다
+- 바꾼 말: 플랫폼 이름 대신 '결제한 스토어의 기기', '휴대폰과 컴퓨터', '함께 쓰시는 다른 기기'.
+  9개 언어 전부. 기능 설명은 그대로 살렸다
+- **기기 이름표('안드로이드 폰')는 남겼다.** 사용자가 실제로 그 기기를 가졌을 때만 목록에 뜨는
+  사실 표기이고 아이폰 심사 화면에는 나오지 않는다
+
+**현재**: 빌드 224(버전 3.17.2)로 2026-09-09 새벽에 다시 냈다.
+판 1.5와 인앱 상품 5종 모두 `WAITING_FOR_REVIEW`.
+확인은 `/usr/bin/python3 tool/review_status.py`
 
 ### 4.1-1 재제출 과정에서 크게 데인 것 — 반드시 읽을 것
 
@@ -292,6 +320,31 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
   심사원 화면에는 **값이 안 뜨는 결제 화면**이 보였을 것이다
 
 **교훈: 상품이 걸린 판은 함부로 취소하지 않는다.** 판만 있는 앱이면 상관없다.
+
+**2026-09-09에 실제로 되돌린 순서 (브라우저가 있으면 이대로 하면 된다)**
+
+거절된 제출함은 항목을 빼지도 더하지도 못한다(`제출함 상태가 항목 추가를 허용하지 않는다`).
+그 안에 묶인 인앱결제는 **설명도 못 고친다**
+(`ENTITY_ERROR.ATTRIBUTE.INVALID.UNMODIFIABLE — The field (DESCRIPTION) can not be modified`).
+그래서 이 순서를 밟았다.
+
+1. 제출함 취소 — `PATCH /v1/reviewSubmissions/{id} {canceled: true}`.
+   CANCELING → COMPLETE 까지 10초 남짓 기다린다
+2. 인앱결제 설명 수정 — 이제 API PATCH 가 통한다
+3. 새 빌드를 판에 붙인다 — `PATCH /v1/appStoreVersions/{vid}/relationships/build`.
+   붙이면 판이 REJECTED 에서 PREPARE_FOR_SUBMISSION 으로 풀린다
+4. **App Store Connect 웹에서 한 항목씩 다시 담는다.** 각 화면 오른쪽 위 '심사에 추가' →
+   드롭다운에서 같은 초안을 고른다. 순서는 판 → 구독 그룹 → 구독 4개 → 일회성 상품
+   - 판 `/apps/{id}/distribution/ios/version/inflight`
+   - 구독 그룹 `/apps/{id}/distribution/subscription-groups/{groupId}`
+   - 구독 `/apps/{id}/distribution/subscriptions/{subId}`
+   - 일회성 `/apps/{id}/distribution/iaps/{iapId}` (목록은 `/distribution/iaps`)
+   - 페이지가 뜨자마자 누르면 안 먹는다. 7~9초 기다리고, 드롭다운의 항목 수가
+     하나씩 느는지 확인하며 진행한다
+5. 항목 7개(판 1 + 구독 그룹 1 + 구독 4 + 일회성 1)를 확인한 뒤
+   `PATCH /v1/reviewSubmissions/{id} {submitted: true}`
+
+빈 초안은 API로 못 지운다(409). 해가 되지는 않으니 그대로 둔다.
 
 ### 4.2 Google Play
 
