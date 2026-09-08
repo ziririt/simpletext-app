@@ -1,6 +1,3 @@
-Premium arrive. Sans publicité, et sans limite quotidienne de mise au propre ni d’édition IA.
-Les 2 premières semaines sont Premium, gratuites.
-Une courte présentation au premier lancement.
-La mise au propre distingue désormais les grands titres des petits.
-Touchez le champ du titre pour le réécrire aussitôt.
-Améliorations de l’écran d’achat et de la sélection de texte.
+Le passage de la liste à une note glisse maintenant sans à-coups.
+Ce qui démarrait pendant la transition attend désormais qu'elle soit terminée.
+Les textes de l'écran d'achat et du guide de démarrage ont été revus.

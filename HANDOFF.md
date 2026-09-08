@@ -1,6 +1,6 @@
 # HANDOFF — Skyblue Note (simpletext_app)
 
-최종 갱신: 2026-09-09 (KST)
+최종 갱신: 2026-09-09 (KST, 두 번째)
 이 문서는 누적 기록이 아니라 **현재 상태 한 장**이다. 다음 담당자는 이 문서 하나만 읽고 바로 이어서 작업할 수 있어야 한다.
 갱신할 때는 밑에 덧붙이지 말고 **통째로 덮어쓴다.**
 
@@ -69,8 +69,9 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.17.2+224** (`pubspec.yaml`, `lib/version.dart`)
-- App Store 마케팅 버전: **1.5** — 2026-09-09 **승인·출시**. 프리미엄이 실제로 팔리기 시작했다
+- 현재 버전: **3.17.3+225** (`pubspec.yaml`, `lib/version.dart`)
+- App Store 마케팅 버전: **1.6** — 2026-09-09 제출, 심사 대기.
+  1.5는 출시됐지만 **옛 코드가 나갔다**(§4.1-2). 1.6이 그것을 바로잡는 판이다
   (앱 버전 3.17.1과 다른 계통이다. 헷갈리지 말 것)
 - 소개 페이지: https://ezlong.com/skybluenote/
 
@@ -352,6 +353,55 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
    `PATCH /v1/reviewSubmissions/{id} {submitted: true}`
 
 빈 초안은 API로 못 지운다(409). 해가 되지는 않으니 그대로 둔다.
+
+### 4.1-2 출시된 판에 고친 코드가 안 들어간 사고 (2026-09-09)
+
+**빌드 224가 심사를 통과해 출시됐는데 그 안에 그날 고친 코드가 없었다.**
+
+App Store Connect에서 빌드별 버전 문자열을 조회해 알았다.
+
+- 빌드 224 — 버전문자열 `3.17.1`  ← 3.17.2 여야 했다
+- 빌드 223 — `3.17.1`
+- 빌드 222 — `3.17.0`
+
+224는 이틀 전(9월 7일) 아카이브를 그대로 다시 내보내 올린 것이었다.
+
+까닭. `flutter build ipa`는 아카이브를 만든 뒤 **제 손으로 서명까지** 하려 든다.
+그때 Xcode에 로그인된 개발 계정과 유효한 Apple Development 인증서를 찾는데,
+이 맥에는 둘 다 없다(인증서 만료, 계정 없음).
+
+```
+Signing certificate "Apple Development: ...(8QKCJMYR4S)" is not valid for code signing.
+No Accounts: Add a new account in Accounts settings.
+```
+
+그래서 실패했다. 그런데 `tool/appstore_ios.sh`의 검사는 **'아카이브 폴더가
+있느냐' 하나뿐**이었다. 이틀 전 것이 남아 있으니 통과했고, 그 옛 판이
+내보내져 올라가고 심사까지 통과했다.
+
+고친 것 (커밋 `324fcba`)
+
+- `flutter build ipa --release --no-codesign` — 개발 인증서 없이 아카이브만 만든다.
+  스토어로 갈 서명은 원래대로 그다음 줄에서 App Store Connect API 키로 한다
+- 빌드 전에 `build/ios/archive`를 지운다
+- 아카이브 안의 `Info.plist`를 직접 열어 `CFBundleShortVersionString`과
+  `CFBundleVersion`이 지정값과 다르면 **그 자리에서 멈춘다**
+
+**이 사고의 교훈은 오늘 아침 `/tmp` 로그 사고와 같다.** 빌드가 실패하는 것은
+괜찮다. 고치면 된다. **실패했는데 성공한 것처럼 보이는 것**이 값비싸다.
+새 자동화를 쓸 때는 '성공했다'가 아니라 '무엇이 나왔나'를 확인하라.
+
+### 4.1-3 아이폰 직접 설치가 막혀 있다
+
+`tool/deploy.sh iphone`은 개발용 인증서가 만료돼 실패한다. 되살리려면
+소유자가 Xcode에서 Apple ID로 로그인해야 한다(비밀번호는 담당자가 대신
+넣지 않는다).
+
+그동안의 우회로는 **TestFlight**다. 2026-09-09에 내부 그룹을 만들어 뒀다.
+
+- 그룹 '내부 시험' id `267bafec-4be4-4f10-a1ea-d2978052d781` (내부)
+- 소유자가 시험자로 들어가 있다
+- 빌드를 붙이는 것은 `POST /v1/betaGroups/{gid}/relationships/builds`
 
 ### 4.2 Google Play
 

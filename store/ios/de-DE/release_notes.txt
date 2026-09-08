@@ -1,6 +1,3 @@
-Premium ist da. Keine Werbung und keine Tageslimits für Aufräumen und KI-Bearbeitung.
-Die ersten 2 Wochen sind Premium, kostenlos.
-Beim ersten Start eine kurze Einführung.
-Beim Aufräumen werden große und kleine Überschriften jetzt unterschieden.
-Tippen Sie auf das Titelfeld, um es sofort neu zu schreiben.
-Kaufbildschirm und Textauswahl verbessert.
+Der Wechsel zwischen Liste und Notiz gleitet jetzt flüssig.
+Arbeit, die früher während des Übergangs begann, wartet nun, bis er beendet ist.
+Texte auf dem Kaufbildschirm und in der Einführung wurden überarbeitet.

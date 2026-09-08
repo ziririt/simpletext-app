@@ -1,6 +1,3 @@
-Premium is here. No ads, and no daily caps on tidying or AI editing.
-The first 2 weeks are Premium, free.
-A short tour on first launch.
-Cleanup now tells larger headings from smaller ones.
-Tap the title field to rewrite it right away.
-Polished the purchase screen and text selection.
+Moving between the list and a note now slides smoothly.
+Work that used to start while the screen was still sliding now waits until it has settled.
+Wording on the purchase screen and the first-run guide has been tidied.
