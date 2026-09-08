@@ -25,6 +25,7 @@ import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams;
 import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
+import 'core/after_route.dart';
 import 'core/money.dart';
 import 'core/store_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6715,9 +6716,6 @@ class _EditorScreenState extends State<EditorScreen>
   void initState() {
     super.initState();
     _bindStatusBarTap();
-    // 붙은 파일이 이 기기에 실제로 있는지 한 번 찾아 둔다. 화면을 그릴
-    // 때마다 디스크를 물으면 스크롤이 끊긴다.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAttachFiles());
     final idx = store.notes.indexWhere((n) => n.id == widget.noteId);
     if (idx < 0) {
       _found = false;
@@ -6755,18 +6753,49 @@ class _EditorScreenState extends State<EditorScreen>
     bodyCtl.addListener(_onSelectionChanged);
     // 동기화가 이 노트의 새 판을 받아 오면 화면도 따라 그린다.
     store.addListener(_onStoreChanged);
-    // 그리고 여는 순간 조용히 한 바퀴 맞춘다. "이 글이 최신인가"가
-    // 궁금해지는 때가 바로 여는 때다. 받아 오면 위의 듣기가 화면을
-    // 따라 그린다. (소유자 제안 2026-08-20 — 편집 화면 당기기 대신)
-    ICloudSync.instance.scheduleUp();
     if (widget.showMeta) _showMeta = true;
-    if (widget.autoTidy) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _runTidyWithPreset(buildPresets().first));
-    }
+  }
+
+  /// 화면이 다 밀려 들어온 뒤에 시작할 일들.
+  ///
+  /// 2026-09-09 소유자 신고 — "슬라이딩이 너무 버벅거린다. 드르르르하는 듯."
+  ///
+  /// 녹화를 60fps 로 받아 프레임 간격을 재 보니, 미는 동안 대부분은 17ms
+  /// (60fps)로 멀쩡한데 **밀기가 끝날 무렵** 33~83ms 가 연달아 네다섯 번
+  /// 나왔다. 그 자리에 있던 것이 여기 있던 일들이다.
+  ///
+  ///   - 첨부 파일이 기기에 실제로 있는지 디스크 뒤지기
+  ///   - 여는 즉시 iCloud 한 바퀴
+  ///   - 자동 정리 한 판
+  ///
+  /// 전에는 셋 다 addPostFrameCallback 이었다. 그건 '첫 프레임 다음'이지
+  /// '전환이 끝난 다음'이 아니다. 밀기는 아직 20프레임이 남았는데 디스크와
+  /// 네트워크를 건드리고 있었다. 기다려야 하는 것은 프레임이 아니라 전환이다.
+  ///
+  /// **여기 새 일을 더할 때도 같은 것을 지켜라.** 화면을 여는 김에 곁들이는
+  /// 일은 전부 이 아래로 온다. initState 는 컨트롤러를 세우는 자리다.
+  /// 이미 예약했는가. didChangeDependencies 는 전환이 끝나기 전에도
+  /// 여러 번 불릴 수 있다(글꼴 크기·다크모드·화면 회전 등 무엇이든 위에서
+  /// 바뀌면 불린다). 예약 자체를 막지 않으면 **자동 정리가 두 번 돈다.**
+  bool _openArmed = false;
+  VoidCallback? _cancelOpen;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_openArmed) return;
+    _openArmed = true;
+    _cancelOpen = afterRouteSettled(context, () => mounted, () {
+      _cancelOpen = null;
+      _loadAttachFiles();
+      ICloudSync.instance.scheduleUp();
+      if (widget.autoTidy) _runTidyWithPreset(buildPresets().first);
+    });
   }
 
   @override
   void dispose() {
+    _cancelOpen?.call();
     _unbindStatusBarTap();
     store.removeListener(_onStoreChanged);
     _tagTimer?.cancel();

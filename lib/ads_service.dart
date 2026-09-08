@@ -34,6 +34,7 @@ import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'core/ad_gate.dart';
+import 'core/after_route.dart';
 import 'main.dart' show AppColorsX;
 import 'l10n/l10n.dart';
 import 'main.dart' show Store, PremiumScreen, kPaidTierLive;
@@ -171,11 +172,38 @@ class _TopBannerBarState extends State<TopBannerBar> {
   // 자리는 이 값으로 잡는다.
   AdSize? _shownSize;
 
+  /// 밀려 들어오는 애니메이션이 끝났는가.
+  ///
+  /// 2026-09-09 소유자 신고("드르르르"). 배너는 iOS 네이티브 뷰라 만들어
+  /// 붙이는 순간이 비싸다. 그 순간이 화면 미는 도중에 오면 프레임이
+  /// 통째로 몇 개 빠진다 — 녹화를 프레임 단위로 재서 확인했다
+  /// (core/after_route.dart 머리말에 숫자가 있다).
+  ///
+  /// 그래서 **전환이 끝난 뒤에** 만든다. 광고가 반 박자 늦게 뜨는 것과
+  /// 화면이 드르르 떠는 것 중에는 앞엣것이 낫다.
+  bool _settled = false;
+
+  /// 이미 예약했는가. didChangeDependencies 는 전환이 끝나기 전에도 여러 번
+  /// 불린다 — 예약을 막지 않으면 리스너가 겹겹이 쌓인다.
+  bool _armed = false;
+  VoidCallback? _cancelSettle;
+
   @override
   void initState() {
     super.initState();
     Store.instance.addListener(_refresh);
     AdsService.instance.ready.addListener(_refresh);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_armed) return;
+    _armed = true;
+    _cancelSettle = afterRouteSettled(context, () => mounted, () {
+      _cancelSettle = null;
+      setState(() => _settled = true);
+    });
   }
 
   void _refresh() {
@@ -238,6 +266,7 @@ class _TopBannerBarState extends State<TopBannerBar> {
 
   @override
   void dispose() {
+    _cancelSettle?.call();
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
     _ad?.dispose();
@@ -256,6 +285,8 @@ class _TopBannerBarState extends State<TopBannerBar> {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
+    // 전환이 끝나기 전에는 만들지 않는다(위 _settled 주석).
+    if (!_settled) return const SizedBox.shrink();
     _create(MediaQuery.of(context).size.width);
     if (_ad == null || !_loaded) return const SizedBox.shrink();
     final l = L10n.of(context);
