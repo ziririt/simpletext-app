@@ -1973,6 +1973,28 @@ class Store extends ChangeNotifier {
     await persist();
   }
 
+  /// 지금 말고 [d] 뒤에 쓴다.
+  ///
+  /// 2026-09-09 소유자 신고 — "편집화면에서 목록으로 나갈 때는 더 버버벅
+  /// 거린다." 녹화를 재 보니 나가는 쪽이 훨씬 나빴다. 프레임 간격이
+  /// 400ms · 298ms · 317ms · 267ms 였다. 1초 가까이 화면이 세 번밖에
+  /// 안 바뀌었다.
+  ///
+  /// 범인은 편집 화면 dispose 의 flush() 였다. 그 한 줄이
+  ///   모든 메모를 jsonEncode → SharedPreferences 에 쓰기 → notifyListeners
+  /// 를 부르고, 마지막 줄이 목록 화면을 통째로 다시 그린다. 그 전부가
+  /// **미는 애니메이션 위에서** 돌았다.
+  ///
+  /// 늦게 쓰는 것이 위험하지 않은 까닭. 메모리에는 이미 반영돼 있어 화면은
+  /// 늘 최신이고, 앱이 뒤로 가거나 꺼질 때는 onInactive/onPause/onDetach 가
+  /// 각각 flush() 를 부른다(main 의 LifecycleWatcher). 여기서 미루는 것은
+  /// **디스크에 닿는 시각**뿐이다.
+  void flushAfter(Duration d) {
+    if (!_dirty) return;
+    _writeTimer?.cancel();
+    _writeTimer = Timer(d, () => unawaited(flush()));
+  }
+
   Future<void> persist() async {
     await persistLocalOnly();
     // 홈 화면 위젯도 같이 따라간다. 저장은 글자를 칠 때마다 일어나므로
@@ -6801,7 +6823,9 @@ class _EditorScreenState extends State<EditorScreen>
     _tagTimer?.cancel();
     bodyCtl.removeListener(_onSelectionChanged);
     _bodyScroll.dispose();
-    unawaited(store.flush());
+    // 지금 쓰면 나가는 애니메이션이 무너진다(Store.flushAfter 주석).
+    // 미는 동작은 300ms 남짓이라 그보다 넉넉히 뒤로 미룬다.
+    store.flushAfter(const Duration(milliseconds: 450));
     titleCtl.dispose();
     bodyCtl.dispose();
     tagsCtl.dispose();

@@ -269,7 +269,13 @@ class _TopBannerBarState extends State<TopBannerBar> {
     _cancelSettle?.call();
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
-    _ad?.dispose();
+    // 네이티브 광고 뷰를 없애는 일도 나가는 애니메이션 위에서 하면 걸린다.
+    // 위젯에서는 이미 빠졌으니 조금 뒤에 치워도 보이는 것은 달라지지 않는다.
+    final gone = _ad;
+    _ad = null;
+    if (gone != null) {
+      Timer(const Duration(milliseconds: 450), gone.dispose);
+    }
     super.dispose();
   }
 
