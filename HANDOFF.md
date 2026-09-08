@@ -70,7 +70,7 @@
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
 - 현재 버전: **3.17.2+224** (`pubspec.yaml`, `lib/version.dart`)
-- App Store 마케팅 버전: **1.5** — 2026-09-09 세 번째 제출, 현재 심사 대기
+- App Store 마케팅 버전: **1.5** — 2026-09-09 **승인·출시**. 프리미엄이 실제로 팔리기 시작했다
   (앱 버전 3.17.1과 다른 계통이다. 헷갈리지 말 것)
 - 소개 페이지: https://ezlong.com/skybluenote/
 
@@ -150,7 +150,7 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 
 ## 3. 지금까지 완성된 것
 
-### 3.1 유료화(프리미엄) — 코드 완성, 스토어 제출까지 마침(심사 대기)
+### 3.1 유료화(프리미엄) — 2026-09-09 승인·출시. 실제로 팔리는 중
 
 `lib/core/purchase_gate.dart` — 상품 5종
 
@@ -260,7 +260,7 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 
 ## 4. 하다 만 것 — 정확한 현재 상태
 
-### 4.1 App Store 1.5 — 세 번째 제출, 심사 대기 중
+### 4.1 App Store 1.5 — 승인·출시 완료 (2026-09-09)
 
 거절을 두 번 받았다. 사유가 서로 달랐다.
 
@@ -296,9 +296,16 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 - **기기 이름표('안드로이드 폰')는 남겼다.** 사용자가 실제로 그 기기를 가졌을 때만 목록에 뜨는
   사실 표기이고 아이폰 심사 화면에는 나오지 않는다
 
-**현재**: 빌드 224(버전 3.17.2)로 2026-09-09 새벽에 다시 냈다.
-판 1.5와 인앱 상품 5종 모두 `WAITING_FOR_REVIEW`.
-확인은 `/usr/bin/python3 tool/review_status.py`
+**결과 (2026-09-09 오전)**: 빌드 224로 낸 세 번째 제출이 **통과**했다.
+제출 ID `4eb60e12-fa77-4024-995a-fee7d5f6e245`, 항목 7개 전부 수락.
+
+- 판 1.5 — `READY_FOR_SALE` / `READY_FOR_DISTRIBUTION`
+- 인앱 상품 5종 전부 `APPROVED`
+- `releaseType = AFTER_APPROVAL` 이라 승인과 동시에 나간다.
+  스토어에 실제로 보이기까지 최대 24시간
+
+**이로써 유료화가 실제로 열렸다.** 다음 판부터는 프리미엄이 팔리는 상태에서 손대는 것이니,
+결제·체험·복원을 건드릴 때는 이미 돈을 낸 사람이 있다는 것을 전제로 한다.
 
 ### 4.1-1 재제출 과정에서 크게 데인 것 — 반드시 읽을 것
 
