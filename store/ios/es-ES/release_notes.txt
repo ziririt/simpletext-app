@@ -1,3 +1,4 @@
-Pasar de la lista a una nota ahora se desliza con suavidad.
-Lo que antes empezaba durante la transición ahora espera a que termine.
-Se han revisado los textos de la pantalla de compra y de la guía inicial.
+El paso entre la lista y una nota se desliza con suavidad.
+Una lista larga sigue siendo ligera: solo se dibujan las filas visibles.
+El banner superior se queda en su sitio en vez de reaparecer en cada pantalla.
+Se han pulido los textos de la pantalla de compra y de la guía inicial.

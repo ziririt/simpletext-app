@@ -1,3 +1,4 @@
 Der Wechsel zwischen Liste und Notiz gleitet jetzt flüssig.
-Arbeit, die früher während des Übergangs begann, wartet nun, bis er beendet ist.
-Texte auf dem Kaufbildschirm und in der Einführung wurden überarbeitet.
+Auch eine lange Liste bleibt leicht — gezeichnet wird nur, was zu sehen ist.
+Das Banner oben bleibt an seinem Platz, statt bei jedem Wechsel neu zu erscheinen.
+Texte im Kaufbildschirm und in der Ersteinführung wurden überarbeitet.

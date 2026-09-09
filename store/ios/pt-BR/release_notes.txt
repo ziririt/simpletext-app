@@ -1,3 +1,4 @@
-Ir da lista para uma nota agora desliza sem travadas.
-O que começava durante a transição agora espera ela terminar.
-Os textos da tela de compra e do guia inicial foram revisados.
+A troca entre a lista e uma nota agora desliza com suavidade.
+Uma lista longa continua leve: só as linhas visíveis são desenhadas.
+O banner do topo fica no lugar em vez de reaparecer a cada tela.
+Os textos da tela de compra e do guia inicial foram ajustados.

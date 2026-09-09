@@ -1,3 +1,4 @@
 Moving between the list and a note now slides smoothly.
-Work that used to start while the screen was still sliding now waits until it has settled.
+A long list stays light — only the rows you can see are drawn.
+The banner at the top stays put instead of reappearing on every screen.
 Wording on the purchase screen and the first-run guide has been tidied.

@@ -1,3 +1,4 @@
-Le passage de la liste à une note glisse maintenant sans à-coups.
-Ce qui démarrait pendant la transition attend désormais qu'elle soit terminée.
-Les textes de l'écran d'achat et du guide de démarrage ont été revus.
+Le passage entre la liste et une note glisse désormais sans à-coups.
+Une longue liste reste légère : seules les lignes visibles sont dessinées.
+La bannière du haut reste en place au lieu de réapparaître à chaque écran.
+Les textes de l'écran d'achat et du premier lancement ont été retravaillés.
