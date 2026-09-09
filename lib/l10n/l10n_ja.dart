@@ -1337,7 +1337,7 @@ class L10nJa extends L10n {
   String get adClose => '広告を閉じる';
 
   @override
-  String get bookmarkAdd => 'ここにしおり';
+  String get bookmarkAdd => 'ここにスクロールしおり';
 
   @override
   String get bookmarkRemove => 'しおりを外す';
@@ -1353,6 +1353,9 @@ class L10nJa extends L10n {
 
   @override
   String get bookmarkToTop => '先頭へ';
+
+  @override
+  String get bookmarkOrTop => 'または「先頭へ」';
 
   @override
   String bookmarkSaved(int pct) => '$pct% にしおりを挟みました';

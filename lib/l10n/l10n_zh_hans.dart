@@ -1325,7 +1325,7 @@ class L10nZhHans extends L10n {
   String get adClose => '关闭广告';
 
   @override
-  String get bookmarkAdd => '在此加书签';
+  String get bookmarkAdd => '在此加滚动书签';
 
   @override
   String get bookmarkRemove => '移除书签';
@@ -1341,6 +1341,9 @@ class L10nZhHans extends L10n {
 
   @override
   String get bookmarkToTop => '回到顶部';
+
+  @override
+  String get bookmarkOrTop => '或回到顶部';
 
   @override
   String bookmarkSaved(int pct) => '已在 $pct% 处加书签';

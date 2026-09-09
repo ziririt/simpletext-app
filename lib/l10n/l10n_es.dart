@@ -1399,7 +1399,7 @@ class L10nEs extends L10n {
   String get adClose => 'Cerrar anuncios';
 
   @override
-  String get bookmarkAdd => 'Marcador aquí';
+  String get bookmarkAdd => 'Marcador de desplazamiento aquí';
 
   @override
   String get bookmarkRemove => 'Quitar marcador';
@@ -1416,6 +1416,9 @@ class L10nEs extends L10n {
 
   @override
   String get bookmarkToTop => 'Arriba';
+
+  @override
+  String get bookmarkOrTop => 'o ir arriba';
 
   @override
   String bookmarkSaved(int pct) => 'Marcador puesto en el $pct%';

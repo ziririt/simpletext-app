@@ -773,6 +773,7 @@ abstract class L10n {
   String get bookmarkRemove;
   String get bookmarkTooShort;
   String get bookmarkToTop;
+  String get bookmarkOrTop;
 
   /// 값이 드는 것들은 all 지도에 넣지 않는다(l10n_check 규칙).
   String bookmarkGoAt(int pct);
@@ -1333,6 +1334,7 @@ abstract class L10n {
     'bookmarkRemove': bookmarkRemove,
     'bookmarkTooShort': bookmarkTooShort,
     'bookmarkToTop': bookmarkToTop,
+    'bookmarkOrTop': bookmarkOrTop,
     'noteDuplicate': noteDuplicate,
     'noteDuplicated': noteDuplicated,
     'adSponsored': adSponsored,

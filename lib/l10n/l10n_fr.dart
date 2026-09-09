@@ -1404,7 +1404,7 @@ class L10nFr extends L10n {
   String get adClose => 'Fermer les pubs';
 
   @override
-  String get bookmarkAdd => 'Marque-page ici';
+  String get bookmarkAdd => 'Marque-page de défilement ici';
 
   @override
   String get bookmarkRemove => 'Retirer le marque-page';
@@ -1421,6 +1421,9 @@ class L10nFr extends L10n {
 
   @override
   String get bookmarkToTop => 'Haut';
+
+  @override
+  String get bookmarkOrTop => 'ou revenir en haut';
 
   @override
   String bookmarkSaved(int pct) => 'Marque-page posé à $pct%';

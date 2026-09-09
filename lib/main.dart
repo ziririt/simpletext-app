@@ -7666,7 +7666,7 @@ class _EditorScreenState extends State<EditorScreen>
     return Material(
       color: Colors.transparent,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+        padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
         decoration: BoxDecoration(
           color: c.panel,
           borderRadius: BorderRadius.circular(20),
@@ -7679,36 +7679,46 @@ class _EditorScreenState extends State<EditorScreen>
             ),
           ],
         ),
-        child: Row(
+        // 2026-09-09 소유자 지적 — "'맨 위로'가 그 바로 옆에 나오니까
+        // 이상하다. 아랫줄에 '또는 맨 위로'라고 해줘."
+        //
+        // 맞다. 나란히 두면 둘이 같은 무게로 읽혀서, 방금 한 일을 알리는
+        // 말과 그것을 무르는 단추가 한 문장처럼 붙어 버린다. 알림이 먼저고
+        // 무르기는 그 다음이다 — 줄을 나누면 그 차례가 눈에 보인다.
+        child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.bookmark, size: 16, color: c.accent),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                l.bookmarkResume(m.percent),
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: c.guideInk,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.bookmark, size: 16, color: c.accent),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    l.bookmarkResume(m.percent),
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: c.guideInk,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 6),
             // 자동으로 한 일에는 언제나 무를 자리가 있어야 한다.
+            // 왼쪽 여백 24는 위 아이콘(16)과 사이(8)를 더한 값이라,
+            // 글머리가 윗줄 글자와 정확히 맞아떨어진다.
             InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(8),
               onTap: _backToTop,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.fromLTRB(24, 4, 8, 0),
                 child: Text(
-                  l.bookmarkToTop,
+                  l.bookmarkOrTop,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: c.accent,
                   ),

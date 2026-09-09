@@ -129,11 +129,23 @@ class ReadingRailState extends State<ReadingRail> {
   int get _percent =>
       ReadMark(pixels: _px, extent: _max <= 0 ? 1 : _max, at: 0).percent;
 
-  /// 눈금을 보여 줄 만큼 긴 글인가.
+  /// 숫자를 붙일 만큼 긴 글인가 — 대략 **네 화면 이상**.
   ///
-  /// 한 화면 반이 안 되면 굴려 봐야 손가락 한 번이라, 눈금이 도움이 아니라
-  /// 장식이다. 글 쓰는 화면에 장식은 두지 않는다.
-  bool get _worth => _max > _view * 0.6 && _view > 0;
+  /// 2026-09-09 소유자 지시 — "짧은 글의 기준을 2~3페이지 정도로 보고,
+  /// 4페이지 이상 많은 텍스트양의 경우에만 스크롤 몇 %인지 나오게 해줘."
+  ///
+  /// 처음엔 한 화면 반으로 잡았는데 너무 헐거웠다. 두세 화면짜리 글은
+  /// 엄지로 두어 번 밀면 끝이라, 거기 숫자를 띄우는 것은 길잡이가 아니라
+  /// 참견이다. `_max > _view * 3` 이 곧 '내용이 네 화면'이다
+  /// (굴릴 거리 = 전체 - 한 화면).
+  bool get _long => _view > 0 && _max > _view * 3;
+
+  /// 눈금을 그릴 것인가.
+  ///
+  /// 짧은 글이라도 **책갈피가 꽂혀 있으면 그린다.** 꽂아 둔 표가 안 보이면
+  /// 꽂은 뜻이 없다. 소유자 지시도 그랬다 — "'스크롤 책갈피'는 분량 관계
+  /// 없이 꽂게 해주고."
+  bool get _worth => _view > 0 && _max > 0 && (_long || widget.mark != null);
 
   @override
   Widget build(BuildContext context) {
@@ -298,20 +310,32 @@ class ReadingRailState extends State<ReadingRail> {
                   ),
                 ),
               ),
-              // 숫자 딱지. 손잡이 가운데에 맞춰 왼쪽으로 붙인다.
-              Positioned(
-                top: (thumbTop + thumbH / 2 - 13).clamp(0.0, h - 26),
-                right: railW - 2,
-                child: IgnorePointer(
-                  child: AnimatedOpacity(
-                    duration: quiet
-                        ? Duration.zero
-                        : const Duration(milliseconds: 160),
-                    opacity: _hot ? 1 : 0,
-                    child: _chip(c),
+              // 숫자. 손잡이 가운데에 맞춰, 눈금에 바짝 붙인다.
+              //
+              // 2026-09-09 소유자 지적 — "스크롤 위치 숫자가 너무 눈에 튄다.
+              // 너무 신경이 그쪽으로 가서 글 읽는 데 집중하기가 어렵다."
+              //
+              // 옳은 지적이고, 이건 취향 문제가 아니다. **길잡이가 읽기를
+              // 방해하면 그건 길잡이가 아니다.** 처음에 판을 깔고 테두리를
+              // 두르고 그림자까지 준 것은 '잘 보이게' 하려던 것인데, 잘
+              // 보이는 것과 눈에 띄는 것은 다르다. 이건 찾을 때만 보면
+              // 되는 값이라, 찾지 않을 때는 배경으로 물러나 있어야 한다.
+              // 판을 없애고, 한 눈금 줄이고, 회색으로 내리고, 본문에서
+              // 최대한 비켜 눈금 쪽으로 붙였다.
+              if (_long)
+                Positioned(
+                  top: (thumbTop + thumbH / 2 - 8).clamp(0.0, h - 16),
+                  right: 16,
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      duration: quiet
+                          ? Duration.zero
+                          : const Duration(milliseconds: 160),
+                      opacity: _hot ? 1 : 0,
+                      child: _chip(c),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         );
@@ -319,29 +343,14 @@ class ReadingRailState extends State<ReadingRail> {
     );
   }
 
-  Widget _chip(AppC c) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-    decoration: BoxDecoration(
-      color: c.panel,
-      borderRadius: BorderRadius.circular(9),
-      border: Border.all(color: c.line),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.10),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Text(
-      '$_percent%',
-      style: TextStyle(
-        fontSize: 12.5,
-        fontWeight: FontWeight.w600,
-        color: c.guideInk,
-        // 숫자가 8 에서 9 로 갈 때 딱지 폭이 흔들리면 눈에 거슬린다.
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
+  Widget _chip(AppC c) => Text(
+    '$_percent%',
+    style: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      color: c.sub,
+      // 숫자가 8 에서 9 로 갈 때 폭이 흔들리면 눈에 거슬린다.
+      fontFeatures: const [FontFeature.tabularFigures()],
     ),
   );
 

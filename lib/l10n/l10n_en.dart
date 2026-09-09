@@ -1390,7 +1390,7 @@ class L10nEn extends L10n {
   String get adClose => 'Close ads';
 
   @override
-  String get bookmarkAdd => 'Bookmark here';
+  String get bookmarkAdd => 'Scroll bookmark here';
 
   @override
   String get bookmarkRemove => 'Remove bookmark';
@@ -1407,6 +1407,9 @@ class L10nEn extends L10n {
 
   @override
   String get bookmarkToTop => 'Top';
+
+  @override
+  String get bookmarkOrTop => 'or go to Top';
 
   @override
   String bookmarkSaved(int pct) => 'Bookmarked at $pct%';

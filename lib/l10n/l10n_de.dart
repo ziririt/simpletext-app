@@ -1401,7 +1401,7 @@ class L10nDe extends L10n {
   String get adClose => 'Werbung schließen';
 
   @override
-  String get bookmarkAdd => 'Lesezeichen hier';
+  String get bookmarkAdd => 'Scroll-Lesezeichen hier';
 
   @override
   String get bookmarkRemove => 'Lesezeichen entfernen';
@@ -1418,6 +1418,9 @@ class L10nDe extends L10n {
 
   @override
   String get bookmarkToTop => 'Nach oben';
+
+  @override
+  String get bookmarkOrTop => 'oder nach oben';
 
   @override
   String bookmarkSaved(int pct) => 'Lesezeichen bei $pct% gesetzt';

@@ -1340,7 +1340,7 @@ class L10nKo extends L10n {
   String get adClose => '광고 닫기';
 
   @override
-  String get bookmarkAdd => '여기에 책갈피';
+  String get bookmarkAdd => '여기에 스크롤 책갈피';
 
   @override
   String get bookmarkRemove => '책갈피 빼기';
@@ -1356,6 +1356,9 @@ class L10nKo extends L10n {
 
   @override
   String get bookmarkToTop => '맨 위로';
+
+  @override
+  String get bookmarkOrTop => "또는 '맨 위로'";
 
   @override
   String bookmarkSaved(int pct) => '$pct% 자리에 책갈피를 끼웠습니다';
