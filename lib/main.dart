@@ -7577,7 +7577,13 @@ class _EditorScreenState extends State<EditorScreen>
     // 본문에서 손을 떼면 기다리지 않고 바로 본다. 붙여넣고 곧장 나가는
     // 사람은 6초를 안 채운다 — 그 사람이야말로 태그가 제일 필요하다.
     _bodyFocus.addListener(() {
-      if (!_bodyFocus.hasFocus) unawaited(_autoTagQuietly());
+      if (_bodyFocus.hasFocus) return;
+      // 글 칸에서 손을 떼는 순간에도 한 번 끈다. 화면을 안 나가고 다른
+      // 칸(제목·태그)을 누르는 길로도 돋보기가 남을 수 있다 — 켜는 손짓이
+      // 끝났는데 끄는 사람이 없는 것은 똑같다(deactivate 머리말).
+      final st = _editableState();
+      st?.hideMagnifier();
+      unawaited(_autoTagQuietly());
     });
     // 선택 범위가 바뀌는 것을 지켜본다. 글자가 바뀔 때(onChanged)와는
     // 다른 일이라 컨트롤러에 직접 붙는다.
@@ -7798,6 +7804,35 @@ class _EditorScreenState extends State<EditorScreen>
         ),
       ),
     );
+  }
+
+  /// 화면이 트리에서 빠지기 직전 — **돋보기와 편집 메뉴를 끄고 나간다.**
+  ///
+  /// 2026-09-10 소유자 신고 — "터치해서 텍스트 블럭 씌울 때 나오는 돋보기
+  /// 에러. 또 에러 나네." 목록 화면 위에 파란 알약 두 개가 남아 있었다.
+  ///
+  /// 8월에 한 번 잡은 것과 **뿌리가 같다**(_showMenu 머리말). 그때 적은 한
+  /// 줄이 그대로 맞는다 — **붙어 있는 게 아니라 꺼지지 않은 것이다.**
+  /// 다만 새는 길이 달랐다. 그때는 메뉴를 띄우는 길에서 안 껐고, 이번엔
+  /// **화면이 사라지는 길**에서 안 껐다.
+  ///
+  /// 까닭은 돋보기와 편집 메뉴가 **화면이 아니라 오버레이에 살기** 때문이다.
+  /// 이 화면이 트리에서 빠져도 저 둘은 따라 나가지 않는다. 그것을 켠
+  /// 손짓은 이미 끝났으니 끌 사람도 없다. 그래서 나가는 길에서 우리가 끈다.
+  ///
+  /// **dispose 가 아니라 deactivate 인 까닭:** dispose 때는 EditableTextState
+  /// 가 이미 헐리는 중이라 부르면 늦거나 터진다. deactivate 는 트리가 아직
+  /// 성한 마지막 순간이다.
+  ///
+  /// 앞으로 오버레이에 무언가를 띄우는 것을 더한다면(툴팁·풍선·안내),
+  /// **켜는 자리를 만들 때 끄는 자리도 같이 만들어라.** 오버레이에 사는
+  /// 것은 화면의 목숨을 따라가지 않는다.
+  @override
+  void deactivate() {
+    final st = _editableState();
+    st?.hideMagnifier();
+    st?.hideToolbar();
+    super.deactivate();
   }
 
   @override
