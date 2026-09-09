@@ -867,41 +867,49 @@ WAITING_FOR_REVIEW 로 넘어간 뒤라 다시 넘길 수 없다는 뜻이었다
 > `python3 tool/review_status.py skyblue` 가 "냈다. 줄 서 있다"라고
 > 말하면 끝난 것이다.
 
-### 4.1-3 아이폰 직접 설치가 막혀 있다 — 맥 빌드도 같이 막혔다
+### 4.1-3 서명이 막혔던 일 — **2026-09-09 저녁에 풀렸다**
 
-**2026-09-09 저녁에 맥까지 번졌다.** `tool/deploy.sh mac` 이 이렇게 죽는다.
+여러 날 아이폰 직접 설치가 안 됐고, 09-09 저녁에는 맥 빌드까지 같이 죽었다.
 
 ```
 Provisioning profile "Mac Team Provisioning Profile: com.ziririt.simpletext"
 doesn't include signing certificate "Apple Development: Seongdong Gim (8QKCJMYR4S)".
 ```
 
-`security find-identity -v -p codesigning` 로 보면 까닭이 한눈에 보인다.
+**까닭은 하나였다. 개발 인증서가 갈렸다.**
 
 ```
+security find-identity -v -p codesigning
 1) ... "Apple Development: ziriritgmail.com (8QKCJMYR4S)" (CSSMERR_TP_CERT_REVOKED)
-2) ... "Apple Distribution: Seongdong Gim (ZK846VZN92)"
 3) ... "Apple Development: Seongdong Gim (8QKCJMYR4S)"
 ```
 
-**개발 인증서가 갈렸다.** 1번(옛것)이 폐기됐고 3번(새것)이 살아 있는데,
-맥 프로비저닝 프로파일은 아직 1번으로 발급된 옛 프로파일이다.
+1번(옛것)이 폐기됐는데 프로비저닝 프로파일은 아직 그것으로 발급된 옛
+프로파일이었다. 그래서 **아이폰도 맥도 같은 문에 걸려 있었다.**
 
-애드혹 서명(`CODE_SIGN_IDENTITY="-"`)으로 우회해 보았지만 안 된다 —
-맥 타깃에 자격(entitlements)이 붙어 있어 프로파일 자체를 요구한다.
+**고친 법 — 소유자가 Xcode 를 GUI 로 열고 한 번 빌드하면 끝난다.**
 
 ```
-"Runner" requires a provisioning profile.
+open -a Xcode ~/development/simpletext_app/macos/Runner.xcworkspace
+→ 왼쪽 Runner → Signing & Capabilities → Team 확인
+→ 대상 My Mac → Cmd+B
 ```
 
-> **여기서 더 파지 마라.** CLI 로 프로파일을 재발급하는 길은 없다
-> (`-allowProvisioningUpdates` 는 "No Accounts" 로 죽는다 — deploy.sh 꼬리
-> 주석에 그 사고가 적혀 있다). **소유자가 Xcode 를 GUI 로 열고 한 번
-> 빌드하면(Cmd+B) 프로파일이 새 인증서로 다시 발급된다.** 아이폰 직접
-> 설치가 막힌 것과 뿌리가 같고, 한 번에 둘 다 풀린다.
+그 한 번으로 프로파일이 새 인증서로 다시 발급되고, **맥과 아이폰이 같이
+살아났다**(21:28 맥 재실행 완료, 21:32 아이폰이 3.17.16.238 이라고 답함).
 
-그동안 아이폰은 TestFlight 로 간다(아래). **맥은 우회로가 없다** — 스토어
-맥 앱이 없으므로, 이 문이 열릴 때까지 맥은 옛 판이다.
+> **여기서 CLI 로 더 파지 마라.** `-allowProvisioningUpdates` 는
+> "No Accounts" 로 죽고(CLI 가 Xcode 에 저장된 계정을 못 읽는다), 애드혹
+> 서명(`CODE_SIGN_IDENTITY="-"`)도 안 된다 — 맥 타깃에 자격(entitlements)이
+> 붙어 있어 프로파일 자체를 요구한다("Runner" requires a provisioning
+> profile). **사람이 Xcode 를 한 번 여는 것이 유일한 길이고, 1분이면 된다.**
+> 인증서는 해마다 갈리므로 이 일은 또 온다. 그때 이 절을 그대로 밟으면 된다.
+
+이제 다시 쓸 수 있는 것들.
+
+- `bash tool/deploy.sh iphone` — 아이폰에 무선으로 넣는다(1~2분)
+- `bash tool/deploy.sh mac` — 맥 앱을 새로 짓고 다시 띄운다
+- TestFlight 는 그대로 쓸 수 있다(아래 4.1-3-2)
 
 ### 4.1-3-1 웹은 막힌 데가 없다
 
