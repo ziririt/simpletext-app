@@ -69,7 +69,7 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.17.3+225** (`pubspec.yaml`, `lib/version.dart`)
+- 현재 버전: **3.17.4+226** (`pubspec.yaml`, `lib/version.dart`)
 - App Store 마케팅 버전: **1.6** — 2026-09-09 제출, 심사 대기.
   1.5는 출시됐지만 **옛 코드가 나갔다**(§4.1-2). 1.6이 그것을 바로잡는 판이다
   (앱 버전 3.17.1과 다른 계통이다. 헷갈리지 말 것)
@@ -242,6 +242,50 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
   `/longtime/`, `/skybluenote/`로 옮겨져 있다
 
 ---
+
+### 3.7-1 화면 전환이 끊기던 것 (2026-09-09)
+
+소유자 신고 두 번, 둘 다 녹화를 60fps로 받아 중복 프레임을 걷어내고
+새 프레임 간격을 재서 잡았다. **느낌이 아니라 숫자로 확인하고 고쳤다.**
+같은 신고가 또 오면 같은 방법을 쓰면 된다.
+
+```
+ffmpeg -i 녹화.mov -vf "scale=295:-2,mpdecimate,showinfo" -an -f null -
+```
+
+찍힌 `pts_time` 을 뽑아 이웃한 값의 차를 보면 된다. 17ms 가 60fps 다.
+
+**들어갈 때 (목록 → 편집)**
+
+```
+83 · 17 · 32 · 33 · 17…17 · 33 · 67 · 67 · 50 · 83 · 33 · 17…
+```
+
+미는 동안 대부분은 멀쩡한데 첫 프레임과 밀기가 끝날 무렵이 무너졌다.
+뒤엣것의 정체는 화면이 뜨자마자 도는 일들이었다 — 첨부 파일이 있는지
+디스크 뒤지기, iCloud 한 바퀴, 자동 정리, 광고 배너(네이티브 뷰) 만들기.
+`lib/core/after_route.dart` 로 전부 전환 뒤로 옮겼다.
+
+**나갈 때 (편집 → 목록) — 이쪽이 훨씬 나빴다**
+
+```
+400 · 133 · 50 · 298 · 317 · 267
+```
+
+1초 가까이 화면이 세 번밖에 안 바뀌었다. 범인은 편집 화면 `dispose` 의
+`store.flush()` 한 줄이었다. 그 줄이 **모든 메모를 jsonEncode → 디스크에
+쓰기 → notifyListeners** 를 부르고, 마지막 줄이 목록을 통째로 다시 그린다
+(`_onChange` 는 `setState` 다). `Store.flushAfter(Duration)` 을 만들어
+450ms 뒤로 예약한다. 광고 배너의 네이티브 뷰 dispose 도 같이 미룬다.
+
+**늦게 쓰는 것과 안 쓰는 것은 다르다.** 미루는 것은 디스크에 닿는 시각뿐이고,
+메모리에는 이미 반영돼 있으며, 앱이 뒤로 가거나 꺼질 때는
+`onInactive`/`onPause`/`onDetach` 가 각각 `flush()` 를 부른다. 검사로 묶어 뒀다
+(`test/leave_editor_flush_test.dart`, `test/core/after_route_test.dart`).
+
+**앞으로 이 근처를 고칠 때.** 화면을 여는 김에 곁들이는 일, 나가는 김에
+치우는 일은 전부 전환 뒤로 보낸다. `addPostFrameCallback` 은 '첫 프레임
+다음'이지 '전환이 끝난 다음'이 아니다.
 
 ### 3.7 2026-09-07~09에 더한 것
 
