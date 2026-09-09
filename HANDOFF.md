@@ -69,7 +69,7 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.17.5+227** (`pubspec.yaml`, `lib/version.dart`)
+- 현재 버전: **3.17.7+229** (`pubspec.yaml`, `lib/version.dart`)
 - App Store 마케팅 버전: **1.6** — 2026-09-09 제출, 심사 대기.
   1.5는 출시됐지만 **옛 코드가 나갔다**(§4.1-2). 1.6이 그것을 바로잡는 판이다
   (앱 버전 3.17.1과 다른 계통이다. 헷갈리지 말 것)
@@ -253,11 +253,20 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 1. **앱 코드 — 소재의 수위 등급** (`lib/ads_service.dart`, `boot()`)
    ```dart
    await MobileAds.instance.updateRequestConfiguration(
-     RequestConfiguration(maxAdContentRating: MaxAdContentRating.g),
+     RequestConfiguration(maxAdContentRating: MaxAdContentRating.pg),
    );
    ```
-   애드몹 기본값은 '지정 안 함'이라 T·MA 등급까지 온다. G는 가족을 포함한
-   일반 시청자 수준이다. **MobileAds.initialize() 보다 먼저** 불러야 한다.
+   애드몹 기본값은 '지정 안 함'이라 T·MA 등급까지 온다.
+   **MobileAds.initialize() 보다 먼저** 불러야 한다.
+
+   **처음에 G로 걸었다가 그날 저녁에 PG로 되돌렸다.** 소유자 신고 —
+   "편집페이지 상단의 광고가 아예 안 뜨거나, 20초 후에 뜨거나 한다",
+   "2~3분 후에 갑자기 나온다. 깜짝 놀랐다". G는 사실상 어린이 대상 재고만
+   남기는 등급이라, 거른 것이 아니라 **광고가 그냥 없어졌다.**
+
+   > **거르는 손잡이는 등급이 아니라 카테고리다.**
+   > 등급을 낮추면 걸러지는 게 아니라 재고가 사라진다. 특정 소재가 싫으면
+   > 2번(콘솔의 민감한 카테고리)으로 간다. 등급은 PG 아래로 내리지 마라.
 
 2. **애드몹 웹 콘솔 — 업종과 광고주** (앱에서는 못 한다)
    차단 관리 → 민감한 카테고리. 2026-09-09에 이렇게 해 뒀다.
@@ -274,6 +283,60 @@ sudo chown -R ziririt:staff /Users/ziririt/development /Users/ziririt/Developer
 **한도가 있다.** 표준 카테고리는 14개까지만 막을 수 있다. 지금 7개를 썼으니
 남은 7개는 정말 거슬리는 것에 쓴다. 노출 비중이 높은 것(다운로드 유틸리티
 3.7%, 데이트 1.9%)을 막으면 수익이 눈에 띄게 준다 — 그건 값을 알고 고른다.
+
+### 3.7-3 배너를 화면마다 달지 않는다 — 앱 위에 한 장 (2026-09-09 저녁)
+
+3.7-1 로 전환은 나아졌지만 소유자가 다시 말했다 — "목록 페이지로 올 때
+버벅임이 조금 좋아졌지만 그래도 아예 없지 않다". 같은 날 광고 신고도 함께
+들어왔다 — "아예 안 뜨거나 20초 후에 뜬다", "2~3분 후에 갑자기 나온다",
+"어떤 노트는 바로 뜨기도 한다. 들쑥날쑥 왜 이러지?"
+
+**두 신고는 한 뿌리였다.** 배너를 화면마다 하나씩 달아 두었기 때문이다
+(`SplitShell`, `HomeScreen`, `EditorScreen` 세 자리에 `TopBannerBar`).
+
+- 목록 → 편집으로 갈 때마다 **광고를 새로 하나 더 만들어 새로 주문**하고,
+  돌아올 때 그것을 부순다. 들어갈 때마다 새 주문이라 채워질 때도 있고
+  아닐 때도 있다 — 들쑥날쑥의 정체다.
+- 네이티브 광고 뷰를 만들고 부수는 일이 미는 애니메이션 위에 그대로
+  올라탄다. 새 녹화에서 밀리는 도중 `282 · 283 · 183` ms 구멍 세 개.
+- 전환이 끝나는 순간 100pt 자리가 새로 생겨 화면이 한 번 더 튄다.
+
+**고친 모양 — 배너는 네비게이터 위에 산다.**
+`lib/main.dart` 의 `MaterialApp.builder` 안에서
+
+```dart
+w = Column(children: [
+  const TopBannerBar(),
+  Expanded(child: ValueListenableBuilder<bool>(
+    valueListenable: AdsService.instance.bannerVisible,
+    builder: (c2, on, kid) => on
+        ? MediaQuery.removePadding(context: c2, removeTop: true, child: kid!)
+        : kid!,
+    child: w)),
+]);
+```
+
+앱이 사는 동안 배너는 하나뿐이고, 화면을 오가도 만들지도 부수지도 않는다.
+소재 갱신은 애드몹 단위의 자동 새로고침이 맡는다.
+
+**딸려 온 숙제 셋. 다음에 이 근처를 만질 때 반드시 기억할 것.**
+
+- 배너가 네비게이터보다 **위**라 그 자리에는 `Navigator` 도 `Overlay` 도
+  없다. 후원 시트는 `main.dart` 의 `rootNavKey`(MaterialApp `navigatorKey`)
+  로 열고, `Tooltip` 은 `Semantics` 로 바꿨다. 여기에 `showDialog`,
+  `Tooltip`, `Navigator.of(context)` 를 새로 쓰면 터진다.
+- **상태표시줄 여백의 임자는 하나다.** 배너가 떠 있으면 배너 안의
+  `SafeArea` 가 갖고, 그때 아래 화면들의 위쪽 여백은 걷는다
+  (`removeTop: true`). 판정은 `AdsService.instance.bannerVisible` 하나뿐이다.
+  화면 쪽에 `SafeArea` 를 새로 더하기 전에 이 값을 먼저 보라.
+- 광고를 얹으면 안 되는 화면은 `AdFreeScope` 로 **스스로 손을 든다.**
+  지금은 `PremiumScreen`, `OnboardingScreen`. "광고를 없애 드립니다"라고
+  말하는 화면 위에 광고가 붙어 있으면 그건 농담이 된다.
+
+**주문이 실패해도 다시 주문할 사람이 있어야 한다.** 예전 재시도는 `build`
+안에 있어서, 누군가 화면을 흔들어 줄 때까지 빈칸이었다 — 2~3분 뒤에
+튀어나오던 것이 이것이다. 지금은 2·5·10·20·30·60초로 스스로 다시 주문하고,
+크기에 사다리를 놓는다: 100pt 인라인 → 앵커드 어댑티브 → 320x50 → 다시 위로.
 
 ### 3.7-1 화면 전환이 끊기던 것 (2026-09-09)
 
@@ -478,6 +541,11 @@ No Accounts: Add a new account in Accounts settings.
 - 그룹 '내부 시험' id `267bafec-4be4-4f10-a1ea-d2978052d781` (내부)
 - 소유자가 시험자로 들어가 있다
 - 빌드를 붙이는 것은 `POST /v1/betaGroups/{gid}/relationships/builds`
+- 새 빌드는 **자동으로 안 붙는다.** `hasAccessToAllBuilds` 는 만들 때만
+  정할 수 있고 나중에 PATCH 하면 `ATTRIBUTE.NOT_ALLOWED` 로 거절된다.
+  올릴 때마다 위 POST 를 한 번씩 해 줘야 한다
+  (예: `~/development/_patch/tf229.py` — 처리 끝날 때까지 기다렸다 붙인다)
+- 테스트플라이트에 올라간 것: 225 · 226 · 227 · 228 · **229**
 
 ### 4.2 Google Play
 
