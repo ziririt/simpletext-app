@@ -1,4 +1,4 @@
+Pon un marcador de desplazamiento en una nota larga. La próxima vez empiezas donde te quedaste.
+Una regla delgada a la derecha te dice sin ruido dónde vas y cuánto falta.
 El paso entre la lista y una nota se desliza con suavidad.
-Una lista larga sigue siendo ligera: solo se dibujan las filas visibles.
-El banner de arriba se queda en su lugar en vez de reaparecer en cada pantalla.
-Se pulieron los textos de la pantalla de compra y de la guía inicial.
+Una lista larga sigue siendo ligera.

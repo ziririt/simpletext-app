@@ -1,4 +1,4 @@
-A passagem entre a lista e uma nota desliza agora com suavidade.
-Uma lista longa continua leve: só as linhas visíveis são desenhadas.
-O banner do topo fica no lugar em vez de reaparecer em cada ecrã.
-Os textos do ecrã de compra e do guia inicial foram ajustados.
+Coloque um marcador de rolagem numa nota longa. Da próxima vez começa onde ficou.
+Uma régua fina à direita mostra, sem ruído, onde está e quanto falta.
+A passagem entre a lista e uma nota desliza com suavidade.
+Uma lista longa continua leve.

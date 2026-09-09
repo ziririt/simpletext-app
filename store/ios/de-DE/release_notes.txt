@@ -1,4 +1,4 @@
-Der Wechsel zwischen Liste und Notiz gleitet jetzt flüssig.
-Auch eine lange Liste bleibt leicht — gezeichnet wird nur, was zu sehen ist.
-Das Banner oben bleibt an seinem Platz, statt bei jedem Wechsel neu zu erscheinen.
-Texte im Kaufbildschirm und in der Ersteinführung wurden überarbeitet.
+Setzen Sie in einer langen Notiz ein Scroll-Lesezeichen. Beim nächsten Öffnen geht es dort weiter.
+Eine schmale Leiste rechts zeigt still, wo Sie sind und wie viel noch kommt.
+Der Wechsel zwischen Liste und Notiz gleitet flüssig.
+Auch eine lange Liste bleibt leicht.
