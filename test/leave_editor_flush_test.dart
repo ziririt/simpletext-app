@@ -46,11 +46,11 @@ class _Writer {
 
 void main() {
   group('나갈 때 저장은 애니메이션 뒤로 (2026-09-09)', () {
-    test('나가는 300ms 동안에는 안 쓴다', () {
+    test('나가는 400ms 동안에는 안 쓴다', () {
       fakeAsync((tick) {
         final w = _Writer()..touch();
-        w.flushAfter(const Duration(milliseconds: 450));
-        tick(const Duration(milliseconds: 300));
+        w.flushAfter(const Duration(milliseconds: 900));
+        tick(const Duration(milliseconds: 400));
         expect(w.writes, 0, reason: '미는 동안 쓰면 프레임이 통째로 빠진다');
         w.stop();
       });
@@ -59,8 +59,8 @@ void main() {
     test('늦게라도 반드시 쓴다', () {
       fakeAsync((tick) {
         final w = _Writer()..touch();
-        w.flushAfter(const Duration(milliseconds: 450));
-        tick(const Duration(milliseconds: 500));
+        w.flushAfter(const Duration(milliseconds: 900));
+        tick(const Duration(milliseconds: 1000));
         expect(w.writes, 1, reason: '늦게 쓰는 것과 안 쓰는 것은 다르다');
         w.stop();
       });
@@ -69,8 +69,8 @@ void main() {
     test('바뀐 것이 없으면 아무것도 예약하지 않는다', () {
       fakeAsync((tick) {
         final w = _Writer();
-        w.flushAfter(const Duration(milliseconds: 450));
-        tick(const Duration(milliseconds: 900));
+        w.flushAfter(const Duration(milliseconds: 900));
+        tick(const Duration(milliseconds: 1400));
         expect(w.writes, 0);
         w.stop();
       });
@@ -79,9 +79,9 @@ void main() {
     test('예약을 두 번 걸어도 한 번만 쓴다', () {
       fakeAsync((tick) {
         final w = _Writer()..touch();
-        w.flushAfter(const Duration(milliseconds: 450));
-        w.flushAfter(const Duration(milliseconds: 450));
-        tick(const Duration(milliseconds: 900));
+        w.flushAfter(const Duration(milliseconds: 900));
+        w.flushAfter(const Duration(milliseconds: 900));
+        tick(const Duration(milliseconds: 1400));
         expect(w.writes, 1);
         w.stop();
       });
@@ -89,7 +89,7 @@ void main() {
   });
 }
 
-/// 시계를 손으로 돌리는 작은 도우미. 진짜로 450ms 를 기다리지 않는다.
+/// 시계를 손으로 돌리는 작은 도우미. 진짜로 900ms 를 기다리지 않는다.
 void fakeAsync(void Function(void Function(Duration)) body) {
   FakeAsync().run((fa) {
     body(fa.elapse);

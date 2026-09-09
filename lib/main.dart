@@ -5133,30 +5133,76 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() => _picked.clear());
   }
 
-  Widget _groupCard(List<Note> group) => SliverToBoxAdapter(
-    child: Padding(
+  /// 메모 묶음 한 덩어리.
+  ///
+  /// **게으르게 그린다. 이 결정이 목록 화면의 반응 속도 전부다.**
+  ///
+  /// 2026-09-09 소유자 신고 — "슬라이딩이 매끄럽게 되다가 마지막에 턱턱
+  /// 걸린다." 배너를 앱 위로 올려(3.7-3) 80%는 잡혔는데 끝자락이 남았다.
+  ///
+  /// 남은 것의 정체가 여기였다. 예전에는 `SliverToBoxAdapter` 안에 `Column`
+  /// 으로 **메모 전부**를 넣었다. 슬리버 하나짜리 상자라 화면 밖 것까지
+  /// 전부 만들고 전부 배치한다. 그래서 목록 화면이 한 번 다시 그려질 때마다
+  /// 메모가 쉰 개면 쉰 개를 통째로 짓는다 — 줄마다 `listPreview` 로 본문을
+  /// 훑고, `Dismissible`·`Material`·`InkWell`·글자 셋을 새로 만든다.
+  ///
+  /// 그 다시 그리기가 나가는 애니메이션 끝자락과 겹친다(편집 화면을 닫으면
+  /// 저장이 돌고, 저장 끝에 `notifyListeners` 가 목록을 깨운다). 스무 줄
+  /// 짓는 값을 한 프레임 안에 치르려니 프레임이 몇 개 빠진다.
+  ///
+  /// `SliverList.builder` 로 바꾸면 **눈에 보이는 줄만** 짓는다. 메모가
+  /// 몇 개든 값이 같다.
+  ///
+  /// 모양은 그대로 지킨다. 예전 둥근 모서리는 바깥 `ClipRRect` 가 만들었는데
+  /// 게으른 목록에는 감쌀 바깥이 없으므로, 첫 줄과 마지막 줄이 각자 제
+  /// 모서리를 깎는다. 줄 자체는 이미 `Material(color: c.panel)` 이라 바탕색은
+  /// 따로 필요 없고, 구분선만 판 색 위에 얹으면 예전과 한 픽셀도 다르지 않다.
+  ///
+  /// **여기에 다시 `Column` 을 쓰지 말 것.** 화면에 몇 줄 안 보인다고 해서
+  /// 목록이 짧은 것이 아니다.
+  Widget _groupCard(List<Note> group) {
+    const r = Radius.circular(12);
+    return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          color: context.c.panel,
-          child: Column(
-            children: [
-              for (int i = 0; i < group.length; i++) ...[
-                if (i > 0)
-                  Divider(
+      sliver: SliverList.builder(
+        itemCount: group.length,
+        itemBuilder: (_, i) {
+          final c = context.c;
+          Widget row = _noteTile(group[i]);
+          if (i > 0) {
+            row = Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 구분선은 안쪽으로 들여쓰기 때문에 왼쪽 끝이 비는데,
+                // 그 자리에 판 색이 없으면 바탕이 비쳐 흰 이가 빠진다.
+                ColoredBox(
+                  color: c.panel,
+                  child: Divider(
                     height: 1,
                     indent: kListRowInset,
-                    color: context.c.line,
+                    color: c.line,
                   ),
-                _noteTile(group[i]),
+                ),
+                row,
               ],
-            ],
-          ),
-        ),
+            );
+          }
+          final top = i == 0;
+          final bot = i == group.length - 1;
+          if (top || bot) {
+            row = ClipRRect(
+              borderRadius: BorderRadius.vertical(
+                top: top ? r : Radius.zero,
+                bottom: bot ? r : Radius.zero,
+              ),
+              child: row,
+            );
+          }
+          return row;
+        },
       ),
-    ),
-  );
+    );
+  }
 
   String _listDate(L10n l, int ts) {
     final d = DateTime.fromMillisecondsSinceEpoch(ts);
@@ -7458,8 +7504,13 @@ class _EditorScreenState extends State<EditorScreen>
     bodyCtl.removeListener(_onSelectionChanged);
     _bodyScroll.dispose();
     // 지금 쓰면 나가는 애니메이션이 무너진다(Store.flushAfter 주석).
-    // 미는 동작은 300ms 남짓이라 그보다 넉넉히 뒤로 미룬다.
-    store.flushAfter(const Duration(milliseconds: 450));
+    //
+    // 450ms 로 뒀다가 900ms 로 늘렸다(2026-09-09 저녁). 아이폰의 미는
+    // 애니메이션은 300ms 가 아니라 **400ms** 다(쿠퍼티노 전환). 450 이면
+    // 끝나자마자 곧바로 저장이 얹혀서, 사람 눈에는 슬라이딩의 끝이 걸리는
+    // 것으로 보인다 — 소유자 표현으로 "마지막에 턱턱". 전환이 완전히
+    // 가라앉고 한 박자 쉰 뒤에 쓴다.
+    store.flushAfter(const Duration(milliseconds: 900));
     titleCtl.dispose();
     bodyCtl.dispose();
     tagsCtl.dispose();
