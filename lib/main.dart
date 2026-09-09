@@ -14,7 +14,8 @@ import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
 // material.dart는 defaultTargetPlatform을 내보내지 않는다(TargetPlatform은 내보낸다).
 // 2026-08-14에 이걸 몰라서 analyze가 undefined_identifier로 잡았다.
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show compute, defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderEditable;
 import 'package:flutter/services.dart';
@@ -1812,6 +1813,10 @@ class AppSettings {
 }
 
 /// ---------------- 저장소 ----------------
+/// 다른 일꾼에게 보낼 함수. compute 는 **최상위이거나 static** 인 것만 받는다.
+/// 메서드를 그냥 넘기면 실행할 때 가서야 터진다.
+String _encodeStore(Map<String, dynamic> m) => jsonEncode(m);
+
 class Store extends ChangeNotifier {
   static final Store instance = Store._();
   Store._();
@@ -1915,17 +1920,49 @@ class Store extends ChangeNotifier {
   ///
   /// 동기화 코드가 '합친 결과'를 되쓸 때 이걸 쓴다. 그때 persist()를 부르면
   /// 다시 올리기가 예약되고, 그 올리기가 또 합치기를 부르는 고리가 생긴다.
+  /// 저장 한 번이 아직 끝나지 않았는데 또 부르면, 끝난 뒤에 한 번 더 돈다.
+  /// 배경으로 보내고 나면 그 사이에 또 고칠 수 있기 때문이다.
+  bool _writing = false;
+  bool _writeAgain = false;
+
   Future<void> persistLocalOnly() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        _notesKey,
-        jsonEncode({
-          'v': 3,
-          'notes': notes.map((n) => n.toJson()).toList(),
-          'tombstones': tombstones,
-          'trash': trash,
-        }));
-    notifyListeners();
+    if (_writing) {
+      _writeAgain = true;
+      return;
+    }
+    _writing = true;
+    try {
+      // 글자로 바꾸는 일을 **다른 일꾼(isolate)에게 보낸다**.
+      //
+      // 2026-09-09 소유자 신고 — "여전히 목록으로 나갈 때 버버버벅 거림."
+      // 녹화를 재 보니 나가는 길에 448 · 100 · 300 · 333 · 698ms 가 이어졌다.
+      // 1.4초 가까이 화면이 멎었다.
+      //
+      // 앞서 이 저장을 애니메이션 뒤로 미뤘는데(Store.flushAfter), 미룬 자리에서
+      // 똑같이 멎었다. 자리를 옮긴다고 짐이 가벼워지지는 않는다. 짐 자체가
+      // 무거웠다 — **메모 전체를 한 문자열로 만드는 일**이다. 메모가 수백 개,
+      // 하나가 수천 자면 그 일만으로 1초가 간다. 그동안 화면은 한 프레임도
+      // 못 그린다. jsonEncode 는 순수한 셈이라 다른 일꾼에게 보낼 수 있다.
+      //
+      // toJson() 은 여기서 한다. 그건 지도(Map)를 만드는 일이라 글자로 바꾸는
+      // 것보다 훨씬 싸고, 보내려면 어차피 지도가 있어야 한다.
+      final payload = <String, dynamic>{
+        'v': 3,
+        'notes': notes.map((n) => n.toJson()).toList(),
+        'tombstones': tombstones,
+        'trash': trash,
+      };
+      final text = await compute(_encodeStore, payload);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_notesKey, text);
+      notifyListeners();
+    } finally {
+      _writing = false;
+      if (_writeAgain) {
+        _writeAgain = false;
+        unawaited(persistLocalOnly());
+      }
+    }
   }
 
   Future<void> persistSettingsLocalOnly() async {

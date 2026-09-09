@@ -234,14 +234,34 @@ class _TopBannerBarState extends State<TopBannerBar> {
     // 2026-09-06 소유자 지시 — 배너를 20% 키운다. 높이가 고정된 앵커드 대신
     // 인라인 어댑티브를 쓰면 최대 높이를 우리가 정할 수 있어, 소재가 그만큼
     // 큰 것으로 온다. 실제 높이는 로드 뒤 getPlatformAdSize로 받는다(아래 build).
+    //
+    // 2026-09-09 소유자 신고 — "상단 광고 배너는 height가 너무 작다. 글자가
+    // 보이지도 않는다. 클릭이 발생하지 않을 듯."
+    //
+    // 맞는 지적이었다. 앵커드 기본 높이는 폰에서 50pt 남짓이고 1.2배를 해도
+    // 60pt다. 그 안에서는 그림 몇 조각만 보이고 글자는 읽히지 않는다.
+    // **읽히지 않는 자리는 눌리지도 않고, eCPM 도 낮게 붙는다.**
+    //
+    // 그래서 최대 높이를 우리가 직접 정한다. 100pt 는 인라인 어댑티브에서
+    // 소재가 제목 한 줄과 버튼을 담을 수 있는 첫 구간이다. 200pt 를 넘기면
+    // 목록 화면을 너무 먹고, 50pt 로 돌아가면 지금 문제로 되돌아간다.
+    //
+    // 값을 바꿀 때 기억할 것: 이건 **최대치**이지 실제 높이가 아니다. 광고판이
+    // 더 작은 소재를 주면 그만큼만 온다(그래서 아래에서 getPlatformAdSize 로
+    // 실제 높이를 받아 자리를 잡는다). 그러니 키운다고 늘 그만큼 커지지는 않는다.
+    const double kMaxBannerHeight = 100;
     final anchored =
         await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
     if (anchored == null || !mounted) {
       _creating = false;
       return;
     }
-    final size = AdSize.getInlineAdaptiveBannerAdSize(
-        w, (anchored.height * 1.2).round());
+    // 둘 중 **큰 것**을 쓴다. 이 값은 최대치를 올려 주는 것이지 가두는 것이
+    // 아니다. 작은 쪽을 고르면 지금과 똑같아진다 — 처음에 그렇게 썼다가
+    // 바로 알아챘다.
+    final tall = anchored.height * 1.2;
+    final want = tall > kMaxBannerHeight ? tall : kMaxBannerHeight;
+    final size = AdSize.getInlineAdaptiveBannerAdSize(w, want.round());
     final ad = BannerAd(
       adUnitId: bannerUnitId,
       size: size,
