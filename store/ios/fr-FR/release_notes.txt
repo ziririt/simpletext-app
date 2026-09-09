@@ -1,4 +1,4 @@
 Posez un marque-page de défilement dans une note longue. À la prochaine ouverture, vous reprenez là où vous étiez.
 Une fine règle à droite indique discrètement où vous en êtes et ce qu'il reste.
+Taille, graisse, interligne, marges, alignement et papier — réglables pendant la lecture, et pour cette note seule si vous voulez.
 Le passage entre la liste et une note glisse sans à-coups.
-Une longue liste reste légère.

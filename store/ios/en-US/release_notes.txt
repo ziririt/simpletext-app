@@ -1,4 +1,4 @@
 Drop a scroll bookmark in a long note. Next time you open it, you start where you left off.
 A quiet rail on the right shows where you are and how much is left.
+Size, weight, line spacing, margins, alignment and paper — all right there while you read. Or just for this one note.
 Moving between the list and a note slides smoothly.
-A long list stays light.

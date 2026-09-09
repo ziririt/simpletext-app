@@ -1,4 +1,4 @@
 Coloque um marcador de rolagem numa nota longa. Da próxima vez começa onde ficou.
 Uma régua fina à direita mostra, sem ruído, onde está e quanto falta.
+Tamanho, espessura, entrelinha, margens, alinhamento e papel: ajusta enquanto lê, e só nesta nota se quiser.
 A passagem entre a lista e uma nota desliza com suavidade.
-Uma lista longa continua leve.

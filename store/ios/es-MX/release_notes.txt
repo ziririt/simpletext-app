@@ -1,4 +1,4 @@
 Pon un marcador de desplazamiento en una nota larga. La próxima vez empiezas donde te quedaste.
 Una regla delgada a la derecha te dice sin ruido dónde vas y cuánto falta.
+Tamaño, grosor, interlineado, márgenes, alineación y papel: se ajustan mientras lees, y solo para esta nota si quieres.
 El paso entre la lista y una nota se desliza con suavidad.
-Una lista larga sigue siendo ligera.
