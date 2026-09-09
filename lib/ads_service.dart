@@ -111,6 +111,23 @@ class AdsService {
         // 팝업 실패(설정에서 전역 차단 등)해도 광고는 비개인화로 계속 간다.
       }
     }
+    // 광고 등급을 'G'로 묶는다 (2026-09-09 소유자 신고).
+    //
+    // "이런 저질 광고 배너를 내가 거를 수 있나? 특정 업체 배너는 저 모양이다.
+    //  극혐이다." — 속옷·성인용품 같은 소재가 배너에 떴다.
+    //
+    // 애드몹은 기본값이 '지정 안 함'이라 T·MA 등급 소재까지 온다. G는
+    // '가족을 포함한 일반 시청자에게 적합한' 등급이고, 이 앱은 노트 앱이다.
+    // 채울 광고가 줄어 수익이 조금 내려갈 수 있지만, 글 읽는 화면 맨 위에
+    // 그런 그림이 뜨는 것과 바꿀 만한 값이 아니다.
+    //
+    // **이것만으로는 부족하다.** 등급은 소재의 '수위'만 거른다. 특정 광고주나
+    // 업종을 막는 것은 애드몹 웹 콘솔에서 따로 한다(HANDOFF.md 참고) —
+    //   차단 관리 → 민감한 카테고리 / 광고주 URL / 광고 심사 센터
+    // 앱에서 할 수 있는 것과 콘솔에서만 되는 것이 다르므로 둘 다 쓴다.
+    await MobileAds.instance.updateRequestConfiguration(
+      RequestConfiguration(maxAdContentRating: MaxAdContentRating.g),
+    );
     await MobileAds.instance.initialize();
     ready.value = true;
   }
