@@ -34,10 +34,9 @@ import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'core/ad_gate.dart';
-import 'core/after_route.dart';
 import 'main.dart' show AppColorsX;
 import 'l10n/l10n.dart';
-import 'main.dart' show Store, PremiumScreen, kPaidTierLive;
+import 'main.dart' show Store, PremiumScreen, kPaidTierLive, rootNavKey;
 
 const bool kRealAds = bool.fromEnvironment('REAL_ADS');
 
@@ -46,11 +45,11 @@ bool get adsSupported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 /// 발급 기록: ~/development/_agent/admob_ids.md (2026-08-16 크롬으로 직접 발급)
 String get bannerUnitId => Platform.isIOS
     ? (kRealAds
-        ? 'ca-app-pub-2336764115275414/1938836960'
-        : 'ca-app-pub-3940256099942544/2934735716')
+          ? 'ca-app-pub-2336764115275414/1938836960'
+          : 'ca-app-pub-3940256099942544/2934735716')
     : (kRealAds
-        ? 'ca-app-pub-2336764115275414/2139765486'
-        : 'ca-app-pub-3940256099942544/6300978111');
+          ? 'ca-app-pub-2336764115275414/2139765486'
+          : 'ca-app-pub-3940256099942544/6300978111');
 
 /// 네이티브 광고 단위 — **애드몹 콘솔에서 따로 만들어야 한다.**
 ///
@@ -84,11 +83,11 @@ const double kNativeSmallH = 110;
 
 String get interstitialUnitId => Platform.isIOS
     ? (kRealAds
-        ? 'ca-app-pub-2336764115275414/3636679980'
-        : 'ca-app-pub-3940256099942544/4411468910')
+          ? 'ca-app-pub-2336764115275414/3636679980'
+          : 'ca-app-pub-3940256099942544/4411468910')
     : (kRealAds
-        ? 'ca-app-pub-2336764115275414/5020441662'
-        : 'ca-app-pub-3940256099942544/1033173712');
+          ? 'ca-app-pub-2336764115275414/5020441662'
+          : 'ca-app-pub-3940256099942544/1033173712');
 
 class AdsService {
   AdsService._();
@@ -96,6 +95,17 @@ class AdsService {
 
   /// SDK 초기화가 끝났는가. 배너 위젯이 이걸 기다렸다가 로드한다.
   final ValueNotifier<bool> ready = ValueNotifier(false);
+
+  /// 지금 맨 위 배너가 화면을 먹고 있는가.
+  ///
+  /// 배너가 네비게이터 위로 올라가면서(main.dart의 MaterialApp builder)
+  /// 상태표시줄 여백의 임자가 둘이 됐다 — 배너가 있으면 배너가, 없으면
+  /// 아래 화면이 가져야 한다. 임자를 안 정하면 여백이 두 번 붙거나
+  /// 글자가 노치 밑으로 들어간다. 그 판정을 여기 하나에 모은다.
+  final ValueNotifier<bool> bannerVisible = ValueNotifier(false);
+
+  /// 배너를 걷어야 하는 화면이 몇 장 떠 있는가(AdFreeScope).
+  final ValueNotifier<int> adFree = ValueNotifier(0);
   bool _booting = false;
   bool _adBusy = false;
 
@@ -111,22 +121,25 @@ class AdsService {
         // 팝업 실패(설정에서 전역 차단 등)해도 광고는 비개인화로 계속 간다.
       }
     }
-    // 광고 등급을 'G'로 묶는다 (2026-09-09 소유자 신고).
+    // 광고 등급 상한 (2026-09-09 소유자 신고).
     //
     // "이런 저질 광고 배너를 내가 거를 수 있나? 특정 업체 배너는 저 모양이다.
     //  극혐이다." — 속옷·성인용품 같은 소재가 배너에 떴다.
     //
-    // 애드몹은 기본값이 '지정 안 함'이라 T·MA 등급 소재까지 온다. G는
-    // '가족을 포함한 일반 시청자에게 적합한' 등급이고, 이 앱은 노트 앱이다.
-    // 채울 광고가 줄어 수익이 조금 내려갈 수 있지만, 글 읽는 화면 맨 위에
-    // 그런 그림이 뜨는 것과 바꿀 만한 값이 아니다.
+    // 처음엔 G(전체 관람가)로 묶었다. 그런데 그날 저녁 소유자가 다시 말했다 —
+    // "광고가 거의 안 뜬다", "2~3분 후에 갑자기 나온다", "어떤 노트는 바로
+    // 뜨기도 한다". G는 사실상 어린이 대상 재고만 남기는 등급이라, 채울
+    // 소재가 없어서 자리가 비어 있었던 것이다.
     //
-    // **이것만으로는 부족하다.** 등급은 소재의 '수위'만 거른다. 특정 광고주나
-    // 업종을 막는 것은 애드몹 웹 콘솔에서 따로 한다(HANDOFF.md 참고) —
+    // 그래서 PG로 한 칸 올린다. PG도 성인·선정성 소재는 걸러 준다. 소유자가
+    // 본 그 그림들은 등급이 아니라 **민감한 카테고리**로 막는 것이 정확하고,
+    // 그건 이미 애드몹 웹 콘솔에서 막아 두었다(HANDOFF.md 참고) —
     //   차단 관리 → 민감한 카테고리 / 광고주 URL / 광고 심사 센터
-    // 앱에서 할 수 있는 것과 콘솔에서만 되는 것이 다르므로 둘 다 쓴다.
+    //
+    // 교훈 한 줄: **거르는 손잡이는 등급이 아니라 카테고리다.** 등급을 낮추면
+    // 걸러지는 게 아니라 그냥 광고가 없어진다.
     await MobileAds.instance.updateRequestConfiguration(
-      RequestConfiguration(maxAdContentRating: MaxAdContentRating.g),
+      RequestConfiguration(maxAdContentRating: MaxAdContentRating.pg),
     );
     await MobileAds.instance.initialize();
     ready.value = true;
@@ -189,79 +202,99 @@ class _TopBannerBarState extends State<TopBannerBar> {
   // 자리는 이 값으로 잡는다.
   AdSize? _shownSize;
 
-  /// 밀려 들어오는 애니메이션이 끝났는가.
+  /// 몇 번째 주문인가. 실패할 때마다 하나 오른다.
   ///
-  /// 2026-09-09 소유자 신고("드르르르"). 배너는 iOS 네이티브 뷰라 만들어
-  /// 붙이는 순간이 비싸다. 그 순간이 화면 미는 도중에 오면 프레임이
-  /// 통째로 몇 개 빠진다 — 녹화를 프레임 단위로 재서 확인했다
-  /// (core/after_route.dart 머리말에 숫자가 있다).
+  /// 2026-09-09 소유자 신고 — "편집페이지 상단의 광고가 아예 안 뜨거나
+  /// 20초 후에 뜨거나 한다", "2~3분 후에 갑자기 나온다. 깜짝 놀랐다",
+  /// "어떤 노트는 바로 뜨기도 한다. 들쑥날쑥 왜 이러지?"
   ///
-  /// 그래서 **전환이 끝난 뒤에** 만든다. 광고가 반 박자 늦게 뜨는 것과
-  /// 화면이 드르르 떠는 것 중에는 앞엣것이 낫다.
-  bool _settled = false;
+  /// 두 가지가 겹쳐 있었다.
+  ///   1) 주문이 실패해도 **다시 주문할 사람이 없었다.** 재시도가 build 안에
+  ///      들어 있어서, 누군가 화면을 다시 그려 줄 때까지 빈칸이었다. 저장이나
+  ///      동기화가 우연히 화면을 흔들면 그제서야 광고가 튀어나온다 — 2~3분
+  ///      뒤에 나타나는 것이 이것이다.
+  ///   2) 요청한 크기가 흔하지 않았다. 100pt 인라인 어댑티브는 채울 소재가
+  ///      적다. 여기에 등급 G까지 걸어 두어 남는 재고가 거의 없었다.
+  ///
+  /// 그래서 **사다리를 만든다.** 실패하면 점점 흔한 크기로 내려가고, 시간을
+  /// 두고 스스로 다시 주문한다. 빈칸으로 버티지 않는다.
+  int _tries = 0;
+  Timer? _retry;
 
-  /// 이미 예약했는가. didChangeDependencies 는 전환이 끝나기 전에도 여러 번
-  /// 불린다 — 예약을 막지 않으면 리스너가 겹겹이 쌓인다.
-  bool _armed = false;
-  VoidCallback? _cancelSettle;
+  /// 지금 이 자리가 화면을 먹고 있는가. 껍데기(main.dart의 MaterialApp
+  /// builder)가 이걸 보고 상태표시줄 여백을 누가 가질지 정한다.
+  static void _tell(bool on) {
+    final n = AdsService.instance.bannerVisible;
+    if (n.value == on) return;
+    // build 중에는 다른 위젯의 상태를 바꾸면 안 된다 — 한 프레임 미룬다.
+    WidgetsBinding.instance.addPostFrameCallback((_) => n.value = on);
+  }
 
   @override
   void initState() {
     super.initState();
     Store.instance.addListener(_refresh);
     AdsService.instance.ready.addListener(_refresh);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_armed) return;
-    _armed = true;
-    _cancelSettle = afterRouteSettled(context, () => mounted, () {
-      _cancelSettle = null;
-      setState(() => _settled = true);
-    });
+    AdsService.instance.adFree.addListener(_refresh);
   }
 
   void _refresh() {
     if (mounted) setState(() {});
   }
 
-  Future<void> _create(double width) async {
-    if (_creating || _ad != null) return;
-    _creating = true;
-    final w = width.truncate();
-    // 2026-09-06 소유자 지시 — 배너를 20% 키운다. 높이가 고정된 앵커드 대신
+  /// 몇 번째 시도에 어떤 크기를 주문할지.
+  ///
+  /// 0) 우리가 바라는 큰 자리(인라인 어댑티브, 최대 100pt)
+  /// 1) 판마다 표준인 앵커드 어댑티브(폰에서 50pt 남짓) — 재고가 제일 많다
+  /// 2) 320x50 고정 배너 — 세상에서 제일 흔한 자리. 여기서도 안 나오면
+  ///    그건 우리 잘못이 아니다.
+  /// 그다음은 다시 0으로 돈다. 한 번 실패했다고 작은 자리에 영영 갇히면
+  /// 큰 자리가 다시 생겨도 못 받는다.
+  Future<AdSize?> _sizeFor(int step, int w) async {
+    if (step == 1) {
+      return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
+    }
+    if (step == 2) return AdSize.banner;
+    // 2026-09-06 소유자 지시 — 배너를 키운다. 높이가 고정된 앵커드 대신
     // 인라인 어댑티브를 쓰면 최대 높이를 우리가 정할 수 있어, 소재가 그만큼
-    // 큰 것으로 온다. 실제 높이는 로드 뒤 getPlatformAdSize로 받는다(아래 build).
-    //
-    // 2026-09-09 소유자 신고 — "상단 광고 배너는 height가 너무 작다. 글자가
-    // 보이지도 않는다. 클릭이 발생하지 않을 듯."
-    //
-    // 맞는 지적이었다. 앵커드 기본 높이는 폰에서 50pt 남짓이고 1.2배를 해도
-    // 60pt다. 그 안에서는 그림 몇 조각만 보이고 글자는 읽히지 않는다.
-    // **읽히지 않는 자리는 눌리지도 않고, eCPM 도 낮게 붙는다.**
-    //
-    // 그래서 최대 높이를 우리가 직접 정한다. 100pt 는 인라인 어댑티브에서
-    // 소재가 제목 한 줄과 버튼을 담을 수 있는 첫 구간이다. 200pt 를 넘기면
-    // 목록 화면을 너무 먹고, 50pt 로 돌아가면 지금 문제로 되돌아간다.
-    //
-    // 값을 바꿀 때 기억할 것: 이건 **최대치**이지 실제 높이가 아니다. 광고판이
-    // 더 작은 소재를 주면 그만큼만 온다(그래서 아래에서 getPlatformAdSize 로
-    // 실제 높이를 받아 자리를 잡는다). 그러니 키운다고 늘 그만큼 커지지는 않는다.
+    // 큰 것으로 온다. 실제 높이는 로드 뒤 getPlatformAdSize로 받는다.
+    // 이건 **최대치**이지 실제 높이가 아니다.
     const double kMaxBannerHeight = 100;
     final anchored =
         await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
-    if (anchored == null || !mounted) {
+    if (anchored == null) return null;
+    final tall = anchored.height * 1.2;
+    // 둘 중 **큰 것**을 쓴다. 작은 쪽을 고르면 아무것도 안 달라진다 —
+    // 처음에 그렇게 썼다가 바로 알아챘다.
+    final want = tall > kMaxBannerHeight ? tall : kMaxBannerHeight;
+    return AdSize.getInlineAdaptiveBannerAdSize(w, want.round());
+  }
+
+  void _later() {
+    _retry?.cancel();
+    // 2, 5, 10, 20, 30, 60초. 실패가 쌓일수록 뜸해진다 — 네트워크가 죽은
+    // 기기에서 1초마다 주문하면 배터리만 먹는다.
+    const secs = [2, 5, 10, 20, 30, 60];
+    final i = _tries < secs.length ? _tries : secs.length - 1;
+    _retry = Timer(Duration(seconds: secs[i]), () {
+      if (!mounted) return;
+      _create(MediaQuery.of(context).size.width);
+    });
+  }
+
+  Future<void> _create(double width) async {
+    if (_creating || _ad != null || !mounted) return;
+    if (!AdsService.instance.ready.value) return;
+    _creating = true;
+    _retry?.cancel();
+    final w = width.truncate();
+    final size = await _sizeFor(_tries % 3, w);
+    if (size == null || !mounted) {
       _creating = false;
+      _tries++;
+      if (mounted) _later();
       return;
     }
-    // 둘 중 **큰 것**을 쓴다. 이 값은 최대치를 올려 주는 것이지 가두는 것이
-    // 아니다. 작은 쪽을 고르면 지금과 똑같아진다 — 처음에 그렇게 썼다가
-    // 바로 알아챘다.
-    final tall = anchored.height * 1.2;
-    final want = tall > kMaxBannerHeight ? tall : kMaxBannerHeight;
-    final size = AdSize.getInlineAdaptiveBannerAdSize(w, want.round());
     final ad = BannerAd(
       adUnitId: bannerUnitId,
       size: size,
@@ -269,22 +302,23 @@ class _TopBannerBarState extends State<TopBannerBar> {
       listener: BannerAdListener(
         onAdLoaded: (loaded) async {
           final shown = await (loaded as BannerAd).getPlatformAdSize();
-          if (mounted) {
-            setState(() {
-              _loaded = true;
-              if (shown != null) _shownSize = shown;
-            });
-          }
+          if (!mounted) return;
+          setState(() {
+            _loaded = true;
+            _tries = 0;
+            if (shown != null) _shownSize = shown;
+          });
         },
         onAdFailedToLoad: (ad, err) {
           ad.dispose();
-          if (mounted) {
-            setState(() {
-              _ad = null;
-              _loaded = false;
-              _creating = false; // 다음 rebuild 때 재시도
-            });
-          }
+          if (!mounted) return;
+          _tries++;
+          setState(() {
+            _ad = null;
+            _loaded = false;
+            _creating = false;
+          });
+          _later();
         },
       ),
     );
@@ -293,8 +327,12 @@ class _TopBannerBarState extends State<TopBannerBar> {
   }
 
   void _openSponsorSheet() {
+    // 배너는 네비게이터보다 위에 산다. 그래서 자기 context에는 Navigator가
+    // 없다 — 뿌리 네비게이터를 이름표로 빌려 온다(main.dart의 rootNavKey).
+    final ctx = rootNavKey.currentContext;
+    if (ctx == null) return;
     showModalBottomSheet<void>(
-      context: context,
+      context: ctx,
       showDragHandle: true,
       isScrollControlled: false,
       builder: (_) => const SponsorSheet(),
@@ -303,45 +341,43 @@ class _TopBannerBarState extends State<TopBannerBar> {
 
   @override
   void dispose() {
-    _cancelSettle?.call();
+    _retry?.cancel();
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
-    // 네이티브 광고 뷰를 없애는 일도 나가는 애니메이션 위에서 하면 걸린다.
-    // 위젯에서는 이미 빠졌으니 조금 뒤에 치워도 보이는 것은 달라지지 않는다.
-    final gone = _ad;
+    AdsService.instance.adFree.removeListener(_refresh);
+    _ad?.dispose();
     _ad = null;
-    if (gone != null) {
-      Timer(const Duration(milliseconds: 450), gone.dispose);
-    }
     super.dispose();
+  }
+
+  Widget _gone() {
+    _tell(false);
+    return const SizedBox.shrink();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!adsSupported) return const SizedBox.shrink();
+    if (!adsSupported) return _gone();
     final s = Store.instance.settings;
     if (!adsOn(
-        now: DateTime.now(),
-        adFreeDate: s.adFreeDate,
-        trialDays: s.trialDays,
-        premium: s.premium)) {
-      return const SizedBox.shrink();
+      now: DateTime.now(),
+      adFreeDate: s.adFreeDate,
+      trialDays: s.trialDays,
+      premium: s.premium,
+    )) {
+      return _gone();
     }
-    if (!AdsService.instance.ready.value) return const SizedBox.shrink();
-    // 전환이 끝나기 전에는 만들지 않는다(위 _settled 주석).
-    if (!_settled) return const SizedBox.shrink();
+    // 결제 화면·첫인사 화면 위에는 광고를 얹지 않는다(AdFreeScope).
+    if (AdsService.instance.adFree.value > 0) return _gone();
+    if (!AdsService.instance.ready.value) return _gone();
     _create(MediaQuery.of(context).size.width);
-    if (_ad == null || !_loaded) return const SizedBox.shrink();
+    if (_ad == null || !_loaded) return _gone();
+    _tell(true);
     final l = L10n.of(context);
     // 2026-08-16 소유자 신고 — 아이패드에서 배너가 검은 띠에 얹혀 흉했다.
     // 원인은 광고가 아니라 우리 배치였다. 아이패드 가로는 1366pt인데 광고는
     // 표준 리더보드 728pt라 양옆 638pt가 남는다. 그 자리를 아무것도 안 칠해
-    // 두니 검게 나왔다.
-    //
-    // 광고를 화면 폭에 억지로 늘리지 않는다 — 늘리면 광고주 소재가 없어
-    // 노쇼가 늘고, 늘어난 소재는 더 흉하다. 대신 남는 자리를 앱 색(panel)으로
-    // 칠하고 광고를 가운데 놓는다. 폰에서는 광고가 폭을 꽉 채우므로 이
-    // 여백이 0이 되어 보이지 않는다 — 한 코드로 둘 다 맞는다.
+    // 두니 검게 나왔다. 남는 자리를 앱 색(panel)으로 칠하고 가운데 놓는다.
     final c = context.c;
     return Container(
       width: double.infinity,
@@ -355,38 +391,83 @@ class _TopBannerBarState extends State<TopBannerBar> {
         color: c.panel,
         border: Border(bottom: BorderSide(color: c.glassLine)),
       ),
-      child: SizedBox(
-      width: (_shownSize ?? _ad!.size).width.toDouble(),
-      height: (_shownSize ?? _ad!.size).height.toDouble(),
-      child: Stack(
-        children: [
-          // Long Time 실측 사고(2026-07-31): 크리에이티브가 프레임 밖까지
-          // 그려진 적이 있다 — 반드시 잘라낸다.
-          Positioned.fill(child: ClipRect(child: AdWidget(ad: _ad!))),
-          Positioned(
-            top: 2,
-            right: 2,
-            child: Tooltip(
-              message: l.adClose,
-              child: Material(
-                color: Colors.black38,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: _openSponsorSheet,
-                  child: const Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(Icons.close, size: 14, color: Colors.white),
+      // 상태표시줄 여백은 이제 이 자리가 가진다. 배너가 네비게이터 위로
+      // 올라갔기 때문에(main.dart의 MaterialApp builder), 아래 화면들은
+      // 위쪽 여백을 넘겨받지 않는다.
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          width: (_shownSize ?? _ad!.size).width.toDouble(),
+          height: (_shownSize ?? _ad!.size).height.toDouble(),
+          child: Stack(
+            children: [
+              // Long Time 실측 사고(2026-07-31): 크리에이티브가 프레임 밖까지
+              // 그려진 적이 있다 — 반드시 잘라낸다.
+              Positioned.fill(
+                child: ClipRect(child: AdWidget(ad: _ad!)),
+              ),
+              Positioned(
+                top: 2,
+                right: 2,
+                // Tooltip 은 Overlay 를 찾는다. 배너는 네비게이터 위라
+                // 위에 Overlay 가 없어서, 길게 눌렀을 때 터진다. 눈에 보이는
+                // 것은 그대로 두고 이름만 화면 낭독기에 넘긴다.
+                child: Semantics(
+                  label: l.adClose,
+                  button: true,
+                  child: Material(
+                    color: Colors.black38,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _openSponsorSheet,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Icons.close, size: 14, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
       ),
     );
   }
+}
+
+/// 이 화면이 떠 있는 동안에는 배너를 걷는다.
+///
+/// 결제 화면과 첫인사 화면이 그렇다. "광고를 없애 드립니다"라고 말하는
+/// 화면 맨 위에 광고가 붙어 있으면 그건 농담이 된다.
+///
+/// 배너가 네비게이터 위로 올라간 뒤로는 화면 쪽에서 "여긴 빼 달라"고
+/// 말할 방법이 이것뿐이다 — 감출 화면이 스스로 손을 든다.
+class AdFreeScope extends StatefulWidget {
+  const AdFreeScope({super.key, required this.child});
+  final Widget child;
+  @override
+  State<AdFreeScope> createState() => _AdFreeScopeState();
+}
+
+class _AdFreeScopeState extends State<AdFreeScope> {
+  @override
+  void initState() {
+    super.initState();
+    final n = AdsService.instance.adFree;
+    n.value = n.value + 1;
+  }
+
+  @override
+  void dispose() {
+    final n = AdsService.instance.adFree;
+    n.value = n.value - 1;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// 후원 안내 시트 — 전면 광고 직전의 사전 고지 화면.
@@ -438,25 +519,40 @@ class _SponsorSheetState extends State<SponsorSheet> {
                 child: CircleAvatar(
                   radius: 30,
                   backgroundColor: Color(0x22E91E63),
-                  child: Icon(Icons.favorite, size: 32, color: Color(0xFFE91E63)),
+                  child: Icon(
+                    Icons.favorite,
+                    size: 32,
+                    color: Color(0xFFE91E63),
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
-              Text(l.sponsorTitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              Text(
+                l.sponsorTitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 10),
               // context.c(AppC 확장)는 main.dart 라이브러리 안 것이라 여기서는
               // 테마 파생 색을 쓴다 — 라이트/다크 모두 알아서 맞는 값들이다.
-              Text(l.sponsorBody,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, height: 1.5)),
+              Text(
+                l.sponsorBody,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 15, height: 1.5),
+              ),
               if (_failed) ...[
                 const SizedBox(height: 8),
-                Text(l.sponsorFailed,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 13.5, color: Theme.of(context).colorScheme.error)),
+                Text(
+                  l.sponsorFailed,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
               ],
               const SizedBox(height: 16),
               // ── 여기가 배너의 X를 누른 사람이 서 있는 자리다 ──────────
@@ -475,33 +571,47 @@ class _SponsorSheetState extends State<SponsorSheet> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const PremiumScreen()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const AdFreeScope(child: PremiumScreen()),
+                      ),
+                    );
                   },
-                  child: Text(l.sponsorGoPremium,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  child: Text(
+                    l.sponsorGoPremium,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(l.sponsorPremiumNote,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 13,
-                        height: 1.45,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                Text(
+                  l.sponsorPremiumNote,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.45,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 14),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: _busy ? null : _watch,
-                  child: Text(_busy ? l.sponsorLoading : l.sponsorWatch,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    _busy ? l.sponsorLoading : l.sponsorWatch,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ] else
                 // 결제가 꺼진 판(웹·윈도우, 또는 PAID_TIER=false 빌드)에서는
@@ -510,11 +620,14 @@ class _SponsorSheetState extends State<SponsorSheet> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: _busy ? null : _watch,
-                  child: Text(_busy ? l.sponsorLoading : l.sponsorWatch,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  child: Text(
+                    _busy ? l.sponsorLoading : l.sponsorWatch,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -628,10 +741,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   /// 인라인 적응형을 안 쓴다. 2026-08-17에 한 번 써 봤고, 적응형은
   /// '최대'만 말하고 '최소'를 말하지 않아 구글이 늘 제일 작은 것을
   /// 골라 줬다. 크기를 박는 편이 예측이 된다.
-  static const List<AdSize> _wide = [
-    AdSize.largeBanner,
-    AdSize.banner,
-  ];
+  static const List<AdSize> _wide = [AdSize.largeBanner, AdSize.banner];
 
   /// 300×600을 물을 만한 화면 높이(논리 픽셀). 이보다 낮으면 안 묻는다.
   static const double _tallEnough = 760;
@@ -680,9 +790,8 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     );
   }
 
-  List<AdSize> _ladder(double screenHeight) => widget.wide
-      ? _wide
-      : (screenHeight >= _tallEnough ? _big : _small);
+  List<AdSize> _ladder(double screenHeight) =>
+      widget.wide ? _wide : (screenHeight >= _tallEnough ? _big : _small);
 
   /// 네이티브 광고를 한 번 물어본다. 실패하면 다시 묻지 않고 배너로 내려간다.
   ///
@@ -707,7 +816,10 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
         secondaryTextStyle: NativeTemplateTextStyle(textColor: c.sub, size: 13),
         tertiaryTextStyle: NativeTemplateTextStyle(textColor: c.sub, size: 12),
         callToActionTextStyle: NativeTemplateTextStyle(
-            textColor: Colors.white, backgroundColor: c.accent, size: 15),
+          textColor: Colors.white,
+          backgroundColor: c.accent,
+          size: 15,
+        ),
       ),
       listener: NativeAdListener(
         onAdLoaded: (_) {
@@ -853,10 +965,11 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     if (!adsSupported) return const SizedBox.shrink();
     final s = Store.instance.settings;
     if (!adsOn(
-        now: DateTime.now(),
-        adFreeDate: s.adFreeDate,
-        trialDays: s.trialDays,
-        premium: s.premium)) {
+      now: DateTime.now(),
+      adFreeDate: s.adFreeDate,
+      trialDays: s.trialDays,
+      premium: s.premium,
+    )) {
       return const SizedBox.shrink();
     }
     if (!AdsService.instance.ready.value) return const SizedBox.shrink();
@@ -887,30 +1000,32 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
     final ad = SizedBox(
       width: showNative ? double.infinity : _adW,
       height: _adH,
-      child: Stack(children: [
-        Positioned.fill(
-            child: ClipRect(
-                child: AdWidget(ad: showNative ? _native! : _ad!))),
-        Positioned(
-          top: 2,
-          right: 2,
-          child: Tooltip(
-            message: l.adClose,
-            child: Material(
-              color: Colors.black38,
-              shape: const CircleBorder(),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: _openSponsorSheet,
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
-                  child: Icon(Icons.close, size: 14, color: Colors.white),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ClipRect(child: AdWidget(ad: showNative ? _native! : _ad!)),
+          ),
+          Positioned(
+            top: 2,
+            right: 2,
+            child: Tooltip(
+              message: l.adClose,
+              child: Material(
+                color: Colors.black38,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: _openSponsorSheet,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close, size: 14, color: Colors.white),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
     // 2026-08-17 소유자 신고 — "본문과 광고 사이에 단절된 느낌을 줘. 지금은
     // 본문에 광고가 들어갈 것 같은 오해를 줄 듯."
@@ -933,42 +1048,47 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
         // 그대로 이어받아, 자르는 선이 광고 판의 첫 줄이 된다.
         if (widget.gapAbove > 0) SizedBox(height: widget.gapAbove),
         Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: c.bg,
-        border: Border(top: BorderSide(color: c.line)),
-      ),
-      padding: const EdgeInsets.only(top: 14, bottom: 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l.adSponsored,
-              style: TextStyle(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: c.bg,
+            border: Border(top: BorderSide(color: c.line)),
+          ),
+          padding: const EdgeInsets.only(top: 14, bottom: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l.adSponsored,
+                style: TextStyle(
                   fontSize: 11,
                   letterSpacing: 1.4,
                   fontWeight: FontWeight.w600,
-                  color: c.sub)),
-          const SizedBox(height: 12),
-          ClipRect(
-            child: SizedBox(
-              key: _slotKey,
-              height: slotH,
-              width: double.infinity,
-              child: _pos == null
-                  ? Center(child: ad)
-                  : AnimatedBuilder(
-                      animation: _pos!,
-                      builder: (_, child) => Transform.translate(
-                        offset: Offset(0, _shift(slotH)),
-                        child: child,
-                      ),
-                      child: Align(
-                          alignment: Alignment.topCenter, child: ad),
-                    ),
-            ),
+                  color: c.sub,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ClipRect(
+                child: SizedBox(
+                  key: _slotKey,
+                  height: slotH,
+                  width: double.infinity,
+                  child: _pos == null
+                      ? Center(child: ad)
+                      : AnimatedBuilder(
+                          animation: _pos!,
+                          builder: (_, child) => Transform.translate(
+                            offset: Offset(0, _shift(slotH)),
+                            child: child,
+                          ),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: ad,
+                          ),
+                        ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
         ),
       ],
     );
@@ -986,8 +1106,9 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
 bool inlineAdLikely() =>
     adsSupported &&
     adsOn(
-        now: DateTime.now(),
-        adFreeDate: Store.instance.settings.adFreeDate,
+      now: DateTime.now(),
+      adFreeDate: Store.instance.settings.adFreeDate,
       trialDays: Store.instance.settings.trialDays,
-      premium: Store.instance.settings.premium) &&
+      premium: Store.instance.settings.premium,
+    ) &&
     AdsService.instance.ready.value;

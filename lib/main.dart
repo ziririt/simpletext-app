@@ -121,8 +121,9 @@ Future<void> main() async {
   // 그 짧은 순간에 밝은 회색이 번쩍했다 사라지는 것은 고장으로 보인다.
   // 아직 테마가 없는 순간이라 기기 설정을 그대로 따른다. 첫 프레임이
   // 그려지면 AppBarTheme 이 같은 함수로 다시 정한다.
-  SystemChrome.setSystemUIOverlayStyle(systemBars(
-      WidgetsBinding.instance.platformDispatcher.platformBrightness));
+  SystemChrome.setSystemUIOverlayStyle(
+    systemBars(WidgetsBinding.instance.platformDispatcher.platformBrightness),
+  );
   // 홈 화면 위젯 자리 잡기(아이폰·안드로이드에서만). 목록을 실제로 보내는
   // 것은 화면이 말을 알려 준 뒤다 — 위젯에 쓸 글자를 다트가 담아 보내므로.
   // 웹에서만 한글 글꼴을 심는다. 다른 판에서는 곧바로 돌아온다.
@@ -234,7 +235,9 @@ SystemUiOverlayStyle systemBars(Brightness b) {
     statusBarBrightness: dark ? Brightness.dark : Brightness.light,
     systemNavigationBarColor: Colors.transparent,
     systemNavigationBarDividerColor: Colors.transparent,
-    systemNavigationBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+    systemNavigationBarIconBrightness: dark
+        ? Brightness.light
+        : Brightness.dark,
     systemNavigationBarContrastEnforced: true,
   );
 }
@@ -331,8 +334,8 @@ bool aiUiVisible() => true;
 String get lockVendor => defaultTargetPlatform == TargetPlatform.android
     ? 'android'
     : defaultTargetPlatform == TargetPlatform.windows
-        ? 'windows'
-        : 'apple';
+    ? 'windows'
+    : 'apple';
 
 /// 데스크톱(맥·윈도우·리눅스)인가 — 글자 크기와 밀도를 가르는 기준.
 bool get isDesktopPlatform =>
@@ -580,32 +583,31 @@ class AppC extends ThemeExtension<AppC> {
     Color? tagBg,
     Color? tagInk,
     Color? tagLine,
-  }) =>
-      AppC(
-        bg: bg ?? this.bg,
-        panel: panel ?? this.panel,
-        line: line ?? this.line,
-        sub: sub ?? this.sub,
-        accent: accent ?? this.accent,
-        field: field ?? this.field,
-        toolbar: toolbar ?? this.toolbar,
-        toolbarLine: toolbarLine ?? this.toolbarLine,
-        infoBg: infoBg ?? this.infoBg,
-        warnBg: warnBg ?? this.warnBg,
-        warnInk: warnInk ?? this.warnInk,
-        codeBg: codeBg ?? this.codeBg,
-        codeLine: codeLine ?? this.codeLine,
-        pin: pin ?? this.pin,
-        danger: danger ?? this.danger,
-        guideInk: guideInk ?? this.guideInk,
-        selBg: selBg ?? this.selBg,
-        selHandle: selHandle ?? this.selHandle,
-        glass: glass ?? this.glass,
-        glassLine: glassLine ?? this.glassLine,
-        tagBg: tagBg ?? this.tagBg,
-        tagInk: tagInk ?? this.tagInk,
-        tagLine: tagLine ?? this.tagLine,
-      );
+  }) => AppC(
+    bg: bg ?? this.bg,
+    panel: panel ?? this.panel,
+    line: line ?? this.line,
+    sub: sub ?? this.sub,
+    accent: accent ?? this.accent,
+    field: field ?? this.field,
+    toolbar: toolbar ?? this.toolbar,
+    toolbarLine: toolbarLine ?? this.toolbarLine,
+    infoBg: infoBg ?? this.infoBg,
+    warnBg: warnBg ?? this.warnBg,
+    warnInk: warnInk ?? this.warnInk,
+    codeBg: codeBg ?? this.codeBg,
+    codeLine: codeLine ?? this.codeLine,
+    pin: pin ?? this.pin,
+    danger: danger ?? this.danger,
+    guideInk: guideInk ?? this.guideInk,
+    selBg: selBg ?? this.selBg,
+    selHandle: selHandle ?? this.selHandle,
+    glass: glass ?? this.glass,
+    glassLine: glassLine ?? this.glassLine,
+    tagBg: tagBg ?? this.tagBg,
+    tagInk: tagInk ?? this.tagInk,
+    tagLine: tagLine ?? this.tagLine,
+  );
 
   @override
   AppC lerp(ThemeExtension<AppC>? other, double t) {
@@ -730,7 +732,8 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
         // 나간 적이 없으면 돌아온 것도 아니다.
         // 그리고 방금 확인을 통과했다면 그 창이 닫히며 오는 신호다.
         final justUnlocked = now - _unlockedAt < 1500;
-        final lock = _away &&
+        final lock =
+            _away &&
             !justUnlocked &&
             shouldLock(
               enabled: on,
@@ -771,50 +774,68 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
     final c = context.c;
     // 잠긴 화면 위에 가림막을 또 얹을 필요는 없다.
     final cover = _locked || _shield;
-    return Stack(children: [
-      widget.child,
-      if (cover)
-        Positioned.fill(
-          // 2026-08-17 소유자 스크린샷 — 글자에 빨간 글씨와 노란 밑줄이
-          // 그어져 있었다. 우리가 그은 게 아니다. 이 화면은 앱의 맨 바깥에
-          // 얹히는 층이라 위에 Material이 없고, 그러면 프레임워크가 "이
-          // 글자가 어디에 얹힌 건지 모르겠다"는 표시를 한다.
-          //
-          // 마법 가루 판에서 겪은 것과 똑같은 문제다. 그때 고치면서 여기도
-          // 같은 처지라는 걸 알아챘어야 했다.
-          child: Material(
-            color: c.bg,
-            child: SafeArea(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.lock_outline, size: 46, color: c.accent),
-                    const SizedBox(height: 14),
-                    Text(l.appTitle,
+    return Stack(
+      children: [
+        widget.child,
+        if (cover)
+          Positioned.fill(
+            // 2026-08-17 소유자 스크린샷 — 글자에 빨간 글씨와 노란 밑줄이
+            // 그어져 있었다. 우리가 그은 게 아니다. 이 화면은 앱의 맨 바깥에
+            // 얹히는 층이라 위에 Material이 없고, 그러면 프레임워크가 "이
+            // 글자가 어디에 얹힌 건지 모르겠다"는 표시를 한다.
+            //
+            // 마법 가루 판에서 겪은 것과 똑같은 문제다. 그때 고치면서 여기도
+            // 같은 처지라는 걸 알아챘어야 했다.
+            child: Material(
+              color: c.bg,
+              child: SafeArea(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock_outline, size: 46, color: c.accent),
+                      const SizedBox(height: 14),
+                      Text(
+                        l.appTitle,
                         style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 6),
-                    Text(l.lockLocked,
-                        style: TextStyle(fontSize: 14, color: c.sub)),
-                    const SizedBox(height: 22),
-                    // 가림막일 때는 버튼을 안 낸다. 누를 일이 없고,
-                    // 앱 전환기 그림에 버튼이 찍히는 것도 이상하다.
-                    if (_locked)
-                      FilledButton.icon(
-                        onPressed: _unlock,
-                        icon: const Icon(Icons.lock_open, size: 18),
-                        label: Text(l.lockUnlock),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        l.lockLocked,
+                        style: TextStyle(fontSize: 14, color: c.sub),
+                      ),
+                      const SizedBox(height: 22),
+                      // 가림막일 때는 버튼을 안 낸다. 누를 일이 없고,
+                      // 앱 전환기 그림에 버튼이 찍히는 것도 이상하다.
+                      if (_locked)
+                        FilledButton.icon(
+                          onPressed: _unlock,
+                          icon: const Icon(Icons.lock_open, size: 18),
+                          label: Text(l.lockUnlock),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-    ]);
+      ],
+    );
   }
 }
+
+/// 뿌리 네비게이터의 이름표.
+///
+/// 배너를 네비게이터 위로 올리면서 생긴 숙제 하나. 배너 오른쪽 위 'X'가
+/// 여는 후원 시트는 Navigator가 있어야 여는데, 배너가 선 자리에는 위로
+/// Navigator가 없다(자기가 네비게이터보다 위에 있으니 당연하다).
+/// 그래서 뿌리 네비게이터를 여기 이름표로 붙잡아 두고, 시트는 그 쪽
+/// context로 연다. 배너 말고 다른 곳에서는 쓸 일이 없어야 한다 —
+/// 화면 안에서는 그냥 Navigator.of(context)가 맞다.
+final GlobalKey<NavigatorState> rootNavKey = GlobalKey<NavigatorState>();
 
 class SimpleTextApp extends StatelessWidget {
   /// 스토어 스크린샷 촬영용 강제 로케일. 평상시엔 null이라 기기 설정을 따른다.
@@ -831,67 +852,113 @@ class SimpleTextApp extends StatelessWidget {
       builder: (context, _) {
         final tm = Store.instance.settings.themeMode;
         return MaterialApp(
-      locale: locale,
-      onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
-      debugShowCheckedModeBanner: false,
-      scrollBehavior: const GlideScrollBehavior(),
-      localizationsDelegates: const [
-        L10n.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: L10n.supportedLocales,
-      theme: buildTheme(Brightness.light, AppC.light),
-      darkTheme: buildTheme(Brightness.dark, AppC.dark),
-      // 2026-08-16 소유자 신고 — 맥 앱 글자가 애플 메모장보다 훨씬 크다.
-      // 모바일 크기(본문 17 등)를 그대로 데스크톱에 내보내고 있었다.
-      // 애플 메모장 맥판 본문은 13~14 상당 — 데스크톱 전체를 0.8배로 줄이면
-      // 17이 13.6으로 정확히 그 자리에 떨어진다. 화면마다 값을 따로 두면
-      // 반드시 한 군데를 빠뜨리므로 한 곳에서 전역으로 줄인다.
-      builder: (ctx, child) {
-        // 2026-08-18 — Cmd+C(맥·윈도)도 표시를 벗겨 복사한다.
-        //
-        // 여기 두는 까닭: 단축키는 **초점에서 위로** 찾아 올라가는데,
-        // 플러터의 기본 글자 단축키는 WidgetsApp 에 있다. 그보다 아래
-        // 아무 데나 두면 우리 것이 먼저 걸린다. 그리고 여기 한 곳에
-        // 두면 화면이 늘어나도 빠뜨릴 자리가 없다.
-        //
-        // 제목·태그 칸에서 눌러도 해가 없다. 거기에는 벗길 표시가 없어서
-        // 벗기기가 아무 일도 안 한다.
-        Widget w = Shortcuts(
-          shortcuts: const <ShortcutActivator, Intent>{
-            SingleActivator(LogicalKeyboardKey.keyC, meta: true):
-                PlainCopyIntent(),
-            SingleActivator(LogicalKeyboardKey.keyC, control: true):
-                PlainCopyIntent(),
+          locale: locale,
+          navigatorKey: rootNavKey,
+          onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
+          debugShowCheckedModeBanner: false,
+          scrollBehavior: const GlideScrollBehavior(),
+          localizationsDelegates: const [
+            L10n.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: L10n.supportedLocales,
+          theme: buildTheme(Brightness.light, AppC.light),
+          darkTheme: buildTheme(Brightness.dark, AppC.dark),
+          // 2026-08-16 소유자 신고 — 맥 앱 글자가 애플 메모장보다 훨씬 크다.
+          // 모바일 크기(본문 17 등)를 그대로 데스크톱에 내보내고 있었다.
+          // 애플 메모장 맥판 본문은 13~14 상당 — 데스크톱 전체를 0.8배로 줄이면
+          // 17이 13.6으로 정확히 그 자리에 떨어진다. 화면마다 값을 따로 두면
+          // 반드시 한 군데를 빠뜨리므로 한 곳에서 전역으로 줄인다.
+          builder: (ctx, child) {
+            // 2026-08-18 — Cmd+C(맥·윈도)도 표시를 벗겨 복사한다.
+            //
+            // 여기 두는 까닭: 단축키는 **초점에서 위로** 찾아 올라가는데,
+            // 플러터의 기본 글자 단축키는 WidgetsApp 에 있다. 그보다 아래
+            // 아무 데나 두면 우리 것이 먼저 걸린다. 그리고 여기 한 곳에
+            // 두면 화면이 늘어나도 빠뜨릴 자리가 없다.
+            //
+            // 제목·태그 칸에서 눌러도 해가 없다. 거기에는 벗길 표시가 없어서
+            // 벗기기가 아무 일도 안 한다.
+            Widget w = Shortcuts(
+              shortcuts: const <ShortcutActivator, Intent>{
+                SingleActivator(LogicalKeyboardKey.keyC, meta: true):
+                    PlainCopyIntent(),
+                SingleActivator(LogicalKeyboardKey.keyC, control: true):
+                    PlainCopyIntent(),
+              },
+              child: Actions(
+                actions: <Type, Action<Intent>>{
+                  PlainCopyIntent: PlainCopyAction(),
+                },
+                child: child!,
+              ),
+            );
+            // 배너는 화면 하나가 아니라 **앱 한 장** 위에 있다.
+            //
+            // 2026-09-09 소유자 신고 두 묶음이 여기서 만난다.
+            //   · "편집페이지 상단의 광고가 아예 안 뜨거나, 20초 후에 뜨거나
+            //      한다", "2~3분 후에 갑자기 나온다. 깜짝 놀랐다", "어떤 노트는
+            //      바로 뜨기도 한다. 들쑥날쑥 왜 이러지?"
+            //   · "목록 페이지로 올 때 버벅임이... 아예 없지 않다"
+            //
+            // 한 뿌리였다. 배너를 화면마다 하나씩 달아 두었더니 목록→편집으로
+            // 갈 때마다 **광고를 새로 하나 더 만들어 새로 주문**하고, 돌아올 때
+            // 그것을 부쉈다. 그래서
+            //   · 들어갈 때마다 새 주문이라 채워질 때도 있고 아닐 때도 있다.
+            //     '들쑥날쑥'의 정체가 이것이다.
+            //   · 네이티브 광고 뷰를 만들고 부수는 일이 미는 애니메이션 위에
+            //     그대로 올라타 프레임을 통째로 먹었다. 녹화를 프레임 단위로
+            //     재 보면 밀리는 도중에 280~330ms 짜리 구멍이 세 번 난다.
+            //   · 전환이 끝나는 순간 100pt 짜리 자리가 새로 생겨 화면이 한 번
+            //     더 튄다.
+            //
+            // 그래서 배너를 네비게이터 **위로** 올린다. 앱이 사는 동안 하나뿐이고,
+            // 화면을 오가도 만들지도 부수지도 않는다. 소재 갱신은 애드몹 단위의
+            // 자동 새로고침이 맡는다. 다른 메모 앱들이 광고를 달고도 매끄러운
+            // 까닭이 별 게 아니다 — 전환 위에서 아무 일도 안 하기 때문이다.
+            //
+            // 상태표시줄 여백의 임자: 배너가 떠 있으면 배너가 가진다(배너 안에서
+            // SafeArea를 쓴다). 그때 아래 화면들의 위쪽 여백은 걷어 준다 —
+            // 안 걷으면 여백이 두 겹으로 붙어 화면이 아래로 밀린다.
+            w = Column(
+              children: [
+                const TopBannerBar(),
+                Expanded(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: AdsService.instance.bannerVisible,
+                    builder: (c2, on, kid) => on
+                        ? MediaQuery.removePadding(
+                            context: c2,
+                            removeTop: true,
+                            child: kid!,
+                          )
+                        : kid!,
+                    child: w,
+                  ),
+                ),
+              ],
+            );
+            if (isDesktopPlatform) {
+              final mq = MediaQuery.of(ctx);
+              w = MediaQuery(
+                data: mq.copyWith(textScaler: const TextScaler.linear(0.8)),
+                child: w,
+              );
+            }
+            w = navBarPlate(ctx, w);
+            // 잠금은 제일 바깥이다. 앱 안의 어느 화면이 열려 있든 한 장이 덮는다.
+            return LockGate(child: w);
           },
-          child: Actions(
-            actions: <Type, Action<Intent>>{
-              PlainCopyIntent: PlainCopyAction(),
-            },
-            child: child!,
-          ),
-        );
-        if (isDesktopPlatform) {
-          final mq = MediaQuery.of(ctx);
-          w = MediaQuery(
-            data: mq.copyWith(textScaler: const TextScaler.linear(0.8)),
-            child: w,
-          );
-        }
-        w = navBarPlate(ctx, w);
-        // 잠금은 제일 바깥이다. 앱 안의 어느 화면이 열려 있든 한 장이 덮는다.
-        return LockGate(child: w);
-      },
-      // 2026-08-16 소유자 요청 — 설정에서 시스템/라이트/다크를 고른다.
-      themeMode: tm == 'light'
-          ? ThemeMode.light
-          : tm == 'dark'
+          // 2026-08-16 소유자 요청 — 설정에서 시스템/라이트/다크를 고른다.
+          themeMode: tm == 'light'
+              ? ThemeMode.light
+              : tm == 'dark'
               ? ThemeMode.dark
               : ThemeMode.system,
-      home: const SplitShell(),
-    );
+          home: const SplitShell(),
+        );
       },
     );
   }
@@ -933,48 +1000,49 @@ class SimpleTextApp extends StatelessWidget {
     // 그래서 눈에 보이는 자리는 자동에 맡기지 않고 우리 값으로 덮는다.
     // fromSeed를 아예 안 쓰지는 않는다 — 여기서 안 덮은 자리(비활성 색,
     // 그림자 톤 등)를 채워 주는 값은 여전히 쓸모가 있다.
-    final scheme = ColorScheme.fromSeed(seedColor: _sky, brightness: b).copyWith(
-      primary: kAccentFill,
-      onPrimary: kOnAccentFill,
-      primaryContainer: c.tagBg,
-      onPrimaryContainer: c.tagInk,
-      secondary: kAccentFill,
-      onSecondary: kOnAccentFill,
-      secondaryContainer: c.tagBg,
-      onSecondaryContainer: c.tagInk,
-      // 떠 있는 판에 머티리얼이 섞어 넣는 물빛. 이걸 하늘색으로 두면
-      // 카드가 미묘하게 하늘 기운을 띤다 — 색을 더 쓰되 시끄럽지 않게.
-      surfaceTint: c.accent,
-      error: c.danger,
-      // 2026-08-20 소유자 지시(**네 번째**) — "제발 좀 연회색 폰트
-      // 사용 금지. 진회색이나 연블랙, 또는 블랙 폰트로."
-      //
-      // 우리 색은 이미 다 내려놨는데도 화면에 연회색이 남아 있었다.
-      // 세 번을 고치고도 또 나왔으면 고치는 자리가 틀린 것이다.
-      // 짐작을 그만두고 머티리얼 기본 색표를 **실제로 재 봤다**:
-      //   onSurfaceVariant  #41484D   흰 판에서  9.30:1
-      //   outline           #71787E   흰 판에서  4.48:1
-      //   (다크) onSurfaceVariant #C1C7CE, outline #8B9198
-      //
-      // 우리 보조 글자는 #26313A(13.3:1)다. 숫자로만 보면 9.3:1도
-      // AAA를 넘지만, **같은 화면에서 나란히 놓이면 눈에 띄게 연하다.**
-      // 대비는 배경과의 관계지, 옆 글자와의 관계가 아니다. 사람 눈은
-      // 옆을 본다.
-      //
-      // 그리고 저 색이 나오는 자리는 전부 **우리가 색을 안 적어 준**
-      // 자리다 — ListTile 부제, 드롭다운 글자, 입력칸 이름표, 메뉴,
-      // 슬라이더 눈금. 화면을 하나하나 찾아다니며 색을 적는 것은 또
-      // 같은 판단을 여러 군데에 적는 짓이고, 그러면 다음에 만드는
-      // 화면에서 다시 연회색이 나온다.
-      //
-      // **연회색을 색표에서 지운다.** 꺼낼 자리가 없으면 안 나온다.
-      onSurface: c.guideInk,
-      onSurfaceVariant: c.sub,
-      outline: c.sub,
-      // 선은 글자가 아니다. 여기까지 잉크색으로 만들면 화면이 격자가
-      // 된다. 우리가 쓰던 선 색을 그대로 준다.
-      outlineVariant: c.line,
-    );
+    final scheme = ColorScheme.fromSeed(seedColor: _sky, brightness: b)
+        .copyWith(
+          primary: kAccentFill,
+          onPrimary: kOnAccentFill,
+          primaryContainer: c.tagBg,
+          onPrimaryContainer: c.tagInk,
+          secondary: kAccentFill,
+          onSecondary: kOnAccentFill,
+          secondaryContainer: c.tagBg,
+          onSecondaryContainer: c.tagInk,
+          // 떠 있는 판에 머티리얼이 섞어 넣는 물빛. 이걸 하늘색으로 두면
+          // 카드가 미묘하게 하늘 기운을 띤다 — 색을 더 쓰되 시끄럽지 않게.
+          surfaceTint: c.accent,
+          error: c.danger,
+          // 2026-08-20 소유자 지시(**네 번째**) — "제발 좀 연회색 폰트
+          // 사용 금지. 진회색이나 연블랙, 또는 블랙 폰트로."
+          //
+          // 우리 색은 이미 다 내려놨는데도 화면에 연회색이 남아 있었다.
+          // 세 번을 고치고도 또 나왔으면 고치는 자리가 틀린 것이다.
+          // 짐작을 그만두고 머티리얼 기본 색표를 **실제로 재 봤다**:
+          //   onSurfaceVariant  #41484D   흰 판에서  9.30:1
+          //   outline           #71787E   흰 판에서  4.48:1
+          //   (다크) onSurfaceVariant #C1C7CE, outline #8B9198
+          //
+          // 우리 보조 글자는 #26313A(13.3:1)다. 숫자로만 보면 9.3:1도
+          // AAA를 넘지만, **같은 화면에서 나란히 놓이면 눈에 띄게 연하다.**
+          // 대비는 배경과의 관계지, 옆 글자와의 관계가 아니다. 사람 눈은
+          // 옆을 본다.
+          //
+          // 그리고 저 색이 나오는 자리는 전부 **우리가 색을 안 적어 준**
+          // 자리다 — ListTile 부제, 드롭다운 글자, 입력칸 이름표, 메뉴,
+          // 슬라이더 눈금. 화면을 하나하나 찾아다니며 색을 적는 것은 또
+          // 같은 판단을 여러 군데에 적는 짓이고, 그러면 다음에 만드는
+          // 화면에서 다시 연회색이 나온다.
+          //
+          // **연회색을 색표에서 지운다.** 꺼낼 자리가 없으면 안 나온다.
+          onSurface: c.guideInk,
+          onSurfaceVariant: c.sub,
+          outline: c.sub,
+          // 선은 글자가 아니다. 여기까지 잉크색으로 만들면 화면이 격자가
+          // 된다. 우리가 쓰던 선 색을 그대로 준다.
+          outlineVariant: c.line,
+        );
 
     final base = ThemeData(
       useMaterial3: true,
@@ -1012,7 +1080,8 @@ class SimpleTextApp extends StatelessWidget {
       // 체크 표시도 하늘색으로. 기본값은 자동 색표라 또 가라앉는다.
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith(
-            (st) => st.contains(WidgetState.selected) ? kAccentFill : null),
+          (st) => st.contains(WidgetState.selected) ? kAccentFill : null,
+        ),
         checkColor: WidgetStateProperty.all(kOnAccentFill),
       ),
       // 글자만 있는 버튼과 테두리 버튼도 같은 하늘색으로.
@@ -1170,13 +1239,13 @@ class Note {
     List<Attach>? attachments,
     List<CustomRule>? rules,
     Map<String, dynamic>? extra,
-  })  : extra = extra ?? const <String, dynamic>{},
-        tags = tags ?? [],
-        history = history ?? [],
-        historyAt = historyAt ?? [],
-        historyWhy = historyWhy ?? [],
-        attachments = attachments ?? [],
-        rules = rules ?? [];
+  }) : extra = extra ?? const <String, dynamic>{},
+       tags = tags ?? [],
+       history = history ?? [],
+       historyAt = historyAt ?? [],
+       historyWhy = historyWhy ?? [],
+       attachments = attachments ?? [],
+       rules = rules ?? [];
 
   factory Note.fresh({String body = ''}) {
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -1194,10 +1263,29 @@ class Note {
 
   /// 우리가 아는 칸. 이 밖의 것은 [extra] 로 들어간다.
   static const Set<String> knownKeys = {
-    'v', 'id', 'title', 'body', 'originalBody', 'pinned', 'source', 'tags',
-    'createdAt', 'updatedAt', 'history', 'historyAt', 'lastReport',
-    'pastedAt', 'sourceAuto', 'titleAuto', 'tagsAuto', 'folder', 'taggedLen',
-    'locked', 'historyWhy', 'attach', 'rules',
+    'v',
+    'id',
+    'title',
+    'body',
+    'originalBody',
+    'pinned',
+    'source',
+    'tags',
+    'createdAt',
+    'updatedAt',
+    'history',
+    'historyAt',
+    'lastReport',
+    'pastedAt',
+    'sourceAuto',
+    'titleAuto',
+    'tagsAuto',
+    'folder',
+    'taggedLen',
+    'locked',
+    'historyWhy',
+    'attach',
+    'rules',
   };
 
   /// 기록에 남길 수 있는 최대 판 수.
@@ -1243,84 +1331,88 @@ class Note {
   String historyWhyOf(int i) => sideValue(historyWhy, history.length, i) ?? '';
 
   Map<String, dynamic> toJson() => {
-        // 모르는 칸을 먼저 깔고 아는 칸으로 덮는다. 차례가 반대면 옛
-        // 자료가 새 값을 이긴다.
-        ...extra,
-        'v': schema,
-        'id': id,
-        'title': title,
-        'body': body,
-        'originalBody': originalBody,
-        'pinned': pinned,
-        'source': source,
-        'tags': tags,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-        'history': history,
-        'historyAt': historyAt,
-        'historyWhy': historyWhy,
-        'lastReport': lastReport,
-        'pastedAt': pastedAt,
-        'sourceAuto': sourceAuto,
-        'titleAuto': titleAuto,
-        'tagsAuto': tagsAuto,
-        'folder': folder,
-        'taggedLen': taggedLen,
-        'locked': locked,
-        'attach': attachments.map((e) => e.toJson()).toList(),
-        'rules': rules
-            .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
-            .toList(),
-      };
+    // 모르는 칸을 먼저 깔고 아는 칸으로 덮는다. 차례가 반대면 옛
+    // 자료가 새 값을 이긴다.
+    ...extra,
+    'v': schema,
+    'id': id,
+    'title': title,
+    'body': body,
+    'originalBody': originalBody,
+    'pinned': pinned,
+    'source': source,
+    'tags': tags,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+    'history': history,
+    'historyAt': historyAt,
+    'historyWhy': historyWhy,
+    'lastReport': lastReport,
+    'pastedAt': pastedAt,
+    'sourceAuto': sourceAuto,
+    'titleAuto': titleAuto,
+    'tagsAuto': tagsAuto,
+    'folder': folder,
+    'taggedLen': taggedLen,
+    'locked': locked,
+    'attach': attachments.map((e) => e.toJson()).toList(),
+    'rules': rules
+        .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
+        .toList(),
+  };
 
   factory Note.fromJson(Map<String, dynamic> j) => Note(
-        id: j['id'] as String,
-        title: (j['title'] ?? '') as String,
-        body: (j['body'] ?? '') as String,
-        originalBody: (j['originalBody'] ?? '') as String,
-        pinned: (j['pinned'] ?? false) as bool,
-        source: (j['source'] ?? '') as String,
-        historyAt: ((j['historyAt'] ?? const []) as List)
-            .map((e) => e is int ? e : 0)
-            .toList(),
-        historyWhy: ((j['historyWhy'] ?? const []) as List)
-            .map((e) => e is String ? e : '')
-            .toList(),
-        pastedAt: (j['pastedAt'] ?? 0) as int,
-        sourceAuto: (j['sourceAuto'] ?? false) as bool,
-        // 예전 저장본에는 이 칸이 없다. 없으면 그냥 true로 두면 안 된다 —
-        // 사용자가 손으로 지은 제목이 다음 저장에서 통째로 덮인다. 그래서
-        // 지금 제목이 본문에서 뽑은 것과 같을 때만 '우리 것'으로 본다.
-        titleAuto: (j['titleAuto'] ??
-            (((j['title'] ?? '') as String).trim().isEmpty ||
-                ((j['title'] ?? '') as String) ==
-                    autoTitle((j['body'] ?? '') as String))) as bool,
-        tagsAuto: (j['tagsAuto'] ??
-            (((j['tags'] ?? const []) as List).isEmpty)) as bool,
-        folder: normalizeFolder((j['folder'] ?? '') as String),
-        taggedLen: (j['taggedLen'] ?? -1) as int,
-        locked: (j['locked'] ?? false) as bool,
-        attachments: ((j['attach'] ?? const []) as List)
-            .map(Attach.fromJson)
-            .whereType<Attach>()
-            .toList(),
-        rules: ((j['rules'] ?? const []) as List)
-            .map((e) => CustomRule(
-                  find: (e['find'] ?? '') as String,
-                  replace: (e['replace'] ?? '') as String,
-                  regex: (e['regex'] ?? false) as bool,
-                ))
-            .toList(),
-        extra: {
-          for (final e in j.entries)
-            if (!knownKeys.contains(e.key)) e.key: e.value,
-        },
-        tags: ((j['tags'] ?? []) as List).map((e) => e.toString()).toList(),
-        createdAt: (j['createdAt'] ?? 0) as int,
-        updatedAt: (j['updatedAt'] ?? 0) as int,
-        history: ((j['history'] ?? []) as List).map((e) => e.toString()).toList(),
-        lastReport: (j['lastReport'] ?? '') as String,
-      );
+    id: j['id'] as String,
+    title: (j['title'] ?? '') as String,
+    body: (j['body'] ?? '') as String,
+    originalBody: (j['originalBody'] ?? '') as String,
+    pinned: (j['pinned'] ?? false) as bool,
+    source: (j['source'] ?? '') as String,
+    historyAt: ((j['historyAt'] ?? const []) as List)
+        .map((e) => e is int ? e : 0)
+        .toList(),
+    historyWhy: ((j['historyWhy'] ?? const []) as List)
+        .map((e) => e is String ? e : '')
+        .toList(),
+    pastedAt: (j['pastedAt'] ?? 0) as int,
+    sourceAuto: (j['sourceAuto'] ?? false) as bool,
+    // 예전 저장본에는 이 칸이 없다. 없으면 그냥 true로 두면 안 된다 —
+    // 사용자가 손으로 지은 제목이 다음 저장에서 통째로 덮인다. 그래서
+    // 지금 제목이 본문에서 뽑은 것과 같을 때만 '우리 것'으로 본다.
+    titleAuto:
+        (j['titleAuto'] ??
+                (((j['title'] ?? '') as String).trim().isEmpty ||
+                    ((j['title'] ?? '') as String) ==
+                        autoTitle((j['body'] ?? '') as String)))
+            as bool,
+    tagsAuto:
+        (j['tagsAuto'] ?? (((j['tags'] ?? const []) as List).isEmpty)) as bool,
+    folder: normalizeFolder((j['folder'] ?? '') as String),
+    taggedLen: (j['taggedLen'] ?? -1) as int,
+    locked: (j['locked'] ?? false) as bool,
+    attachments: ((j['attach'] ?? const []) as List)
+        .map(Attach.fromJson)
+        .whereType<Attach>()
+        .toList(),
+    rules: ((j['rules'] ?? const []) as List)
+        .map(
+          (e) => CustomRule(
+            find: (e['find'] ?? '') as String,
+            replace: (e['replace'] ?? '') as String,
+            regex: (e['regex'] ?? false) as bool,
+          ),
+        )
+        .toList(),
+    extra: {
+      for (final e in j.entries)
+        if (!knownKeys.contains(e.key)) e.key: e.value,
+    },
+    tags: ((j['tags'] ?? []) as List).map((e) => e.toString()).toList(),
+    createdAt: (j['createdAt'] ?? 0) as int,
+    updatedAt: (j['updatedAt'] ?? 0) as int,
+    history: ((j['history'] ?? []) as List).map((e) => e.toString()).toList(),
+    lastReport: (j['lastReport'] ?? '') as String,
+  );
 }
 
 /// 사용자 정리 규칙 설정 (웹 프로토타입과 동일 기본값)
@@ -1338,6 +1430,7 @@ class AppSettings {
   // 기본값을 덮어쓴다). 그래서 고칠 자리는 엔진이 아니라 여기다.
   String emphStyle = 'keep';
   String hrMode = 'keep';
+
   /// 2026-08-18 — 'strip'에서 'keep'으로.
   ///
   /// 소유자 신고: "너 # 이나 ##를 볼드체로 안 하는 거 아니니?" 화면은
@@ -1582,6 +1675,7 @@ class AppSettings {
   /// 전면 광고를 본 날(YYYY-MM-DD). 이 날짜가 오늘이면 그날은 배너까지
   /// 광고가 전부 사라진다(소유자 확정 규칙). 판정은 core/ad_gate.dart.
   String adFreeDate = '';
+
   /// 마법사에서 등록해 둔 지시문. 최근에 쓴 것이 앞이다(core/mru.dart).
   List<String> favPrompts = [];
 
@@ -1594,72 +1688,72 @@ class AppSettings {
   List<CustomRule> customRules = [];
 
   Map<String, dynamic> toJson() => {
-        'rev': settingsRev,
-        'emphStyle': emphStyle,
-        'hrMode': hrMode,
-        'headingMode': headingMode,
-        'quoteMode': quoteMode,
-        'headingSymbol': headingSymbol,
-        'bulletChar': bulletChar,
-        'smartDashList': smartDashList,
-        'smartFillerHeading': smartFillerHeading,
-        'headingBig': headingBig,
-        'tableFix': tableFix,
-        'wideTables': wideTables,
-        'headingPad': headingPad,
-        'headingPadAbove': headingPadAbove,
-        'headingPadBelow': headingPadBelow,
-        'bulletIndent': bulletIndent,
-        'removeCitations': removeCitations,
-        'monoEditor': monoEditor,
-        'previewBeforeApply': previewBeforeApply,
-        'pasteTipDone': pasteTipDone,
-        'bodyFontSize': bodyFontSize,
-        'bodyFont': bodyFont,
-        'bodyLineHeight': bodyLineHeight,
-        'prefsStamp': prefsStamp,
-        'prefsSig': prefsSig,
-        'aiKey': aiKey,
-        'aiKeySync': aiKeySync,
-        'aiKeyStamp': aiKeyStamp,
-        'aiKeySig': aiKeySig,
-        'aiProvider': aiProvider,
-        'aiModel': aiModel,
-        'aiModels': aiModels,
-        'adFreeDate': adFreeDate,
-        'themeMode': themeMode,
-        'paperMode': paperMode,
-        'lockOn': lockOn,
-        'lockGraceSec': lockGraceSec,
-        'premium': premium,
-        'ent': ent.toJson(),
-        'legacyFree': legacyFree,
-        'tidyDate': tidyDate,
-        'tidyCount': tidyCount,
-        'wizDate': wizDate,
-        'wizCount': wizCount,
-        'trialDays': trialDays,
-        'trialLastDate': trialLastDate,
-        'trialTidyTotal': trialTidyTotal,
-        'trialWizTotal': trialWizTotal,
-        'trialNoticeShown': trialNoticeShown,
-        'onboardShown': onboardShown,
-        'rulesStamp': rulesStamp,
-        'rulesSig': rulesSig,
-        'syncBackend': syncBackend,
-        'listWidth': listWidth,
-        'autoTagAi': autoTagAi,
-        'sortMode': sortMode,
-        'filterSource': filterSource,
-        'filterTag': filterTag,
-        'filterFolder': filterFolder,
-        'folders': folders,
-        'favPrompts': favPrompts,
-        'recentPrompts': recentPrompts,
-        'customRules': customRules
-            .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
-            .toList(),
-      };
+    'rev': settingsRev,
+    'emphStyle': emphStyle,
+    'hrMode': hrMode,
+    'headingMode': headingMode,
+    'quoteMode': quoteMode,
+    'headingSymbol': headingSymbol,
+    'bulletChar': bulletChar,
+    'smartDashList': smartDashList,
+    'smartFillerHeading': smartFillerHeading,
+    'headingBig': headingBig,
+    'tableFix': tableFix,
+    'wideTables': wideTables,
+    'headingPad': headingPad,
+    'headingPadAbove': headingPadAbove,
+    'headingPadBelow': headingPadBelow,
+    'bulletIndent': bulletIndent,
+    'removeCitations': removeCitations,
+    'monoEditor': monoEditor,
+    'previewBeforeApply': previewBeforeApply,
+    'pasteTipDone': pasteTipDone,
+    'bodyFontSize': bodyFontSize,
+    'bodyFont': bodyFont,
+    'bodyLineHeight': bodyLineHeight,
+    'prefsStamp': prefsStamp,
+    'prefsSig': prefsSig,
+    'aiKey': aiKey,
+    'aiKeySync': aiKeySync,
+    'aiKeyStamp': aiKeyStamp,
+    'aiKeySig': aiKeySig,
+    'aiProvider': aiProvider,
+    'aiModel': aiModel,
+    'aiModels': aiModels,
+    'adFreeDate': adFreeDate,
+    'themeMode': themeMode,
+    'paperMode': paperMode,
+    'lockOn': lockOn,
+    'lockGraceSec': lockGraceSec,
+    'premium': premium,
+    'ent': ent.toJson(),
+    'legacyFree': legacyFree,
+    'tidyDate': tidyDate,
+    'tidyCount': tidyCount,
+    'wizDate': wizDate,
+    'wizCount': wizCount,
+    'trialDays': trialDays,
+    'trialLastDate': trialLastDate,
+    'trialTidyTotal': trialTidyTotal,
+    'trialWizTotal': trialWizTotal,
+    'trialNoticeShown': trialNoticeShown,
+    'onboardShown': onboardShown,
+    'rulesStamp': rulesStamp,
+    'rulesSig': rulesSig,
+    'syncBackend': syncBackend,
+    'listWidth': listWidth,
+    'autoTagAi': autoTagAi,
+    'sortMode': sortMode,
+    'filterSource': filterSource,
+    'filterTag': filterTag,
+    'filterFolder': filterFolder,
+    'folders': folders,
+    'favPrompts': favPrompts,
+    'recentPrompts': recentPrompts,
+    'customRules': customRules
+        .map((r) => {'find': r.find, 'replace': r.replace, 'regex': r.regex})
+        .toList(),
+  };
 
   static AppSettings fromJson(Map<String, dynamic> j) {
     final s = AppSettings();
@@ -1709,7 +1803,8 @@ class AppSettings {
     s.headingSymbol = (j['headingSymbol'] ?? s.headingSymbol) as String;
     s.bulletChar = (j['bulletChar'] ?? s.bulletChar) as String;
     s.smartDashList = (j['smartDashList'] ?? s.smartDashList) as bool;
-    s.smartFillerHeading = (j['smartFillerHeading'] ?? s.smartFillerHeading) as bool;
+    s.smartFillerHeading =
+        (j['smartFillerHeading'] ?? s.smartFillerHeading) as bool;
     s.headingBig = (j['headingBig'] ?? s.headingBig) as bool;
     s.tableFix = (j['tableFix'] ?? s.tableFix) as bool;
     s.wideTables = (j['wideTables'] ?? s.wideTables) as String;
@@ -1719,7 +1814,8 @@ class AppSettings {
     s.bulletIndent = (j['bulletIndent'] ?? s.bulletIndent) as int;
     s.removeCitations = (j['removeCitations'] ?? s.removeCitations) as bool;
     s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
-    s.previewBeforeApply = (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
+    s.previewBeforeApply =
+        (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
     s.pasteTipDone = (j['pasteTipDone'] ?? s.pasteTipDone) as bool;
     // 2026-08-17 — 기본값을 껐다. 기본값만 바꾸면 이미 쓰던 기기는 저장된
     // true를 그대로 읽어 와서 아무것도 안 바뀐다(2026-08-14에 따옴표
@@ -1735,8 +1831,8 @@ class AppSettings {
     }
     s.bodyFontSize = ((j['bodyFontSize'] ?? s.bodyFontSize) as num).toDouble();
     s.bodyFont = safeBodyFont(j['bodyFont'] as String?);
-    s.bodyLineHeight =
-        ((j['bodyLineHeight'] ?? s.bodyLineHeight) as num).toDouble();
+    s.bodyLineHeight = ((j['bodyLineHeight'] ?? s.bodyLineHeight) as num)
+        .toDouble();
     // 2026-08-24 — 기본값을 클로드 앱 실측(16 / 1.5)에 맞추면서, 옛 기본값
     // (17 / 1.6)을 손대지 않고 쓰던 기기는 새 기본값으로 옮긴다. 두 값이
     // 동시에 옛 기본값일 때만 건드리므로, 직접 고른 크기·줄간은 그대로다.
@@ -1796,17 +1892,23 @@ class AppSettings {
     // 모르는 이름이 들어와도 paperById가 '기본'으로 떨어뜨린다.
     s.paperMode = (j['paperMode'] ?? s.paperMode) as String;
     s.lockOn = (j['lockOn'] ?? s.lockOn) as bool;
-    s.lockGraceSec = normalizeLockDelay((j['lockGraceSec'] ?? s.lockGraceSec) as int);
-    s.favPrompts =
-        ((j['favPrompts'] ?? []) as List).map((e) => e.toString()).toList();
-    s.recentPrompts =
-        ((j['recentPrompts'] ?? []) as List).map((e) => e.toString()).toList();
+    s.lockGraceSec = normalizeLockDelay(
+      (j['lockGraceSec'] ?? s.lockGraceSec) as int,
+    );
+    s.favPrompts = ((j['favPrompts'] ?? []) as List)
+        .map((e) => e.toString())
+        .toList();
+    s.recentPrompts = ((j['recentPrompts'] ?? []) as List)
+        .map((e) => e.toString())
+        .toList();
     s.customRules = ((j['customRules'] ?? []) as List)
-        .map((e) => CustomRule(
-              find: (e['find'] ?? '') as String,
-              replace: (e['replace'] ?? '') as String,
-              regex: (e['regex'] ?? false) as bool,
-            ))
+        .map(
+          (e) => CustomRule(
+            find: (e['find'] ?? '') as String,
+            replace: (e['replace'] ?? '') as String,
+            regex: (e['regex'] ?? false) as bool,
+          ),
+        )
         .toList();
     return s;
   }
@@ -1874,7 +1976,10 @@ class Store extends ChangeNotifier {
     }
     try {
       final raw = prefs.getString(_settingsKey);
-      if (raw != null) settings = AppSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      if (raw != null)
+        settings = AppSettings.fromJson(
+          jsonDecode(raw) as Map<String, dynamic>,
+        );
     } catch (_) {}
 
     // AI 키는 설정 JSON이 아니라 키체인에 있다(core/key_vault.dart).
@@ -1905,7 +2010,10 @@ class Store extends ChangeNotifier {
     // 한 번만 올린다.
     final tnow = DateTime.now();
     final td = bumpTrialDays(
-        now: tnow, lastDate: settings.trialLastDate, trialDays: settings.trialDays);
+      now: tnow,
+      lastDate: settings.trialLastDate,
+      trialDays: settings.trialDays,
+    );
     if (td != settings.trialDays) {
       settings.trialDays = td;
       settings.trialLastDate = usageDateKey(tnow);
@@ -1999,7 +2107,10 @@ class Store extends ChangeNotifier {
   void touch() {
     _dirty = true;
     _writeTimer?.cancel();
-    _writeTimer = Timer(const Duration(milliseconds: 700), () => unawaited(flush()));
+    _writeTimer = Timer(
+      const Duration(milliseconds: 700),
+      () => unawaited(flush()),
+    );
   }
 
   /// 모아 둔 것을 지금 쓴다. 안 바뀌었으면 아무것도 안 한다.
@@ -2227,8 +2338,11 @@ class Store extends ChangeNotifier {
   /// **손댄 것을 고르는 이유**: 사용자가 시드 위에 뭔가 적어 뒀을 수 있다.
   /// 그걸 버리고 깨끗한 쪽을 남기면 조용한 데이터 손실이 된다.
   static bool foldOldSeeds(
-      List<Note> notes, List<Map<String, dynamic>> tombstones) {
-    final olds = notes.where((n) => n.id.startsWith('seed-') && n.id != kSeedId)
+    List<Note> notes,
+    List<Map<String, dynamic>> tombstones,
+  ) {
+    final olds = notes
+        .where((n) => n.id.startsWith('seed-') && n.id != kSeedId)
         .toList();
     if (olds.isEmpty) return false;
 
@@ -2286,6 +2400,7 @@ Future<bool> toggleNoteLock(BuildContext context, Note n) async {
   }
   return true;
 }
+
 /// 고른 창고에 맞는 통로를 끼운다.
 ///
 /// 2026-08-20. 이 일을 하는 자리를 **하나로 못 박는다.** 설정에서 고를 때와
@@ -2358,8 +2473,12 @@ class SyncSay {
   /// 맞추고 있다고 나오는 건 모순." 맞다. 그리고 둘 다 사실이었다 —
   /// 한 바퀴가 끝났고 30초 뒤 다음 바퀴가 시작됐을 뿐이다.
   /// **둘 다 사실인데 나란히 놓으니 거짓이 됐다.**
-  factory SyncSay.of(L10n l, SyncState st,
-      {bool paused = false, bool everSynced = false}) {
+  factory SyncSay.of(
+    L10n l,
+    SyncState st, {
+    bool paused = false,
+    bool everSynced = false,
+  }) {
     final gdrive = Store.instance.settings.syncBackend == 'gdrive';
     final where = gdrive ? l.syncBackendGdrive : l.syncBackendIcloud;
     if (paused) return SyncSay(l.syncBackendNone, l.syncBackendNoneSub);
@@ -2385,8 +2504,10 @@ class SyncSay {
             DriveAuth.instance.authExpired) {
           return SyncSay(l.syncOffTitle, l.syncStateExpiredGdrive);
         }
-        return SyncSay(l.syncOffTitle,
-            gdrive ? l.syncStateOffGdrive : l.syncStateOff);
+        return SyncSay(
+          l.syncOffTitle,
+          gdrive ? l.syncStateOffGdrive : l.syncStateOff,
+        );
     }
   }
 }
@@ -2402,11 +2523,14 @@ Future<void> applySyncBackend() async {
 void _toast(BuildContext context, String msg) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
+    ..showSnackBar(
+      SnackBar(
         content: Text(msg),
         // 2026-08-18 소유자 요청 — "'깔끔하게 정리했습니다'가 1초 정도
         // 줄어들면 좋겠어." 2초는 이미 읽은 글을 한 번 더 보는 시간이다.
-        duration: const Duration(milliseconds: 1100)));
+        duration: const Duration(milliseconds: 1100),
+      ),
+    );
 }
 
 /// 아이폰이 붙여넣을 때마다 묻는 것을 없애는 길 안내.
@@ -2446,19 +2570,30 @@ Future<void> showPasteTip(BuildContext context) async {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(children: [
-                Icon(Icons.content_paste_go, size: 22, color: sheet.c.accent),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(l.pasteTipTitle,
+              Row(
+                children: [
+                  Icon(Icons.content_paste_go, size: 22, color: sheet.c.accent),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l.pasteTipTitle,
                       style: const TextStyle(
-                          fontSize: 19, fontWeight: FontWeight.w800)),
-                ),
-              ]),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
-              Text(l.pasteTipBody,
-                  style: TextStyle(
-                      fontSize: 15, height: 1.55, color: sheet.c.guideInk)),
+              Text(
+                l.pasteTipBody,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.55,
+                  color: sheet.c.guideInk,
+                ),
+              ),
               const SizedBox(height: 18),
               FilledButton(
                 onPressed: () async {
@@ -2469,8 +2604,10 @@ Future<void> showPasteTip(BuildContext context) async {
                   // 그 침묵이 제일 나쁘다(2026-08-16에 같은 자리를 겪었다).
                   if (!ok) _toast(context, L10n.of(context).syncOpenManual);
                 },
-                child: Text(l.syncOpenSettings,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                child: Text(
+                  l.syncOpenSettings,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
               const SizedBox(height: 6),
               TextButton(
@@ -2528,7 +2665,8 @@ Future<void> infoDialog(
   required String title,
   required String body,
 }) async {
-  final apple = defaultTargetPlatform == TargetPlatform.iOS ||
+  final apple =
+      defaultTargetPlatform == TargetPlatform.iOS ||
       defaultTargetPlatform == TargetPlatform.macOS;
   await showAdaptiveDialog<void>(
     context: context,
@@ -2538,7 +2676,9 @@ Future<void> infoDialog(
         return CupertinoAlertDialog(
           title: Text(title),
           content: Padding(
-              padding: const EdgeInsets.only(top: 8), child: Text(body)),
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(body),
+          ),
           actions: [
             CupertinoDialogAction(
               isDefaultAction: true,
@@ -2552,8 +2692,7 @@ Future<void> infoDialog(
         title: Text(title),
         content: Text(body),
         actions: [
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx), child: Text(ok)),
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(ok)),
         ],
       );
     },
@@ -2567,7 +2706,8 @@ Future<bool> confirmDialog(
   required String okLabel,
   bool destructive = false,
 }) async {
-  final apple = defaultTargetPlatform == TargetPlatform.iOS ||
+  final apple =
+      defaultTargetPlatform == TargetPlatform.iOS ||
       defaultTargetPlatform == TargetPlatform.macOS;
   final ok = await showAdaptiveDialog<bool>(
     context: context,
@@ -2580,7 +2720,8 @@ Future<bool> confirmDialog(
               ? null
               : Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(body)),
+                  child: Text(body),
+                ),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(ctx, false),
@@ -2600,11 +2741,15 @@ Future<bool> confirmDialog(
         content: body == null ? null : Text(body),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false), child: Text(cancel)),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(cancel),
+          ),
           FilledButton(
             style: destructive
                 ? FilledButton.styleFrom(
-                    backgroundColor: ctx.c.danger, foregroundColor: Colors.white)
+                    backgroundColor: ctx.c.danger,
+                    foregroundColor: Colors.white,
+                  )
                 : null,
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(okLabel),
@@ -2629,7 +2774,11 @@ Future<bool> confirmDialog(
 /// 되돌리기 버튼은 여기에 안 붙인다. 사라지는 알림에 버튼을 달면 누르려는
 /// 순간 사라지는 일이 생긴다 — 그건 없느니만 못하다. 되돌리기는 아래 도구
 /// 막대에 늘 있고, 무엇이 바뀌었는지는 편집 화면 밑줄에 계속 남는다.
-Future<void> showMagic(BuildContext context, String title, String detail) async {
+Future<void> showMagic(
+  BuildContext context,
+  String title,
+  String detail,
+) async {
   final overlay = Overlay.maybeOf(context);
   if (overlay == null) return;
   final entry = OverlayEntry(
@@ -2644,7 +2793,11 @@ class _MagicPuff extends StatefulWidget {
   final String title;
   final String detail;
   final AppC c;
-  const _MagicPuff({required this.title, required this.detail, required this.c});
+  const _MagicPuff({
+    required this.title,
+    required this.detail,
+    required this.c,
+  });
 
   /// 2026-08-17 소유자 지적 — "너무 속전속결이라 뭐라는지 모르겠다."
   ///
@@ -2662,8 +2815,10 @@ class _MagicPuff extends StatefulWidget {
 
 class _MagicPuffState extends State<_MagicPuff>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _a =
-      AnimationController(vsync: this, duration: _MagicPuff.life)..forward();
+  late final AnimationController _a = AnimationController(
+    vsync: this,
+    duration: _MagicPuff.life,
+  )..forward();
 
   @override
   void dispose() {
@@ -2687,7 +2842,8 @@ class _MagicPuffState extends State<_MagicPuff>
 
             final inT = (t / 0.22).clamp(0.0, 1.0);
             final outT = ((t - 0.80) / 0.20).clamp(0.0, 1.0);
-            final opacity = (calm ? inT : Curves.easeOutSine.transform(inT)) *
+            final opacity =
+                (calm ? inT : Curves.easeOutSine.transform(inT)) *
                 (1 - Curves.easeInSine.transform(outT));
             // 튀어 오르는 곡선(easeOutBack)을 뺐다. 통통 튀는 것은
             // 경쾌하지 우아하지 않다. 아주 조금만 커지며 조용히 자리를
@@ -2696,7 +2852,8 @@ class _MagicPuffState extends State<_MagicPuff>
                 ? 1.0
                 : 0.94 + 0.06 * Curves.easeOutCubic.transform(inT);
             // 들어올 때 살짝 내려앉고, 나갈 때 살짝 떠오른다. 숨 쉬듯이.
-            final lift = 6.0 * (1 - Curves.easeOutCubic.transform(inT)) -
+            final lift =
+                6.0 * (1 - Curves.easeOutCubic.transform(inT)) -
                 14.0 * Curves.easeInSine.transform(outT);
 
             return Stack(
@@ -2704,7 +2861,9 @@ class _MagicPuffState extends State<_MagicPuff>
               children: [
                 if (!calm)
                   Positioned.fill(
-                    child: CustomPaint(painter: _DustPainter(t: t, c: c)),
+                    child: CustomPaint(
+                      painter: _DustPainter(t: t, c: c),
+                    ),
                   ),
                 Transform.translate(
                   offset: Offset(0, lift),
@@ -2731,54 +2890,59 @@ class _MagicPuffState extends State<_MagicPuff>
   /// 글자에 노란 이중 밑줄을 긋는다 — "이 글자가 어디에 얹힌 건지 모르겠다"는
   /// 표시다. 투명한 Material 한 겹을 두면 사라진다.
   Widget _card(AppC c) => Material(
-        type: MaterialType.transparency,
-        child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 40),
-        padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
-        decoration: BoxDecoration(
-          color: c.panel,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: c.accent.withValues(alpha: 0.35)),
-          boxShadow: [
-            // 그림자를 강조색으로 준다. 검정 그림자는 무겁고, 이건
-            // 빛이 나는 것처럼 보여야 한다.
-            BoxShadow(
-              color: c.accent.withValues(alpha: 0.28),
-              blurRadius: 34,
-              spreadRadius: 2,
+    type: MaterialType.transparency,
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+      decoration: BoxDecoration(
+        color: c.panel,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: c.accent.withValues(alpha: 0.35)),
+        boxShadow: [
+          // 그림자를 강조색으로 준다. 검정 그림자는 무겁고, 이건
+          // 빛이 나는 것처럼 보여야 한다.
+          BoxShadow(
+            color: c.accent.withValues(alpha: 0.28),
+            blurRadius: 34,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.auto_awesome, size: 30, color: c.accent),
+          const SizedBox(height: 10),
+          Text(
+            widget.title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: c.accent,
+            ),
+          ),
+          // 2026-08-17 소유자 지적 — "'마커 51개 제거'라는 말은 보여 줄
+          // 필요도 없다." 맞다. 몇 개를 지웠는지는 우리가 열심히 했다는
+          // 자랑이지 사용자가 알고 싶은 것이 아니다. 사용자가 알고 싶은
+          // 것은 '됐나?' 하나뿐이다.
+          //
+          // 자세한 셈은 편집 화면 밑줄에 그대로 남아 있다. 궁금한 사람은
+          // 거기서 본다.
+          if (widget.detail.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Text(
+              widget.detail,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 13.5, height: 1.35, color: c.sub),
             ),
           ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.auto_awesome, size: 30, color: c.accent),
-            const SizedBox(height: 10),
-            Text(widget.title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: c.accent)),
-            // 2026-08-17 소유자 지적 — "'마커 51개 제거'라는 말은 보여 줄
-            // 필요도 없다." 맞다. 몇 개를 지웠는지는 우리가 열심히 했다는
-            // 자랑이지 사용자가 알고 싶은 것이 아니다. 사용자가 알고 싶은
-            // 것은 '됐나?' 하나뿐이다.
-            //
-            // 자세한 셈은 편집 화면 밑줄에 그대로 남아 있다. 궁금한 사람은
-            // 거기서 본다.
-            if (widget.detail.isNotEmpty) ...[
-              const SizedBox(height: 5),
-              Text(widget.detail,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13.5, height: 1.35, color: c.sub)),
-            ],
-          ],
-        ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 /// 판에서 퍼져 나가는 빛알.
@@ -2834,10 +2998,30 @@ class _DustPainter extends CustomPainter {
     // 뾰족한 끝과 잘록한 허리. 허리를 0.3으로 두면 십자보다 별처럼 보인다.
     const waist = 0.30;
     path.moveTo(at.dx, at.dy - r);
-    path.quadraticBezierTo(at.dx + r * waist, at.dy - r * waist, at.dx + r, at.dy);
-    path.quadraticBezierTo(at.dx + r * waist, at.dy + r * waist, at.dx, at.dy + r);
-    path.quadraticBezierTo(at.dx - r * waist, at.dy + r * waist, at.dx - r, at.dy);
-    path.quadraticBezierTo(at.dx - r * waist, at.dy - r * waist, at.dx, at.dy - r);
+    path.quadraticBezierTo(
+      at.dx + r * waist,
+      at.dy - r * waist,
+      at.dx + r,
+      at.dy,
+    );
+    path.quadraticBezierTo(
+      at.dx + r * waist,
+      at.dy + r * waist,
+      at.dx,
+      at.dy + r,
+    );
+    path.quadraticBezierTo(
+      at.dx - r * waist,
+      at.dy + r * waist,
+      at.dx - r,
+      at.dy,
+    );
+    path.quadraticBezierTo(
+      at.dx - r * waist,
+      at.dy - r * waist,
+      at.dx,
+      at.dy - r,
+    );
     path.close();
     canvas.drawPath(path, p);
   }
@@ -2907,13 +3091,13 @@ class PlainCopyAction extends Action<PlainCopyIntent> {
     final v = st.textEditingValue;
     if (!v.selection.isValid || v.selection.isCollapsed) return null;
     Clipboard.setData(
-        ClipboardData(text: toPlain(v.selection.textInside(v.text))));
+      ClipboardData(text: toPlain(v.selection.textInside(v.text))),
+    );
     // 손끝에 한 번. 아무 일도 안 일어난 것처럼 보이면 두 번 누른다.
     HapticFeedback.selectionClick();
     return null;
   }
 }
-
 
 /// 무엇이 오가고 무엇이 안 오가나 — 두 화면이 같은 글을 쓴다.
 ///
@@ -2921,30 +3105,39 @@ class PlainCopyAction extends Action<PlainCopyIntent> {
 /// 군데에 손으로 적어 두면 한쪽만 고치는 날이 반드시 온다.
 Widget _syncScopeBody(BuildContext context, L10n l) {
   Widget line(String text) => Padding(
-        padding: const EdgeInsets.only(top: 7),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('· ', style: TextStyle(fontSize: 14, color: context.c.sub)),
-          Expanded(
-            child: Text(text,
-                // 2026-08-20 — 읽으라고 쓴 안내문이 14px이었다. 대비만
-                // 올리고 크기를 그대로 두면 절반만 고친 것이다.
-                style: TextStyle(
-                    fontSize: 15, height: 1.5, color: context.c.sub)),
+    padding: const EdgeInsets.only(top: 7),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('· ', style: TextStyle(fontSize: 14, color: context.c.sub)),
+        Expanded(
+          child: Text(
+            text,
+            // 2026-08-20 — 읽으라고 쓴 안내문이 14px이었다. 대비만
+            // 올리고 크기를 그대로 두면 절반만 고친 것이다.
+            style: TextStyle(fontSize: 15, height: 1.5, color: context.c.sub),
           ),
-        ]),
-      );
+        ),
+      ],
+    ),
+  );
   return Padding(
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      line(l.syncScopeShared),
-      line(l.syncScopeDevice),
-      line(l.syncScopeNever),
-      // 닿는 범위는 창고마다 다르다. 애플 것을 그대로 두면 구글을 골라
-      // 놓고도 "안드로이드는 백업 내보내기를 쓰세요"라고 말하게 된다.
-      line(Store.instance.settings.syncBackend == 'gdrive'
-          ? l.syncScopePlatformGdrive
-          : l.syncScopePlatform),
-    ]),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        line(l.syncScopeShared),
+        line(l.syncScopeDevice),
+        line(l.syncScopeNever),
+        // 닿는 범위는 창고마다 다르다. 애플 것을 그대로 두면 구글을 골라
+        // 놓고도 "안드로이드는 백업 내보내기를 쓰세요"라고 말하게 된다.
+        line(
+          Store.instance.settings.syncBackend == 'gdrive'
+              ? l.syncScopePlatformGdrive
+              : l.syncScopePlatform,
+        ),
+      ],
+    ),
   );
 }
 
@@ -2977,8 +3170,14 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
   /// 라디오 한 줄. 미닫이(_dropRow)를 안 쓰는 까닭은, 창고 고르기는
   /// **셋을 한눈에 견주는** 일이기 때문이다. 미닫이는 고른 하나만
   /// 보여 주므로 "다른 데 두면 뭐가 달라지나"에 답하지 못한다.
-  Widget _radioRow(String group, String value, String title, String? sub,
-      {bool enabled = true, String? badge}) {
+  Widget _radioRow(
+    String group,
+    String value,
+    String title,
+    String? sub, {
+    bool enabled = true,
+    String? badge,
+  }) {
     final c = context.c;
     final on = value == group;
     return InkWell(
@@ -2987,50 +3186,73 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
         opacity: enabled ? 1 : 0.45,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(on ? Icons.radio_button_checked : Icons.radio_button_off,
-                size: 21, color: on ? c.accent : c.sub),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Flexible(
-                      child: Text(title,
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight:
-                                  on ? FontWeight.w700 : FontWeight.w600,
-                              color: on ? c.accent : c.guideInk)),
-                    ),
-                    if (badge != null) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                            color: c.tagBg,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: c.tagLine)),
-                        child: Text(badge,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                on ? Icons.radio_button_checked : Icons.radio_button_off,
+                size: 21,
+                color: on ? c.accent : c.sub,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
                             style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: on
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              color: on ? c.accent : c.guideInk,
+                            ),
+                          ),
+                        ),
+                        if (badge != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: c.tagBg,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: c.tagLine),
+                            ),
+                            child: Text(
+                              badge,
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: c.tagInk)),
+                                color: c.tagInk,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (sub != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        sub,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          height: 1.35,
+                          color: c.sub,
+                        ),
                       ),
                     ],
-                  ]),
-                  if (sub != null) ...[
-                    const SizedBox(height: 3),
-                    Text(sub,
-                        style: TextStyle(
-                            fontSize: 13.5, height: 1.35, color: c.sub)),
                   ],
-                ],
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );
@@ -3092,8 +3314,10 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
       backgroundColor: context.c.bg,
       appBar: AppBar(
         backgroundColor: context.c.bg,
-        title: Text(l.syncTitle,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        title: Text(
+          l.syncTitle,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        ),
       ),
       body: narrowBody(
         context,
@@ -3103,24 +3327,36 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
             // ① 어디에 둘까
             _secHeader(l.syncWhereTitle),
             _card([
-              _radioRow(s.syncBackend, 'none', l.syncBackendNone,
-                  l.syncBackendNoneSub),
+              _radioRow(
+                s.syncBackend,
+                'none',
+                l.syncBackendNone,
+                l.syncBackendNoneSub,
+              ),
               _sep(),
-              _radioRow(s.syncBackend, 'icloud', l.syncBackendIcloud,
-                  l.syncBackendIcloudSub,
-                  enabled: isApplePlatform,
-                  badge: isApplePlatform ? null : l.syncAppleOnly),
+              _radioRow(
+                s.syncBackend,
+                'icloud',
+                l.syncBackendIcloud,
+                l.syncBackendIcloudSub,
+                enabled: isApplePlatform,
+                badge: isApplePlatform ? null : l.syncAppleOnly,
+              ),
               _sep(),
               // 2026-08-20 — 문을 열었다. 다만 **아무 데서나 열지는
               // 않는다.** 구글 로그인 플러그인이 안 받는 자리(윈도우·리눅스)와
               // 클라이언트 아이디를 안 넣고 빌드한 판에서는 눌러도 아무 일이
               // 안 일어나는 단추가 된다. DriveAuth.supported 가 그 둘을 다 본다.
-              _radioRow(s.syncBackend, 'gdrive', l.syncBackendGdrive,
-                  DriveAuth.instance.signedIn && s.syncBackend == 'gdrive'
-                      ? '${l.syncBackendGdriveSub} · ${l.driveSignedInAs} ${DriveAuth.instance.email}'
-                      : l.syncBackendGdriveSub,
-                  enabled: DriveAuth.supported,
-                  badge: DriveAuth.supported ? null : l.syncSoon),
+              _radioRow(
+                s.syncBackend,
+                'gdrive',
+                l.syncBackendGdrive,
+                DriveAuth.instance.signedIn && s.syncBackend == 'gdrive'
+                    ? '${l.syncBackendGdriveSub} · ${l.driveSignedInAs} ${DriveAuth.instance.email}'
+                    : l.syncBackendGdriveSub,
+                enabled: DriveAuth.supported,
+                badge: DriveAuth.supported ? null : l.syncSoon,
+              ),
             ]),
 
             // ② 지금 상태
@@ -3132,47 +3368,59 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                   builder: (_, st, __) {
                     final ok = st == SyncState.ok;
                     final busy = st == SyncState.running;
-                    final say = SyncSay.of(l, st,
-                        everSynced: sync.lastSyncMs.value > 0);
+                    final say = SyncSay.of(
+                      l,
+                      st,
+                      everSynced: sync.lastSyncMs.value > 0,
+                    );
                     final title = say.title;
                     final sub = say.sub;
                     final row = Padding(
                       padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-                      child: Row(children: [
-                        Icon(
+                      child: Row(
+                        children: [
+                          Icon(
                             ok
                                 ? Icons.cloud_done_outlined
                                 : busy
-                                    ? Icons.cloud_sync_outlined
-                                    : Icons.cloud_off_outlined,
+                                ? Icons.cloud_sync_outlined
+                                : Icons.cloud_off_outlined,
                             size: 22,
-                            color: ok ? context.c.accent : context.c.sub),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(title,
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                      color: ok
-                                          ? context.c.accent
-                                          : context.c.guideInk)),
-                              if (sub != null) ...[
-                                const SizedBox(height: 2),
-                                Text(sub,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        height: 1.35,
-                                        color: context.c.sub)),
-                              ],
-                            ],
+                            color: ok ? context.c.accent : context.c.sub,
                           ),
-                        ),
-                        if (!ok && !busy)
-                          Icon(Icons.chevron_right, color: context.c.sub),
-                      ]),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: ok
+                                        ? context.c.accent
+                                        : context.c.guideInk,
+                                  ),
+                                ),
+                                if (sub != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    sub,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      height: 1.35,
+                                      color: context.c.sub,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (!ok && !busy)
+                            Icon(Icons.chevron_right, color: context.c.sub),
+                        ],
+                      ),
                     );
                     if (ok || busy) return row;
                     return InkWell(
@@ -3206,28 +3454,37 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                     final busy = sync.state.value == SyncState.running;
                     return Padding(
                       padding: EdgeInsets.fromLTRB(16, 12, busy ? 16 : 8, 12),
-                      child: Row(children: [
-                        Expanded(
-                          child: Text(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
                               // 도는 중이면 시각 대신 '지금 어떤가'를 말한다.
                               // 시각과 '맞추는 중'을 함께 놓으면 두 줄이 서로
                               // 다른 순간을 가리켜 모순으로 읽힌다.
                               busy
                                   ? l.syncNowBusy
                                   : ms == 0
-                                      ? l.syncLastNever
-                                      : l.syncLastAt(_when(ms)),
+                                  ? l.syncLastNever
+                                  : l.syncLastAt(_when(ms)),
                               style: TextStyle(
-                                  fontSize: 13.5, color: context.c.sub)),
-                        ),
-                        if (!busy)
-                          TextButton(
-                            onPressed: () => unawaited(sync.syncNow()),
-                            child: Text(l.syncNowAction,
-                                style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
+                                fontSize: 13.5,
+                                color: context.c.sub,
+                              ),
+                            ),
                           ),
-                      ]),
+                          if (!busy)
+                            TextButton(
+                              onPressed: () => unawaited(sync.syncNow()),
+                              child: Text(
+                                l.syncNowAction,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -3235,14 +3492,18 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                 // 동기화 기록(2026-08-27). '되고 있나'에 상태 문구보다
                 // 정확히 답하는 자리다 — 무엇이 언제 몇 개 오갔는지.
                 ListTile(
-                  title: Text(l.syncLogTitle,
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w600)),
-                  trailing:
-                      Icon(Icons.chevron_right, color: context.c.sub),
+                  title: Text(
+                    l.syncLogTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  trailing: Icon(Icons.chevron_right, color: context.c.sub),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                        builder: (_) => const SyncLogScreen()),
+                      builder: (_) => const SyncLogScreen(),
+                    ),
                   ),
                 ),
               ]),
@@ -3257,16 +3518,26 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
             _card([
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-                child: Text(l.syncTroubleNote,
-                    style: TextStyle(
-                        fontSize: 14, height: 1.5, color: context.c.guideInk)),
+                child: Text(
+                  l.syncTroubleNote,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: context.c.guideInk,
+                  ),
+                ),
               ),
               _sep(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-                child: Text('${l.exportBackup} — ${l.exportBackupSub}',
-                    style:
-                        TextStyle(fontSize: 13.5, height: 1.45, color: context.c.sub)),
+                child: Text(
+                  '${l.exportBackup} — ${l.exportBackupSub}',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.45,
+                    color: context.c.sub,
+                  ),
+                ),
               ),
             ]),
           ],
@@ -3367,10 +3638,7 @@ class Glass extends StatelessWidget {
               ? LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    c.glass,
-                    c.glass.withValues(alpha: 0),
-                  ],
+                  colors: [c.glass, c.glass.withValues(alpha: 0)],
                 )
               : null,
           borderRadius: radius,
@@ -3396,8 +3664,12 @@ class Glass extends StatelessWidget {
 ///
 /// 메모를 여는 자리가 앱 안에 네 군데 있다. 규칙을 이 함수 하나에 모으지
 /// 않았다면 넓은 화면을 지원하면서 그중 하나는 반드시 빠뜨렸을 것이다.
-Future<void> openNote(BuildContext context, String id,
-    {bool autoTidy = false, bool showMeta = false}) async {
+Future<void> openNote(
+  BuildContext context,
+  String id, {
+  bool autoTidy = false,
+  bool showMeta = false,
+}) async {
   // 잠긴 메모는 여기서 막는다. 바로 위 주석이 말한 그 까닭 그대로다 —
   // 여는 자리가 넷인데 그중 하나라도 빠뜨리면 이건 잠금이 아니라
   // **잠금처럼 보이는 것**이 된다.
@@ -3415,8 +3687,9 @@ Future<void> openNote(BuildContext context, String id,
   await Navigator.push(
     context,
     MaterialPageRoute(
-        builder: (_) => EditorScreen(
-            noteId: id, autoTidy: autoTidy, showMeta: showMeta)),
+      builder: (_) =>
+          EditorScreen(noteId: id, autoTidy: autoTidy, showMeta: showMeta),
+    ),
   );
 }
 
@@ -3520,9 +3793,10 @@ class SplitShellState extends State<SplitShell> {
   /// 값을 State 가 들고 있고 설정에는 **손을 뗄 때만** 적는다. 끄는 동안
   /// 매 프레임 저장하면 초당 예순 번 파일을 쓴다.
   double? _drag;
-  double get _listW =>
-      (_drag ?? Store.instance.settings.listWidth)
-          .clamp(SplitShell.kListMin, SplitShell.kListMax);
+  double get _listW => (_drag ?? Store.instance.settings.listWidth).clamp(
+    SplitShell.kListMin,
+    SplitShell.kListMax,
+  );
 
   String? _openId;
   bool _autoTidy = false;
@@ -3591,137 +3865,148 @@ class SplitShellState extends State<SplitShell> {
       backgroundColor: c.bg,
       body: SafeArea(
         bottom: false,
-        child: Column(children: [
-          // 배너는 두 칸 위를 가로지른다. 왼쪽 칸 안에만 두면 320pt짜리
-          // 광고 자리가 되어 채울 소재가 거의 없다.
-          const TopBannerBar(),
-          Expanded(
-            child: Row(children: [
-              // 접을 때 폭만 0으로 줄인다. 목록을 트리에서 빼 버리면 스크롤
-              // 위치와 고른 상태가 사라져서, 다시 펴면 맨 위로 돌아가 있다.
-              // 잠깐 감춘 것과 지운 것은 다르다.
-              //
-              // 안쪽은 OverflowBox로 320을 그대로 물려 준다. 폭이 줄어드는
-              // 동안 목록까지 같이 찌그러지면 글자가 겹쳐 보인다 — 접히는
-              // 것이 아니라 망가지는 것으로 읽힌다.
-              ClipRect(
-                child: AnimatedContainer(
-                  duration: MediaQuery.of(context).disableAnimations
-                      ? Duration.zero
-                      : const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  width: _listOpen ? _listW : 0,
-                  child: OverflowBox(
-                    alignment: Alignment.centerLeft,
-                    minWidth: _listW,
-                    maxWidth: _listW,
-                    child: OpenNote(
-                      id: _openId,
-                      child: const HomeScreen(embedded: true),
-                    ),
-                  ),
-                ),
-              ),
-              // 끄는 손잡이. 보이는 것은 선 하나지만 손이 닿는 자리는
-              // 열 배 넓다 — 1픽셀짜리 선을 정확히 집으라고 요구하는 것은
-              // 마우스에게도 무리다. 맥 앱들이 다 이렇게 한다.
-              if (_listOpen)
-                MouseRegion(
-                  cursor: SystemMouseCursors.resizeColumn,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onHorizontalDragUpdate: (d) => setState(() {
-                      _drag = (_drag ?? Store.instance.settings.listWidth) +
-                          d.delta.dx;
-                    }),
-                    onHorizontalDragEnd: (_) {
-                      // 손을 뗄 때 한 번만 적는다.
-                      final w = _listW;
-                      Store.instance.settings.listWidth = w;
-                      unawaited(Store.instance.persistSettings());
-                      setState(() => _drag = w);
-                    },
-                    child: SizedBox(
-                      width: 10,
-                      child: Center(
-                        child: Container(width: 1, color: c.line),
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  // 접을 때 폭만 0으로 줄인다. 목록을 트리에서 빼 버리면 스크롤
+                  // 위치와 고른 상태가 사라져서, 다시 펴면 맨 위로 돌아가 있다.
+                  // 잠깐 감춘 것과 지운 것은 다르다.
+                  //
+                  // 안쪽은 OverflowBox로 320을 그대로 물려 준다. 폭이 줄어드는
+                  // 동안 목록까지 같이 찌그러지면 글자가 겹쳐 보인다 — 접히는
+                  // 것이 아니라 망가지는 것으로 읽힌다.
+                  ClipRect(
+                    child: AnimatedContainer(
+                      duration: MediaQuery.of(context).disableAnimations
+                          ? Duration.zero
+                          : const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      width: _listOpen ? _listW : 0,
+                      child: OverflowBox(
+                        alignment: Alignment.centerLeft,
+                        minWidth: _listW,
+                        maxWidth: _listW,
+                        child: OpenNote(
+                          id: _openId,
+                          child: const HomeScreen(embedded: true),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              Expanded(
-                child: ColoredBox(
-                  color: _marginColor(context),
-                  child: !alive
-                    ? Stack(children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(40),
-                            child: Text(
-                              L10n.of(context).splitEmpty,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 16, height: 1.5, color: c.sub),
+                  // 끄는 손잡이. 보이는 것은 선 하나지만 손이 닿는 자리는
+                  // 열 배 넓다 — 1픽셀짜리 선을 정확히 집으라고 요구하는 것은
+                  // 마우스에게도 무리다. 맥 앱들이 다 이렇게 한다.
+                  if (_listOpen)
+                    MouseRegion(
+                      cursor: SystemMouseCursors.resizeColumn,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onHorizontalDragUpdate: (d) => setState(() {
+                          _drag =
+                              (_drag ?? Store.instance.settings.listWidth) +
+                              d.delta.dx;
+                        }),
+                        onHorizontalDragEnd: (_) {
+                          // 손을 뗄 때 한 번만 적는다.
+                          final w = _listW;
+                          Store.instance.settings.listWidth = w;
+                          unawaited(Store.instance.persistSettings());
+                          setState(() => _drag = w);
+                        },
+                        child: SizedBox(
+                          width: 10,
+                          child: Center(
+                            child: Container(width: 1, color: c.line),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child: ColoredBox(
+                      color: _marginColor(context),
+                      child: !alive
+                          ? Stack(
+                              children: [
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(40),
+                                    child: Text(
+                                      L10n.of(context).splitEmpty,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        height: 1.5,
+                                        color: c.sub,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // 편집 화면이 있을 때와 **같은 자리**에 둔다.
+                                // 열려 있든 비어 있든 새 노트 단추는 늘 오른쪽
+                                // 아래다 — 자리가 바뀌면 손이 매번 찾아야 한다.
+                                Positioned(
+                                  right: 16,
+                                  bottom: 16,
+                                  child: FloatingActionButton(
+                                    heroTag: 'split-new',
+                                    tooltip: L10n.of(context).newNoteTooltip,
+                                    backgroundColor: kAccentSoft,
+                                    foregroundColor: kOnAccentSoft,
+                                    onPressed: () async {
+                                      final note = Note.fresh();
+                                      store.notes.insert(0, note);
+                                      await store.persist();
+                                      if (!mounted) return;
+                                      open(note.id);
+                                    },
+                                    child: const Icon(
+                                      CupertinoIcons.square_pencil,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Center(
+                              // 글 칸을 화면 폭만큼 늘리지 않는다. 한 줄이 길어질수록
+                              // 눈이 다음 줄 첫머리를 찾기 어려워진다 — 읽기가 힘든
+                              // 것은 글자 크기가 아니라 줄 길이인 경우가 많다.
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: SplitShell.readWidth(context),
+                                ),
+                                child: AnimatedSwitcher(
+                                  // 오른쪽 칸이 바뀔 때 뚝 끊기지 않게 아주 짧게 겹친다.
+                                  // 180ms는 '봤다'와 '기다렸다' 사이의 값이다 — 더 길면
+                                  // 목록을 훑을 때 답답해진다.
+                                  //
+                                  // 움직임을 줄이도록 설정한 사용자에게는 아예 끈다.
+                                  // 그 설정은 취향이 아니라 어지럼증 대응인 경우가 많다.
+                                  duration:
+                                      MediaQuery.of(context).disableAnimations
+                                      ? Duration.zero
+                                      : const Duration(milliseconds: 180),
+                                  switchInCurve: Curves.easeOutCubic,
+                                  switchOutCurve: Curves.easeInCubic,
+                                  child: EditorScreen(
+                                    key: ValueKey(id),
+                                    noteId: id,
+                                    autoTidy: _autoTidy,
+                                    showMeta: _showMeta,
+                                    embedded: true,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        // 편집 화면이 있을 때와 **같은 자리**에 둔다.
-                        // 열려 있든 비어 있든 새 노트 단추는 늘 오른쪽
-                        // 아래다 — 자리가 바뀌면 손이 매번 찾아야 한다.
-                        Positioned(
-                          right: 16,
-                          bottom: 16,
-                          child: FloatingActionButton(
-                            heroTag: 'split-new',
-                            tooltip: L10n.of(context).newNoteTooltip,
-                            backgroundColor: kAccentSoft,
-                            foregroundColor: kOnAccentSoft,
-                            onPressed: () async {
-                              final note = Note.fresh();
-                              store.notes.insert(0, note);
-                              await store.persist();
-                              if (!mounted) return;
-                              open(note.id);
-                            },
-                            child: const Icon(CupertinoIcons.square_pencil,
-                                size: 24),
-                          ),
-                        ),
-                      ])
-                    : Center(
-                        // 글 칸을 화면 폭만큼 늘리지 않는다. 한 줄이 길어질수록
-                        // 눈이 다음 줄 첫머리를 찾기 어려워진다 — 읽기가 힘든
-                        // 것은 글자 크기가 아니라 줄 길이인 경우가 많다.
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                              maxWidth: SplitShell.readWidth(context)),
-                          child: AnimatedSwitcher(
-                        // 오른쪽 칸이 바뀔 때 뚝 끊기지 않게 아주 짧게 겹친다.
-                        // 180ms는 '봤다'와 '기다렸다' 사이의 값이다 — 더 길면
-                        // 목록을 훑을 때 답답해진다.
-                        //
-                        // 움직임을 줄이도록 설정한 사용자에게는 아예 끈다.
-                        // 그 설정은 취향이 아니라 어지럼증 대응인 경우가 많다.
-                        duration: MediaQuery.of(context).disableAnimations
-                            ? Duration.zero
-                            : const Duration(milliseconds: 180),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                          child: EditorScreen(
-                            key: ValueKey(id),
-                            noteId: id,
-                            autoTidy: _autoTidy,
-                            showMeta: _showMeta,
-                            embedded: true,
-                          ),
-                        ),
-                        ),
-                      ),
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ]),
-          ),
-        ]),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3765,8 +4050,11 @@ mixin _ScrollTopOnStatusBarTap<T extends StatefulWidget> on State<T>
   void handleStatusBarTap() {
     final c = topScroller;
     if (c == null || !c.hasClients || c.offset <= 0) return;
-    c.animateTo(0,
-        duration: const Duration(milliseconds: 260), curve: Curves.easeOutCubic);
+    c.animateTo(
+      0,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
   }
 }
 
@@ -3823,9 +4111,13 @@ class _HomeScreenState extends State<HomeScreen>
       // 첫 프레임이 그려진 뒤에 연다 — 그 전에는 Navigator 가 아직 없다.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        unawaited(Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => const PremiumScreen(),
-        )));
+        unawaited(
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const AdFreeScope(child: PremiumScreen()),
+            ),
+          ),
+        );
       });
     }
     _life = AppLifecycleListener(
@@ -3854,9 +4146,9 @@ class _HomeScreenState extends State<HomeScreen>
       final wantDrive = store.settings.syncBackend == 'gdrive';
       (wantDrive ? DriveAuth.instance.resume() : Future<bool>.value(false))
           .then((_) async {
-        await applySyncBackend();
-        ICloudSync.instance.boot();
-      });
+            await applySyncBackend();
+            ICloudSync.instance.boot();
+          });
     });
     // 다른 앱에서 보낸 글 받기(2026-08-17). 목록 화면이 살아 있는 동안
     // 계속 듣는다.
@@ -3903,10 +4195,12 @@ class _HomeScreenState extends State<HomeScreen>
       ready.removeListener(tick);
     }
     if (!mounted) return;
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => const OnboardingScreen(),
-      fullscreenDialog: true,
-    ));
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AdFreeScope(child: OnboardingScreen()),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   @override
@@ -3935,103 +4229,17 @@ class _HomeScreenState extends State<HomeScreen>
   /// 맨 아래는 앱 설정, 그 사이에 구분선. 두 화면의 메뉴가 다르게 생기면
   /// 사용자는 매번 새로 배운다.
   Widget _listMenu(L10n l) => PopupMenuButton<String>(
-        // 2026-08-17 소유자 요청 — 삼선. '...'은 애플이 '더 있음'을 뜻할 때
-        // 쓰는 표시고, 삼선은 '메뉴'를 뜻한다. 이 자리는 이제 불러오기·
-        // 내보내기·휴지통·설정이 들어 있는 진짜 메뉴다.
-        icon: const Icon(Icons.menu),
-        tooltip: l.moreTooltip,
-        // 메뉴가 '...' 버튼을 덮으면 같은 자리를 다시 눌러 닫을 수 없다
-        // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
-        position: PopupMenuPosition.under,
-        offset: const Offset(0, 6),
-        onSelected: (v) async {
-          switch (v) {
-            case 'import':
-              final n = await ImportService.importFiles();
-              if (!mounted) return;
-              setState(() {});
-              _toast(context, n > 0 ? l.importDone(n) : l.importNone);
-            case 'exportMd':
-              final ok = await ExportService.shareAllMarkdown();
-              if (!mounted) return;
-              if (!ok) _toast(context, l.exportEmpty);
-            case 'backup':
-              final ok = await ExportService.shareBackup();
-              if (!mounted) return;
-              if (!ok) _toast(context, l.exportFailed);
-            case 'sky':
-              await Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const ConstellationScreen()));
-              if (mounted) setState(() {});
-            case 'folders':
-              await Navigator.push(context,
-                  MaterialPageRoute(
-                      builder: (_) => const FolderManageScreen()));
-              if (mounted) setState(() {});
-            case 'trash':
-              await Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const TrashScreen()));
-              if (mounted) setState(() {});
-          }
-        },
-        itemBuilder: (ctx) {
-          // 편집 화면 메뉴와 같은 치수로 맞춘다(2026-08-27). 같은 일을
-          // 하는 두 서랍이 서로 다른 줄 높이를 쓰면 그게 눈에 걸린다.
-          PopupMenuItem<String> row(String v, IconData ic, String label) =>
-              PopupMenuItem<String>(
-                value: v,
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Row(children: [
-                  Icon(ic, size: 18, color: ctx.c.sub),
-                  const SizedBox(width: 10),
-                  Text(label, style: const TextStyle(fontSize: 15)),
-                ]),
-              );
-          return [
-            // --- 이 화면에서 하는 일 (앞으로 여기에 더 붙는다) ---
-            row('import', Icons.file_open_outlined, l.importFiles),
-            row('exportMd', Icons.folder_zip_outlined, l.exportAllMd),
-            row('backup', Icons.settings_backup_restore, l.exportBackup),
-            const PopupMenuDivider(height: 6),
-            // 2026-08-17 소유자 지시 — '앱 설정'을 메뉴에서 뺐다.
-            //
-            // 설정은 메뉴 안에 있을 이유가 없다. 메뉴 안의 것들은 가끔 하는
-            // 일이고 설정은 자주 여는 곳이다. 한 번 더 눌러야 열리는 것은
-            // 그만한 이유가 있을 때만 그렇게 둔다. 이제 위 줄 오른쪽 끝에
-            // 톱니바퀴로 나와 있다.
-            // 2026-08-18 소유자 지시 — '폴더 설정'은 여기.
-            row('sky', Icons.auto_awesome_outlined, l.skyAction),
-            row('folders', Icons.folder_outlined, l.folderManage),
-            row('trash', Icons.delete_outline, l.trashTitle),
-          ];
-        },
-      );
-
-  /// 맥 상단 '파일' 메뉴를 달고, 눌렀을 때 할 일을 잇는다.
-  ///
-  /// 글자를 여기서 넘기는 이유는 mac_menu.dart 머리말에 적어 뒀다 —
-  /// 짧게는, 아홉 언어 문구를 스위프트에 또 한 벌 두면 어긋나기 때문이다.
-  Future<void> _installMacMenu() async {
-    if (!mounted) return;
-    final l = L10n.of(context);
-    await MacMenu.install({
-      'file': l.menuFile,
-      'new': l.newNoteTooltip,
-      'import': l.importFiles,
-      'exportMd': l.exportAllMd,
-      'backup': l.exportBackup,
-      'close': l.menuClose,
-      'settings': l.menuPrefs,
-    }, onPick: (id) async {
-      if (!mounted) return;
-      switch (id) {
-        case 'new':
-          final fresh = Note.fresh(body: '');
-          store.notes.insert(0, fresh);
-          await store.persist();
-          if (!mounted) return;
-          await openNote(context, fresh.id);
+    // 2026-08-17 소유자 요청 — 삼선. '...'은 애플이 '더 있음'을 뜻할 때
+    // 쓰는 표시고, 삼선은 '메뉴'를 뜻한다. 이 자리는 이제 불러오기·
+    // 내보내기·휴지통·설정이 들어 있는 진짜 메뉴다.
+    icon: const Icon(Icons.menu),
+    tooltip: l.moreTooltip,
+    // 메뉴가 '...' 버튼을 덮으면 같은 자리를 다시 눌러 닫을 수 없다
+    // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
+    position: PopupMenuPosition.under,
+    offset: const Offset(0, 6),
+    onSelected: (v) async {
+      switch (v) {
         case 'import':
           final n = await ImportService.importFiles();
           if (!mounted) return;
@@ -4045,12 +4253,110 @@ class _HomeScreenState extends State<HomeScreen>
           final ok = await ExportService.shareBackup();
           if (!mounted) return;
           if (!ok) _toast(context, l.exportFailed);
-        case 'settings':
-          await Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()));
+        case 'sky':
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ConstellationScreen()),
+          );
+          if (mounted) setState(() {});
+        case 'folders':
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FolderManageScreen()),
+          );
+          if (mounted) setState(() {});
+        case 'trash':
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TrashScreen()),
+          );
           if (mounted) setState(() {});
       }
-    });
+    },
+    itemBuilder: (ctx) {
+      // 편집 화면 메뉴와 같은 치수로 맞춘다(2026-08-27). 같은 일을
+      // 하는 두 서랍이 서로 다른 줄 높이를 쓰면 그게 눈에 걸린다.
+      PopupMenuItem<String> row(String v, IconData ic, String label) =>
+          PopupMenuItem<String>(
+            value: v,
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Icon(ic, size: 18, color: ctx.c.sub),
+                const SizedBox(width: 10),
+                Text(label, style: const TextStyle(fontSize: 15)),
+              ],
+            ),
+          );
+      return [
+        // --- 이 화면에서 하는 일 (앞으로 여기에 더 붙는다) ---
+        row('import', Icons.file_open_outlined, l.importFiles),
+        row('exportMd', Icons.folder_zip_outlined, l.exportAllMd),
+        row('backup', Icons.settings_backup_restore, l.exportBackup),
+        const PopupMenuDivider(height: 6),
+        // 2026-08-17 소유자 지시 — '앱 설정'을 메뉴에서 뺐다.
+        //
+        // 설정은 메뉴 안에 있을 이유가 없다. 메뉴 안의 것들은 가끔 하는
+        // 일이고 설정은 자주 여는 곳이다. 한 번 더 눌러야 열리는 것은
+        // 그만한 이유가 있을 때만 그렇게 둔다. 이제 위 줄 오른쪽 끝에
+        // 톱니바퀴로 나와 있다.
+        // 2026-08-18 소유자 지시 — '폴더 설정'은 여기.
+        row('sky', Icons.auto_awesome_outlined, l.skyAction),
+        row('folders', Icons.folder_outlined, l.folderManage),
+        row('trash', Icons.delete_outline, l.trashTitle),
+      ];
+    },
+  );
+
+  /// 맥 상단 '파일' 메뉴를 달고, 눌렀을 때 할 일을 잇는다.
+  ///
+  /// 글자를 여기서 넘기는 이유는 mac_menu.dart 머리말에 적어 뒀다 —
+  /// 짧게는, 아홉 언어 문구를 스위프트에 또 한 벌 두면 어긋나기 때문이다.
+  Future<void> _installMacMenu() async {
+    if (!mounted) return;
+    final l = L10n.of(context);
+    await MacMenu.install(
+      {
+        'file': l.menuFile,
+        'new': l.newNoteTooltip,
+        'import': l.importFiles,
+        'exportMd': l.exportAllMd,
+        'backup': l.exportBackup,
+        'close': l.menuClose,
+        'settings': l.menuPrefs,
+      },
+      onPick: (id) async {
+        if (!mounted) return;
+        switch (id) {
+          case 'new':
+            final fresh = Note.fresh(body: '');
+            store.notes.insert(0, fresh);
+            await store.persist();
+            if (!mounted) return;
+            await openNote(context, fresh.id);
+          case 'import':
+            final n = await ImportService.importFiles();
+            if (!mounted) return;
+            setState(() {});
+            _toast(context, n > 0 ? l.importDone(n) : l.importNone);
+          case 'exportMd':
+            final ok = await ExportService.shareAllMarkdown();
+            if (!mounted) return;
+            if (!ok) _toast(context, l.exportEmpty);
+          case 'backup':
+            final ok = await ExportService.shareBackup();
+            if (!mounted) return;
+            if (!ok) _toast(context, l.exportFailed);
+          case 'settings':
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            );
+            if (mounted) setState(() {});
+        }
+      },
+    );
   }
 
   Future<void> _pasteAndTidy() async {
@@ -4074,7 +4380,8 @@ class _HomeScreenState extends State<HomeScreen>
   /// 붙여넣기 쪽에만 출처 감지가 붙어 있었고, 그래서 다른 길로 들어온
   /// 글은 검사조차 안 됐다. **같은 일을 하는 자리가 둘이면 반드시
   /// 어긋난다.**
-  Future<void> _intake(String text, {
+  Future<void> _intake(
+    String text, {
     required bool tidy,
     SourceGuess known = SourceGuess.unknown,
   }) async {
@@ -4144,9 +4451,7 @@ class _HomeScreenState extends State<HomeScreen>
     //
     // 8초가 지나면 동그라미만 걷는다. 동기화는 그대로 돈다.
     final before = _notesMark();
-    await sync
-        .recheck()
-        .timeout(const Duration(seconds: 8), onTimeout: () {});
+    await sync.recheck().timeout(const Duration(seconds: 8), onTimeout: () {});
     // 새 것이 실제로 들어왔을 때만 한 번 더, 조금 무겁게 — '진짜 됐다'.
     // 아무 일도 없었으면 조용히 끝난다. 과한 피드백은 신호를 소음으로
     // 만든다.
@@ -4154,6 +4459,7 @@ class _HomeScreenState extends State<HomeScreen>
       unawaited(HapticFeedback.mediumImpact());
     }
   }
+
   void _wireWidget() {
     if (!WidgetBridge.supported) return;
     WidgetBridge.clicks.listen(_openFromWidget);
@@ -4195,12 +4501,14 @@ class _HomeScreenState extends State<HomeScreen>
     // 위젯에 쓸 말을 알려 준다. 아홉 언어짜리 말 뭉치를 코틀린·스위프트에
     // 또 두지 않기 위해서다(widget_bridge.dart 머리말). 바뀐 게 없으면
     // 아무 일도 안 하므로 여기서 매번 불러도 된다.
-    WidgetBridge.words(WidgetWords(
-      title: l.appTitle,
-      untitled: l.untitled,
-      empty: l.widgetEmpty,
-      allLocked: l.widgetAllLocked,
-    ));
+    WidgetBridge.words(
+      WidgetWords(
+        title: l.appTitle,
+        untitled: l.untitled,
+        empty: l.widgetEmpty,
+        allLocked: l.widgetAllLocked,
+      ),
+    );
     final s = store.settings;
     final q = query.trim();
     final filtered = store.notes.where((n) {
@@ -4215,13 +4523,15 @@ class _HomeScreenState extends State<HomeScreen>
       // "그 낱말이 거기 있다"를 알아낼 수 있다 — 글자를 안 보여 주고도
       // 내용이 새는 길이다(core/note_lock.dart).
       return hangulContains(
-          searchHaystack(
-              locked: n.locked,
-              title: n.title,
-              body: n.body,
-              tags: n.tags,
-              source: n.source),
-          q);
+        searchHaystack(
+          locked: n.locked,
+          title: n.title,
+          body: n.body,
+          tags: n.tags,
+          source: n.source,
+        ),
+        q,
+      );
     }).toList();
 
     int order(Note a, Note b) {
@@ -4229,8 +4539,9 @@ class _HomeScreenState extends State<HomeScreen>
         case 'created':
           return b.createdAt.compareTo(a.createdAt);
         case 'title':
-          String key(Note n) =>
-              (n.title.trim().isNotEmpty ? n.title : n.body).trim().toLowerCase();
+          String key(Note n) => (n.title.trim().isNotEmpty ? n.title : n.body)
+              .trim()
+              .toLowerCase();
           final r = key(a).compareTo(key(b));
           // 제목이 같으면 최근 것이 위로. 안 그러면 순서가 그때그때 달라져
           // 목록이 흔들리는 것처럼 보인다.
@@ -4258,208 +4569,253 @@ class _HomeScreenState extends State<HomeScreen>
           // 톱니 왼쪽으로. 그 위 최상단은 배너 자리다(광고 없는 날은 0px).
           : SafeArea(
               bottom: false,
-              child: Column(children: [
-                if (!widget.embedded) const TopBannerBar(),
-                const SyncNapBanner(),
-                const SyncBusyBanner(),
-                const SyncStalledBar(),
-                Expanded(
-                  child: Stack(children: [
-                    Positioned.fill(
-                      // 2026-08-20 소유자 요청 — "노트 목록 페이지에서 위에서
-                      // 아래로 잡아당기면 업데이트(동기화)되게 하면 좋겠다."
-                      //
-                      // 목록은 사람이 '지금 맞았나?'를 묻는 자리다. 그런데
-                      // 그 물음에 답하려면 설정 → 동기화까지 두 번 들어가야
-                      // 했다. 당기는 손짓은 그 물음의 가장 짧은 모양이다.
-                      //
-                      // edgeOffset 에 유리 머리 높이를 준다. 안 주면 빙글이가
-                      // 머리 뒤에 숨어서, 당겼는데 아무 일도 안 일어난 것처럼
-                      // 보인다.
-                      child: RefreshIndicator(
-                        onRefresh: _pullSync,
-                        edgeOffset: kHomeHeaderH,
-                        displacement: 28,
-                        color: context.c.accent,
-                        backgroundColor: context.c.panel,
-                        child: CustomScrollView(
-              // 내용이 짧아도 당길 수 있어야 한다. 이게 없으면 메모가 몇 개
-              // 없는 사람은 이 손짓을 아예 못 만난다.
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                // 유리 머리 높이만큼 비워서 목록이 그 밑으로 흘러 들어간다.
-                const SliverToBoxAdapter(child: SizedBox(height: kHomeHeaderH)),
-                // 폴더 줄. 폴더가 하나도 없으면 아예 안 보인다 —
-                // 쓰지도 않는 줄이 자리를 먹으면 그게 더 나쁘다.
-                if (folderNames(store.notes.map((n) => n.folder), s.folders)
-                    .isNotEmpty)
-                  _folderBar(l, s),
-                // 고르는 중에는 빈 화면 안내를 띄우지 않는다. 그 안내가
-                // 남은 자리를 다 먹어서 '삭제완료'가 화면 밖으로 밀려나면
-                // 빠져나올 길이 없어진다.
-                if (pinned.isEmpty && rest.isEmpty && !_picking)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: Text(l.emptyList, textAlign: TextAlign.center)),
-                  ),
-                // 2026-08-18 소유자 지시로 '고정됨' 소제목을 뗐다 —
-                // "핀 아이콘이 보이니, 그게 고정이라고 알아볼거야."
-                // 같은 말을 두 번 하는 화면은 그만큼 좁아진다.
-                // 고정 목록도 같은 규칙이다(2026-08-17 소유자 지시).
-                // 고정을 스무 개씩 해 두는 사람에게는 고정 목록이 곧
-                // '그 사람의 목록'이라, 거기를 안 지나면 아무 데도 안 지난다.
-                if (pinned.isNotEmpty)
-                  _groupCard(pinned),
-                // 고르는 중이면 메모가 하나도 안 남아도 이 줄은 남긴다.
-                // 여기에 '삭제완료'가 달려 있어서, 이 줄이 사라지면 고르기
-                // 상태에 갇힌다.
-                if (rest.isNotEmpty || _picking)
-                  _groupLabel(l.notesLabel,
-                      // 고르는 중에는 안 붙인다 — 그때 이 줄은 '몇 개
-                      // 골랐나'를 말하는 자리이지 동기화 자리가 아니다.
-                      badge: _picking
-                          ? null
-                          : const SyncFreshLabel(size: 12.5),
-                      leading: _picking ? _pickAllBtn(l, visible) : null,
-                      trailing: _picking
-                          ? _pickActions(l, visible)
-                          : _sortFilterBtn(l, s)),
-                // 광고를 어디에 놓는가 — 목록 길이에 따라 갈린다.
-                //
-                // 2026-08-17 소유자 지시: "목록이 긴 경우에 누가 맨 아래까지
-                // 스크롤을 하겠어? 그럼 한 번도 목록에 배너를 보여주기
-                // 힘들겠지."
-                //
-                // 맞는 말이고, 이건 광고 수익의 문제만이 아니다. **아무도
-                // 안 보는 자리에 놓는 것은 광고를 안 놓은 것과 같으면서
-                // 코드만 늘어난다.** 놓을 거면 보이는 자리에 놓아야 한다.
-                //
-                //   메모가 열 개 미만 — 맨 아래. 한 화면에서 몇 번만
-                //     굴리면 끝까지 닿는다.
-                //   메모가 열 개 이상 — 다섯째와 여섯째 사이. 목록을
-                //     훑는 사람은 반드시 그 자리를 지난다.
-                //
-                // 고정된 메모는 셈에 안 넣는다. 그건 늘 맨 위에 붙어 있는
-                // 몇 개라 '목록이 길다'의 근거가 못 된다.
-                if (rest.isNotEmpty) _groupCard(rest),
-                // 2026-09-06 소유자 지시 — 목록 중간에 끼우던 광고를 뺐다.
-                // 맨 아래 광고 하나만, 목록이 짧을 때만 남긴다.
-                if (rest.length < 10 && pinned.length < 10)
-                  const SliverToBoxAdapter(
-                      child: InlineAdBlock(gapAbove: 120)),
-                // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
-                // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
-                // 떠 있는 단추(56)에 위아래 여백을 더한 높이.
-                // 목록 맨 끝의 빈 칸. 104는 떠 있는 단추를 비켜 주는 값이고,
-                // 거기에 물리키 자리를 더한다. 이걸 빼먹으면 마지막 메모가
-                // 물리키 밑에 깔린다(2026-08-20 신고).
-                SliverToBoxAdapter(
-                    child: SizedBox(height: 104 + sysBottom(context))),
-              ],
-                      ),
-                      ),
-                    ),
-                    // 떠 있는 유리 머리 — 목록이 이 밑으로 비쳐 흐른다.
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: SizedBox(
-                        height: kHomeHeaderH,
-                        child: Stack(children: [
-                          // 편집 화면과 같은 유리(2026-08-27 소유자 지시 —
-                          // "같은 유리로 맞추면 더 좋겠다").
+              child: Column(
+                children: [
+                  const SyncNapBanner(),
+                  const SyncBusyBanner(),
+                  const SyncStalledBar(),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          // 2026-08-20 소유자 요청 — "노트 목록 페이지에서 위에서
+                          // 아래로 잡아당기면 업데이트(동기화)되게 하면 좋겠다."
                           //
-                          // 그전까지 이 머리는 투명이었다. 목록 글자가
-                          // 삼선·돋보기·톱니 뒤로 그대로 비쳐서, 굴릴 때마다
-                          // 아이콘이 글자 위에서 헤엄쳤다. 두 화면의 머리가
-                          // 서로 다른 재료면 그건 한 앱이 아니다.
-                          const Positioned.fill(child: _HeadGlass()),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
-                            child: _searching
-                                ? Row(children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                          CupertinoIcons.chevron_left,
-                                          size: 22),
-                                      tooltip: l.close,
-                                      onPressed: () => setState(() {
-                                        _searching = false;
-                                        _searchCtl.clear();
-                                        query = '';
-                                      }),
-                                    ),
-                                    Expanded(
-                                        child: TextField(
-                                      controller: _searchCtl,
-                                      autofocus: true,
-                                      textInputAction: TextInputAction.search,
-                                      decoration: InputDecoration(
-                                        hintText: l.searchHint,
-                                        filled: true,
-                                        fillColor: context.c.field,
-                                        isDense: true,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 10),
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none),
+                          // 목록은 사람이 '지금 맞았나?'를 묻는 자리다. 그런데
+                          // 그 물음에 답하려면 설정 → 동기화까지 두 번 들어가야
+                          // 했다. 당기는 손짓은 그 물음의 가장 짧은 모양이다.
+                          //
+                          // edgeOffset 에 유리 머리 높이를 준다. 안 주면 빙글이가
+                          // 머리 뒤에 숨어서, 당겼는데 아무 일도 안 일어난 것처럼
+                          // 보인다.
+                          child: RefreshIndicator(
+                            onRefresh: _pullSync,
+                            edgeOffset: kHomeHeaderH,
+                            displacement: 28,
+                            color: context.c.accent,
+                            backgroundColor: context.c.panel,
+                            child: CustomScrollView(
+                              // 내용이 짧아도 당길 수 있어야 한다. 이게 없으면 메모가 몇 개
+                              // 없는 사람은 이 손짓을 아예 못 만난다.
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              slivers: [
+                                // 유리 머리 높이만큼 비워서 목록이 그 밑으로 흘러 들어간다.
+                                const SliverToBoxAdapter(
+                                  child: SizedBox(height: kHomeHeaderH),
+                                ),
+                                // 폴더 줄. 폴더가 하나도 없으면 아예 안 보인다 —
+                                // 쓰지도 않는 줄이 자리를 먹으면 그게 더 나쁘다.
+                                if (folderNames(
+                                  store.notes.map((n) => n.folder),
+                                  s.folders,
+                                ).isNotEmpty)
+                                  _folderBar(l, s),
+                                // 고르는 중에는 빈 화면 안내를 띄우지 않는다. 그 안내가
+                                // 남은 자리를 다 먹어서 '삭제완료'가 화면 밖으로 밀려나면
+                                // 빠져나올 길이 없어진다.
+                                if (pinned.isEmpty && rest.isEmpty && !_picking)
+                                  SliverFillRemaining(
+                                    hasScrollBody: false,
+                                    child: Center(
+                                      child: Text(
+                                        l.emptyList,
+                                        textAlign: TextAlign.center,
                                       ),
-                                      onChanged: (v) =>
-                                          setState(() => query = v),
-                                    )),
-                                    const SizedBox(width: 8),
-                                  ])
-                                : Row(children: [
-                                    // 2026-08-18 소유자 지시 — 왼쪽 끝에
-                                    // 삼선, 오른쪽 끝에 톱니, 그 안쪽에
-                                    // 돋보기.
-                                    //
-                                    // 양 끝만 쓰고 가운데를 비운다. 가운데가
-                                    // 비면 그 밑으로 목록이 흘러가는 것이
-                                    // 보이고, 머리가 뚜껑이 아니라 유리로
-                                    // 읽힌다.
-                                    //
-                                    // 오른쪽 둘의 차례는 손에서 먼 순이다.
-                                    // 톱니(한 번 정하고 안 여는 것)가 맨 끝,
-                                    // 돋보기(가끔 쓰는 것)가 그 안쪽.
-                                    _listMenu(l),
-                                    const Spacer(),
-                                    // 2026-08-27 — 당기기가 안 잡히는
-                                    // 웹·맥을 위해 나란히 둔다. 자세한
-                                    // 까닭은 SyncNowButton 머리말.
-                                    const SyncNowButton(),
-                                    IconButton(
-                                      icon: const Icon(CupertinoIcons.search,
-                                          size: 22),
-                                      tooltip: l.searchHint,
-                                      onPressed: () =>
-                                          setState(() => _searching = true),
                                     ),
-                                    IconButton(
-                                      icon: const Icon(CupertinoIcons.gear_alt,
-                                          size: 23),
-                                      tooltip: l.menuAppSettings,
-                                      onPressed: () async {
-                                        await Navigator.push<void>(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const SettingsScreen()));
-                                        if (mounted) setState(() {});
-                                      },
-                                    ),
-                                  ]),
+                                  ),
+                                // 2026-08-18 소유자 지시로 '고정됨' 소제목을 뗐다 —
+                                // "핀 아이콘이 보이니, 그게 고정이라고 알아볼거야."
+                                // 같은 말을 두 번 하는 화면은 그만큼 좁아진다.
+                                // 고정 목록도 같은 규칙이다(2026-08-17 소유자 지시).
+                                // 고정을 스무 개씩 해 두는 사람에게는 고정 목록이 곧
+                                // '그 사람의 목록'이라, 거기를 안 지나면 아무 데도 안 지난다.
+                                if (pinned.isNotEmpty) _groupCard(pinned),
+                                // 고르는 중이면 메모가 하나도 안 남아도 이 줄은 남긴다.
+                                // 여기에 '삭제완료'가 달려 있어서, 이 줄이 사라지면 고르기
+                                // 상태에 갇힌다.
+                                if (rest.isNotEmpty || _picking)
+                                  _groupLabel(
+                                    l.notesLabel,
+                                    // 고르는 중에는 안 붙인다 — 그때 이 줄은 '몇 개
+                                    // 골랐나'를 말하는 자리이지 동기화 자리가 아니다.
+                                    badge: _picking
+                                        ? null
+                                        : const SyncFreshLabel(size: 12.5),
+                                    leading: _picking
+                                        ? _pickAllBtn(l, visible)
+                                        : null,
+                                    trailing: _picking
+                                        ? _pickActions(l, visible)
+                                        : _sortFilterBtn(l, s),
+                                  ),
+                                // 광고를 어디에 놓는가 — 목록 길이에 따라 갈린다.
+                                //
+                                // 2026-08-17 소유자 지시: "목록이 긴 경우에 누가 맨 아래까지
+                                // 스크롤을 하겠어? 그럼 한 번도 목록에 배너를 보여주기
+                                // 힘들겠지."
+                                //
+                                // 맞는 말이고, 이건 광고 수익의 문제만이 아니다. **아무도
+                                // 안 보는 자리에 놓는 것은 광고를 안 놓은 것과 같으면서
+                                // 코드만 늘어난다.** 놓을 거면 보이는 자리에 놓아야 한다.
+                                //
+                                //   메모가 열 개 미만 — 맨 아래. 한 화면에서 몇 번만
+                                //     굴리면 끝까지 닿는다.
+                                //   메모가 열 개 이상 — 다섯째와 여섯째 사이. 목록을
+                                //     훑는 사람은 반드시 그 자리를 지난다.
+                                //
+                                // 고정된 메모는 셈에 안 넣는다. 그건 늘 맨 위에 붙어 있는
+                                // 몇 개라 '목록이 길다'의 근거가 못 된다.
+                                if (rest.isNotEmpty) _groupCard(rest),
+                                // 2026-09-06 소유자 지시 — 목록 중간에 끼우던 광고를 뺐다.
+                                // 맨 아래 광고 하나만, 목록이 짧을 때만 남긴다.
+                                if (rest.length < 10 && pinned.length < 10)
+                                  const SliverToBoxAdapter(
+                                    child: InlineAdBlock(gapAbove: 120),
+                                  ),
+                                // 2026-08-17 소유자 신고 — "목록 맨 아래 것이 버튼 두 개로
+                                // 우측이 가려진다." 떠 있는 단추 둘이 110보다 높다.
+                                // 떠 있는 단추(56)에 위아래 여백을 더한 높이.
+                                // 목록 맨 끝의 빈 칸. 104는 떠 있는 단추를 비켜 주는 값이고,
+                                // 거기에 물리키 자리를 더한다. 이걸 빼먹으면 마지막 메모가
+                                // 물리키 밑에 깔린다(2026-08-20 신고).
+                                SliverToBoxAdapter(
+                                  child: SizedBox(
+                                    height: 104 + sysBottom(context),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ]),
-                      ),
+                        ),
+                        // 떠 있는 유리 머리 — 목록이 이 밑으로 비쳐 흐른다.
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: SizedBox(
+                            height: kHomeHeaderH,
+                            child: Stack(
+                              children: [
+                                // 편집 화면과 같은 유리(2026-08-27 소유자 지시 —
+                                // "같은 유리로 맞추면 더 좋겠다").
+                                //
+                                // 그전까지 이 머리는 투명이었다. 목록 글자가
+                                // 삼선·돋보기·톱니 뒤로 그대로 비쳐서, 굴릴 때마다
+                                // 아이콘이 글자 위에서 헤엄쳤다. 두 화면의 머리가
+                                // 서로 다른 재료면 그건 한 앱이 아니다.
+                                const Positioned.fill(child: _HeadGlass()),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    6,
+                                    6,
+                                    6,
+                                    6,
+                                  ),
+                                  child: _searching
+                                      ? Row(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                CupertinoIcons.chevron_left,
+                                                size: 22,
+                                              ),
+                                              tooltip: l.close,
+                                              onPressed: () => setState(() {
+                                                _searching = false;
+                                                _searchCtl.clear();
+                                                query = '';
+                                              }),
+                                            ),
+                                            Expanded(
+                                              child: TextField(
+                                                controller: _searchCtl,
+                                                autofocus: true,
+                                                textInputAction:
+                                                    TextInputAction.search,
+                                                decoration: InputDecoration(
+                                                  hintText: l.searchHint,
+                                                  filled: true,
+                                                  fillColor: context.c.field,
+                                                  isDense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 10,
+                                                      ),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          10,
+                                                        ),
+                                                    borderSide: BorderSide.none,
+                                                  ),
+                                                ),
+                                                onChanged: (v) =>
+                                                    setState(() => query = v),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                          ],
+                                        )
+                                      : Row(
+                                          children: [
+                                            // 2026-08-18 소유자 지시 — 왼쪽 끝에
+                                            // 삼선, 오른쪽 끝에 톱니, 그 안쪽에
+                                            // 돋보기.
+                                            //
+                                            // 양 끝만 쓰고 가운데를 비운다. 가운데가
+                                            // 비면 그 밑으로 목록이 흘러가는 것이
+                                            // 보이고, 머리가 뚜껑이 아니라 유리로
+                                            // 읽힌다.
+                                            //
+                                            // 오른쪽 둘의 차례는 손에서 먼 순이다.
+                                            // 톱니(한 번 정하고 안 여는 것)가 맨 끝,
+                                            // 돋보기(가끔 쓰는 것)가 그 안쪽.
+                                            _listMenu(l),
+                                            const Spacer(),
+                                            // 2026-08-27 — 당기기가 안 잡히는
+                                            // 웹·맥을 위해 나란히 둔다. 자세한
+                                            // 까닭은 SyncNowButton 머리말.
+                                            const SyncNowButton(),
+                                            IconButton(
+                                              icon: const Icon(
+                                                CupertinoIcons.search,
+                                                size: 22,
+                                              ),
+                                              tooltip: l.searchHint,
+                                              onPressed: () => setState(
+                                                () => _searching = true,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                CupertinoIcons.gear_alt,
+                                                size: 23,
+                                              ),
+                                              tooltip: l.menuAppSettings,
+                                              onPressed: () async {
+                                                await Navigator.push<void>(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        const SettingsScreen(),
+                                                  ),
+                                                );
+                                                if (mounted) setState(() {});
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ]),
-                ),
-              ]),
+                  ),
+                ],
+              ),
             ),
       // 떠 있는 단추 둘 — 2026-08-18 소유자 지시로 글자를 떼고 양쪽
       // 아래 구석으로 갈랐다. "둘다 아이콘만 버튼에 두고 '정리' 같은
@@ -4511,33 +4867,43 @@ class _HomeScreenState extends State<HomeScreen>
   /// 2026-08-17 소유자 지시로 정렬·필터가 '메모' 소제목 옆에 붙었다.
   /// 자기가 다루는 것 바로 위에 놓이면 무엇을 거르는 단추인지 자리만으로
   /// 알 수 있다.
-  Widget _groupLabel(String label,
-          {Widget? leading, Widget? trailing, Widget? badge}) =>
-      SliverToBoxAdapter(
-        child: Padding(
-          // 애플 메모의 '고정된 메모' 헤더 실측: 글자높이 52px, 좌측 135px(45pt).
-          // 제목 46px=17pt 비율로 환산하면 19.2pt → 애플 .title3(20pt) 굵게.
-          // 색도 회색이 아니라 본문색이다.
-          //
-          // 단추가 붙는 쪽은 위아래 여백을 줄인다. 단추가 이미 자기 여백을
-          // 가지고 있어서 그대로 두면 그 줄만 뚱뚱해 보인다.
-          padding: EdgeInsets.fromLTRB(
-              // 왼쪽에 단추가 붙으면 들여쓰기를 뗀다. 단추는 자기 여백을
-              // 이미 갖고 있어서, 그대로 두면 이 줄만 오른쪽으로 밀린다.
-              leading == null ? kListRowInset + 16 : 8,
-              trailing == null ? 18 : 10,
-              8,
-              trailing == null ? 8 : 0),
-          child: Row(children: [
-            if (leading != null) leading,
-            Expanded(
-              child: Row(children: [
+  Widget _groupLabel(
+    String label, {
+    Widget? leading,
+    Widget? trailing,
+    Widget? badge,
+  }) => SliverToBoxAdapter(
+    child: Padding(
+      // 애플 메모의 '고정된 메모' 헤더 실측: 글자높이 52px, 좌측 135px(45pt).
+      // 제목 46px=17pt 비율로 환산하면 19.2pt → 애플 .title3(20pt) 굵게.
+      // 색도 회색이 아니라 본문색이다.
+      //
+      // 단추가 붙는 쪽은 위아래 여백을 줄인다. 단추가 이미 자기 여백을
+      // 가지고 있어서 그대로 두면 그 줄만 뚱뚱해 보인다.
+      padding: EdgeInsets.fromLTRB(
+        // 왼쪽에 단추가 붙으면 들여쓰기를 뗀다. 단추는 자기 여백을
+        // 이미 갖고 있어서, 그대로 두면 이 줄만 오른쪽으로 밀린다.
+        leading == null ? kListRowInset + 16 : 8,
+        trailing == null ? 18 : 10,
+        8,
+        trailing == null ? 8 : 0,
+      ),
+      child: Row(
+        children: [
+          if (leading != null) leading,
+          Expanded(
+            child: Row(
+              children: [
                 Flexible(
-                  child: Text(label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 if (badge != null) ...[
                   const SizedBox(width: 10),
@@ -4545,12 +4911,14 @@ class _HomeScreenState extends State<HomeScreen>
                   // 소제목을 안 밀어낸다 — 같이 커지면 둘 다 안 읽힌다.
                   Flexible(child: badge),
                 ],
-              ]),
+              ],
             ),
-            if (trailing != null) trailing,
-          ]),
-        ),
-      );
+          ),
+          if (trailing != null) trailing,
+        ],
+      ),
+    ),
+  );
 
   /// 목록 위의 폴더 줄.
   ///
@@ -4560,25 +4928,28 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _folderBar(L10n l, AppSettings s) {
     final names = folderNames(store.notes.map((n) => n.folder), s.folders);
     Widget chip(String label, bool on, VoidCallback tap) => Padding(
-          padding: const EdgeInsets.only(right: 6),
-          child: InkWell(
+      padding: const EdgeInsets.only(right: 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: tap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            // 라이트·다크가 같은 값이라 밝기를 따질 일이 없어졌다.
+            color: on ? kAccentFill : context.c.field,
             borderRadius: BorderRadius.circular(16),
-            onTap: tap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                // 라이트·다크가 같은 값이라 밝기를 따질 일이 없어졌다.
-                color: on ? kAccentFill : context.c.field,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(label,
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: on ? kOnAccentFill : context.c.sub)),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: on ? kOnAccentFill : context.c.sub,
             ),
           ),
-        );
+        ),
+      ),
+    );
     // 2026-08-18 소유자 지시 — "폴더 위/아래 여백을 살짝 줘야할 것 같아.
     // 딱 붙어있는 것이 어색."
     //
@@ -4611,32 +4982,35 @@ class _HomeScreenState extends State<HomeScreen>
   /// 뭔가 걸려 있으면 아이콘에 색이 들어가 "지금 목록이 전부가 아니다"를
   /// 알린다. 이게 없으면 사용자는 메모가 사라진 줄 안다.
   Widget _sortFilterBtn(L10n l, AppSettings s) => IconButton(
-        icon: Icon(Icons.tune,
-            color: (s.sortMode != 'updated' ||
-                    s.filterSource.isNotEmpty ||
-                    s.filterTag.isNotEmpty ||
-                    s.filterFolder.isNotEmpty)
-                ? context.c.accent
-                : context.c.sub),
-        tooltip: l.sortFilterTooltip,
-        onPressed: () async {
-          final r = await showModalBottomSheet<String>(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) => const SortFilterSheet(),
-          );
-          if (!mounted) return;
-          // 시트가 'pick'을 들고 닫히면 여러 개 고르기로 들어간다.
-          // 시트 안에서 바로 켜지 않고 여기까지 값을 들고 오는 이유:
-          // 고르기 상태는 목록 화면의 것이지 시트의 것이 아니다.
-          if (r == 'pick') {
-            _startPicking();
-          } else {
-            setState(() {});
-          }
-        },
+    icon: Icon(
+      Icons.tune,
+      color:
+          (s.sortMode != 'updated' ||
+              s.filterSource.isNotEmpty ||
+              s.filterTag.isNotEmpty ||
+              s.filterFolder.isNotEmpty)
+          ? context.c.accent
+          : context.c.sub,
+    ),
+    tooltip: l.sortFilterTooltip,
+    onPressed: () async {
+      final r = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => const SortFilterSheet(),
       );
+      if (!mounted) return;
+      // 시트가 'pick'을 들고 닫히면 여러 개 고르기로 들어간다.
+      // 시트 안에서 바로 켜지 않고 여기까지 값을 들고 오는 이유:
+      // 고르기 상태는 목록 화면의 것이지 시트의 것이 아니다.
+      if (r == 'pick') {
+        _startPicking();
+      } else {
+        setState(() {});
+      }
+    },
+  );
 
   /// '메모' 소제목 왼쪽의 전체 선택. 누를 때마다 전체 선택 ↔ 전체 해제.
   ///
@@ -4650,8 +5024,10 @@ class _HomeScreenState extends State<HomeScreen>
         visible.isNotEmpty && visible.every((n) => _picked.contains(n.id));
     return IconButton(
       visualDensity: VisualDensity.compact,
-      icon: Icon(all ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: all ? context.c.accent : context.c.sub),
+      icon: Icon(
+        all ? Icons.check_circle : Icons.radio_button_unchecked,
+        color: all ? context.c.accent : context.c.sub,
+      ),
       tooltip: l.selectAllTooltip,
       onPressed: () {
         HapticFeedback.selectionClick();
@@ -4678,33 +5054,39 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _pickActions(L10n l, List<Note> visible) {
     final n = visible.where((x) => _picked.contains(x.id)).length;
     final c = context.c;
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      TextButton(
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        onPressed: n == 0 ? null : () => _deletePicked(l, visible),
-        child: Text(
-          n == 0 ? l.deleteSelected : '${l.deleteSelected} $n',
-          style: TextStyle(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: n == 0 ? null : () => _deletePicked(l, visible),
+          child: Text(
+            n == 0 ? l.deleteSelected : '${l.deleteSelected} $n',
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: n == 0 ? c.sub : c.danger),
+              color: n == 0 ? c.sub : c.danger,
+            ),
+          ),
         ),
-      ),
-      TextButton(
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: _endPicking,
+          child: Text(
+            l.deleteSelectedDone,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
         ),
-        onPressed: _endPicking,
-        child: Text(l.deleteSelectedDone,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-      ),
-    ]);
+      ],
+    );
   }
 
   void _startPicking() {
@@ -4752,25 +5134,29 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _groupCard(List<Note> group) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              color: context.c.panel,
-              child: Column(
-                children: [
-                  for (int i = 0; i < group.length; i++) ...[
-                    if (i > 0)
-                      Divider(height: 1, indent: kListRowInset, color: context.c.line),
-                    _noteTile(group[i]),
-                  ],
-                ],
-              ),
-            ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          color: context.c.panel,
+          child: Column(
+            children: [
+              for (int i = 0; i < group.length; i++) ...[
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    indent: kListRowInset,
+                    color: context.c.line,
+                  ),
+                _noteTile(group[i]),
+              ],
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   String _listDate(L10n l, int ts) {
     final d = DateTime.fromMillisecondsSinceEpoch(ts);
@@ -4807,9 +5193,7 @@ class _HomeScreenState extends State<HomeScreen>
     // 보여 주면 자물쇠를 옆문으로 지나가는 셈이 된다.
     final preview = peekBody(locked: n.locked, body: n.body);
     final head = listTitle(locked: n.locked, title: n.title, body: n.body);
-    final title = head.isNotEmpty
-        ? head.split('\n').first
-        : l.untitled;
+    final title = head.isNotEmpty ? head.split('\n').first : l.untitled;
 
     // 아이콘은 앱의 하늘색을 쓴다. 소유자: "내 컬러 정체성이 스카이블루이니
     // 블루계통 컬러를 써줘."
@@ -4819,24 +5203,32 @@ class _HomeScreenState extends State<HomeScreen>
     // 색으로 두면 손이 눈보다 먼저 움직인다. 색이 곧 잠깐 멈추게 하는 장치다.
     // (원하시면 이 하나도 파랑으로 바꾼다 — 다만 그러면 이 줄만 위험하다는
     // 신호가 사라진다.)
-    Widget row(IconData icon, String label, VoidCallback onTap,
-            {bool danger = false}) =>
-        InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-            child: Row(children: [
-              Expanded(
-                child: Text(label,
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: danger ? c.danger : null)),
+    Widget row(
+      IconData icon,
+      String label,
+      VoidCallback onTap, {
+      bool danger = false,
+    }) => InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: danger ? c.danger : null,
+                ),
               ),
-              Icon(icon, size: 20, color: danger ? c.danger : c.accent),
-            ]),
-          ),
-        );
+            ),
+            Icon(icon, size: 20, color: danger ? c.danger : c.accent),
+          ],
+        ),
+      ),
+    );
 
     final act = await showGeneralDialog<String>(
       context: context,
@@ -4862,92 +5254,120 @@ class _HomeScreenState extends State<HomeScreen>
         return Material(
           type: MaterialType.transparency,
           child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 미리보기 카드. 화면의 45%를 넘지 않는다 — 이건 '읽는
-                  // 자리'가 아니라 '어느 메모인지 알아보는 자리'다.
-                  ConstrainedBox(
-                    constraints:
-                        BoxConstraints(maxHeight: media.size.height * 0.45),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: c.panel,
-                        borderRadius: BorderRadius.circular(16),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 미리보기 카드. 화면의 45%를 넘지 않는다 — 이건 '읽는
+                    // 자리'가 아니라 '어느 메모인지 알아보는 자리'다.
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: media.size.height * 0.45,
                       ),
-                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-                      child: SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(title,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: c.panel,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                        child: SingleChildScrollView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.3)),
-                            const SizedBox(height: 8),
-                            Text(
-                              n.locked
-                                  ? l.noteLocked
-                                  : (preview.isEmpty ? l.bodyHint : preview),
-                              maxLines: 14,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 15, height: 1.45, color: c.sub),
-                            ),
-                          ],
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.3,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                n.locked
+                                    ? l.noteLocked
+                                    : (preview.isEmpty ? l.bodyHint : preview),
+                                maxLines: 14,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.45,
+                                  color: c.sub,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: c.panel,
-                      borderRadius: BorderRadius.circular(14),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: c.panel,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        children: [
+                          // 2026-08-18 소유자 지시 — 맨 위에 '출처·태그'.
+                          // 누르면 그 줄이 펴진 채로 편집 화면이 열린다.
+                          // 목록에서 길게 누른 사람은 '이 메모를 손보겠다'고
+                          // 이미 말한 것이라, 열고 나서 메뉴를 또 열게 하면
+                          // 문이 둘이다.
+                          row(
+                            Icons.sell_outlined,
+                            l.metaTooltip,
+                            () => Navigator.pop(ctx, 'meta'),
+                          ),
+                          Divider(height: 1, color: c.line),
+                          row(
+                            Icons.folder_outlined,
+                            l.folderTitle,
+                            () => Navigator.pop(ctx, 'folder'),
+                          ),
+                          Divider(height: 1, color: c.line),
+                          row(
+                            n.pinned ? Icons.push_pin_outlined : Icons.push_pin,
+                            n.pinned ? l.unpinTooltip : l.pinTooltip,
+                            () => Navigator.pop(ctx, 'pin'),
+                          ),
+                          Divider(height: 1, color: c.line),
+                          // '복제'는 뺐다(2026-08-18 소유자 지시). 이 앱에서
+                          // 메모를 복제할 일은 거의 없는데, 다섯 줄짜리 시트의
+                          // 다섯 중 하나를 차지하고 있었다.
+                          row(
+                            n.locked ? Icons.lock_open : Icons.lock_outline,
+                            n.locked ? l.noteUnlock : l.noteLock,
+                            () => Navigator.pop(ctx, 'lock'),
+                          ),
+                          row(
+                            Icons.ios_share,
+                            l.exportNote,
+                            () => Navigator.pop(ctx, 'share'),
+                          ),
+                          Divider(height: 1, color: c.line),
+                          row(
+                            Icons.delete_outline,
+                            l.delete,
+                            () => Navigator.pop(ctx, 'del'),
+                            danger: true,
+                          ),
+                        ],
+                      ),
                     ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(children: [
-                      // 2026-08-18 소유자 지시 — 맨 위에 '출처·태그'.
-                      // 누르면 그 줄이 펴진 채로 편집 화면이 열린다.
-                      // 목록에서 길게 누른 사람은 '이 메모를 손보겠다'고
-                      // 이미 말한 것이라, 열고 나서 메뉴를 또 열게 하면
-                      // 문이 둘이다.
-                      row(Icons.sell_outlined, l.metaTooltip,
-                          () => Navigator.pop(ctx, 'meta')),
-                      Divider(height: 1, color: c.line),
-                      row(Icons.folder_outlined, l.folderTitle,
-                          () => Navigator.pop(ctx, 'folder')),
-                      Divider(height: 1, color: c.line),
-                      row(n.pinned ? Icons.push_pin_outlined : Icons.push_pin,
-                          n.pinned ? l.unpinTooltip : l.pinTooltip,
-                          () => Navigator.pop(ctx, 'pin')),
-                      Divider(height: 1, color: c.line),
-                      // '복제'는 뺐다(2026-08-18 소유자 지시). 이 앱에서
-                      // 메모를 복제할 일은 거의 없는데, 다섯 줄짜리 시트의
-                      // 다섯 중 하나를 차지하고 있었다.
-                      row(n.locked ? Icons.lock_open : Icons.lock_outline,
-                          n.locked ? l.noteUnlock : l.noteLock,
-                          () => Navigator.pop(ctx, 'lock')),
-                      row(Icons.ios_share, l.exportNote,
-                          () => Navigator.pop(ctx, 'share')),
-                      Divider(height: 1, color: c.line),
-                      row(Icons.delete_outline, l.delete,
-                          () => Navigator.pop(ctx, 'del'),
-                          danger: true),
-                    ]),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           ),
         );
       },
@@ -4957,8 +5377,9 @@ class _HomeScreenState extends State<HomeScreen>
         return FadeTransition(
           opacity: t,
           child: ScaleTransition(
-              scale: Tween<double>(begin: 0.96, end: 1.0).animate(t),
-              child: child),
+            scale: Tween<double>(begin: 0.96, end: 1.0).animate(t),
+            child: child,
+          ),
         );
       },
     );
@@ -4977,10 +5398,12 @@ class _HomeScreenState extends State<HomeScreen>
       case 'meta':
         await openNote(context, n.id, showMeta: true);
       case 'del':
-        final ok = await confirmDialog(context,
-            title: L10n.of(context).deleteConfirmTitle,
-            okLabel: L10n.of(context).delete,
-            destructive: true);
+        final ok = await confirmDialog(
+          context,
+          title: L10n.of(context).deleteConfirmTitle,
+          okLabel: L10n.of(context).delete,
+          destructive: true,
+        );
         if (ok) {
           store.deleteNote(n.id);
           if (mounted) setState(() {});
@@ -4999,10 +5422,12 @@ class _HomeScreenState extends State<HomeScreen>
   /// 안에 적어 둔다 — 되돌리는 법을 모르는 채로 무언가를 없애게 두면 안 된다.
   Future<void> _askUnpin(Note n) async {
     final l = L10n.of(context);
-    final ok = await confirmDialog(context,
-        title: l.unpinConfirmTitle,
-        body: l.unpinConfirmBody,
-        okLabel: l.unpinTooltip);
+    final ok = await confirmDialog(
+      context,
+      title: l.unpinConfirmTitle,
+      body: l.unpinConfirmBody,
+      okLabel: l.unpinTooltip,
+    );
     if (!ok || !mounted) return;
     _setPinned(n, false);
   }
@@ -5060,9 +5485,13 @@ class _HomeScreenState extends State<HomeScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l.folderTitle,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(
+                l.folderTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 10),
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -5164,13 +5593,15 @@ class _HomeScreenState extends State<HomeScreen>
       key: ValueKey('dis-${n.id}'),
       // 고르는 중에는 밀기를 끈다. 체크 자리를 누르려다 손이 옆으로
       // 미끄러지면, 고르려던 메모가 그 자리에서 지워진다.
-      direction:
-          _picking ? DismissDirection.none : DismissDirection.horizontal,
+      direction: _picking ? DismissDirection.none : DismissDirection.horizontal,
       background: Container(
         color: context.c.pin,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        child: Icon(n.pinned ? Icons.push_pin_outlined : Icons.push_pin, color: Colors.white),
+        child: Icon(
+          n.pinned ? Icons.push_pin_outlined : Icons.push_pin,
+          color: Colors.white,
+        ),
       ),
       secondaryBackground: Container(
         color: context.c.danger,
@@ -5183,10 +5614,12 @@ class _HomeScreenState extends State<HomeScreen>
           await _setPinned(n, !n.pinned);
           return false;
         }
-        final ok = await confirmDialog(context,
-            title: L10n.of(context).deleteConfirmTitle,
-            okLabel: L10n.of(context).delete,
-            destructive: true);
+        final ok = await confirmDialog(
+          context,
+          title: L10n.of(context).deleteConfirmTitle,
+          okLabel: L10n.of(context).delete,
+          destructive: true,
+        );
         if (ok) store.deleteNote(n.id);
         return ok;
       },
@@ -5256,7 +5689,7 @@ class _HomeScreenState extends State<HomeScreen>
           splashColor: splash,
           child: Padding(
             // 데스크톱은 애플 메모장처럼 행을 촘촘하게(글자만 줄면 행이 뚱뚱해 보인다).
-          padding: EdgeInsets.fromLTRB(kListRowInset, vPad, 16, vPad),
+            padding: EdgeInsets.fromLTRB(kListRowInset, vPad, 16, vPad),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -5282,10 +5715,11 @@ class _HomeScreenState extends State<HomeScreen>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            height: 1.3,
-                            letterSpacing: -0.2),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                          letterSpacing: -0.2,
+                        ),
                       ),
                       // 미리보기를 두 줄로 편다. 한 줄이면 어차피 잘리는데,
                       // 잘린 한 줄은 '이 글이 무엇인가'를 거의 못 알려 준다.
@@ -5295,37 +5729,52 @@ class _HomeScreenState extends State<HomeScreen>
                       // 것과 없는 것은 다른 말이라 그렇게 보이면 안 된다.
                       if (n.locked) ...[
                         const SizedBox(height: 4),
-                        Row(children: [
-                          Icon(Icons.lock_outline,
-                              size: 14, color: context.c.sub),
-                          const SizedBox(width: 5),
-                          Text(l.noteLocked,
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.lock_outline,
+                              size: 14,
+                              color: context.c.sub,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              l.noteLocked,
                               style: TextStyle(
-                                  fontSize: 14, color: context.c.sub)),
-                        ]),
+                                fontSize: 14,
+                                color: context.c.sub,
+                              ),
+                            ),
+                          ],
+                        ),
                       ] else if (firstLine.isNotEmpty) ...[
                         const SizedBox(height: 3),
-                        Text(firstLine,
-                            // 폰은 둘, 넓은 화면 왼쪽 칸은 셋. 폰에서는
-                            // 목록이 화면 전부라 한 화면에 몇 개가 보이느냐가
-                            // 더 중요하고, 왼쪽 칸에서는 옆에 본문이 이미
-                            // 펼쳐져 있어 '어느 것인지 고르는 일'만 남는다.
-                            maxLines: roomy ? 3 : 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 15,
-                                height: 1.42,
-                                color: context.c.sub)),
+                        Text(
+                          firstLine,
+                          // 폰은 둘, 넓은 화면 왼쪽 칸은 셋. 폰에서는
+                          // 목록이 화면 전부라 한 화면에 몇 개가 보이느냐가
+                          // 더 중요하고, 왼쪽 칸에서는 옆에 본문이 이미
+                          // 펼쳐져 있어 '어느 것인지 고르는 일'만 남는다.
+                          maxLines: roomy ? 3 : 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            height: 1.42,
+                            color: context.c.sub,
+                          ),
+                        ),
                       ],
                       // 날짜는 맨 아래 제 줄에. 미리보기 옆에 붙어 있으면
                       // 성격이 다른 둘이 같은 크기 같은 색으로 나란히 서서,
                       // 눈이 어디부터 읽을지 정하지 못한다.
                       const SizedBox(height: 5),
-                      Text(_listDate(l, n.updatedAt),
-                          style: TextStyle(
-                              fontSize: 13,
-                              height: 1.2,
-                              color: context.c.sub)),
+                      Text(
+                        _listDate(l, n.updatedAt),
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.2,
+                          color: context.c.sub,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -5344,8 +5793,11 @@ class _HomeScreenState extends State<HomeScreen>
                     onTap: () => _askUnpin(n),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(10, 10, 6, 10),
-                      child: Icon(Icons.push_pin,
-                          size: 17, color: context.c.accent),
+                      child: Icon(
+                        Icons.push_pin,
+                        size: 17,
+                        color: context.c.accent,
+                      ),
                     ),
                   ),
               ],
@@ -5405,7 +5857,8 @@ class _EditorScreenState extends State<EditorScreen>
   bool _showMeta = false;
   final UndoHistoryController _undoCtl = UndoHistoryController();
 
-  bool get _editing => _titleFocus.hasFocus || _bodyFocus.hasFocus || _tagsFocus.hasFocus;
+  bool get _editing =>
+      _titleFocus.hasFocus || _bodyFocus.hasFocus || _tagsFocus.hasFocus;
 
   /// 커서 위치에 삽입, 선택 영역이 있으면 감싼다
   /// 고른 줄들을 목록으로 만든다.
@@ -5558,8 +6011,12 @@ class _EditorScreenState extends State<EditorScreen>
     final at = sel.isValid ? sel : TextSelection.collapsed(offset: t.length);
     final (a, e) = lineSpan(t, at.start, at.end);
     // pad: 2 — 소유자 지시(2026-08-27). 목록은 본문보다 한 칸 안으로.
-    final made = listify(t.substring(a, e),
-        kind: kind, bullet: dotBullet(store.settings.bulletChar), pad: 2);
+    final made = listify(
+      t.substring(a, e),
+      kind: kind,
+      bullet: dotBullet(store.settings.bulletChar),
+      pad: 2,
+    );
     bodyCtl.value = TextEditingValue(
       text: t.replaceRange(a, e, made),
       // 손댄 곳을 그대로 잡아 둔다. 커서가 엉뚱한 데로 튀면 다음 버튼을
@@ -5599,9 +6056,21 @@ class _EditorScreenState extends State<EditorScreen>
     _save();
   }
 
-  Widget _kbBtn({String? glyph, IconData? icon, required VoidCallback onTap, String? tip}) {
+  Widget _kbBtn({
+    String? glyph,
+    IconData? icon,
+    required VoidCallback onTap,
+    String? tip,
+  }) {
     final child = glyph != null
-        ? Text(glyph, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1))
+        ? Text(
+            glyph,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              height: 1,
+            ),
+          )
         : Icon(icon, size: 20);
     return Tooltip(
       message: tip ?? '',
@@ -5703,7 +6172,8 @@ class _EditorScreenState extends State<EditorScreen>
       for (final x in picked) {
         // 아이디는 시각 + 셈으로 짓는다. 같은 밀리초에 여럿을 고르면
         // 시각만으로는 겹친다 — 겹치면 앞의 파일을 덮어쓴다.
-        final id = '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}'
+        final id =
+            '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}'
             '${note.attachments.length + added}';
         final meta = await AttachStore.add(
           noteId: note.id,
@@ -5745,23 +6215,25 @@ class _EditorScreenState extends State<EditorScreen>
         barrierColor: Colors.black.withValues(alpha: 0.92),
         builder: (ctx) => GestureDetector(
           onTap: () => Navigator.pop(ctx),
-          child: Stack(children: [
-            Positioned.fill(
-              child: InteractiveViewer(
-                minScale: 1,
-                maxScale: 5,
-                child: Center(child: Image.file(f, fit: BoxFit.contain)),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 5,
+                  child: Center(child: Image.file(f, fit: BoxFit.contain)),
+                ),
               ),
-            ),
-            Positioned(
-              top: 44,
-              right: 16,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                onPressed: () => Navigator.pop(ctx),
+              Positioned(
+                top: 44,
+                right: 16,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       );
       return;
@@ -5777,11 +6249,13 @@ class _EditorScreenState extends State<EditorScreen>
 
   Future<void> _removeAttachment(Attach a) async {
     final l = L10n.of(context);
-    final ok = await confirmDialog(context,
-        title: l.attachRemove,
-        body: l.attachRemoveBody,
-        okLabel: l.delete,
-        destructive: true);
+    final ok = await confirmDialog(
+      context,
+      title: l.attachRemove,
+      body: l.attachRemoveBody,
+      okLabel: l.delete,
+      destructive: true,
+    );
     if (!ok || !mounted) return;
     await AttachStore.remove(note.id, a);
     note.attachments.removeWhere((x) => x.id == a.id);
@@ -5793,7 +6267,9 @@ class _EditorScreenState extends State<EditorScreen>
 
   Widget _attachStrip(L10n l) {
     final c = context.c;
-    final mine = note.attachments.where((a) => a.device == _deviceKind).toList();
+    final mine = note.attachments
+        .where((a) => a.device == _deviceKind)
+        .toList();
     final others = groupOthers(note.attachments, _deviceKind);
 
     Widget chip(Attach a) {
@@ -5811,32 +6287,47 @@ class _EditorScreenState extends State<EditorScreen>
             onSecondaryTap: () => _removeAttachment(a),
             child: Padding(
               padding: EdgeInsets.fromLTRB(img ? 5 : 10, 5, 10, 5),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                if (img)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.file(f,
-                        width: 30, height: 30, fit: BoxFit.cover,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (img)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.file(
+                        f,
+                        width: 30,
+                        height: 30,
+                        fit: BoxFit.cover,
                         // 파일이 그 사이 사라졌으면 그림 대신 종이 모양.
-                        errorBuilder: (_, __, ___) =>
-                            Icon(Icons.description_outlined,
-                                size: 20, color: c.sub)),
-                  )
-                else
-                  Icon(_attachIcon(a.name), size: 20, color: c.accent),
-                const SizedBox(width: 7),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(shortName(a.name),
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.description_outlined,
+                          size: 20,
+                          color: c.sub,
+                        ),
+                      ),
+                    )
+                  else
+                    Icon(_attachIcon(a.name), size: 20, color: c.accent),
+                  const SizedBox(width: 7),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        shortName(a.name),
                         style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w500)),
-                    Text(humanSize(a.size),
-                        style: TextStyle(fontSize: 11, color: c.sub)),
-                  ],
-                ),
-              ]),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        humanSize(a.size),
+                        style: TextStyle(fontSize: 11, color: c.sub),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -5858,21 +6349,35 @@ class _EditorScreenState extends State<EditorScreen>
           for (final e in others.entries)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 1, right: 6),
-                  child: Icon(CupertinoIcons.paperclip, size: 13, color: c.sub),
-                ),
-                Expanded(
-                  child: Text(
-                    l.attachOther(
-                      l.deviceName(e.key),
-                      othersSummary(e.value, l.attachAndMore(e.value.length - 1)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1, right: 6),
+                    child: Icon(
+                      CupertinoIcons.paperclip,
+                      size: 13,
+                      color: c.sub,
                     ),
-                    style: TextStyle(fontSize: 12.5, height: 1.35, color: c.sub),
                   ),
-                ),
-              ]),
+                  Expanded(
+                    child: Text(
+                      l.attachOther(
+                        l.deviceName(e.key),
+                        othersSummary(
+                          e.value,
+                          l.attachAndMore(e.value.length - 1),
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.35,
+                        color: c.sub,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
@@ -5932,10 +6437,14 @@ class _EditorScreenState extends State<EditorScreen>
       final t = DateTime.fromMillisecondsSinceEpoch(at);
       try {
         final hm = (h24 ? DateFormat.Hm(tag) : DateFormat.jm(tag)).format(t);
-        return full ? '${DateFormat.yMMMMd(tag).format(t)}  $hm' : '${DateFormat.Md(tag).format(t)} $hm';
+        return full
+            ? '${DateFormat.yMMMMd(tag).format(t)}  $hm'
+            : '${DateFormat.Md(tag).format(t)} $hm';
       } catch (_) {
         final hm = DateFormat.Hm().format(t);
-        return full ? '${DateFormat.yMMMMd().format(t)}  $hm' : '${DateFormat.Md().format(t)} $hm';
+        return full
+            ? '${DateFormat.yMMMMd().format(t)}  $hm'
+            : '${DateFormat.Md().format(t)} $hm';
       }
     }
 
@@ -5967,10 +6476,12 @@ class _EditorScreenState extends State<EditorScreen>
 
     // 낡은 답에는 한 줄 붙인다. AI 답변은 썩는다 — 모델이 바뀌면 석 달 전
     // 답이 틀린 답이 된다. 직접 쓴 글에는 절대 안 붙인다(잔소리가 된다).
-    final stale = n != null &&
+    final stale =
+        n != null &&
         isStale(
-            pastedAt: n.pastedAt,
-            nowMs: DateTime.now().millisecondsSinceEpoch);
+          pastedAt: n.pastedAt,
+          nowMs: DateTime.now().millisecondsSinceEpoch,
+        );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -6000,12 +6511,18 @@ class _EditorScreenState extends State<EditorScreen>
           if (stale) ...[
             const SizedBox(height: 6),
             Text(
-              l.staleWarn(daysSincePaste(
+              l.staleWarn(
+                daysSincePaste(
                   pastedAt: n.pastedAt,
-                  nowMs: DateTime.now().millisecondsSinceEpoch)),
+                  nowMs: DateTime.now().millisecondsSinceEpoch,
+                ),
+              ),
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 12, height: 1.35, color: context.c.warnInk),
+                fontSize: 12,
+                height: 1.35,
+                color: context.c.warnInk,
+              ),
             ),
           ],
         ],
@@ -6178,10 +6695,14 @@ class _EditorScreenState extends State<EditorScreen>
     if (!wasCollapsed || sel.isCollapsed) return;
     final t = bodyCtl.text;
     if (t.isEmpty || sel.start != 0 || sel.end != t.length) return;
-    if (kScrollTopOnSelectAll && _bodyScroll.hasClients && _bodyScroll.offset > 0) {
-      _bodyScroll.animateTo(0,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic);
+    if (kScrollTopOnSelectAll &&
+        _bodyScroll.hasClients &&
+        _bodyScroll.offset > 0) {
+      _bodyScroll.animateTo(
+        0,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+      );
     }
     _reshowToolbar();
   }
@@ -6207,6 +6728,7 @@ class _EditorScreenState extends State<EditorScreen>
       }
       e.visitChildren(visit);
     }
+
     ctx.visitChildElements(visit);
     return found;
   }
@@ -6275,8 +6797,9 @@ class _EditorScreenState extends State<EditorScreen>
   Future<void> _reshowToolbar() async {
     // 스크롤이 멎기를 기다린다. 프레임 하나로는 모자랄 때가 있어 조금 준다.
     // 위에서 맨 위로 올리는 동안(180ms)에 불러 버리면 메뉴가 다시 밀린다.
-    await Future<void>.delayed(Duration(
-        milliseconds: kScrollTopOnSelectAll ? 260 : 140));
+    await Future<void>.delayed(
+      Duration(milliseconds: kScrollTopOnSelectAll ? 260 : 140),
+    );
     if (!mounted) return;
     final st = _editableState();
     if (st == null) return;
@@ -6343,7 +6866,10 @@ class _EditorScreenState extends State<EditorScreen>
     final tp = TextPainter(
       // '가'로 재는 이유: 원고지는 한글 한 글자를 한 칸에 넣는 종이다.
       // 영문 글자로 재면 칸이 절반이 된다.
-      text: TextSpan(text: '가', style: TextStyle(fontSize: fontSize)),
+      text: TextSpan(
+        text: '가',
+        style: TextStyle(fontSize: fontSize),
+      ),
       textDirection: TextDirection.ltr,
     )..layout();
     _colWFor = fontSize;
@@ -6356,22 +6882,29 @@ class _EditorScreenState extends State<EditorScreen>
   /// 목록으로 한 번 만들어 두고 두 가지 방식으로 그린다 — 폰은 옆으로
   /// 굴리고, 맥과 웹은 넘치는 것을 '더 보기'로 접었다 편다. 같은 목록을
   /// 쓰므로 두 화면의 차례가 어긋날 일이 없다.
-  ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})
-      _tool(
-              {IconData? icon,
-              String? glyph,
-              String tip = '',
-              VoidCallback? onTap,
-              bool divider = false,
-              bool wide = false}) =>
-          (
-            icon: icon,
-            glyph: glyph,
-            tip: tip,
-            onTap: onTap,
-            divider: divider,
-            wide: wide
-          );
+  ({
+    IconData? icon,
+    String? glyph,
+    String tip,
+    VoidCallback? onTap,
+    bool divider,
+    bool wide,
+  })
+  _tool({
+    IconData? icon,
+    String? glyph,
+    String tip = '',
+    VoidCallback? onTap,
+    bool divider = false,
+    bool wide = false,
+  }) => (
+    icon: icon,
+    glyph: glyph,
+    tip: tip,
+    onTap: onTap,
+    divider: divider,
+    wide: wide,
+  );
 
   /// 도구 막대에 무엇이 어떤 차례로 있는가.
   ///
@@ -6395,100 +6928,121 @@ class _EditorScreenState extends State<EditorScreen>
   /// 차례는 소유자 지시대로 **찾기가 맨 왼쪽**, 그 오른쪽에 가름선.
   /// 그다음은 하는 일의 결로 묶었다 — 되돌리기 / 문단 / 목록 / 글자 /
   /// 커서 / 걷어내기.
-  List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})>
-      _tools(L10n l) => [
-            // 2026-08-27 소유자 지시 — 찾기를 맨 왼쪽으로.
-            _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
-            // 2026-08-27 밤 소유자 지시 — 구분선(수평선)을 두 번째 자리로.
-            //
-            // 처음에 나는 이 말을 '세로 가름선을 넣어라'로 읽고 가름선을
-            // 넣었다. 다시 같은 말을 들었으니 내가 틀리게 읽은 것이다.
-            // 소유자가 말한 구분선은 **본문에 넣는 수평선 단추**다.
-            _tool(
-                icon: Icons.horizontal_rule,
-                tip: l.dividerTip,
-                onTap: _insertDivider),
-            _tool(divider: true),
-            _tool(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
-            _tool(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
-            _tool(divider: true),
-            // ── 단락 형식 ──
-            //
-            // 2026-08-27 밤 소유자 지시 — 블로거처럼 펼침 목록으로.
-            // 돌려 가며 고르던 '제목' 단추와 '인용' 단추가 여기 합쳐졌다.
-            // 지금 이 줄이 무슨 형식인지 단추에 그대로 적힌다.
-            _tool(
-                glyph: _blockLabel(l),
-                tip: l.blockFormatTip,
-                wide: true,
-                onTap: _showBlockMenu),
-            // 2026-08-29 소유자 지시 — 굵게를 단락 형식 고르개 바로 옆으로.
-            //
-            // 둘은 같은 일의 두 크기다. 고르개는 **줄 전체**의 무게를
-            // 정하고 굵게는 **고른 글자**의 무게를 정한다. 붙여 놓으면
-            // '무게를 정하는 자리'가 한 곳이 된다.
-            _tool(
-                icon: Icons.format_bold,
-                tip: l.boldTip,
-                onTap: () => _op((t, a, b) => toggleWrap(t, a, b, '**'))),
-            _tool(divider: true),
-            // ── 목록 넷 ──
-            //
-            // 아이콘을 글자(1. · -)에서 목록 그림으로 바꿨다(소유자 지시).
-            // 글자는 그 자체로 '이 글자를 넣는다'로 읽힌다 — 08-17에 실제로
-            // 그 오해가 있었다. 그림은 '이 줄들을 목록으로 만든다'로 읽힌다.
-            //
-            // 하이픈 목록은 이 앱의 특징이다. 다른 편집기는 대개 점과 번호
-            // 둘뿐인데, AI 답변에는 하이픈 목록이 압도적으로 많이 온다.
-            _tool(
-                icon: Icons.format_list_numbered,
-                tip: l.listNumberAction,
-                onTap: () => _makeList('number')),
-            _tool(
-                icon: Icons.format_list_bulleted,
-                tip: l.listBulletAction,
-                onTap: () => _makeList('bullet')),
-            _tool(
-                icon: Icons.list,
-                tip: l.listDashAction,
-                onTap: () => _makeList('dash')),
-            // 이제 줄에 하는 일이다. 나란히 있는 네 단추 중 하나만 다르게
-            // 굴면 사람은 그걸 고장으로 읽는다.
-            _tool(
-                icon: Icons.checklist,
-                tip: l.todoAction,
-                onTap: () => _op(toggleTodo)),
-            _tool(
-                icon: Icons.format_indent_increase,
-                tip: l.indentTip,
-                onTap: () => _op(indentLines)),
-            _tool(
-                icon: Icons.format_indent_decrease,
-                tip: l.outdentTip,
-                onTap: () => _op(outdentLines)),
-            _tool(divider: true),
-            // ── 글자 ──
-            _tool(icon: Icons.code, tip: l.codeTip, onTap: () => _op(toggleCode)),
-            _tool(icon: Icons.link, tip: l.linkTip, onTap: () => _op(makeLink)),
-            _tool(divider: true),
-            // ── 커서 옮기기 ──
-            //
-            // 한글 입력에서 커서를 정확한 자리에 놓기가 정말 어렵다. 손가락
-            // 하나가 글자 두세 개를 덮기 때문이다.
-            _tool(
-                icon: Icons.keyboard_arrow_left,
-                tip: l.cursorLeftTip,
-                onTap: () => _moveCaret(-1)),
-            _tool(
-                icon: Icons.keyboard_arrow_right,
-                tip: l.cursorRightTip,
-                onTap: () => _moveCaret(1)),
-            _tool(divider: true),
-            _tool(
-                icon: Icons.format_clear,
-                tip: l.clearFormatTip,
-                onTap: () => _op(stripFormat)),
-          ];
+  List<
+    ({
+      IconData? icon,
+      String? glyph,
+      String tip,
+      VoidCallback? onTap,
+      bool divider,
+      bool wide,
+    })
+  >
+  _tools(L10n l) => [
+    // 2026-08-27 소유자 지시 — 찾기를 맨 왼쪽으로.
+    _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
+    // 2026-08-27 밤 소유자 지시 — 구분선(수평선)을 두 번째 자리로.
+    //
+    // 처음에 나는 이 말을 '세로 가름선을 넣어라'로 읽고 가름선을
+    // 넣었다. 다시 같은 말을 들었으니 내가 틀리게 읽은 것이다.
+    // 소유자가 말한 구분선은 **본문에 넣는 수평선 단추**다.
+    _tool(
+      icon: Icons.horizontal_rule,
+      tip: l.dividerTip,
+      onTap: _insertDivider,
+    ),
+    _tool(divider: true),
+    _tool(icon: Icons.undo, tip: l.undoTip, onTap: () => _undoCtl.undo()),
+    _tool(icon: Icons.redo, tip: l.redoTip, onTap: () => _undoCtl.redo()),
+    _tool(divider: true),
+    // ── 단락 형식 ──
+    //
+    // 2026-08-27 밤 소유자 지시 — 블로거처럼 펼침 목록으로.
+    // 돌려 가며 고르던 '제목' 단추와 '인용' 단추가 여기 합쳐졌다.
+    // 지금 이 줄이 무슨 형식인지 단추에 그대로 적힌다.
+    _tool(
+      glyph: _blockLabel(l),
+      tip: l.blockFormatTip,
+      wide: true,
+      onTap: _showBlockMenu,
+    ),
+    // 2026-08-29 소유자 지시 — 굵게를 단락 형식 고르개 바로 옆으로.
+    //
+    // 둘은 같은 일의 두 크기다. 고르개는 **줄 전체**의 무게를
+    // 정하고 굵게는 **고른 글자**의 무게를 정한다. 붙여 놓으면
+    // '무게를 정하는 자리'가 한 곳이 된다.
+    _tool(
+      icon: Icons.format_bold,
+      tip: l.boldTip,
+      onTap: () => _op((t, a, b) => toggleWrap(t, a, b, '**')),
+    ),
+    _tool(divider: true),
+    // ── 목록 넷 ──
+    //
+    // 아이콘을 글자(1. · -)에서 목록 그림으로 바꿨다(소유자 지시).
+    // 글자는 그 자체로 '이 글자를 넣는다'로 읽힌다 — 08-17에 실제로
+    // 그 오해가 있었다. 그림은 '이 줄들을 목록으로 만든다'로 읽힌다.
+    //
+    // 하이픈 목록은 이 앱의 특징이다. 다른 편집기는 대개 점과 번호
+    // 둘뿐인데, AI 답변에는 하이픈 목록이 압도적으로 많이 온다.
+    _tool(
+      icon: Icons.format_list_numbered,
+      tip: l.listNumberAction,
+      onTap: () => _makeList('number'),
+    ),
+    _tool(
+      icon: Icons.format_list_bulleted,
+      tip: l.listBulletAction,
+      onTap: () => _makeList('bullet'),
+    ),
+    _tool(
+      icon: Icons.list,
+      tip: l.listDashAction,
+      onTap: () => _makeList('dash'),
+    ),
+    // 이제 줄에 하는 일이다. 나란히 있는 네 단추 중 하나만 다르게
+    // 굴면 사람은 그걸 고장으로 읽는다.
+    _tool(
+      icon: Icons.checklist,
+      tip: l.todoAction,
+      onTap: () => _op(toggleTodo),
+    ),
+    _tool(
+      icon: Icons.format_indent_increase,
+      tip: l.indentTip,
+      onTap: () => _op(indentLines),
+    ),
+    _tool(
+      icon: Icons.format_indent_decrease,
+      tip: l.outdentTip,
+      onTap: () => _op(outdentLines),
+    ),
+    _tool(divider: true),
+    // ── 글자 ──
+    _tool(icon: Icons.code, tip: l.codeTip, onTap: () => _op(toggleCode)),
+    _tool(icon: Icons.link, tip: l.linkTip, onTap: () => _op(makeLink)),
+    _tool(divider: true),
+    // ── 커서 옮기기 ──
+    //
+    // 한글 입력에서 커서를 정확한 자리에 놓기가 정말 어렵다. 손가락
+    // 하나가 글자 두세 개를 덮기 때문이다.
+    _tool(
+      icon: Icons.keyboard_arrow_left,
+      tip: l.cursorLeftTip,
+      onTap: () => _moveCaret(-1),
+    ),
+    _tool(
+      icon: Icons.keyboard_arrow_right,
+      tip: l.cursorRightTip,
+      onTap: () => _moveCaret(1),
+    ),
+    _tool(divider: true),
+    _tool(
+      icon: Icons.format_clear,
+      tip: l.clearFormatTip,
+      onTap: () => _op(stripFormat),
+    ),
+  ];
 
   /// 지금 커서가 놓인 줄의 단락 형식 이름.
   String _blockLabel(L10n l) => _blockName(l, _blockNow());
@@ -6502,13 +7056,13 @@ class _EditorScreenState extends State<EditorScreen>
   }
 
   String _blockName(L10n l, String kind) => switch (kind) {
-        kBlockH1 => l.blockH1,
-        kBlockH2 => l.blockH2,
-        kBlockH3 => l.blockH3,
-        kBlockQuote => l.blockQuote,
-        kBlockCode => l.blockCode,
-        _ => l.blockBody,
-      };
+    kBlockH1 => l.blockH1,
+    kBlockH2 => l.blockH2,
+    kBlockH3 => l.blockH3,
+    kBlockQuote => l.blockQuote,
+    kBlockCode => l.blockCode,
+    _ => l.blockBody,
+  };
 
   /// 단락 형식 펼침 목록. 지금 것에 체크가 붙는다.
   ///
@@ -6517,8 +7071,7 @@ class _EditorScreenState extends State<EditorScreen>
   Future<void> _showBlockMenu() async {
     final l = L10n.of(context);
     final now = _blockNow();
-    final btn =
-        _blockBtnKey.currentContext?.findRenderObject() as RenderBox?;
+    final btn = _blockBtnKey.currentContext?.findRenderObject() as RenderBox?;
     final overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (btn == null || !btn.attached || overlay == null) return;
@@ -6527,12 +7080,15 @@ class _EditorScreenState extends State<EditorScreen>
     // 폰처럼 막대가 화면 아래에 있을 때는 위로 펴진다.
     final topLeft = btn.localToGlobal(const Offset(0, 6), ancestor: overlay);
     final bottomRight = btn.localToGlobal(
-        btn.size.bottomRight(Offset.zero) + const Offset(0, 6),
-        ancestor: overlay);
+      btn.size.bottomRight(Offset.zero) + const Offset(0, 6),
+      ancestor: overlay,
+    );
     final picked = await showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
-          Rect.fromPoints(topLeft, bottomRight), Offset.zero & overlay.size),
+        Rect.fromPoints(topLeft, bottomRight),
+        Offset.zero & overlay.size,
+      ),
       items: [
         for (final k in kBlockKinds)
           PopupMenuItem<String>(
@@ -6546,21 +7102,23 @@ class _EditorScreenState extends State<EditorScreen>
                       ? Icon(Icons.check, size: 17, color: context.c.accent)
                       : null,
                 ),
-                Text(_blockName(l, k),
-                    style: TextStyle(
-                        fontSize: k == kBlockH1
-                            ? 19
-                            : k == kBlockH2
-                                ? 17
-                                : k == kBlockH3
-                                    ? 15.5
-                                    : 14,
-                        fontFamily: k == kBlockCode ? 'D2Coding' : null,
-                        fontStyle:
-                            k == kBlockQuote ? FontStyle.italic : null,
-                        fontWeight: k == kBlockBody || k == kBlockQuote
-                            ? FontWeight.w400
-                            : FontWeight.w700)),
+                Text(
+                  _blockName(l, k),
+                  style: TextStyle(
+                    fontSize: k == kBlockH1
+                        ? 19
+                        : k == kBlockH2
+                        ? 17
+                        : k == kBlockH3
+                        ? 15.5
+                        : 14,
+                    fontFamily: k == kBlockCode ? 'D2Coding' : null,
+                    fontStyle: k == kBlockQuote ? FontStyle.italic : null,
+                    fontWeight: k == kBlockBody || k == kBlockQuote
+                        ? FontWeight.w400
+                        : FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -6622,27 +7180,36 @@ class _EditorScreenState extends State<EditorScreen>
       hairlineTop: !atTop,
       hairlineBottom: atTop,
       child: _isDesktop
-          ? LayoutBuilder(builder: (_, box) => _barFit(items, box.maxWidth, atTop))
+          ? LayoutBuilder(
+              builder: (_, box) => _barFit(items, box.maxWidth, atTop),
+            )
           : SizedBox(
               height: 44,
-              child: Row(children: [
-                Expanded(
-                  // 폰은 옆으로 굴린다. 손가락은 굴리는 것이 자연스럽다.
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    children: [for (final it in items) _toolWidget(it)],
+              child: Row(
+                children: [
+                  Expanded(
+                    // 폰은 옆으로 굴린다. 손가락은 굴리는 것이 자연스럽다.
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      children: [for (final it in items) _toolWidget(it)],
+                    ),
                   ),
-                ),
-                if (!atTop) ...[
-                  Container(width: 1, height: 26, color: context.c.toolbarLine),
-                  _kbBtn(
-                    icon: Icons.keyboard_hide_outlined,
-                    tip: l.hideKeyboardTip,
-                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                  ),
+                  if (!atTop) ...[
+                    Container(
+                      width: 1,
+                      height: 26,
+                      color: context.c.toolbarLine,
+                    ),
+                    _kbBtn(
+                      icon: Icons.keyboard_hide_outlined,
+                      tip: l.hideKeyboardTip,
+                      onTap: () =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                  ],
                 ],
-              ]),
+              ),
             ),
     );
   }
@@ -6662,10 +7229,20 @@ class _EditorScreenState extends State<EditorScreen>
   /// 것이라 손이 기억한 그림이 사라진다. 아래로 펴면 같은 그림이 같은
   /// 크기로 남고, 자리만 한 줄 내려간다.
   Widget _barFit(
-      List<({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})>
-          items,
-      double width,
-      bool atTop) {
+    List<
+      ({
+        IconData? icon,
+        String? glyph,
+        String tip,
+        VoidCallback? onTap,
+        bool divider,
+        bool wide,
+      })
+    >
+    items,
+    double width,
+    bool atTop,
+  ) {
     double w(int i) =>
         items[i].divider ? _dividerW : (items[i].wide ? _wideW : _toolW);
     var total = 0.0;
@@ -6703,15 +7280,17 @@ class _EditorScreenState extends State<EditorScreen>
           height: 44,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(children: [
-              for (final it in items.take(cut)) _toolWidget(it),
-              if (rest.isNotEmpty)
-                _kbBtn(
-                  icon: _toolsOpen ? Icons.expand_less : Icons.more_horiz,
-                  tip: l.moreTools,
-                  onTap: () => setState(() => _toolsOpen = !_toolsOpen),
-                ),
-            ]),
+            child: Row(
+              children: [
+                for (final it in items.take(cut)) _toolWidget(it),
+                if (rest.isNotEmpty)
+                  _kbBtn(
+                    icon: _toolsOpen ? Icons.expand_less : Icons.more_horiz,
+                    tip: l.moreTools,
+                    onTap: () => setState(() => _toolsOpen = !_toolsOpen),
+                  ),
+              ],
+            ),
           ),
         ),
         if (_toolsOpen && rest.isNotEmpty)
@@ -6727,14 +7306,23 @@ class _EditorScreenState extends State<EditorScreen>
   }
 
   Widget _toolWidget(
-      ({IconData? icon, String? glyph, String tip, VoidCallback? onTap, bool divider, bool wide})
-          it) {
+    ({
+      IconData? icon,
+      String? glyph,
+      String tip,
+      VoidCallback? onTap,
+      bool divider,
+      bool wide,
+    })
+    it,
+  ) {
     if (it.divider) {
       return Container(
-          width: 1,
-          height: 26,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          color: context.c.toolbarLine);
+        width: 1,
+        height: 26,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        color: context.c.toolbarLine,
+      );
     }
     if (it.wide) {
       return Tooltip(
@@ -6749,16 +7337,21 @@ class _EditorScreenState extends State<EditorScreen>
             margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
             padding: const EdgeInsets.only(left: 10, right: 4),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: context.c.toolbarLine)),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.c.toolbarLine),
+            ),
             child: Row(
               children: [
                 Expanded(
-                  child: Text(it.glyph ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    it.glyph ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 const Icon(Icons.arrow_drop_down, size: 20),
               ],
@@ -6768,7 +7361,11 @@ class _EditorScreenState extends State<EditorScreen>
       );
     }
     return _kbBtn(
-        icon: it.icon, glyph: it.glyph, tip: it.tip, onTap: it.onTap ?? () {});
+      icon: it.icon,
+      glyph: it.glyph,
+      tip: it.tip,
+      onTap: it.onTap ?? () {},
+    );
   }
 
   @override
@@ -6887,8 +7484,14 @@ class _EditorScreenState extends State<EditorScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(t,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: c.tagInk)),
+          Text(
+            t,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: c.tagInk,
+            ),
+          ),
           const SizedBox(width: 2),
           Semantics(
             button: true,
@@ -6945,46 +7548,46 @@ class _EditorScreenState extends State<EditorScreen>
       '3~5개를 쉼표로만 구분해 한 줄로 출력한다. 번호·설명·따옴표·해시(#)·코드펜스는 붙이지 않는다. '
       '입력 언어를 그대로 유지한다.';
 
-/// 전체 선택을 하면 문서 맨 위로 올릴 것인가. **실험이다.**
-///
-/// 2026-08-17 소유자 신고 — "전체 선택을 하면 블록 씌운 범위 선택을 못하는
-/// 문제가 여전하다. 범위 선택할 수 있는 핸들이 없어."
-///
-/// 핸들은 있다. 화면 밖에 있을 뿐이다. 이 앱의 본문 칸은 스스로 구르지
-/// 않아서(글 끝 반 화면 여백을 만들려고 스크롤 임자를 바깥에 뒀다) 글
-/// 길이만큼 통째로 펼쳐져 있고, 전체 선택을 하면 시작 핸들은 문서 맨
-/// 처음에, 끝 핸들은 맨 끝에 놓인다. 긴 메모에서는 둘 다 화면 밖이다.
-///
-/// 제대로 고치려면 본문 칸이 자기 스크롤을 갖게 해야 하는데, 그러면 날짜
-/// 줄·글 끝 여백·광고 자리를 다시 짜야 한다. 그 전에 **가벼운 쪽을 먼저
-/// 써 보고 판단하기로 했다**(소유자 지시). 전체 선택 직후 맨 위로 올려
-/// 시작 핸들만이라도 손에 닿게 한다.
-///
-/// **되돌리려면 이 값을 false 로 바꾸면 된다.** 그러면 이 판 이전과
-/// 완전히 같아진다 — 다른 곳은 손대지 않았다.
-static const bool kScrollTopOnSelectAll = true;
+  /// 전체 선택을 하면 문서 맨 위로 올릴 것인가. **실험이다.**
+  ///
+  /// 2026-08-17 소유자 신고 — "전체 선택을 하면 블록 씌운 범위 선택을 못하는
+  /// 문제가 여전하다. 범위 선택할 수 있는 핸들이 없어."
+  ///
+  /// 핸들은 있다. 화면 밖에 있을 뿐이다. 이 앱의 본문 칸은 스스로 구르지
+  /// 않아서(글 끝 반 화면 여백을 만들려고 스크롤 임자를 바깥에 뒀다) 글
+  /// 길이만큼 통째로 펼쳐져 있고, 전체 선택을 하면 시작 핸들은 문서 맨
+  /// 처음에, 끝 핸들은 맨 끝에 놓인다. 긴 메모에서는 둘 다 화면 밖이다.
+  ///
+  /// 제대로 고치려면 본문 칸이 자기 스크롤을 갖게 해야 하는데, 그러면 날짜
+  /// 줄·글 끝 여백·광고 자리를 다시 짜야 한다. 그 전에 **가벼운 쪽을 먼저
+  /// 써 보고 판단하기로 했다**(소유자 지시). 전체 선택 직후 맨 위로 올려
+  /// 시작 핸들만이라도 손에 닿게 한다.
+  ///
+  /// **되돌리려면 이 값을 false 로 바꾸면 된다.** 그러면 이 판 이전과
+  /// 완전히 같아진다 — 다른 곳은 손대지 않았다.
+  static const bool kScrollTopOnSelectAll = true;
 
-/// 태그를 뽑을 때 훑는 본문 길이.
-///
-/// 2026-08-17 소유자 지적 — "자동 태그. 제목만 분석하냐?"
-///
-/// 제목만 보지는 않았다. 다만 1200자만 봤고, 긴 글에서 1200자는 서두다.
-/// 서두에는 인사말과 도입이 들어 있어서, 정작 그 글이 무엇에 관한 것인지는
-/// 그 아래에 있다. 3000자로 넓혔다 — 이 함수는 기기 안에서 도는 정규식
-/// 몇 개라 세 배로 늘어도 사람이 느낄 만한 값이 아니다.
-/// 본문을 한 번 두드리면 편집 메뉴를 띄울 것인가.
-///
-/// 애플 기본은 '두 번'이다 — 한 번은 커서를 놓는 일이고, 그 커서를 다시
-/// 눌러야 메뉴가 뜬다. 규칙 자체에는 이유가 있다. 글을 고치다 자리를
-/// 옮길 때마다 메뉴가 따라 뜨면 성가시기 때문이다.
-///
-/// 그런데 이 앱에서 본문을 두드리는 까닭은 대개 **붙여넣기**다. AI 답변을
-/// 받아 와 넣는 것이 이 앱의 첫 일이니, 그 한 걸음을 줄이는 쪽이 맞다.
-///
-/// 성가시면 false 로 바꾸면 애플 기본으로 돌아간다. 다른 곳은 손대지 않았다.
-static const bool kMenuOnFirstTap = false;
+  /// 태그를 뽑을 때 훑는 본문 길이.
+  ///
+  /// 2026-08-17 소유자 지적 — "자동 태그. 제목만 분석하냐?"
+  ///
+  /// 제목만 보지는 않았다. 다만 1200자만 봤고, 긴 글에서 1200자는 서두다.
+  /// 서두에는 인사말과 도입이 들어 있어서, 정작 그 글이 무엇에 관한 것인지는
+  /// 그 아래에 있다. 3000자로 넓혔다 — 이 함수는 기기 안에서 도는 정규식
+  /// 몇 개라 세 배로 늘어도 사람이 느낄 만한 값이 아니다.
+  /// 본문을 한 번 두드리면 편집 메뉴를 띄울 것인가.
+  ///
+  /// 애플 기본은 '두 번'이다 — 한 번은 커서를 놓는 일이고, 그 커서를 다시
+  /// 눌러야 메뉴가 뜬다. 규칙 자체에는 이유가 있다. 글을 고치다 자리를
+  /// 옮길 때마다 메뉴가 따라 뜨면 성가시기 때문이다.
+  ///
+  /// 그런데 이 앱에서 본문을 두드리는 까닭은 대개 **붙여넣기**다. AI 답변을
+  /// 받아 와 넣는 것이 이 앱의 첫 일이니, 그 한 걸음을 줄이는 쪽이 맞다.
+  ///
+  /// 성가시면 false 로 바꾸면 애플 기본으로 돌아간다. 다른 곳은 손대지 않았다.
+  static const bool kMenuOnFirstTap = false;
 
-static const int kTagScanChars = 3000;
+  static const int kTagScanChars = 3000;
 
   bool _tagAiBusy = false;
 
@@ -7179,7 +7782,7 @@ static const int kTagScanChars = 3000;
   /// 제목란에 들어오면 자동으로 붙어 있던 제목을 비운다.
   void _clearAutoTitleOnFocus() {
     if (!_titleFocus.hasFocus) return;
-    if (!note.titleAuto) return;      // 손으로 적은 제목은 그대로 둔다
+    if (!note.titleAuto) return; // 손으로 적은 제목은 그대로 둔다
     if (titleCtl.text.isEmpty) return;
     titleCtl.clear();
     // note.titleAuto 는 아직 참으로 둔다. 아무것도 안 쓰고 나가면 본문에서
@@ -7261,26 +7864,40 @@ static const int kTagScanChars = 3000;
     // 설명이다. 그래서 알림을 이 자리로 옮겼다. 그동안 몇 번 썼는지를
     // 숫자로 보여 준다 — 사람은 가진 적 없는 것보다 가졌다가 잃는 것에
     // 훨씬 민감하고, 그 숫자가 그 감각을 만든다.
-    final ended =
-        trialJustEnded(trialDays: s.trialDays, noticeShown: s.trialNoticeShown);
+    final ended = trialJustEnded(
+      trialDays: s.trialDays,
+      noticeShown: s.trialNoticeShown,
+    );
     if (ended) {
       s.trialNoticeShown = true;
       await store.persistSettings();
       if (!mounted) return true;
     }
 
-    final go = await confirmDialog(context,
-        title: ended ? L10n.of(context).trialEndedTitle : L10n.of(context).limitTitle,
-        body: ended
-            ? L10n.of(context).trialEndedBody(s.trialTidyTotal, s.trialWizTotal,
-                kFreeTidyPerDay, kFreeWizardPerDay)
-            : (wizard
+    final go = await confirmDialog(
+      context,
+      title: ended
+          ? L10n.of(context).trialEndedTitle
+          : L10n.of(context).limitTitle,
+      body: ended
+          ? L10n.of(context).trialEndedBody(
+              s.trialTidyTotal,
+              s.trialWizTotal,
+              kFreeTidyPerDay,
+              kFreeWizardPerDay,
+            )
+          : (wizard
                 ? L10n.of(context).limitWizardBody(kFreeWizardPerDay)
                 : L10n.of(context).limitTidyBody(kFreeTidyPerDay)),
-        okLabel: L10n.of(context).limitSeePremium);
+      okLabel: L10n.of(context).limitSeePremium,
+    );
     if (go && mounted) {
-      await Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const PremiumScreen()));
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AdFreeScope(child: PremiumScreen()),
+        ),
+      );
     }
     return true;
   }
@@ -7289,10 +7906,18 @@ static const int kTagScanChars = 3000;
     final s = store.settings;
     final now = DateTime.now();
     if (wizard) {
-      s.wizCount = nextCount(now: now, savedDate: s.wizDate, savedCount: s.wizCount);
+      s.wizCount = nextCount(
+        now: now,
+        savedDate: s.wizDate,
+        savedCount: s.wizCount,
+      );
       s.wizDate = usageDateKey(now);
     } else {
-      s.tidyCount = nextCount(now: now, savedDate: s.tidyDate, savedCount: s.tidyCount);
+      s.tidyCount = nextCount(
+        now: now,
+        savedDate: s.tidyDate,
+        savedCount: s.tidyCount,
+      );
       s.tidyDate = usageDateKey(now);
     }
     // 체험 중에만 누적한다. 끝난 뒤에도 세면 "체험 동안 이만큼 쓰셨다"는
@@ -7340,20 +7965,28 @@ static const int kTagScanChars = 3000;
     final l = L10n.of(context);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(wizard ? l.limitLeftWizard(left) : l.limitLeftTidy(left)),
-        // 단추가 달린 알림은 읽고 누를 시간이 있어야 한다. 정리 완료
-        // 알림(1.1초)보다 길게 두는 까닭이다.
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: l.limitSeePremium,
-          onPressed: () {
-            if (!mounted) return;
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const PremiumScreen()));
-          },
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            wizard ? l.limitLeftWizard(left) : l.limitLeftTidy(left),
+          ),
+          // 단추가 달린 알림은 읽고 누를 시간이 있어야 한다. 정리 완료
+          // 알림(1.1초)보다 길게 두는 까닭이다.
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: l.limitSeePremium,
+            onPressed: () {
+              if (!mounted) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AdFreeScope(child: PremiumScreen()),
+                ),
+              );
+            },
+          ),
         ),
-      ));
+      );
   }
 
   /// 처음 붙여넣은 글로 돌아간다.
@@ -7374,7 +8007,6 @@ static const int kTagScanChars = 3000;
   /// 자체를 취소할 수 있다. 사라지는 알림에 '취소' 버튼을 다는 길도 있었지만
   /// 안 했다 — 사라지는 알림의 버튼은 누르려는 순간 사라진다. 버전기록은
   /// 안 사라진다.
-
 
   /// 훑을 길이 있는가 — 이전 판이 있거나, 되돌릴 원본이 있거나.
   ///
@@ -7401,46 +8033,49 @@ static const int kTagScanChars = 3000;
       }
     }
 
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (ctx) => Scaffold(
-        backgroundColor: ctx.c.bg,
-        appBar: AppBar(title: Text(l.historyTitle)),
-        body: TimeTravelView(
-          stops: travelStops(
-            history: note.history,
-            historyAt: note.historyAt,
-            historyWhy: note.historyWhy,
-            body: bodyCtl.text,
-            updatedAt: note.updatedAt,
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => Scaffold(
+          backgroundColor: ctx.c.bg,
+          appBar: AppBar(title: Text(l.historyTitle)),
+          body: TimeTravelView(
+            stops: travelStops(
+              history: note.history,
+              historyAt: note.historyAt,
+              historyWhy: note.historyWhy,
+              body: bodyCtl.text,
+              updatedAt: note.updatedAt,
+            ),
+            fontSize: s.bodyFontSize,
+            lineHeight: s.bodyLineHeight,
+            fontFamily: bodyFontFamily(
+              s.bodyFont,
+              webDefault: kIsWeb ? kWebFontFamily : null,
+            ),
+            nowLabel: l.travelNow,
+            whyLabel: (w) {
+              final t = historyWhyLabel(l, w);
+              return t.isEmpty ? l.travelOlder : t;
+            },
+            whenLabel: when,
+            growLabel: (d) =>
+                d == 0 ? '' : (d < 0 ? l.travelShrank(-d) : l.travelGrew(d)),
+            restoreLabel: l.travelRestore,
+            onRestore: (stop) async {
+              // 되돌리기 자체도 되돌릴 수 있어야 한다. 지금 글을 먼저
+              // 기록에 넣는다 — 안 그러면 '되돌리기'가 곧 '지금 글을
+              // 버리기'가 된다(HistorySheet 와 같은 규칙).
+              note.pushHistory(bodyCtl.text, why: 'restore');
+              bodyCtl.text = stop.text;
+              await _save();
+              HapticFeedback.lightImpact();
+              if (ctx.mounted) Navigator.of(ctx).pop();
+              if (mounted) setState(() {});
+            },
           ),
-          fontSize: s.bodyFontSize,
-          lineHeight: s.bodyLineHeight,
-          fontFamily: bodyFontFamily(s.bodyFont,
-              webDefault: kIsWeb ? kWebFontFamily : null),
-          nowLabel: l.travelNow,
-          whyLabel: (w) {
-            final t = historyWhyLabel(l, w);
-            return t.isEmpty ? l.travelOlder : t;
-          },
-          whenLabel: when,
-          growLabel: (d) => d == 0
-              ? ''
-              : (d < 0 ? l.travelShrank(-d) : l.travelGrew(d)),
-          restoreLabel: l.travelRestore,
-          onRestore: (stop) async {
-            // 되돌리기 자체도 되돌릴 수 있어야 한다. 지금 글을 먼저
-            // 기록에 넣는다 — 안 그러면 '되돌리기'가 곧 '지금 글을
-            // 버리기'가 된다(HistorySheet 와 같은 규칙).
-            note.pushHistory(bodyCtl.text, why: 'restore');
-            bodyCtl.text = stop.text;
-            await _save();
-            HapticFeedback.lightImpact();
-            if (ctx.mounted) Navigator.of(ctx).pop();
-            if (mounted) setState(() {});
-          },
         ),
       ),
-    ));
+    );
   }
 
   /// 전·후를 견줄 거리가 있는가.
@@ -7457,34 +8092,38 @@ static const int kTagScanChars = 3000;
     if (!_canWipe) return;
     final l = L10n.of(context);
     final s = store.settings;
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (ctx) => Scaffold(
-        backgroundColor: ctx.c.bg,
-        appBar: AppBar(
-          title: Text(l.wipeTitle),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(26),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                l.wipeCounts(note.originalBody.length, bodyCtl.text.length),
-                style: TextStyle(fontSize: 12.5, color: ctx.c.sub),
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => Scaffold(
+          backgroundColor: ctx.c.bg,
+          appBar: AppBar(
+            title: Text(l.wipeTitle),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(26),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  l.wipeCounts(note.originalBody.length, bodyCtl.text.length),
+                  style: TextStyle(fontSize: 12.5, color: ctx.c.sub),
+                ),
               ),
             ),
           ),
-        ),
-        body: WipeView(
-          before: note.originalBody,
-          after: bodyCtl.text,
-          beforeLabel: l.wipeBefore,
-          afterLabel: l.wipeAfter,
-          fontSize: s.bodyFontSize,
-          lineHeight: s.bodyLineHeight,
-          fontFamily: bodyFontFamily(s.bodyFont,
-              webDefault: kIsWeb ? kWebFontFamily : null),
+          body: WipeView(
+            before: note.originalBody,
+            after: bodyCtl.text,
+            beforeLabel: l.wipeBefore,
+            afterLabel: l.wipeAfter,
+            fontSize: s.bodyFontSize,
+            lineHeight: s.bodyLineHeight,
+            fontFamily: bodyFontFamily(
+              s.bodyFont,
+              webDefault: kIsWeb ? kWebFontFamily : null,
+            ),
+          ),
         ),
       ),
-    ));
+    );
   }
 
   /// 이 메모를 어느 폴더에 둘지 고른다.
@@ -7524,9 +8163,13 @@ static const int kTagScanChars = 3000;
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l.folderTitle,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(
+                l.folderTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 10),
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -7556,11 +8199,17 @@ static const int kTagScanChars = 3000;
               const Divider(height: 20),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.create_new_folder_outlined,
-                    color: sheet.c.accent),
-                title: Text(l.folderNew,
-                    style: TextStyle(
-                        color: sheet.c.accent, fontWeight: FontWeight.w600)),
+                leading: Icon(
+                  Icons.create_new_folder_outlined,
+                  color: sheet.c.accent,
+                ),
+                title: Text(
+                  l.folderNew,
+                  style: TextStyle(
+                    color: sheet.c.accent,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 onTap: () async {
                   Navigator.pop(sheet);
                   final name = await _askFolderName(names);
@@ -7591,11 +8240,13 @@ static const int kTagScanChars = 3000;
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(L10n.of(ctx).cancel)),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(L10n.of(ctx).cancel),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(ctx, ctl.text),
-              child: Text(L10n.of(ctx).done)),
+            onPressed: () => Navigator.pop(ctx, ctl.text),
+            child: Text(L10n.of(ctx).done),
+          ),
         ],
       ),
     );
@@ -7610,7 +8261,6 @@ static const int kTagScanChars = 3000;
     return n;
   }
 
-
   /// [forcePreview]가 참이면 설정과 무관하게 미리보기를 먼저 보여 준다.
   ///
   /// 2026-08-17 소유자 지시 — "'정리 미리보기' 기능을 편집 메뉴에 넣어줘.
@@ -7620,8 +8270,10 @@ static const int kTagScanChars = 3000;
   /// 절대 안 거친다. 그런데 사람이 실제로 원하는 건 그 중간이다 — 평소엔
   /// 그냥 정리하고, 낯선 글 하나를 만났을 때만 먼저 보고 싶다. 그건
   /// 설정이 아니라 **그때 고르는 일**이므로 메뉴에 있어야 한다.
-  Future<void> _runTidyWithPreset(Preset preset,
-      {bool forcePreview = false}) async {
+  Future<void> _runTidyWithPreset(
+    Preset preset, {
+    bool forcePreview = false,
+  }) async {
     if (await _blockedByLimit(wizard: false)) return;
     await _save();
     final r = tidy(note.body, store.effOpts(preset, noteRules: note.rules));
@@ -7633,11 +8285,13 @@ static const int kTagScanChars = 3000;
         ? await Navigator.push<bool>(
             context,
             MaterialPageRoute(
-                builder: (_) => PreviewScreen(
-                    presetName: l.presetName(preset.id, preset.name),
-                    before: note.body,
-                    result: r,
-                    manual: forcePreview)),
+              builder: (_) => PreviewScreen(
+                presetName: l.presetName(preset.id, preset.name),
+                before: note.body,
+                result: r,
+                manual: forcePreview,
+              ),
+            ),
           )
         : true;
     if (apply == true) {
@@ -7694,16 +8348,22 @@ static const int kTagScanChars = 3000;
       child: Text(
         text.isEmpty ? '—' : text,
         style: const TextStyle(
-            fontFamily: MonoTextController.fontFamily,
-            fontSize: 11.5,
-            height: 1.55),
+          fontFamily: MonoTextController.fontFamily,
+          fontSize: 11.5,
+          height: 1.55,
+        ),
       ),
     );
   }
 
   /// 갈래 한 칸 — 이름 · 한 줄 설명 · 이렇게 됩니다.
-  Widget _wayTile(BuildContext ctx, String name, String? desc, String out,
-      VoidCallback onTap) {
+  Widget _wayTile(
+    BuildContext ctx,
+    String name,
+    String? desc,
+    String out,
+    VoidCallback onTap,
+  ) {
     final c = ctx.c;
     return InkWell(
       onTap: onTap,
@@ -7713,11 +8373,16 @@ static const int kTagScanChars = 3000;
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(name,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(
+              name,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
             if (desc != null && desc.isNotEmpty) ...[
               const SizedBox(height: 3),
-              Text(desc, style: TextStyle(fontSize: 12.5, height: 1.35, color: c.sub)),
+              Text(
+                desc,
+                style: TextStyle(fontSize: 12.5, height: 1.35, color: c.sub),
+              ),
             ],
             const SizedBox(height: 8),
             _sampleBox(ctx, out),
@@ -7747,11 +8412,14 @@ static const int kTagScanChars = 3000;
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: 6, left: 4),
-              child: Text(L10n.of(ctx).originalLabel,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: ctx.c.sub)),
+              child: Text(
+                L10n.of(ctx).originalLabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: ctx.c.sub,
+                ),
+              ),
             ),
             _sampleBox(ctx, sample),
             const SizedBox(height: 6),
@@ -7802,7 +8470,10 @@ static const int kTagScanChars = 3000;
         maxChildSize: 0.95,
         builder: (ctx, scrollCtl) => SafeArea(
           child: r.tables.isEmpty
-              ? Padding(padding: const EdgeInsets.all(30), child: Text(L10n.of(ctx).noTablesFound))
+              ? Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: Text(L10n.of(ctx).noTablesFound),
+                )
               : ListView.separated(
                   controller: scrollCtl,
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -7814,9 +8485,14 @@ static const int kTagScanChars = 3000;
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          L10n.of(ctx).tableInfo(i + 1, t.header.length, t.rows.length),
+                          L10n.of(
+                            ctx,
+                          ).tableInfo(i + 1, t.header.length, t.rows.length),
                           style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700, color: context.c.sub),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: context.c.sub,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         // 본문에 보이는 그 모양 그대로. 이게 있어야 "아, 그 표"가 된다.
@@ -7824,47 +8500,64 @@ static const int kTagScanChars = 3000;
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                              color: context.c.codeBg,
-                              border: Border.all(color: context.c.codeLine),
-                              borderRadius: BorderRadius.circular(10)),
+                            color: context.c.codeBg,
+                            border: Border.all(color: context.c.codeLine),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Text(
                               tableToAligned(t),
                               style: const TextStyle(
-                                  fontFamily: MonoTextController.fontFamily,
-                                  fontSize: 12.5,
-                                  height: 1.5),
+                                fontFamily: MonoTextController.fontFamily,
+                                fontSize: 12.5,
+                                height: 1.5,
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Wrap(spacing: 8, children: [
-                          FilledButton.tonal(
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: tableToTSV(t)));
-                              Navigator.pop(ctx);
-                              _toast(context, L10n.of(context).copiedSpreadsheet);
-                            },
-                            child: Text(L10n.of(ctx).forSpreadsheet),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: tableToCSV(t)));
-                              Navigator.pop(ctx);
-                              _toast(context, L10n.of(context).copiedCsv);
-                            },
-                            child: const Text('CSV'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: tableToMarkdown(t)));
-                              Navigator.pop(ctx);
-                              _toast(context, L10n.of(context).copiedMarkdown);
-                            },
-                            child: const Text('Markdown'),
-                          ),
-                        ]),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            FilledButton.tonal(
+                              onPressed: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: tableToTSV(t)),
+                                );
+                                Navigator.pop(ctx);
+                                _toast(
+                                  context,
+                                  L10n.of(context).copiedSpreadsheet,
+                                );
+                              },
+                              child: Text(L10n.of(ctx).forSpreadsheet),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: tableToCSV(t)),
+                                );
+                                Navigator.pop(ctx);
+                                _toast(context, L10n.of(context).copiedCsv);
+                              },
+                              child: const Text('CSV'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: tableToMarkdown(t)),
+                                );
+                                Navigator.pop(ctx);
+                                _toast(
+                                  context,
+                                  L10n.of(context).copiedMarkdown,
+                                );
+                              },
+                              child: const Text('Markdown'),
+                            ),
+                          ],
+                        ),
                       ],
                     );
                   },
@@ -7888,7 +8581,11 @@ static const int kTagScanChars = 3000;
   /// 사다리(core/ai_provider.dart)를 위에서부터 시도하고, 성공한 모델을
   /// 설정에 저장한 뒤 한 줄로 알린다. 1년에 두어 번 있는 "제일 싼 모델
   /// 폐지"가 앱 업데이트 없이 지나가게 하기 위한 장치다(소유자 질문).
-  Future<String> _aiEditCall(String instruction, String body, {String? system}) async {
+  Future<String> _aiEditCall(
+    String instruction,
+    String body, {
+    String? system,
+  }) async {
     final s = store.settings;
     final p = s.aiProvider.isNotEmpty
         ? s.aiProvider
@@ -7900,12 +8597,19 @@ static const int kTagScanChars = 3000;
     Object lastErr = Exception('no model');
     for (var i = 0; i < cands.length; i++) {
       try {
-        final out = await _aiCallOnce(p, cands[i], system ?? _aiSys, instruction, body);
+        final out = await _aiCallOnce(
+          p,
+          cands[i],
+          system ?? _aiSys,
+          instruction,
+          body,
+        );
         if (s.aiModel != cands[i] || s.aiProvider != p) {
           s.aiModel = cands[i];
           s.aiProvider = p;
           await store.persistSettings();
-          if (mounted) _toast(context, L10n.of(context).aiModelSwitched(cands[i]));
+          if (mounted)
+            _toast(context, L10n.of(context).aiModelSwitched(cands[i]));
         }
         return out;
       } catch (e) {
@@ -7918,17 +8622,20 @@ static const int kTagScanChars = 3000;
     throw lastErr; // ignore: only_throw_errors
   }
 
-
-  Future<String> _aiCallOnce(String provider, String model, String sys,
-          String instruction, String body) =>
-      aiCallOnce(
-        provider: provider,
-        model: model,
-        key: store.settings.aiKey,
-        sys: sys,
-        instruction: instruction,
-        body: body,
-      );
+  Future<String> _aiCallOnce(
+    String provider,
+    String model,
+    String sys,
+    String instruction,
+    String body,
+  ) => aiCallOnce(
+    provider: provider,
+    model: model,
+    key: store.settings.aiKey,
+    sys: sys,
+    instruction: instruction,
+    body: body,
+  );
 
   Future<void> _showWizardDialog() async {
     // 키가 없는 사람에게는 한도를 묻지 않는다.
@@ -7959,11 +8666,16 @@ static const int kTagScanChars = 3000;
           final l = L10n.of(ctx);
           final w = MediaQuery.of(ctx).size.width;
           return AlertDialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 40,
+            ),
             titlePadding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
             contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
             actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: Text(l.wizardTitle),
             content: SizedBox(
               // 화면이 좁으면 화면을 꽉 채우고(양옆 여백만 남기고), 넓으면 480에서 멈춘다.
@@ -7996,15 +8708,21 @@ static const int kTagScanChars = 3000;
                           ),
                           child: Row(
                             children: [
-                              Icon(CupertinoIcons.sparkles,
-                                  size: 18, color: context.c.accent),
+                              Icon(
+                                CupertinoIcons.sparkles,
+                                size: 18,
+                                color: context.c.accent,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: Text(l.aiKeyInviteTitle,
-                                    style: const TextStyle(
-                                        fontSize: 13.5,
-                                        height: 1.3,
-                                        fontWeight: FontWeight.w600)),
+                                child: Text(
+                                  l.aiKeyInviteTitle,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    height: 1.3,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               FilledButton.tonal(
@@ -8012,8 +8730,7 @@ static const int kTagScanChars = 3000;
                                   final ok = await showAiKeySheet(ctx);
                                   setD(() {});
                                   if (ok && mounted) {
-                                    _toast(context,
-                                        L10n.of(context).aiPingOk);
+                                    _toast(context, L10n.of(context).aiPingOk);
                                   }
                                 },
                                 child: Text(l.aiKeyCta),
@@ -8042,7 +8759,8 @@ static const int kTagScanChars = 3000;
                           mruInsert(store.settings.favPrompts, t);
                           await store.persistSettings();
                           setD(() {});
-                          if (mounted) _toast(context, L10n.of(context).favSavedToast);
+                          if (mounted)
+                            _toast(context, L10n.of(context).favSavedToast);
                         },
                         icon: const Icon(Icons.bookmark_add_outlined, size: 18),
                         label: Text(l.favSaveButton),
@@ -8050,11 +8768,14 @@ static const int kTagScanChars = 3000;
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 2, bottom: 4),
-                      child: Text(l.favListTitle,
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: context.c.sub)),
+                      child: Text(
+                        l.favListTitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: context.c.sub,
+                        ),
+                      ),
                     ),
                     Container(
                       // 등록이 늘어나도 창이 길어지지 않게 높이를 묶고 안에서 굴린다.
@@ -8068,37 +8789,57 @@ static const int kTagScanChars = 3000;
                           ? Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(14),
-                                child: Text(l.favEmpty,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 14, color: context.c.guideInk)),
+                                child: Text(
+                                  l.favEmpty,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: context.c.guideInk,
+                                  ),
+                                ),
                               ),
                             )
                           : Scrollbar(
                               child: ListView.separated(
                                 padding: EdgeInsets.zero,
                                 itemCount: store.settings.favPrompts.length,
-                                separatorBuilder: (_, __) =>
-                                    Divider(height: 1, color: context.c.codeLine),
+                                separatorBuilder: (_, __) => Divider(
+                                  height: 1,
+                                  color: context.c.codeLine,
+                                ),
                                 itemBuilder: (_, i) {
                                   final p = store.settings.favPrompts[i];
                                   return Padding(
-                                    padding: const EdgeInsets.fromLTRB(10, 4, 2, 4),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      10,
+                                      4,
+                                      2,
+                                      4,
+                                    ),
                                     child: Row(
                                       children: [
                                         Expanded(
-                                          child: Text(p,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  fontSize: 14, height: 1.3)),
+                                          child: Text(
+                                            p,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              height: 1.3,
+                                            ),
+                                          ),
                                         ),
                                         TextButton(
                                           onPressed: () async {
                                             cmdCtl.text = p;
-                                            cmdCtl.selection = TextSelection.collapsed(
-                                                offset: cmdCtl.text.length);
-                                            mruInsert(store.settings.favPrompts, p);
+                                            cmdCtl.selection =
+                                                TextSelection.collapsed(
+                                                  offset: cmdCtl.text.length,
+                                                );
+                                            mruInsert(
+                                              store.settings.favPrompts,
+                                              p,
+                                            );
                                             await store.persistSettings();
                                             setD(() {});
                                           },
@@ -8107,7 +8848,10 @@ static const int kTagScanChars = 3000;
                                         IconButton(
                                           tooltip: l.favRemove,
                                           visualDensity: VisualDensity.compact,
-                                          icon: const Icon(Icons.close, size: 18),
+                                          icon: const Icon(
+                                            Icons.close,
+                                            size: 18,
+                                          ),
                                           onPressed: () async {
                                             store.settings.favPrompts.remove(p);
                                             await store.persistSettings();
@@ -8128,11 +8872,14 @@ static const int kTagScanChars = 3000;
                     if (store.settings.recentPrompts.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.only(top: 12, bottom: 4),
-                        child: Text(l.recentPromptsTitle,
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: context.c.sub)),
+                        child: Text(
+                          l.recentPromptsTitle,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: context.c.sub,
+                          ),
+                        ),
                       ),
                       Container(
                         height: 120,
@@ -8149,26 +8896,31 @@ static const int kTagScanChars = 3000;
                                 Divider(height: 1, color: context.c.codeLine),
                             itemBuilder: (_, i) {
                               final p = store.settings.recentPrompts[i];
-                              final already = store.settings.favPrompts
-                                  .any((f) => f.trim() == p.trim());
+                              final already = store.settings.favPrompts.any(
+                                (f) => f.trim() == p.trim(),
+                              );
                               return Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 4, 2, 4),
+                                padding: const EdgeInsets.fromLTRB(10, 4, 2, 4),
                                 child: Row(
                                   children: [
                                     Expanded(
-                                      child: Text(p,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              fontSize: 14, height: 1.3)),
+                                      child: Text(
+                                        p,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          height: 1.3,
+                                        ),
+                                      ),
                                     ),
                                     TextButton(
                                       onPressed: () {
                                         cmdCtl.text = p;
                                         cmdCtl.selection =
                                             TextSelection.collapsed(
-                                                offset: cmdCtl.text.length);
+                                              offset: cmdCtl.text.length,
+                                            );
                                         setD(() {});
                                       },
                                       child: Text(l.favUse),
@@ -8177,25 +8929,30 @@ static const int kTagScanChars = 3000;
                                       tooltip: l.favAdd,
                                       visualDensity: VisualDensity.compact,
                                       icon: Icon(
-                                          already
-                                              ? Icons.bookmark
-                                              : Icons.bookmark_add_outlined,
-                                          size: 18,
-                                          color: already
-                                              ? context.c.accent
-                                              : null),
+                                        already
+                                            ? Icons.bookmark
+                                            : Icons.bookmark_add_outlined,
+                                        size: 18,
+                                        color: already
+                                            ? context.c.accent
+                                            : null,
+                                      ),
                                       onPressed: already
                                           ? null
                                           : () async {
                                               mruInsert(
-                                                  store.settings.favPrompts, p);
+                                                store.settings.favPrompts,
+                                                p,
+                                              );
                                               await store.persistSettings();
                                               setD(() {});
                                               if (mounted) {
                                                 _toast(
+                                                  context,
+                                                  L10n.of(
                                                     context,
-                                                    L10n.of(context)
-                                                        .favSavedToast);
+                                                  ).favSavedToast,
+                                                );
                                               }
                                             },
                                     ),
@@ -8211,8 +8968,14 @@ static const int kTagScanChars = 3000;
                     for (final a in applied)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(l.appliedPrefix(a),
-                            style: TextStyle(color: context.c.accent, fontSize: 13, fontWeight: FontWeight.w600)),
+                        child: Text(
+                          l.appliedPrefix(a),
+                          style: TextStyle(
+                            color: context.c.accent,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     // 한 줄로 합쳐 보여 준다.
                     //
@@ -8226,18 +8989,26 @@ static const int kTagScanChars = 3000;
                     if (aiBusy)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(l.aiWorking,
-                            style: TextStyle(
-                                color: context.c.accent,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600)),
+                        child: Text(
+                          l.aiWorking,
+                          style: TextStyle(
+                            color: context.c.accent,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       )
                     else if (unknown.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         // 경고색을 뺐다. 이건 실패가 아니라 **다음 차례**다.
-                        child: Text(l.unknownPrefix(unknown.join(' ')),
-                            style: TextStyle(color: context.c.sub, fontSize: 12.5)),
+                        child: Text(
+                          l.unknownPrefix(unknown.join(' ')),
+                          style: TextStyle(
+                            color: context.c.sub,
+                            fontSize: 12.5,
+                          ),
+                        ),
                       ),
                     // 여기 있던 'aiKeyPromo' 줄(설정에 키를 넣으라는 안내)은
                     // 2026-08-30에 걷었다. 같은 말을 위 카드가 하고, 카드는
@@ -8251,7 +9022,10 @@ static const int kTagScanChars = 3000;
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.close)),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l.close),
+              ),
               const SizedBox(width: 8),
               // ── 단추 하나가 전부 한다 ────────────────────────────────
               //
@@ -8269,17 +9043,27 @@ static const int kTagScanChars = 3000;
               // 되돌릴 수 있는 일을 미리 확인받는 것은 안전이 아니라 절차다.
               FilledButton(
                 style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 12,
+                  ),
+                ),
                 onPressed: aiBusy
                     ? null
                     : () async {
                         final before = bodyCtl.text;
                         // 쓴 것은 저절로 쌓인다. 등록을 깜빡해도
                         // '최근에 쓴 지시문'에서 다시 꺼낼 수 있게.
-                        mruInsert(store.settings.recentPrompts,
-                            cmdCtl.text.trim(), max: 12);
+                        mruInsert(
+                          store.settings.recentPrompts,
+                          cmdCtl.text.trim(),
+                          max: 12,
+                        );
                         final r = applyWizard(
-                            command: cmdCtl.text, settings: store.settings, body: before);
+                          command: cmdCtl.text,
+                          settings: store.settings,
+                          body: before,
+                        );
                         var text = r.bodyChanged ? r.body : before;
                         await store.persistSettings();
 
@@ -8308,8 +9092,9 @@ static const int kTagScanChars = 3000;
                             // 갔다. 사람도 못 알아들을 말을 보내 놓고
                             // 모델이 못 알아들었다고 할 수는 없다.
                             var out = (await _aiEditCall(
-                                    cmdCtl.text.trim(), text))
-                                .trim();
+                              cmdCtl.text.trim(),
+                              text,
+                            )).trim();
                             out = out
                                 .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
                                 .replaceFirst(RegExp(r'\n?```$'), '');
@@ -8325,8 +9110,10 @@ static const int kTagScanChars = 3000;
                             // 주는 것과 같다.
                             final ll = L10n.of(context);
                             final fix = aiRemedy(ll, '$e');
-                            _toast(context,
-                                fix.isNotEmpty ? fix : ll.aiCallFailed('$e'));
+                            _toast(
+                              context,
+                              fix.isNotEmpty ? fix : ll.aiCallFailed('$e'),
+                            );
                             return;
                           }
                         }
@@ -8363,10 +9150,11 @@ static const int kTagScanChars = 3000;
                           _toast(context, ll.aiAppliedToast);
                         } else {
                           _toast(
-                              context,
-                              r.applied.isEmpty
-                                  ? ll.wizardNothingToDo
-                                  : ll.wizardAppliedToast(r.applied.length));
+                            context,
+                            r.applied.isEmpty
+                                ? ll.wizardNothingToDo
+                                : ll.wizardAppliedToast(r.applied.length),
+                          );
                         }
                       },
                 child: Text(aiBusy ? l.aiBusyLabel : l.interpretApply),
@@ -8412,20 +9200,28 @@ static const int kTagScanChars = 3000;
           /// 닫고 본문에 손을 돌려줘야 한다.
           void jump(({int start, int end}) m) {
             Navigator.pop(ctx);
-            bodyCtl.selection =
-                TextSelection(baseOffset: m.start, extentOffset: m.end);
+            bodyCtl.selection = TextSelection(
+              baseOffset: m.start,
+              extentOffset: m.end,
+            );
             _bodyFocus.requestFocus();
           }
 
           Future<void> replaceOne() async {
-            final m = findNextAfter(bodyCtl.text, find, cursor, regex: useRegex);
+            final m = findNextAfter(
+              bodyCtl.text,
+              find,
+              cursor,
+              regex: useRegex,
+            );
             if (m == null) return;
             final raw = withCtl.text;
             var repl = raw.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
             if (useRegex) {
               try {
-                final one = RegExp(find).firstMatch(
-                    bodyCtl.text.substring(m.start, m.end));
+                final one = RegExp(
+                  find,
+                ).firstMatch(bodyCtl.text.substring(m.start, m.end));
                 if (one != null) {
                   for (int g = 1; g <= one.groupCount; g++) {
                     repl = repl.replaceAll('\$$g', one.group(g) ?? '');
@@ -8461,49 +9257,58 @@ static const int kTagScanChars = 3000;
                       child: Text(
                         hits.isEmpty ? l.findNone : l.findHits(hits.length),
                         style: TextStyle(
-                            fontSize: 13,
-                            color: hits.isEmpty
-                                ? Theme.of(ctx).hintColor
-                                : ctx.c.accent),
+                          fontSize: 13,
+                          color: hits.isEmpty
+                              ? Theme.of(ctx).hintColor
+                              : ctx.c.accent,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 4),
-                  Row(children: [
-                    // 대치 펴기. 켜면 아래가 열리고 단추가 바뀐다.
-                    TextButton.icon(
-                      onPressed: () => setD(() => showReplace = !showReplace),
-                      icon: Icon(
+                  Row(
+                    children: [
+                      // 대치 펴기. 켜면 아래가 열리고 단추가 바뀐다.
+                      TextButton.icon(
+                        onPressed: () => setD(() => showReplace = !showReplace),
+                        icon: Icon(
                           showReplace
                               ? Icons.keyboard_arrow_up
                               : Icons.keyboard_arrow_down,
-                          size: 18),
-                      label: Text(l.showReplaceLabel),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        visualDensity: VisualDensity.compact,
+                          size: 18,
+                        ),
+                        label: Text(l.showReplaceLabel),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          visualDensity: VisualDensity.compact,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    // 정규식은 찾기에도 쓰이므로 늘 보인다.
-                    Text(l.regexLabel, style: const TextStyle(fontSize: 13)),
-                    Checkbox(
-                      value: useRegex,
-                      visualDensity: VisualDensity.compact,
-                      onChanged: (v) => setD(() => useRegex = v ?? false),
-                    ),
-                  ]),
+                      const Spacer(),
+                      // 정규식은 찾기에도 쓰이므로 늘 보인다.
+                      Text(l.regexLabel, style: const TextStyle(fontSize: 13)),
+                      Checkbox(
+                        value: useRegex,
+                        visualDensity: VisualDensity.compact,
+                        onChanged: (v) => setD(() => useRegex = v ?? false),
+                      ),
+                    ],
+                  ),
                   if (showReplace) ...[
                     TextField(
                       controller: withCtl,
-                      decoration:
-                          InputDecoration(labelText: l.replaceWithLabel),
+                      decoration: InputDecoration(
+                        labelText: l.replaceWithLabel,
+                      ),
                     ),
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(l.saveAsRule,
-                          style: const TextStyle(fontSize: 14)),
-                      subtitle: Text(l.saveAsRuleSub,
-                          style: const TextStyle(fontSize: 12)),
+                      title: Text(
+                        l.saveAsRule,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      subtitle: Text(
+                        l.saveAsRuleSub,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       value: saveRule,
                       onChanged: (v) => setD(() => saveRule = v ?? false),
                     ),
@@ -8512,8 +9317,10 @@ static const int kTagScanChars = 3000;
                       RadioListTile<bool>(
                         contentPadding: EdgeInsets.zero,
                         dense: true,
-                        title: Text(l.ruleScopeAll,
-                            style: const TextStyle(fontSize: 13)),
+                        title: Text(
+                          l.ruleScopeAll,
+                          style: const TextStyle(fontSize: 13),
+                        ),
                         value: true,
                         groupValue: ruleForAll,
                         onChanged: (v) => setD(() => ruleForAll = v ?? true),
@@ -8521,8 +9328,10 @@ static const int kTagScanChars = 3000;
                       RadioListTile<bool>(
                         contentPadding: EdgeInsets.zero,
                         dense: true,
-                        title: Text(l.ruleScopeNote,
-                            style: const TextStyle(fontSize: 13)),
+                        title: Text(
+                          l.ruleScopeNote,
+                          style: const TextStyle(fontSize: 13),
+                        ),
                         value: false,
                         groupValue: ruleForAll,
                         onChanged: (v) => setD(() => ruleForAll = v ?? true),
@@ -8533,35 +9342,43 @@ static const int kTagScanChars = 3000;
                   // 목록 없이 저장만 되게 두면 규칙이 유령이 된다.
                   if (showReplace && note.rules.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text(l.noteRules,
-                        style: TextStyle(
-                            fontSize: 12, color: Theme.of(ctx).hintColor)),
+                    Text(
+                      l.noteRules,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(ctx).hintColor,
+                      ),
+                    ),
                     for (int i = 0; i < note.rules.length; i++)
-                      Row(children: [
-                        Expanded(
-                          child: Text(
-                            '${note.rules[i].find} → ${note.rules[i].replace}',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${note.rules[i].find} → ${note.rules[i].replace}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
-                          icon: const Icon(Icons.close, size: 16),
-                          onPressed: () {
-                            note.rules.removeAt(i);
-                            unawaited(_save());
-                            setD(() {});
-                          },
-                        ),
-                      ]),
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            icon: const Icon(Icons.close, size: 16),
+                            onPressed: () {
+                              note.rules.removeAt(i);
+                              unawaited(_save());
+                              setD(() {});
+                            },
+                          ),
+                        ],
+                      ),
                   ],
                 ],
               ),
             ),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l.cancel),
+              ),
               if (!showReplace)
                 FilledButton(
                   // 찾은 것이 없으면 죽어 있다. 눌러도 아무 일 없는 단추는
@@ -8570,14 +9387,20 @@ static const int kTagScanChars = 3000;
                       ? null
                       : () {
                           final m = findNextAfter(
-                              bodyCtl.text, find, cursor, regex: useRegex);
+                            bodyCtl.text,
+                            find,
+                            cursor,
+                            regex: useRegex,
+                          );
                           if (m != null) jump(m);
                         },
                   child: Text(l.findAction),
                 )
               else ...[
                 TextButton(
-                  onPressed: hits.isEmpty ? null : () => unawaited(replaceOne()),
+                  onPressed: hits.isEmpty
+                      ? null
+                      : () => unawaited(replaceOne()),
                   child: Text(l.replaceOneAction),
                 ),
                 FilledButton(
@@ -8594,8 +9417,7 @@ static const int kTagScanChars = 3000;
                             if (useRegex) {
                               final re = RegExp(find);
                               count = re.allMatches(bodyCtl.text).length;
-                              result =
-                                  bodyCtl.text.replaceAllMapped(re, (m) {
+                              result = bodyCtl.text.replaceAllMapped(re, (m) {
                                 var r2 = repl;
                                 for (int g = 1; g <= m.groupCount; g++) {
                                   r2 = r2.replaceAll('\$$g', m.group(g) ?? '');
@@ -8624,9 +9446,10 @@ static const int kTagScanChars = 3000;
                           bodyCtl.text = result;
                           if (saveRule) {
                             final rule = CustomRule(
-                                find: find,
-                                replace: rawRepl,
-                                regex: useRegex);
+                              find: find,
+                              replace: rawRepl,
+                              regex: useRegex,
+                            );
                             if (ruleForAll) {
                               store.settings.customRules.add(rule);
                               await store.persistSettings();
@@ -8640,8 +9463,10 @@ static const int kTagScanChars = 3000;
                           if (mounted) {
                             setState(() {});
                             final lm = L10n.of(context);
-                            _toast(context,
-                                '${lm.replacedCount(count)}${saveRule ? lm.savedRuleSuffix : ''}');
+                            _toast(
+                              context,
+                              '${lm.replacedCount(count)}${saveRule ? lm.savedRuleSuffix : ''}',
+                            );
                           }
                         },
                   child: Text(l.replaceAllAction),
@@ -8683,29 +9508,39 @@ static const int kTagScanChars = 3000;
           Navigator.pop(ctx);
           _toast(context, L10n.of(context).copiedAll);
         }),
-        _wayTile(ctx, l.tidyCopy, l.tidyCopySub,
-            tidy(sample, store.effOpts(buildPresets().first)).text, () {
-          final r = tidy(bodyCtl.text,
-              store.effOpts(buildPresets().first, noteRules: note.rules));
-          Clipboard.setData(ClipboardData(text: r.text));
-          Navigator.pop(ctx);
-          _toast(context, L10n.of(context).tidyCopied(r.summary));
-        }),
         _wayTile(
-            ctx,
-            l.copyTableSpreadsheet,
-            null,
-            sampleTables.tables.map(tableToTSV).join('\n\n'), () {
-          final r = extractTables(bodyCtl.text);
-          Navigator.pop(ctx);
-          if (r.tables.isEmpty) {
-            _toast(context, L10n.of(context).noTablesFound);
-          } else {
-            Clipboard.setData(
-                ClipboardData(text: r.tables.map(tableToTSV).join('\n\n')));
-            _toast(context, L10n.of(context).copiedTableSpreadsheet);
-          }
-        }),
+          ctx,
+          l.tidyCopy,
+          l.tidyCopySub,
+          tidy(sample, store.effOpts(buildPresets().first)).text,
+          () {
+            final r = tidy(
+              bodyCtl.text,
+              store.effOpts(buildPresets().first, noteRules: note.rules),
+            );
+            Clipboard.setData(ClipboardData(text: r.text));
+            Navigator.pop(ctx);
+            _toast(context, L10n.of(context).tidyCopied(r.summary));
+          },
+        ),
+        _wayTile(
+          ctx,
+          l.copyTableSpreadsheet,
+          null,
+          sampleTables.tables.map(tableToTSV).join('\n\n'),
+          () {
+            final r = extractTables(bodyCtl.text);
+            Navigator.pop(ctx);
+            if (r.tables.isEmpty) {
+              _toast(context, L10n.of(context).noTablesFound);
+            } else {
+              Clipboard.setData(
+                ClipboardData(text: r.tables.map(tableToTSV).join('\n\n')),
+              );
+              _toast(context, L10n.of(context).copiedTableSpreadsheet);
+            }
+          },
+        ),
       ];
     });
   }
@@ -8774,1075 +9609,1328 @@ static const int kTagScanChars = 3000;
         // Scaffold로 감싸 배너 아래로 넣는다.
         body: SafeArea(
           bottom: false,
-          child: Column(children: [
-            if (!widget.embedded) const TopBannerBar(),
-            Expanded(
-              child: Scaffold(
-        // 종이는 화면 전체에 깔린다. 글 칸만 색을 바꾸면 위아래로 흰 띠가
-        // 남아서 '색을 잘못 칠한 화면'으로 보인다. 실제 수첩도 종이가
-        // 먼저 있고 그 위에 줄이 있다.
-        backgroundColor: paperBg,
-        // 키보드의 임자는 여기 하나다(위 주석 참고). 기본값이지만 일부러
-        // 적어 둔다 — 이 값이 바깥과 겹치면 방금 그 사고가 다시 난다.
-        resizeToAvoidBottomInset: true,
-        // 머리 밑으로 종이가 이어지게 한다. 종이가 머리에서 끊기면
-        // 유리 너머로 보이는 것이 흰 띠뿐이라 비치는 뜻이 없다.
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          // 머리 밑으로 글이 흘러 들어가되, **읽히지는 않게** 한다.
-          //
-          // 2026-08-27 소유자 지시 — 클로드 앱처럼. 그전까지 이 머리는
-          // 그냥 투명이었다. 글이 제목 뒤로 그대로 비쳐서 두 줄이 겹쳐
-          // 읽혔고, 제목도 본문도 안 읽혔다. 비치는 것이 멋인 줄 알았지만
-          // 읽히는 것이 먼저다.
-          //
-          // 흐림(BackdropFilter)을 쓴다. 색만 얹어 가리면 그건 유리가
-          // 아니라 뚜껑이다 — 밑에 뭔가 흐르고 있다는 감각이 사라진다.
-          // 흐리면 색과 움직임은 남고 글자만 죽는다. 애플이 이 재료를
-          // 쓰는 까닭이 그것이다.
-          //
-          // 아래 끝은 선을 긋지 않고 흐림째로 사라지게 한다(ShaderMask).
-          // 실선을 그으면 머리가 종이에서 떨어진 별개의 판으로 보이고,
-          // 흐림만 뚝 끊으면 그 자리에 눈에 거슬리는 턱이 생긴다.
-          flexibleSpace: const _HeadGlass(),
-          automaticallyImplyLeading: !widget.embedded,
-          // 넓은 화면에서만 나오는 목록 접기 단추.
-          //
-          // 자리를 여기로 잡은 이유: 접었을 때 다시 펼 수 있는 곳은 남아
-          // 있는 칸뿐이다. 목록 쪽에 두면 접는 순간 같이 사라진다.
-          // 애플의 사이드바 단추도 같은 자리에 있다.
-          leading: widget.embedded && SplitShell.of(context) != null
-              ? IconButton(
-                  tooltip: l.toggleListTooltip,
-                  icon: Icon(SplitShell.of(context)!.listOpen
-                      ? Icons.menu_open
-                      : Icons.menu),
-                  onPressed: () => SplitShell.of(context)!.toggleList(),
-                )
-              : null,
-          centerTitle: true,
-          // 2026-08-19 소유자 지시 — "편집 화면 맨 위 중앙에 글 제목이
-          // 나오면 좋겠다. 그거 터치하면 글제목 태그 편집 화면으로.
-          // 그리고 한번 더 터치하면 글제목 태그 편집 사라지고."
-          //
-          // 여기는 비어 있었다. 2026-08-16 에 제목 칸을 평소엔 숨기기로
-          // 했는데(자동으로 붙으니까), 그러고 나니 **이 화면이 무슨 글인지
-          // 알려 주는 것이 하나도 남지 않았다.** 목록에서 방금 눌러
-          // 들어왔으면 알지만, 앱을 다시 열면 마지막 글이 그냥 열린다.
-          //
-          // 그래서 머리에는 보여 주기만 하고, 고치려면 눌러서 편다.
-          // 숨긴 까닭과 알려 줄 필요를 둘 다 지킨다.
-          //
-          // Listenable.merge 로 두 칸을 함께 듣는 까닭 — 제목은 손으로 적은
-          // 것이 없으면 본문에서 뽑는다. setState 로 하면 글자를 칠 때마다
-          // 화면 전체를 다시 그려야 하고, 안 하면 머리가 옛 제목에 멈춘다.
-          // 여기서 듣게 하면 머리 글자 하나만 다시 그린다.
-          title: AnimatedBuilder(
-            animation: Listenable.merge([titleCtl, bodyCtl]),
-            builder: (_, __) {
-              final empty = _headTitleEmpty;
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  // 뭔가가 열리고 닫히는 순간이다. 이런 데만 준다.
-                  HapticFeedback.selectionClick();
-                  final opening = !_showMeta;
-                  setState(() => _showMeta = opening);
-                  // 2026-08-19 소유자 신고 — "제목 입력란을 못 찾는 유저가
-                  // 있음." 펴 주기만 하고 손을 놓으면, 칸이 나와도 어디를
-                  // 눌러야 하는지 또 찾아야 한다. 제목이 비어 있으면 그
-                  // 칸으로 바로 데려간다. 이미 제목이 있으면 안 데려간다 —
-                  // 보려고 편 사람의 손에서 자판이 튀어나오면 방해다.
-                  if (opening && empty) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) _titleFocus.requestFocus();
-                    });
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        _headTitle(l),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 16,
-                            // 빈 자리의 안내말은 제목이 아니다. 덜 굵게 해서
-                            // 진짜 제목과 눈으로 구별되게 둔다.
-                            fontWeight:
-                                empty ? FontWeight.w600 : FontWeight.w700,
-                            // 펴 두었을 때 색이 바뀐다. 눌러서 뭔가 됐다는
-                            // 것을 알려 주는 가장 조용한 방법이다.
-                            color:
-                                _showMeta ? context.c.accent : context.c.sub),
-                      ),
-                    ),
-                    // 제목 바로 오른쪽의 연필 (2026-08-27 소유자 지시).
+          child: Column(
+            children: [
+              Expanded(
+                child: Scaffold(
+                  // 종이는 화면 전체에 깔린다. 글 칸만 색을 바꾸면 위아래로 흰 띠가
+                  // 남아서 '색을 잘못 칠한 화면'으로 보인다. 실제 수첩도 종이가
+                  // 먼저 있고 그 위에 줄이 있다.
+                  backgroundColor: paperBg,
+                  // 키보드의 임자는 여기 하나다(위 주석 참고). 기본값이지만 일부러
+                  // 적어 둔다 — 이 값이 바깥과 겹치면 방금 그 사고가 다시 난다.
+                  resizeToAvoidBottomInset: true,
+                  // 머리 밑으로 종이가 이어지게 한다. 종이가 머리에서 끊기면
+                  // 유리 너머로 보이는 것이 흰 띠뿐이라 비치는 뜻이 없다.
+                  extendBodyBehindAppBar: true,
+                  appBar: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    // 머리 밑으로 글이 흘러 들어가되, **읽히지는 않게** 한다.
                     //
-                    // 처음에는 머리 오른쪽 끝, 동기화 단추가 있던 자리에
-                    // 뒀다. 소유자 지적 — "지금은 '글쓰기' 버튼처럼
-                    // 보이잖아." 맞다. **아이콘의 뜻은 모양이 아니라 자리가
-                    // 정한다.** 머리 오른쪽 끝의 연필은 어느 앱에서나 '새
-                    // 글 쓰기'다. 같은 연필이라도 제목에 붙어 있으면 '이
-                    // 제목을 고친다'가 된다.
+                    // 2026-08-27 소유자 지시 — 클로드 앱처럼. 그전까지 이 머리는
+                    // 그냥 투명이었다. 글이 제목 뒤로 그대로 비쳐서 두 줄이 겹쳐
+                    // 읽혔고, 제목도 본문도 안 읽혔다. 비치는 것이 멋인 줄 알았지만
+                    // 읽히는 것이 먼저다.
                     //
-                    // 제목이 있을 때는 아이콘이 시끄럽다고 여겨 숨겼던
-                    // 것도 이번에 걷는다. 숨겨 놓으니 아무도 제목이
-                    // 눌린다는 것을 몰랐다 — 08-19 신고가 그것이었다.
-                    // 작게 둔다(2026-08-27 소유자 지시 — 30% 작게).
-                    // 크면 여전히 '새 글 쓰기' 단추로 읽힌다. 이건 누르라고
-                    // 부르는 단추가 아니라 **여기가 눌린다는 귀띔**이다.
-                    // 귀띔은 작을수록 귀띔답다.
-                    const SizedBox(width: 5),
-                    Icon(_showMeta ? Icons.edit : Icons.edit_outlined,
-                        size: 11,
-                        color: _showMeta ? context.c.accent : context.c.sub),
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: [
-            if (_editing)
-              TextButton(
-                onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: Text(l.done, style: const TextStyle(fontWeight: FontWeight.w800)),
-              ),
-            // 2026-08-17 소유자 지시 — 위쪽 '정리' 버튼을 뺐다.
-            //
-            // 이건 아래 막대의 '정리'가 한 번에 안 되던 시절의 잔재다. 그때는
-            // 아래 것을 누르면 어떤 방식으로 정리할지 고르는 창이 떴고, 손이
-            // 위에 있을 때 바로 누를 지름길이 따로 필요했다.
-            //
-            // 그 뒤 아래 것이 한 번 누르면 바로 도는 쪽으로 바뀌면서
-            // (문을 하나로 합쳤다) 지름길과 목적지가 같아졌다. 같은 일을
-            // 하는 버튼이 한 화면에 둘 있으면 사용자는 둘이 다른 일인가
-            // 의심한다 — 이 앱은 '정리'와 '자동 정리'가 따로 있어서 같은
-            // 신고를 이미 한 번 받았다.
-            // 2026-08-19 — 태그와 핀을 메뉴로 내렸다.
-            //
-            // 둘 다 이 화면에 오래 머물 자격이 없었다. 태그는 글을 다 쓴
-            // 뒤 한 번, 핀은 몇 달에 한 번 누른다. 그런데 매번 여는 화면의
-            // 맨 위에 늘 앉아 있었다.
-            //
-            // 무엇을 위에 둘지는 '얼마나 중요한가'가 아니라 '얼마나 자주
-            // 누르는가'로 정한다. 중요한 것을 위에 두면 만든 사람이 중요하게
-            // 여기는 것이 올라오고, 자주 누르는 것을 위에 두면 쓰는 사람이
-            // 자주 하는 일이 올라온다.
-            // 2026-08-16 소유자 요청 — 애플 메모장처럼 '...' 메뉴.
-            // 이 메모에 대한 설정이 앞으로 여기에 쌓인다. 지금은 삭제 하나.
-            PopupMenuButton<String>(
-              // 목록 화면과 같은 삼선. 한쪽만 바꾸면 같은 일을 하는 버튼이
-              // 두 모양이 된다(2026-08-17).
-              icon: const Icon(Icons.menu),
-              tooltip: l.moreTooltip,
-              // 2026-08-16 소유자 신고 — 메뉴가 '...' 버튼 위를 덮어서, 같은
-              // 자리를 다시 눌러 닫는 토글이 안 됐다. 기본값이 버튼을 중심에
-              // 두고 펼치는 방식(over)이라 그렇다. under로 바꾸면 버튼 아래로
-              // 내려가 버튼이 계속 보이고, 그 자리를 다시 누르면 닫힌다.
-              position: PopupMenuPosition.under,
-              offset: const Offset(0, 6),
-              // 2026-08-29 소유자 지시 — "메뉴 레이어의 width 를 좀 더
-              // 넓혀줘." 한 줄에 셋을 넣으면서 칸이 좁아졌다. 좁은 칸에
-              // 세 글자를 우겨넣으면 말줄임표가 뜨고, 무엇을 누르는지
-              // 모르는 단추가 된다.
-              constraints: const BoxConstraints(minWidth: 288, maxWidth: 344),
-              onSelected: (v) async {
-                // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
-                // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
-                // 앱 설정은 편집과 직접 상관이 없어 구분선으로 갈라 놨다.
-                if (v.startsWith('set:')) {
-                  final a = v.substring(4);
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          SettingsScreen(anchor: a.isEmpty ? null : a),
-                    ),
-                  );
-                  if (mounted) setState(() {});
-                  return;
-                }
-                if (v == 'wizard') {
-                  _showWizardDialog();
-                  return;
-                }
-                if (v == 'tables') {
-                  _showTables();
-                  return;
-                }
-                if (v == 'replace') {
-                  _showFindDialog();
-                  return;
-                }
-                if (v == 'copy') {
-                  _showCopyMenu();
-                  return;
-                }
-                if (v == 'meta') {
-                  setState(() => _showMeta = !_showMeta);
-                  return;
-                }
-                if (v == 'pin') {
-                  note.pinned = !note.pinned;
-                  // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다. 이런 데만 준다.
-                  HapticFeedback.selectionClick();
-                  await store.persist();
-                  if (mounted) setState(() {});
-                  return;
-                }
-                if (v == 'travel') {
-                  await _openTravel();
-                  return;
-                }
-                if (v == 'wipe') {
-                  await _openWipe();
-                  return;
-                }
-                if (v == 'preview') {
-                  // 설정이 꺼져 있어도 이번 한 번은 먼저 보여 준다.
-                  await _runTidyWithPreset(buildPresets().first,
-                      forcePreview: true);
-                  return;
-                }
-                if (v == 'folder') {
-                  await _pickFolder();
-                  return;
-                }
-                // 2026-08-29 — '버전 기록'은 이제 시간 여행을 연다.
-                // 목록과 '원본 복귀'는 여기 흡수됐다(_openTravel).
-                if (v == 'history') {
-                  await _openTravel();
-                  return;
-                }
-                if (v == 'append') {
-                  final text = await ImportService.pickAppendText();
-                  if (text == null || !mounted) return;
-                  bodyCtl.text = bodyCtl.text.trimRight() + text;
-                  await _save();
-                  if (mounted) setState(() {});
-                  return;
-                }
-                if (v == 'preset') {
-                  // 길게 누르기는 맥·PC에서 자연스럽지 않다. 여기 하나 더
-                  // 두어 어느 기기에서든 찾을 수 있게 한다.
-                  _showPresetSheet();
-                  return;
-                }
-                if (v == 'export') {
-                  final ok = await ExportService.shareNote(note);
-                  if (!ok && mounted) {
-                    _toast(context, L10n.of(context).exportFailed);
-                  }
-                  return;
-                }
-                if (v == 'attach') {
-                  await _addAttachment();
-                  return;
-                }
-                if (v == 'lock') {
-                  if (await toggleNoteLock(context, note) && mounted) {
-                    setState(() {});
-                  }
-                  return;
-                }
-                if (v == 'pdf' || v == 'print') {
-                  final ok = v == 'print'
-                      ? await PdfService.printNote(note,
-                          dateLabel: _pdfDate(note.updatedAt))
-                      : await PdfService.sharePdf(note,
-                          dateLabel: _pdfDate(note.updatedAt));
-                  if (!ok && mounted) {
-                    _toast(context, L10n.of(context).pdfFailed);
-                  }
-                  return;
-                }
-                if (v != 'delete') return;
-                final ok = await confirmDialog(context,
-                    title: L10n.of(context).deleteConfirmTitle,
-                    okLabel: L10n.of(context).delete,
-                    destructive: true);
-                if (ok && mounted) {
-                  store.deleteNote(note.id);
-                  Navigator.pop(context);
-                }
-              },
-              itemBuilder: (ctx) {
-                final lm = L10n.of(ctx);
-                // 2026-08-19 — 아래 막대에 있던 넷과 위에 있던 둘이
-                // 여기로 들어왔다. 메뉴로 옮긴 것을 아무도 못 찾는 일이
-                // 없도록 아이콘과 이름을 그대로 가져왔다 — 손가락은
-                // 자리를 기억하지만 눈은 모양을 기억한다.
-                PopupMenuItem<String> act(String v, IconData ic, String label,
-                        {bool enabled = true, Color? tint, bool bold = false}) =>
-                    PopupMenuItem<String>(
-                      value: v,
-                      enabled: enabled,
-                      // 48이 기본인데 열다섯 줄이면 720이다. 그러면 메뉴가
-                      // 화면에 안 들어가서 플러터가 위로 밀어 올리고, 밀어
-                      // 올린 메뉴가 삼선 단추를 덮는다(소유자 신고).
-                      //
-                      // 2026-08-27 — 42도 모자랐다. 소유자 신고: "해상도가
-                      // 낮은 기기에서 메뉴 하단 항목이 안 보인다." 36으로
-                      // 죈다. 열다섯 줄에 가름선 넷이면 570 남짓이라 작은
-                      // 아이폰에서도 들어간다.
-                      //
-                      // 손가락이 놓칠 만큼 좁지는 않은가. 애플이 권하는
-                      // 최소 손가락 자리는 44인데, 그건 **화면에 흩어져
-                      // 있는 단추** 이야기다. 메뉴는 줄이 위아래로 붙어
-                      // 있어서 겨냥이 세로 한 줄로 좁혀지고, 잘못 눌러도
-                      // 옆줄이지 딴 세상이 아니다. 애플 메모의 메뉴도 이
-                      // 언저리다.
-                      height: 36,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Row(children: [
-                        Icon(ic,
-                            size: 18,
-                            color: (tint ?? ctx.c.guideInk).withValues(
-                                alpha: enabled ? 1.0 : 0.4)),
-                        const SizedBox(width: 10),
-                        Text(label,
-                            style: TextStyle(
-                                fontSize: 15,
-                                color: tint,
-                                fontWeight:
-                                    bold ? FontWeight.w600 : FontWeight.w400)),
-                      ]),
-                    );
-
-                /// 한 줄에 셋. 2026-08-29 소유자 지시 —
-                /// "'내보내기 | PDF | 인쇄' 이렇게 한 라인에. 단, 3개가
-                /// 터치 간섭이 안 생기게 간격을 많이 띄어줘."
-                ///
-                /// 세 칸을 똑같이 나눠 갖고, 사이에 가는 세로선을 둔다.
-                /// 선은 눈으로 칸을 가르는 일만 하고 누를 수는 없다 —
-                /// 그 자리를 누르면 어느 쪽이 눌릴지 사람이 모른다.
-                PopupMenuItem<String> trio(
-                        List<(String, IconData, String)> three) =>
-                    PopupMenuItem<String>(
-                      padding: EdgeInsets.zero,
-                      height: 46,
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < three.length; i++) ...[
-                            if (i > 0)
-                              Container(
-                                  width: 1,
-                                  height: 22,
-                                  color: ctx.c.line.withValues(alpha: 0.7)),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => Navigator.pop(ctx, three[i].$1),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 4),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(three[i].$2,
-                                          size: 17, color: ctx.c.guideInk),
-                                      const SizedBox(height: 3),
-                                      Text(three[i].$3,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontSize: 12)),
-                                    ],
+                    // 흐림(BackdropFilter)을 쓴다. 색만 얹어 가리면 그건 유리가
+                    // 아니라 뚜껑이다 — 밑에 뭔가 흐르고 있다는 감각이 사라진다.
+                    // 흐리면 색과 움직임은 남고 글자만 죽는다. 애플이 이 재료를
+                    // 쓰는 까닭이 그것이다.
+                    //
+                    // 아래 끝은 선을 긋지 않고 흐림째로 사라지게 한다(ShaderMask).
+                    // 실선을 그으면 머리가 종이에서 떨어진 별개의 판으로 보이고,
+                    // 흐림만 뚝 끊으면 그 자리에 눈에 거슬리는 턱이 생긴다.
+                    flexibleSpace: const _HeadGlass(),
+                    automaticallyImplyLeading: !widget.embedded,
+                    // 넓은 화면에서만 나오는 목록 접기 단추.
+                    //
+                    // 자리를 여기로 잡은 이유: 접었을 때 다시 펼 수 있는 곳은 남아
+                    // 있는 칸뿐이다. 목록 쪽에 두면 접는 순간 같이 사라진다.
+                    // 애플의 사이드바 단추도 같은 자리에 있다.
+                    leading: widget.embedded && SplitShell.of(context) != null
+                        ? IconButton(
+                            tooltip: l.toggleListTooltip,
+                            icon: Icon(
+                              SplitShell.of(context)!.listOpen
+                                  ? Icons.menu_open
+                                  : Icons.menu,
+                            ),
+                            onPressed: () =>
+                                SplitShell.of(context)!.toggleList(),
+                          )
+                        : null,
+                    centerTitle: true,
+                    // 2026-08-19 소유자 지시 — "편집 화면 맨 위 중앙에 글 제목이
+                    // 나오면 좋겠다. 그거 터치하면 글제목 태그 편집 화면으로.
+                    // 그리고 한번 더 터치하면 글제목 태그 편집 사라지고."
+                    //
+                    // 여기는 비어 있었다. 2026-08-16 에 제목 칸을 평소엔 숨기기로
+                    // 했는데(자동으로 붙으니까), 그러고 나니 **이 화면이 무슨 글인지
+                    // 알려 주는 것이 하나도 남지 않았다.** 목록에서 방금 눌러
+                    // 들어왔으면 알지만, 앱을 다시 열면 마지막 글이 그냥 열린다.
+                    //
+                    // 그래서 머리에는 보여 주기만 하고, 고치려면 눌러서 편다.
+                    // 숨긴 까닭과 알려 줄 필요를 둘 다 지킨다.
+                    //
+                    // Listenable.merge 로 두 칸을 함께 듣는 까닭 — 제목은 손으로 적은
+                    // 것이 없으면 본문에서 뽑는다. setState 로 하면 글자를 칠 때마다
+                    // 화면 전체를 다시 그려야 하고, 안 하면 머리가 옛 제목에 멈춘다.
+                    // 여기서 듣게 하면 머리 글자 하나만 다시 그린다.
+                    title: AnimatedBuilder(
+                      animation: Listenable.merge([titleCtl, bodyCtl]),
+                      builder: (_, __) {
+                        final empty = _headTitleEmpty;
+                        return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            // 뭔가가 열리고 닫히는 순간이다. 이런 데만 준다.
+                            HapticFeedback.selectionClick();
+                            final opening = !_showMeta;
+                            setState(() => _showMeta = opening);
+                            // 2026-08-19 소유자 신고 — "제목 입력란을 못 찾는 유저가
+                            // 있음." 펴 주기만 하고 손을 놓으면, 칸이 나와도 어디를
+                            // 눌러야 하는지 또 찾아야 한다. 제목이 비어 있으면 그
+                            // 칸으로 바로 데려간다. 이미 제목이 있으면 안 데려간다 —
+                            // 보려고 편 사람의 손에서 자판이 튀어나오면 방해다.
+                            if (opening && empty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) _titleFocus.requestFocus();
+                              });
+                            }
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _headTitle(l),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    // 빈 자리의 안내말은 제목이 아니다. 덜 굵게 해서
+                                    // 진짜 제목과 눈으로 구별되게 둔다.
+                                    fontWeight: empty
+                                        ? FontWeight.w600
+                                        : FontWeight.w700,
+                                    // 펴 두었을 때 색이 바뀐다. 눌러서 뭔가 됐다는
+                                    // 것을 알려 주는 가장 조용한 방법이다.
+                                    color: _showMeta
+                                        ? context.c.accent
+                                        : context.c.sub,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    );
-
-                // 2026-08-29 소유자 지시 — "낮은 해상도에서 메뉴 하단에
-                // 가려진 부분을 스크롤하면 더 있다는 직관적인 UI가 필요."
-                //
-                // 줄을 더 줄이는 것은 이미 두 번 했고(48→42→36) 더 줄일
-                // 데가 없다. 그러니 줄이는 대신 **더 있다는 것을 보이게**
-                // 한다. 아래가 옅어지고 꺾쇠가 뜬다. 끝까지 내리면
-                // 사라진다(scroll_hint.dart).
-                //
-                // 줄들을 통째로 한 칸 안에 넣는다. 안의 줄들은 여전히
-                // PopupMenuItem 이라 눌리면 제 값으로 메뉴가 닫힌다 —
-                // 눌리는 방식은 하나도 안 바뀐다.
-                final rows = <PopupMenuEntry<String>>[
-                  // 2026-08-18 소유자 지시로 차례를 통째로 다시 짰다.
-                  //
-                  // 스물세 줄이 한 폭에 다 나와 있었다. 그중 여덟은 설정
-                  // 화면의 목차를 그대로 베껴 온 것이었는데, 서랍을 열면
-                  // 그 안에 다른 서랍의 목차까지 붙어 있는 꼴이었다.
-                  // 그 여덟을 '앱 설정' 한 줄로 접었다 — 두 뎁스로 가는
-                  // 것이 줄을 줄이는 유일하게 정직한 방법이다.
-                  //
-                  // 남은 것을 네 무리로 묶었다.
-                  //   1. 이 메모가 무엇인가        출처·태그, 폴더
-                  //   2. 정리                      미리보기, 방식 고르기
-                  //   3. 글을 손대는 일            마법사, 표, 붙이기,
-                  //                                복사, 내보내기
-                  //   4. 되돌리고 지우는 일        버전 기록, 원본 복귀, 삭제
-                  //
-                  // '상단 고정'은 뺐다. 목록에서 길게 눌러 하는 편이
-                  // 빠르고, 몇 달에 한 번 누르는 것이 매번 여는 서랍의
-                  // 한 줄을 차지할 이유가 없다.
-                  // '바꾸기'는 자판 위 도구 막대로 내려갔다.
-                  act('meta', _showMeta ? Icons.sell : Icons.sell_outlined,
-                      lm.metaTooltip),
-                  act(
-                      'folder',
-                      note.folder.isEmpty
-                          ? Icons.folder_outlined
-                          : Icons.folder,
-                      note.folder.isEmpty ? lm.folderTitle : note.folder,
-                      tint: note.folder.isEmpty ? null : ctx.c.accent),
-                  // 잠금은 '이 메모가 무엇인가' 무리에 둔다. 정리·복사와
-                  // 달리 글을 손대는 일이 아니라 이 메모의 성격이다.
-                  act(
-                      'lock',
-                      note.locked ? Icons.lock : Icons.lock_outline,
-                      note.locked ? lm.noteUnlock : lm.noteLock,
-                      tint: note.locked ? ctx.c.accent : null),
-                  const PopupMenuDivider(height: 6),
-                  // 2026-08-29 소유자 지시 — 정리 셋을 한 줄로.
-                  trio([
-                    ('preset', CupertinoIcons.wand_stars, lm.choosePreset),
-                    ('preview', CupertinoIcons.eye, lm.menuTidyPreview),
-                    ('wipe', CupertinoIcons.rectangle_split_3x1, lm.wipeAction),
-                  ]),
-                  // 2026-08-29 소유자 지시 — 셋을 하나로 합쳤다.
-                  //
-                  //   버전 기록(목록)  정확하지만 아무 감흥이 없다
-                  //   시간 여행(손잡이) 같은 자료를 훑는다
-                  //   원본 복귀        기록 중 맨 처음으로 가는 일일 뿐이다
-                  //
-                  // 셋은 같은 것을 다르게 부른 이름이었다. 이름은 사람들이
-                  // 아는 '버전 기록'으로 두고, 안에서는 손잡이로 훑는다.
-                  // 원본은 그 길의 첫 정거장이라 따로 둘 자리가 없다.
-                  //
-                  // 2026-09-02 소유자 지시로 정리 셋 **바로 아래**로 올렸다.
-                  // 전에는 삭제 바로 위, 서랍의 한참 아래에 있었다. 그런데
-                  // 버전 기록을 여는 까닭은 거의 언제나 '방금 정리한 것을
-                  // 되돌아보려고'다. 그 일과 붙어 있어야 찾는다.
-                  act('history', CupertinoIcons.clock, lm.historyTitle,
-                      enabled: _canTravel),
-                  const PopupMenuDivider(height: 6),
-                  act('wizard', CupertinoIcons.sparkles, lm.wizardAction),
-                  act('tables', CupertinoIcons.table, lm.tableAction),
-                  // 클립은 '첨부'에 준다. 여태 '붙이기'(다른 파일의 글을
-                  // 본문 뒤에 잇는 일)가 쓰고 있었는데, 클립이 뜻하는 것은
-                  // 어디서나 파일을 매다는 일이다. 이름과 그림이 어긋나
-                  // 있으면 둘 다 못 찾는다.
-                  act('append', CupertinoIcons.tray_arrow_down, lm.importAppend),
-                  act('attach', CupertinoIcons.paperclip, lm.attachAdd),
-                  act('copy', CupertinoIcons.doc_on_doc, lm.copyAction),
-                  // 2026-08-29 소유자 지시 — 내보내기 셋을 한 줄로.
-                  // '내보내기'가 마크다운 파일을 건네는 일이라면 나머지
-                  // 둘은 **다 그려진 결과**를 건네는 일이다.
-                  trio([
-                    ('export', CupertinoIcons.square_arrow_up, lm.exportShort),
-                    ('pdf', CupertinoIcons.doc_richtext, lm.exportPdfShort),
-                    ('print', CupertinoIcons.printer, lm.printShort),
-                  ]),
-                  const PopupMenuDivider(height: 6),
-                  act('delete', CupertinoIcons.trash, lm.delete,
-                      tint: ctx.c.danger),
-                  const PopupMenuDivider(height: 6),
-                  act('set:', CupertinoIcons.gear_alt, lm.menuAppSettings,
-                      tint: ctx.c.accent, bold: true),
-                ];
-                return [
-                  PopupMenuItem<String>(
-                    // 값이 없다 — 이 껍데기를 눌러도 아무 일이 안 난다.
-                    padding: EdgeInsets.zero,
-                    height: 0,
-                    child: _MenuScroll(rows: rows),
-                  ),
-                ];
-              },
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // 유리 머리가 덮는 자리 — 굴러가지 않는 것이 있을 때만 비운다.
-            if (_topInsetOutside > 0) SizedBox(height: _topInsetOutside),
-            // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
-            if (_isDesktop)
-              _accessoryBar(atTop: true),
-            // 날짜 줄은 여기 있었다. 2026-08-17에 본문 스크롤 안으로
-            // 옮겼다 — 아래 _headKey를 찾을 것.
-            // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
-            // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
-            // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
-            // 2026-09-02 소유자 지시 — "제목 입력란을 입력란처럼 UI를
-            // 해줘. 지금은 아무것도 없어서 이게 제목 입력란인지 헷갈린다."
-            //
-            // 테두리도 바탕도 없이 큰 글자만 놓여 있었다. 그건 입력칸이
-            // 아니라 그냥 제목처럼 보인다 — 눌러서 고칠 수 있다는 것을
-            // 아무도 모른다. 바로 아래 '출처' 칸이 이미 쓰고 있는 방식
-            // (작은 회색 이름표 + 칸)을 그대로 따른다. 한 화면 안에서
-            // 두 칸이 다른 모양이면 그것부터 눈에 걸린다.
-            if (_showMeta)
-            Padding(
-              // 위 여백 0 — 날짜 줄이 이미 띄워 놨다. 여기서 또 띄우면 벌어진다.
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 5, left: 2),
-                    child: Text(l.titleFieldLabel,
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: context.c.sub)),
-                  ),
-                  TextField(
-                    controller: titleCtl,
-                    focusNode: _titleFocus,
-                    decoration: InputDecoration(
-                      hintText: l.titleHint,
-                      isDense: true,
-                      filled: true,
-                      fillColor: context.c.panel,
-                      contentPadding:
-                          const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: context.c.line),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            BorderSide(color: context.c.accent, width: 1.8),
-                      ),
+                              // 제목 바로 오른쪽의 연필 (2026-08-27 소유자 지시).
+                              //
+                              // 처음에는 머리 오른쪽 끝, 동기화 단추가 있던 자리에
+                              // 뒀다. 소유자 지적 — "지금은 '글쓰기' 버튼처럼
+                              // 보이잖아." 맞다. **아이콘의 뜻은 모양이 아니라 자리가
+                              // 정한다.** 머리 오른쪽 끝의 연필은 어느 앱에서나 '새
+                              // 글 쓰기'다. 같은 연필이라도 제목에 붙어 있으면 '이
+                              // 제목을 고친다'가 된다.
+                              //
+                              // 제목이 있을 때는 아이콘이 시끄럽다고 여겨 숨겼던
+                              // 것도 이번에 걷는다. 숨겨 놓으니 아무도 제목이
+                              // 눌린다는 것을 몰랐다 — 08-19 신고가 그것이었다.
+                              // 작게 둔다(2026-08-27 소유자 지시 — 30% 작게).
+                              // 크면 여전히 '새 글 쓰기' 단추로 읽힌다. 이건 누르라고
+                              // 부르는 단추가 아니라 **여기가 눌린다는 귀띔**이다.
+                              // 귀띔은 작을수록 귀띔답다.
+                              const SizedBox(width: 5),
+                              Icon(
+                                _showMeta ? Icons.edit : Icons.edit_outlined,
+                                size: 11,
+                                color: _showMeta
+                                    ? context.c.accent
+                                    : context.c.sub,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                    // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
-                    // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서
-                    // -0.02em 은 약 -0.45다. 본문은 0 그대로 둔다.
-                    style: const TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.45),
-                    onChanged: (v) {
-                      // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
-                      // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
-                      if (stopAutoTitle(v)) note.titleAuto = false;
-                      _save();
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (_showMeta)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-              child: Row(
-                children: [
-                  // 2026-08-17 소유자 신고 — "수동으로 출처를 선택해도 이게
-                  // 바로 저장이 된 것인지, 따로 저장 버튼을 눌러야 하는지
-                  // 직관적이지 않다."
-                  //
-                  // 저장은 원래 즉시 되고 있었다. 문제는 그걸 아무도 말해
-                  // 주지 않았다는 것이고, 이름표가 없어 그 칸이 무엇인지도
-                  // 흐렸다는 것이다.
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Text(l.sourceFieldLabel,
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: context.c.sub)),
-                  ),
-                  DropdownButton<String>(
-                    value: note.source.isEmpty ? '' : note.source,
-                    items: [
-                      DropdownMenuItem(value: '', child: Text(l.sourceNone)),
-                      const DropdownMenuItem(value: 'ChatGPT', child: Text('ChatGPT')),
-                      const DropdownMenuItem(value: 'Claude', child: Text('Claude')),
-                      const DropdownMenuItem(value: 'Gemini', child: Text('Gemini')),
-                      const DropdownMenuItem(value: 'Grok', child: Text('Grok')),
-                      const DropdownMenuItem(value: 'Perplexity', child: Text('Perplexity')),
-                      // 저장 값('기타')은 데이터 호환을 위해 유지, 표시만 번역한다
-                      DropdownMenuItem(value: '기타', child: Text(l.sourceOther)),
-                    ],
-                    onChanged: (v) async {
-                      note.source = v ?? '';
-                      // 손으로 고른 순간부터는 추측이 아니다.
-                      note.sourceAuto = false;
-                      await _save();
-                      if (!mounted) return;
-                      setState(() {});
-                      // 눌렀는데 아무 일도 안 일어난 것처럼 보이면, 사람은
-                      // 저장 버튼을 찾는다. 없는 버튼을.
-                      _toast(
-                          context,
-                          note.source.isEmpty
-                              ? L10n.of(context).sourceCleared
-                              : L10n.of(context).sourceSaved(note.source));
-                    },
-                  ),
-                  const Spacer(),
-                  // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
-                  // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
-                  // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 숨긴다.
-                  if (aiUiVisible())
-                  TextButton.icon(
-                    onPressed: _tagAiBusy ? null : _autoTags,
-                    icon: _tagAiBusy
-                        ? const SizedBox(
-                            width: 14, height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.auto_awesome, size: 18),
-                    label: Text(_tagAiBusy ? l.tagAiWorking : l.tagAiButton,
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
-            ),
-            // 태그 상자.
-            // 소유자 요청: 한 줄이 아니라 '입력칸처럼' 보이고 여러 줄로 늘어날 것,
-            // 그리고 태그 하나하나를 쉽게 지울 수 있을 것.
-            // 그래서 블럭(칩) + 뒤따르는 입력칸을 한 상자 안에 넣는다.
-            // 블럭이 늘어나면 상자가 저절로 여러 줄이 된다.
-            if (_showMeta)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _tagsFocus.requestFocus(),
-                  child: Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(minHeight: 56),
-                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                    decoration: BoxDecoration(
-                      color: context.c.panel,
-                      border: Border.all(color: context.c.line),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        for (final t in note.tags) _tagChip(t),
-                        SizedBox(
-                          width: 170,
-                          child: TextField(
-                            controller: tagsCtl,
-                            focusNode: _tagsFocus,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              hintText: note.tags.isEmpty ? l.tagsHint : l.tagsBoxHint,
-                            ),
-                            onChanged: _onTagTyped,
-                            onSubmitted: (v) {
-                              note.tagsAuto = false;
-                              _commitTags(v, clear: true);
-                            },
+                    actions: [
+                      if (_editing)
+                        TextButton(
+                          onPressed: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
+                          child: Text(
+                            l.done,
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            // 첨부 줄. 붙은 것이 없으면 자리도 안 차지한다.
-            if (note.attachments.isNotEmpty) _attachStrip(l),
-            Expanded(
-              child: Padding(
-                // 2026-08-19 소유자 — "편집화면 본문의 폭도 여백미가 너무
-                // 없는 거 아닐까? bear 정도가 딱 좋은 것 같다."
-                //
-                // 16이었다. 글자가 화면 가장자리에 거의 닿는다. 종이에
-                // 인쇄된 글은 그렇게 놓이지 않는다 — 여백은 남는 자리가
-                // 아니라 글을 붙잡아 주는 자리다.
-                //
-                // 넓은 화면에서 더 주는 이유: 글 칸의 폭은 이미 묶어 뒀지만
-                // (SplitShell.readWidth), 그 안에서도 글이 상자에 꽉 차
-                // 있으면 갇혀 보인다.
-                padding: EdgeInsets.symmetric(
-                    horizontal: (_isDesktop || widget.embedded) ? 32 : 22),
-                // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
-                // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
-                // 칸이 납작하게 접힌다.
-                child: Stack(fit: StackFit.expand, children: [
-                  // 종이의 줄은 글 뒤에 있다. 그리는 일은 선 몇 개뿐이라
-                  // 싸지만, RepaintBoundary로 감싸서 스크롤할 때 글 칸까지
-                  // 다시 그리지 않게 막는다.
-                  if (onPaper && paper.ruling != kRulingNone)
-                    Positioned.fill(
-                      child: RepaintBoundary(
-                        child: AnimatedBuilder(
-                          animation: _bodyScroll,
-                          builder: (_, __) => CustomPaint(
-                            painter: _PaperPainter(
-                              ruling: paper.ruling,
-                              color: Color(paper.ruleOf(darkNow)),
-                              // 줄 간격을 사람이 바꾸면 종이의 줄도 같이
-                              // 움직여야 한다. 이 둘이 어긋나면 화면 아래로
-                              // 갈수록 글자가 줄에서 떠오른다.
-                              lineHeight: store.settings.bodyFontSize *
-                                  store.settings.bodyLineHeight,
-                              colWidth: _colWidth(store.settings.bodyFontSize),
-                              // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
-                              // 죽는다. 그때는 0이 맞다.
-                              scroll: _bodyScroll.hasClients
-                                  ? _bodyScroll.offset
-                                  : 0,
-                              // 날짜 줄이 본문 위에 같이 굴러가므로 그만큼
-                              // 줄을 내려 긋는다. 안 그러면 줄이 글자
-                              // 한가운데를 가로지른다.
-                              headPad: _headH + _topInsetInside,
-                            ),
-                          ),
+                      // 2026-08-17 소유자 지시 — 위쪽 '정리' 버튼을 뺐다.
+                      //
+                      // 이건 아래 막대의 '정리'가 한 번에 안 되던 시절의 잔재다. 그때는
+                      // 아래 것을 누르면 어떤 방식으로 정리할지 고르는 창이 떴고, 손이
+                      // 위에 있을 때 바로 누를 지름길이 따로 필요했다.
+                      //
+                      // 그 뒤 아래 것이 한 번 누르면 바로 도는 쪽으로 바뀌면서
+                      // (문을 하나로 합쳤다) 지름길과 목적지가 같아졌다. 같은 일을
+                      // 하는 버튼이 한 화면에 둘 있으면 사용자는 둘이 다른 일인가
+                      // 의심한다 — 이 앱은 '정리'와 '자동 정리'가 따로 있어서 같은
+                      // 신고를 이미 한 번 받았다.
+                      // 2026-08-19 — 태그와 핀을 메뉴로 내렸다.
+                      //
+                      // 둘 다 이 화면에 오래 머물 자격이 없었다. 태그는 글을 다 쓴
+                      // 뒤 한 번, 핀은 몇 달에 한 번 누른다. 그런데 매번 여는 화면의
+                      // 맨 위에 늘 앉아 있었다.
+                      //
+                      // 무엇을 위에 둘지는 '얼마나 중요한가'가 아니라 '얼마나 자주
+                      // 누르는가'로 정한다. 중요한 것을 위에 두면 만든 사람이 중요하게
+                      // 여기는 것이 올라오고, 자주 누르는 것을 위에 두면 쓰는 사람이
+                      // 자주 하는 일이 올라온다.
+                      // 2026-08-16 소유자 요청 — 애플 메모장처럼 '...' 메뉴.
+                      // 이 메모에 대한 설정이 앞으로 여기에 쌓인다. 지금은 삭제 하나.
+                      PopupMenuButton<String>(
+                        // 목록 화면과 같은 삼선. 한쪽만 바꾸면 같은 일을 하는 버튼이
+                        // 두 모양이 된다(2026-08-17).
+                        icon: const Icon(Icons.menu),
+                        tooltip: l.moreTooltip,
+                        // 2026-08-16 소유자 신고 — 메뉴가 '...' 버튼 위를 덮어서, 같은
+                        // 자리를 다시 눌러 닫는 토글이 안 됐다. 기본값이 버튼을 중심에
+                        // 두고 펼치는 방식(over)이라 그렇다. under로 바꾸면 버튼 아래로
+                        // 내려가 버튼이 계속 보이고, 그 자리를 다시 누르면 닫힌다.
+                        position: PopupMenuPosition.under,
+                        offset: const Offset(0, 6),
+                        // 2026-08-29 소유자 지시 — "메뉴 레이어의 width 를 좀 더
+                        // 넓혀줘." 한 줄에 셋을 넣으면서 칸이 좁아졌다. 좁은 칸에
+                        // 세 글자를 우겨넣으면 말줄임표가 뜨고, 무엇을 누르는지
+                        // 모르는 단추가 된다.
+                        constraints: const BoxConstraints(
+                          minWidth: 288,
+                          maxWidth: 344,
                         ),
-                      ),
-                    ),
-                  // 2026-08-17 소유자 지시 — "화면의 반 정도는 스크롤되게.
-                  // 그래야 하단에 뭔가 더 입력할 수 있다는 느낌이 든다."
-                  //
-                  // 이건 취향이 아니라 글 쓰는 도구의 기본이다. 마지막 줄이
-                  // 화면 맨 아래에 붙어 있으면 (1) 거기가 끝인지 더 있는지
-                  // 눈으로 알 수 없고 (2) 그 줄을 고칠 때 손가락이 가린다.
-                  //
-                  // **스크롤의 임자를 바꿨다.** 전에는 본문 칸이 자기 안에서
-                  // 스스로 굴렀는데(expands + 내부 스크롤), 그 방식에서는
-                  // '글 끝보다 더 내려가기'를 만들 수 없다 — 굴릴 수 있는
-                  // 양이 글 길이로 정해지기 때문이다. 아래에 여백을 주면
-                  // 칸이 작아져서 보이는 글만 줄어든다.
-                  //
-                  // 이제 본문 칸은 글 길이만큼 늘어나기만 하고, 스크롤은
-                  // 이것을 감싼 바깥이 맡는다. 바깥이 [글 + 빈칸]을 함께
-                  // 굴리므로 글 끝을 지나 빈칸까지 내려갈 수 있다.
-                  LayoutBuilder(builder: (_, box) {
-                    // 빈칸은 화면의 절반. 마지막 줄을 화면 한가운데까지
-                    // 끌어올릴 수 있는 양이다.
-                    // 2026-08-17 소유자 신고 — "본문과 광고의 간격이 너무
-                    // 멀다. 이래서는 누가 광고를 보겠나. 본문은 아래 여백으로
-                    // 2줄 정도 남기고 광고가 오게 해."
-                    //
-                    // 이 빈칸은 원래 '마지막 줄을 화면 한가운데까지 끌어올릴
-                    // 자리'로 둔 것이다(화면의 절반). 그 뜻은 여전히 맞다.
-                    // 다만 **광고가 아래에 붙으면 광고 자체가 그 자리를
-                    // 준다.** 250픽셀짜리 네모가 이미 굴릴 거리를 만든다.
-                    // 그러니 광고가 뜰 판에서는 빈칸을 두 줄로 줄인다.
-                    //
-                    // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
-                    // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
-                    final lineH = store.settings.bodyFontSize *
-                        store.settings.bodyLineHeight;
-                    final blank =
-                        inlineAdLikely() ? lineH * 2 : box.maxHeight * 0.5;
-                    // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
-                    // [머리 + 본문 + 빈칸]이 정확히 한 화면이라 스크롤이 안
-                    // 생긴다. 한 줄짜리 메모에서 화면이 덜컹거리면 더
-                    // 이상하다. 날짜 줄을 안으로 들인 뒤로는 그 높이도
-                    // 빼야 셈이 맞는다.
-                    final minBody =
-                        (box.maxHeight - blank - _headH - _topInsetInside)
-                            .clamp(0.0, double.infinity);
-                    // 편집 화면에서도 당겨서 맞추기(2026-08-27 소유자
-                    // 요청). 손짓이 잡히는 곳에서만 돈다 — 웹·맥의
-                    // 트랙패드 굴림은 끌기로 안 잡히고, 그 자리는 머리의
-                    // 단추가 맡는다.
-                    //
-                    // 글을 치는 중에는 안 건다. 자판이 올라와 있을 때
-                    // 아래로 쓸어내리는 손짓은 '자판 내리기'이지
-                    // '새로 고침'이 아니다.
-                    return RefreshIndicator(
-                      onRefresh: _editorPullSync,
-                      notificationPredicate: (n) =>
-                          !_editing && n.depth == 0,
-                      color: context.c.accent,
-                      backgroundColor: context.c.panel,
-                      displacement: 24,
-                      child: Listener(
-                        onPointerDown: (e) {
-                          if (_nearSelectionHandle(e.position)) {
-                            _setSelHandleDrag(true);
+                        onSelected: (v) async {
+                          // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
+                          // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
+                          // 앱 설정은 편집과 직접 상관이 없어 구분선으로 갈라 놨다.
+                          if (v.startsWith('set:')) {
+                            final a = v.substring(4);
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => SettingsScreen(
+                                  anchor: a.isEmpty ? null : a,
+                                ),
+                              ),
+                            );
+                            if (mounted) setState(() {});
+                            return;
+                          }
+                          if (v == 'wizard') {
+                            _showWizardDialog();
+                            return;
+                          }
+                          if (v == 'tables') {
+                            _showTables();
+                            return;
+                          }
+                          if (v == 'replace') {
+                            _showFindDialog();
+                            return;
+                          }
+                          if (v == 'copy') {
+                            _showCopyMenu();
+                            return;
+                          }
+                          if (v == 'meta') {
+                            setState(() => _showMeta = !_showMeta);
+                            return;
+                          }
+                          if (v == 'pin') {
+                            note.pinned = !note.pinned;
+                            // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다. 이런 데만 준다.
+                            HapticFeedback.selectionClick();
+                            await store.persist();
+                            if (mounted) setState(() {});
+                            return;
+                          }
+                          if (v == 'travel') {
+                            await _openTravel();
+                            return;
+                          }
+                          if (v == 'wipe') {
+                            await _openWipe();
+                            return;
+                          }
+                          if (v == 'preview') {
+                            // 설정이 꺼져 있어도 이번 한 번은 먼저 보여 준다.
+                            await _runTidyWithPreset(
+                              buildPresets().first,
+                              forcePreview: true,
+                            );
+                            return;
+                          }
+                          if (v == 'folder') {
+                            await _pickFolder();
+                            return;
+                          }
+                          // 2026-08-29 — '버전 기록'은 이제 시간 여행을 연다.
+                          // 목록과 '원본 복귀'는 여기 흡수됐다(_openTravel).
+                          if (v == 'history') {
+                            await _openTravel();
+                            return;
+                          }
+                          if (v == 'append') {
+                            final text = await ImportService.pickAppendText();
+                            if (text == null || !mounted) return;
+                            bodyCtl.text = bodyCtl.text.trimRight() + text;
+                            await _save();
+                            if (mounted) setState(() {});
+                            return;
+                          }
+                          if (v == 'preset') {
+                            // 길게 누르기는 맥·PC에서 자연스럽지 않다. 여기 하나 더
+                            // 두어 어느 기기에서든 찾을 수 있게 한다.
+                            _showPresetSheet();
+                            return;
+                          }
+                          if (v == 'export') {
+                            final ok = await ExportService.shareNote(note);
+                            if (!ok && mounted) {
+                              _toast(context, L10n.of(context).exportFailed);
+                            }
+                            return;
+                          }
+                          if (v == 'attach') {
+                            await _addAttachment();
+                            return;
+                          }
+                          if (v == 'lock') {
+                            if (await toggleNoteLock(context, note) &&
+                                mounted) {
+                              setState(() {});
+                            }
+                            return;
+                          }
+                          if (v == 'pdf' || v == 'print') {
+                            final ok = v == 'print'
+                                ? await PdfService.printNote(
+                                    note,
+                                    dateLabel: _pdfDate(note.updatedAt),
+                                  )
+                                : await PdfService.sharePdf(
+                                    note,
+                                    dateLabel: _pdfDate(note.updatedAt),
+                                  );
+                            if (!ok && mounted) {
+                              _toast(context, L10n.of(context).pdfFailed);
+                            }
+                            return;
+                          }
+                          if (v != 'delete') return;
+                          final ok = await confirmDialog(
+                            context,
+                            title: L10n.of(context).deleteConfirmTitle,
+                            okLabel: L10n.of(context).delete,
+                            destructive: true,
+                          );
+                          if (ok && mounted) {
+                            store.deleteNote(note.id);
+                            Navigator.pop(context);
                           }
                         },
-                        onPointerUp: (_) => _setSelHandleDrag(false),
-                        onPointerCancel: (_) => _setSelHandleDrag(false),
-                        child: SingleChildScrollView(
-                      controller: _bodyScroll,
-                      // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
-                      physics: _selHandleDrag
-                          ? const NeverScrollableScrollPhysics()
-                          : const AlwaysScrollableScrollPhysics(),
-                      // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
-                      // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
-                      // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
-                      // 들어온 신고는 반대쪽이었다 — 뻑뻑하다는 것이다.
-                      // 짐작으로 박은 값을 뗀다.
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // 유리 머리가 덮는 자리. 이것이 스크롤 **안**에
-                          // 있어서, 굴리면 날짜 줄과 글이 머리 밑으로
-                          // 흘러 들어간다.
-                          if (_topInsetInside > 0)
-                            SizedBox(height: _topInsetInside),
-                          // 날짜 줄. 고정이 아니라 글의 첫머리다 —
-                          // 종이 맨 위에 적힌 날짜처럼, 읽어 내려가면
-                          // 같이 올라가 사라진다.
-                          KeyedSubtree(
-                              key: _headKey,
-                              child: _dateLine(note.updatedAt)),
-                          ConstrainedBox(
-                            constraints: BoxConstraints(minHeight: minBody),
-                            child: TextField(
-                  key: _bodyKey,
-                  controller: bodyCtl,
-                  focusNode: _bodyFocus,
-                  // 목록에서 엔터를 치면 다음 항목이 따라온다
-                  // (2026-08-27 소유자 신고). 규칙은 core/list_continue.dart
-                  // 에 있고 시험으로 못 박았다.
-                  inputFormatters: const [ListContinueFormatter()],
-                  // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
-                  //
-                  // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
-                  // '켜자마자 바로 쓸 수 있음'이었다. 한 번 더 눌러야 쓰기가
-                  // 시작되는 것은 기능이 아니라 마찰이다.
-                  autofocus: bodyCtl.text.isEmpty,
-                  undoController: _undoCtl,
-                  // expands를 뗐다. 이제 이 칸은 글 길이만큼 늘어나고,
-                  // 굴리는 일은 바깥이 맡는다.
-                  maxLines: null,
-                  // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
-                  // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
-                  // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은
-                  // 돋보기가 아니다 — 기기에서 직접 만져 보며 찾아야 한다.
-                  //
-                  // 블록을 끌 때 화면 끝에 닿으면 플러터가 캐럿을 보이게
-                  // 스크롤한다. 그 한 번에 움직이는 양이 이 여백만큼이라,
-                  // 기본값(20)보다 줄이면 덜 뛴다. 0으로 두지는 않는다 —
-                  // 캐럿이 화면 가장자리에 딱 붙으면 손가락에 가려진다.
-                  scrollPadding: const EdgeInsets.all(12),
-                  decoration: InputDecoration(hintText: l.bodyHint, border: InputBorder.none),
-                  // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
-                  // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
-                  // core/mono_spans.dart가, 실제로 글꼴을 입히는 일은
-                  // core/mono_controller.dart가 한다.
-                  // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
-                  // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
-                  style: TextStyle(
-                      fontSize: store.settings.bodyFontSize,
-                      height: store.settings.bodyLineHeight,
-                      // 고른 본문 글꼴. '기본'이면 여기 null 이 들어가고
-                      // 테마가 정한 글꼴이 그대로 쓰인다(core/body_font.dart).
-                      fontFamily: bodyFontFamily(store.settings.bodyFont,
-                          webDefault: kIsWeb ? kWebFontFamily : null),
-                      // 자간 0 (2026-08-24 소유자 신고 "클로드 앱 폰트가
-                      // 좋은데 다르다"). 글꼴은 이미 시스템 것이었고,
-                      // 다른 건 머티리얼 기본 자간 +0.5였다 — 영문 SF용
-                      // 값이라 한글에 얹으면 벌어져 보인다. 애플 메모도
-                      // 클로드 앱도 한글 본문 자간은 0이다.
-                      letterSpacing: 0,
-                      // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
-                      // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
-                      // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
-                      // 계산해 정해 뒀다.
-                      color: paperInk),
-                  onChanged: _onBodyChanged,
-                  onTap: _menuOnTap,
-                  // ── 편집 메뉴를 우리가 그린다 ──────────────────────
-                  //
-                  // 2026-08-18 소유자 지시 — "'붙여넣기 / 선택 / 전체선택 >'이
-                  // 나오게 하고, '텍스트 스캔'은 '>'을 누르면 나오게 해줘."
-                  //
-                  // 그동안 이 자리에는 **iOS 가 통째로 그리는 메뉴**가 떴다.
-                  // 요즘 플러터는 iOS 16 이상이면 시스템 메뉴를 쓰는 것이
-                  // 기본값이고, 시스템 메뉴는 우리가 순서를 정할 수 없다.
-                  // '텍스트 스캔'이 거기 섞여 있던 것도 그래서다 — 그건
-                  // 우리가 넣은 것이 아니라 운영체제가 넣은 것이다.
-                  //
-                  // 순서를 정하려면 메뉴를 우리가 그려야 하고, 우리가 그리면
-                  // **'텍스트 스캔'은 못 가져온다.** 카메라로 글자를 읽어
-                  // 오는 그 기능은 운영체제 안에만 있고 밖으로 나오지 않는다.
-                  // 소유자가 그것을 '>' 뒤로 밀라고 한 뜻은 '거의 안 쓴다'
-                  // 이므로, 잃는 쪽을 택했다.
-                  //
-                  // 버튼이 넘치면 플러터가 알아서 '>'로 접는다. 그러니
-                  // 우리가 할 일은 **중요한 것을 앞에 놓는 것**뿐이다.
-                  contextMenuBuilder: (ctx, ets) {
-                    final ll = L10n.of(ctx);
-                    ContextMenuButtonItem? paste;
-                    ContextMenuButtonItem? selectAll;
-                    final rest = <ContextMenuButtonItem>[];
-                    for (final b in ets.contextMenuButtonItems) {
-                      switch (b.type) {
-                        // 2026-08-18 — 고른 글을 복사할 때도 표시를 벗긴다.
-                        case ContextMenuButtonType.copy:
-                          rest.add(ContextMenuButtonItem(
-                            type: ContextMenuButtonType.copy,
-                            onPressed: () {
-                              final v = ets.textEditingValue;
-                              Clipboard.setData(ClipboardData(
-                                  text: toPlain(
-                                      v.selection.textInside(v.text))));
-                              ets.hideToolbar();
-                            },
-                          ));
-                        case ContextMenuButtonType.paste:
-                          paste = b;
-                        case ContextMenuButtonType.selectAll:
-                          selectAll = b;
-                        default:
-                          rest.add(b);
-                      }
-                    }
-                    final items = <ContextMenuButtonItem>[];
-                    if (paste != null) items.add(paste);
-                    // '선택' — 커서가 놓인 낱말 하나만 잡는다.
-                    //
-                    // 전체 선택과 손으로 끌기 사이가 비어 있었다. 한 낱말을
-                    // 고치려는데 고를 방법이 '전부' 아니면 '손으로 정확히
-                    // 끌기'뿐이면, 작은 화면에서는 후자가 거의 안 된다.
-                    if (ets.textEditingValue.selection.isCollapsed &&
-                        ets.textEditingValue.text.isNotEmpty) {
-                      items.add(ContextMenuButtonItem(
-                        label: ll.selectWord,
-                        onPressed: () {
-                          ets.renderEditable
-                              .selectWord(cause: SelectionChangedCause.toolbar);
-                          // 잡아 놓고 메뉴가 사라지면 다음에 뭘 할지 모른다.
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            ets.showToolbar();
-                          });
+                        itemBuilder: (ctx) {
+                          final lm = L10n.of(ctx);
+                          // 2026-08-19 — 아래 막대에 있던 넷과 위에 있던 둘이
+                          // 여기로 들어왔다. 메뉴로 옮긴 것을 아무도 못 찾는 일이
+                          // 없도록 아이콘과 이름을 그대로 가져왔다 — 손가락은
+                          // 자리를 기억하지만 눈은 모양을 기억한다.
+                          PopupMenuItem<String> act(
+                            String v,
+                            IconData ic,
+                            String label, {
+                            bool enabled = true,
+                            Color? tint,
+                            bool bold = false,
+                          }) => PopupMenuItem<String>(
+                            value: v,
+                            enabled: enabled,
+                            // 48이 기본인데 열다섯 줄이면 720이다. 그러면 메뉴가
+                            // 화면에 안 들어가서 플러터가 위로 밀어 올리고, 밀어
+                            // 올린 메뉴가 삼선 단추를 덮는다(소유자 신고).
+                            //
+                            // 2026-08-27 — 42도 모자랐다. 소유자 신고: "해상도가
+                            // 낮은 기기에서 메뉴 하단 항목이 안 보인다." 36으로
+                            // 죈다. 열다섯 줄에 가름선 넷이면 570 남짓이라 작은
+                            // 아이폰에서도 들어간다.
+                            //
+                            // 손가락이 놓칠 만큼 좁지는 않은가. 애플이 권하는
+                            // 최소 손가락 자리는 44인데, 그건 **화면에 흩어져
+                            // 있는 단추** 이야기다. 메뉴는 줄이 위아래로 붙어
+                            // 있어서 겨냥이 세로 한 줄로 좁혀지고, 잘못 눌러도
+                            // 옆줄이지 딴 세상이 아니다. 애플 메모의 메뉴도 이
+                            // 언저리다.
+                            height: 36,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  ic,
+                                  size: 18,
+                                  color: (tint ?? ctx.c.guideInk).withValues(
+                                    alpha: enabled ? 1.0 : 0.4,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  label,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: tint,
+                                    fontWeight: bold
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          /// 한 줄에 셋. 2026-08-29 소유자 지시 —
+                          /// "'내보내기 | PDF | 인쇄' 이렇게 한 라인에. 단, 3개가
+                          /// 터치 간섭이 안 생기게 간격을 많이 띄어줘."
+                          ///
+                          /// 세 칸을 똑같이 나눠 갖고, 사이에 가는 세로선을 둔다.
+                          /// 선은 눈으로 칸을 가르는 일만 하고 누를 수는 없다 —
+                          /// 그 자리를 누르면 어느 쪽이 눌릴지 사람이 모른다.
+                          PopupMenuItem<String> trio(
+                            List<(String, IconData, String)> three,
+                          ) => PopupMenuItem<String>(
+                            padding: EdgeInsets.zero,
+                            height: 46,
+                            child: Row(
+                              children: [
+                                for (var i = 0; i < three.length; i++) ...[
+                                  if (i > 0)
+                                    Container(
+                                      width: 1,
+                                      height: 22,
+                                      color: ctx.c.line.withValues(alpha: 0.7),
+                                    ),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () =>
+                                          Navigator.pop(ctx, three[i].$1),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 6,
+                                          horizontal: 4,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              three[i].$2,
+                                              size: 17,
+                                              color: ctx.c.guideInk,
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              three[i].$3,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+
+                          // 2026-08-29 소유자 지시 — "낮은 해상도에서 메뉴 하단에
+                          // 가려진 부분을 스크롤하면 더 있다는 직관적인 UI가 필요."
+                          //
+                          // 줄을 더 줄이는 것은 이미 두 번 했고(48→42→36) 더 줄일
+                          // 데가 없다. 그러니 줄이는 대신 **더 있다는 것을 보이게**
+                          // 한다. 아래가 옅어지고 꺾쇠가 뜬다. 끝까지 내리면
+                          // 사라진다(scroll_hint.dart).
+                          //
+                          // 줄들을 통째로 한 칸 안에 넣는다. 안의 줄들은 여전히
+                          // PopupMenuItem 이라 눌리면 제 값으로 메뉴가 닫힌다 —
+                          // 눌리는 방식은 하나도 안 바뀐다.
+                          final rows = <PopupMenuEntry<String>>[
+                            // 2026-08-18 소유자 지시로 차례를 통째로 다시 짰다.
+                            //
+                            // 스물세 줄이 한 폭에 다 나와 있었다. 그중 여덟은 설정
+                            // 화면의 목차를 그대로 베껴 온 것이었는데, 서랍을 열면
+                            // 그 안에 다른 서랍의 목차까지 붙어 있는 꼴이었다.
+                            // 그 여덟을 '앱 설정' 한 줄로 접었다 — 두 뎁스로 가는
+                            // 것이 줄을 줄이는 유일하게 정직한 방법이다.
+                            //
+                            // 남은 것을 네 무리로 묶었다.
+                            //   1. 이 메모가 무엇인가        출처·태그, 폴더
+                            //   2. 정리                      미리보기, 방식 고르기
+                            //   3. 글을 손대는 일            마법사, 표, 붙이기,
+                            //                                복사, 내보내기
+                            //   4. 되돌리고 지우는 일        버전 기록, 원본 복귀, 삭제
+                            //
+                            // '상단 고정'은 뺐다. 목록에서 길게 눌러 하는 편이
+                            // 빠르고, 몇 달에 한 번 누르는 것이 매번 여는 서랍의
+                            // 한 줄을 차지할 이유가 없다.
+                            // '바꾸기'는 자판 위 도구 막대로 내려갔다.
+                            act(
+                              'meta',
+                              _showMeta ? Icons.sell : Icons.sell_outlined,
+                              lm.metaTooltip,
+                            ),
+                            act(
+                              'folder',
+                              note.folder.isEmpty
+                                  ? Icons.folder_outlined
+                                  : Icons.folder,
+                              note.folder.isEmpty
+                                  ? lm.folderTitle
+                                  : note.folder,
+                              tint: note.folder.isEmpty ? null : ctx.c.accent,
+                            ),
+                            // 잠금은 '이 메모가 무엇인가' 무리에 둔다. 정리·복사와
+                            // 달리 글을 손대는 일이 아니라 이 메모의 성격이다.
+                            act(
+                              'lock',
+                              note.locked ? Icons.lock : Icons.lock_outline,
+                              note.locked ? lm.noteUnlock : lm.noteLock,
+                              tint: note.locked ? ctx.c.accent : null,
+                            ),
+                            const PopupMenuDivider(height: 6),
+                            // 2026-08-29 소유자 지시 — 정리 셋을 한 줄로.
+                            trio([
+                              (
+                                'preset',
+                                CupertinoIcons.wand_stars,
+                                lm.choosePreset,
+                              ),
+                              (
+                                'preview',
+                                CupertinoIcons.eye,
+                                lm.menuTidyPreview,
+                              ),
+                              (
+                                'wipe',
+                                CupertinoIcons.rectangle_split_3x1,
+                                lm.wipeAction,
+                              ),
+                            ]),
+                            // 2026-08-29 소유자 지시 — 셋을 하나로 합쳤다.
+                            //
+                            //   버전 기록(목록)  정확하지만 아무 감흥이 없다
+                            //   시간 여행(손잡이) 같은 자료를 훑는다
+                            //   원본 복귀        기록 중 맨 처음으로 가는 일일 뿐이다
+                            //
+                            // 셋은 같은 것을 다르게 부른 이름이었다. 이름은 사람들이
+                            // 아는 '버전 기록'으로 두고, 안에서는 손잡이로 훑는다.
+                            // 원본은 그 길의 첫 정거장이라 따로 둘 자리가 없다.
+                            //
+                            // 2026-09-02 소유자 지시로 정리 셋 **바로 아래**로 올렸다.
+                            // 전에는 삭제 바로 위, 서랍의 한참 아래에 있었다. 그런데
+                            // 버전 기록을 여는 까닭은 거의 언제나 '방금 정리한 것을
+                            // 되돌아보려고'다. 그 일과 붙어 있어야 찾는다.
+                            act(
+                              'history',
+                              CupertinoIcons.clock,
+                              lm.historyTitle,
+                              enabled: _canTravel,
+                            ),
+                            const PopupMenuDivider(height: 6),
+                            act(
+                              'wizard',
+                              CupertinoIcons.sparkles,
+                              lm.wizardAction,
+                            ),
+                            act('tables', CupertinoIcons.table, lm.tableAction),
+                            // 클립은 '첨부'에 준다. 여태 '붙이기'(다른 파일의 글을
+                            // 본문 뒤에 잇는 일)가 쓰고 있었는데, 클립이 뜻하는 것은
+                            // 어디서나 파일을 매다는 일이다. 이름과 그림이 어긋나
+                            // 있으면 둘 다 못 찾는다.
+                            act(
+                              'append',
+                              CupertinoIcons.tray_arrow_down,
+                              lm.importAppend,
+                            ),
+                            act(
+                              'attach',
+                              CupertinoIcons.paperclip,
+                              lm.attachAdd,
+                            ),
+                            act(
+                              'copy',
+                              CupertinoIcons.doc_on_doc,
+                              lm.copyAction,
+                            ),
+                            // 2026-08-29 소유자 지시 — 내보내기 셋을 한 줄로.
+                            // '내보내기'가 마크다운 파일을 건네는 일이라면 나머지
+                            // 둘은 **다 그려진 결과**를 건네는 일이다.
+                            trio([
+                              (
+                                'export',
+                                CupertinoIcons.square_arrow_up,
+                                lm.exportShort,
+                              ),
+                              (
+                                'pdf',
+                                CupertinoIcons.doc_richtext,
+                                lm.exportPdfShort,
+                              ),
+                              ('print', CupertinoIcons.printer, lm.printShort),
+                            ]),
+                            const PopupMenuDivider(height: 6),
+                            act(
+                              'delete',
+                              CupertinoIcons.trash,
+                              lm.delete,
+                              tint: ctx.c.danger,
+                            ),
+                            const PopupMenuDivider(height: 6),
+                            act(
+                              'set:',
+                              CupertinoIcons.gear_alt,
+                              lm.menuAppSettings,
+                              tint: ctx.c.accent,
+                              bold: true,
+                            ),
+                          ];
+                          return [
+                            PopupMenuItem<String>(
+                              // 값이 없다 — 이 껍데기를 눌러도 아무 일이 안 난다.
+                              padding: EdgeInsets.zero,
+                              height: 0,
+                              child: _MenuScroll(rows: rows),
+                            ),
+                          ];
                         },
-                      ));
-                    }
-                    if (selectAll != null) items.add(selectAll);
-                    items.addAll(rest);
-                    return AdaptiveTextSelectionToolbar.buttonItems(
-                      anchors: ets.contextMenuAnchors,
-                      buttonItems: items,
-                    );
-                  },
+                      ),
+                    ],
+                  ),
+                  body: Column(
+                    children: [
+                      // 유리 머리가 덮는 자리 — 굴러가지 않는 것이 있을 때만 비운다.
+                      if (_topInsetOutside > 0)
+                        SizedBox(height: _topInsetOutside),
+                      // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
+                      if (_isDesktop) _accessoryBar(atTop: true),
+                      // 날짜 줄은 여기 있었다. 2026-08-17에 본문 스크롤 안으로
+                      // 옮겼다 — 아래 _headKey를 찾을 것.
+                      // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
+                      // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
+                      // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
+                      // 2026-09-02 소유자 지시 — "제목 입력란을 입력란처럼 UI를
+                      // 해줘. 지금은 아무것도 없어서 이게 제목 입력란인지 헷갈린다."
+                      //
+                      // 테두리도 바탕도 없이 큰 글자만 놓여 있었다. 그건 입력칸이
+                      // 아니라 그냥 제목처럼 보인다 — 눌러서 고칠 수 있다는 것을
+                      // 아무도 모른다. 바로 아래 '출처' 칸이 이미 쓰고 있는 방식
+                      // (작은 회색 이름표 + 칸)을 그대로 따른다. 한 화면 안에서
+                      // 두 칸이 다른 모양이면 그것부터 눈에 걸린다.
+                      if (_showMeta)
+                        Padding(
+                          // 위 여백 0 — 날짜 줄이 이미 띄워 놨다. 여기서 또 띄우면 벌어진다.
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: 5,
+                                  left: 2,
+                                ),
+                                child: Text(
+                                  l.titleFieldLabel,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.c.sub,
+                                  ),
+                                ),
+                              ),
+                              TextField(
+                                controller: titleCtl,
+                                focusNode: _titleFocus,
+                                decoration: InputDecoration(
+                                  hintText: l.titleHint,
+                                  isDense: true,
+                                  filled: true,
+                                  fillColor: context.c.panel,
+                                  contentPadding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    12,
+                                    14,
+                                    12,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: context.c.line,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: context.c.accent,
+                                      width: 1.8,
+                                    ),
+                                  ),
+                                ),
+                                // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
+                                // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서
+                                // -0.02em 은 약 -0.45다. 본문은 0 그대로 둔다.
+                                style: const TextStyle(
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.45,
+                                ),
+                                onChanged: (v) {
+                                  // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
+                                  // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
+                                  if (stopAutoTitle(v)) note.titleAuto = false;
+                                  _save();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (_showMeta)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                          child: Row(
+                            children: [
+                              // 2026-08-17 소유자 신고 — "수동으로 출처를 선택해도 이게
+                              // 바로 저장이 된 것인지, 따로 저장 버튼을 눌러야 하는지
+                              // 직관적이지 않다."
+                              //
+                              // 저장은 원래 즉시 되고 있었다. 문제는 그걸 아무도 말해
+                              // 주지 않았다는 것이고, 이름표가 없어 그 칸이 무엇인지도
+                              // 흐렸다는 것이다.
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text(
+                                  l.sourceFieldLabel,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.c.sub,
+                                  ),
+                                ),
+                              ),
+                              DropdownButton<String>(
+                                value: note.source.isEmpty ? '' : note.source,
+                                items: [
+                                  DropdownMenuItem(
+                                    value: '',
+                                    child: Text(l.sourceNone),
+                                  ),
+                                  const DropdownMenuItem(
+                                    value: 'ChatGPT',
+                                    child: Text('ChatGPT'),
+                                  ),
+                                  const DropdownMenuItem(
+                                    value: 'Claude',
+                                    child: Text('Claude'),
+                                  ),
+                                  const DropdownMenuItem(
+                                    value: 'Gemini',
+                                    child: Text('Gemini'),
+                                  ),
+                                  const DropdownMenuItem(
+                                    value: 'Grok',
+                                    child: Text('Grok'),
+                                  ),
+                                  const DropdownMenuItem(
+                                    value: 'Perplexity',
+                                    child: Text('Perplexity'),
+                                  ),
+                                  // 저장 값('기타')은 데이터 호환을 위해 유지, 표시만 번역한다
+                                  DropdownMenuItem(
+                                    value: '기타',
+                                    child: Text(l.sourceOther),
+                                  ),
+                                ],
+                                onChanged: (v) async {
+                                  note.source = v ?? '';
+                                  // 손으로 고른 순간부터는 추측이 아니다.
+                                  note.sourceAuto = false;
+                                  await _save();
+                                  if (!mounted) return;
+                                  setState(() {});
+                                  // 눌렀는데 아무 일도 안 일어난 것처럼 보이면, 사람은
+                                  // 저장 버튼을 찾는다. 없는 버튼을.
+                                  _toast(
+                                    context,
+                                    note.source.isEmpty
+                                        ? L10n.of(context).sourceCleared
+                                        : L10n.of(
+                                            context,
+                                          ).sourceSaved(note.source),
+                                  );
+                                },
+                              ),
+                              const Spacer(),
+                              // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
+                              // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
+                              // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 숨긴다.
+                              if (aiUiVisible())
+                                TextButton.icon(
+                                  onPressed: _tagAiBusy ? null : _autoTags,
+                                  icon: _tagAiBusy
+                                      ? const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.auto_awesome,
+                                          size: 18,
+                                        ),
+                                  label: Text(
+                                    _tagAiBusy ? l.tagAiWorking : l.tagAiButton,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      // 태그 상자.
+                      // 소유자 요청: 한 줄이 아니라 '입력칸처럼' 보이고 여러 줄로 늘어날 것,
+                      // 그리고 태그 하나하나를 쉽게 지울 수 있을 것.
+                      // 그래서 블럭(칩) + 뒤따르는 입력칸을 한 상자 안에 넣는다.
+                      // 블럭이 늘어나면 상자가 저절로 여러 줄이 된다.
+                      if (_showMeta)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => _tagsFocus.requestFocus(),
+                            child: Container(
+                              width: double.infinity,
+                              constraints: const BoxConstraints(minHeight: 56),
+                              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                              decoration: BoxDecoration(
+                                color: context.c.panel,
+                                border: Border.all(color: context.c.line),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  for (final t in note.tags) _tagChip(t),
+                                  SizedBox(
+                                    width: 170,
+                                    child: TextField(
+                                      controller: tagsCtl,
+                                      focusNode: _tagsFocus,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        border: InputBorder.none,
+                                        hintText: note.tags.isEmpty
+                                            ? l.tagsHint
+                                            : l.tagsBoxHint,
+                                      ),
+                                      onChanged: _onTagTyped,
+                                      onSubmitted: (v) {
+                                        note.tagsAuto = false;
+                                        _commitTags(v, clear: true);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          // 글 끝 아래의 빈칸.
+                        ),
+                      // 첨부 줄. 붙은 것이 없으면 자리도 안 차지한다.
+                      if (note.attachments.isNotEmpty) _attachStrip(l),
+                      Expanded(
+                        child: Padding(
+                          // 2026-08-19 소유자 — "편집화면 본문의 폭도 여백미가 너무
+                          // 없는 거 아닐까? bear 정도가 딱 좋은 것 같다."
                           //
-                          // 그냥 두면 눌러도 아무 일이 없다 — 본문 칸 밖이기
-                          // 때문이다. 종이 아래쪽을 짚었는데 펜이 안 잡히는
-                          // 셈이라, 누르면 커서를 글 맨 끝에 놓는다.
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              _bodyFocus.requestFocus();
-                              bodyCtl.selection = TextSelection.collapsed(
-                                  offset: bodyCtl.text.length);
-                            },
-                            child: SizedBox(height: blank),
+                          // 16이었다. 글자가 화면 가장자리에 거의 닿는다. 종이에
+                          // 인쇄된 글은 그렇게 놓이지 않는다 — 여백은 남는 자리가
+                          // 아니라 글을 붙잡아 주는 자리다.
+                          //
+                          // 넓은 화면에서 더 주는 이유: 글 칸의 폭은 이미 묶어 뒀지만
+                          // (SplitShell.readWidth), 그 안에서도 글이 상자에 꽉 차
+                          // 있으면 갇혀 보인다.
+                          padding: EdgeInsets.symmetric(
+                            horizontal: (_isDesktop || widget.embedded)
+                                ? 32
+                                : 22,
                           ),
-                          // 글보다 아래, 빈칸보다 아래. 타자를 치는 동안에는
-                          // 눈에 들어오지 않는 자리다(2026-08-17 소유자 지시).
-                          const InlineAdBlock(),
-                        ],
+                          // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
+                          // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
+                          // 칸이 납작하게 접힌다.
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              // 종이의 줄은 글 뒤에 있다. 그리는 일은 선 몇 개뿐이라
+                              // 싸지만, RepaintBoundary로 감싸서 스크롤할 때 글 칸까지
+                              // 다시 그리지 않게 막는다.
+                              if (onPaper && paper.ruling != kRulingNone)
+                                Positioned.fill(
+                                  child: RepaintBoundary(
+                                    child: AnimatedBuilder(
+                                      animation: _bodyScroll,
+                                      builder: (_, __) => CustomPaint(
+                                        painter: _PaperPainter(
+                                          ruling: paper.ruling,
+                                          color: Color(paper.ruleOf(darkNow)),
+                                          // 줄 간격을 사람이 바꾸면 종이의 줄도 같이
+                                          // 움직여야 한다. 이 둘이 어긋나면 화면 아래로
+                                          // 갈수록 글자가 줄에서 떠오른다.
+                                          lineHeight:
+                                              store.settings.bodyFontSize *
+                                              store.settings.bodyLineHeight,
+                                          colWidth: _colWidth(
+                                            store.settings.bodyFontSize,
+                                          ),
+                                          // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
+                                          // 죽는다. 그때는 0이 맞다.
+                                          scroll: _bodyScroll.hasClients
+                                              ? _bodyScroll.offset
+                                              : 0,
+                                          // 날짜 줄이 본문 위에 같이 굴러가므로 그만큼
+                                          // 줄을 내려 긋는다. 안 그러면 줄이 글자
+                                          // 한가운데를 가로지른다.
+                                          headPad: _headH + _topInsetInside,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              // 2026-08-17 소유자 지시 — "화면의 반 정도는 스크롤되게.
+                              // 그래야 하단에 뭔가 더 입력할 수 있다는 느낌이 든다."
+                              //
+                              // 이건 취향이 아니라 글 쓰는 도구의 기본이다. 마지막 줄이
+                              // 화면 맨 아래에 붙어 있으면 (1) 거기가 끝인지 더 있는지
+                              // 눈으로 알 수 없고 (2) 그 줄을 고칠 때 손가락이 가린다.
+                              //
+                              // **스크롤의 임자를 바꿨다.** 전에는 본문 칸이 자기 안에서
+                              // 스스로 굴렀는데(expands + 내부 스크롤), 그 방식에서는
+                              // '글 끝보다 더 내려가기'를 만들 수 없다 — 굴릴 수 있는
+                              // 양이 글 길이로 정해지기 때문이다. 아래에 여백을 주면
+                              // 칸이 작아져서 보이는 글만 줄어든다.
+                              //
+                              // 이제 본문 칸은 글 길이만큼 늘어나기만 하고, 스크롤은
+                              // 이것을 감싼 바깥이 맡는다. 바깥이 [글 + 빈칸]을 함께
+                              // 굴리므로 글 끝을 지나 빈칸까지 내려갈 수 있다.
+                              LayoutBuilder(
+                                builder: (_, box) {
+                                  // 빈칸은 화면의 절반. 마지막 줄을 화면 한가운데까지
+                                  // 끌어올릴 수 있는 양이다.
+                                  // 2026-08-17 소유자 신고 — "본문과 광고의 간격이 너무
+                                  // 멀다. 이래서는 누가 광고를 보겠나. 본문은 아래 여백으로
+                                  // 2줄 정도 남기고 광고가 오게 해."
+                                  //
+                                  // 이 빈칸은 원래 '마지막 줄을 화면 한가운데까지 끌어올릴
+                                  // 자리'로 둔 것이다(화면의 절반). 그 뜻은 여전히 맞다.
+                                  // 다만 **광고가 아래에 붙으면 광고 자체가 그 자리를
+                                  // 준다.** 250픽셀짜리 네모가 이미 굴릴 거리를 만든다.
+                                  // 그러니 광고가 뜰 판에서는 빈칸을 두 줄로 줄인다.
+                                  //
+                                  // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
+                                  // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
+                                  final lineH =
+                                      store.settings.bodyFontSize *
+                                      store.settings.bodyLineHeight;
+                                  final blank = inlineAdLikely()
+                                      ? lineH * 2
+                                      : box.maxHeight * 0.5;
+                                  // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
+                                  // [머리 + 본문 + 빈칸]이 정확히 한 화면이라 스크롤이 안
+                                  // 생긴다. 한 줄짜리 메모에서 화면이 덜컹거리면 더
+                                  // 이상하다. 날짜 줄을 안으로 들인 뒤로는 그 높이도
+                                  // 빼야 셈이 맞는다.
+                                  final minBody =
+                                      (box.maxHeight -
+                                              blank -
+                                              _headH -
+                                              _topInsetInside)
+                                          .clamp(0.0, double.infinity);
+                                  // 편집 화면에서도 당겨서 맞추기(2026-08-27 소유자
+                                  // 요청). 손짓이 잡히는 곳에서만 돈다 — 웹·맥의
+                                  // 트랙패드 굴림은 끌기로 안 잡히고, 그 자리는 머리의
+                                  // 단추가 맡는다.
+                                  //
+                                  // 글을 치는 중에는 안 건다. 자판이 올라와 있을 때
+                                  // 아래로 쓸어내리는 손짓은 '자판 내리기'이지
+                                  // '새로 고침'이 아니다.
+                                  return RefreshIndicator(
+                                    onRefresh: _editorPullSync,
+                                    notificationPredicate: (n) =>
+                                        !_editing && n.depth == 0,
+                                    color: context.c.accent,
+                                    backgroundColor: context.c.panel,
+                                    displacement: 24,
+                                    child: Listener(
+                                      onPointerDown: (e) {
+                                        if (_nearSelectionHandle(e.position)) {
+                                          _setSelHandleDrag(true);
+                                        }
+                                      },
+                                      onPointerUp: (_) =>
+                                          _setSelHandleDrag(false),
+                                      onPointerCancel: (_) =>
+                                          _setSelHandleDrag(false),
+                                      child: SingleChildScrollView(
+                                        controller: _bodyScroll,
+                                        // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
+                                        physics: _selHandleDrag
+                                            ? const NeverScrollableScrollPhysics()
+                                            : const AlwaysScrollableScrollPhysics(),
+                                        // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
+                                        // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
+                                        // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
+                                        // 들어온 신고는 반대쪽이었다 — 뻑뻑하다는 것이다.
+                                        // 짐작으로 박은 값을 뗀다.
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            // 유리 머리가 덮는 자리. 이것이 스크롤 **안**에
+                                            // 있어서, 굴리면 날짜 줄과 글이 머리 밑으로
+                                            // 흘러 들어간다.
+                                            if (_topInsetInside > 0)
+                                              SizedBox(height: _topInsetInside),
+                                            // 날짜 줄. 고정이 아니라 글의 첫머리다 —
+                                            // 종이 맨 위에 적힌 날짜처럼, 읽어 내려가면
+                                            // 같이 올라가 사라진다.
+                                            KeyedSubtree(
+                                              key: _headKey,
+                                              child: _dateLine(note.updatedAt),
+                                            ),
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                minHeight: minBody,
+                                              ),
+                                              child: TextField(
+                                                key: _bodyKey,
+                                                controller: bodyCtl,
+                                                focusNode: _bodyFocus,
+                                                // 목록에서 엔터를 치면 다음 항목이 따라온다
+                                                // (2026-08-27 소유자 신고). 규칙은 core/list_continue.dart
+                                                // 에 있고 시험으로 못 박았다.
+                                                inputFormatters: const [
+                                                  ListContinueFormatter(),
+                                                ],
+                                                // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
+                                                //
+                                                // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
+                                                // '켜자마자 바로 쓸 수 있음'이었다. 한 번 더 눌러야 쓰기가
+                                                // 시작되는 것은 기능이 아니라 마찰이다.
+                                                autofocus: bodyCtl.text.isEmpty,
+                                                undoController: _undoCtl,
+                                                // expands를 뗐다. 이제 이 칸은 글 길이만큼 늘어나고,
+                                                // 굴리는 일은 바깥이 맡는다.
+                                                maxLines: null,
+                                                // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
+                                                // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
+                                                // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은
+                                                // 돋보기가 아니다 — 기기에서 직접 만져 보며 찾아야 한다.
+                                                //
+                                                // 블록을 끌 때 화면 끝에 닿으면 플러터가 캐럿을 보이게
+                                                // 스크롤한다. 그 한 번에 움직이는 양이 이 여백만큼이라,
+                                                // 기본값(20)보다 줄이면 덜 뛴다. 0으로 두지는 않는다 —
+                                                // 캐럿이 화면 가장자리에 딱 붙으면 손가락에 가려진다.
+                                                scrollPadding:
+                                                    const EdgeInsets.all(12),
+                                                decoration: InputDecoration(
+                                                  hintText: l.bodyHint,
+                                                  border: InputBorder.none,
+                                                ),
+                                                // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
+                                                // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
+                                                // core/mono_spans.dart가, 실제로 글꼴을 입히는 일은
+                                                // core/mono_controller.dart가 한다.
+                                                // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
+                                                // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
+                                                style: TextStyle(
+                                                  fontSize: store
+                                                      .settings
+                                                      .bodyFontSize,
+                                                  height: store
+                                                      .settings
+                                                      .bodyLineHeight,
+                                                  // 고른 본문 글꼴. '기본'이면 여기 null 이 들어가고
+                                                  // 테마가 정한 글꼴이 그대로 쓰인다(core/body_font.dart).
+                                                  fontFamily: bodyFontFamily(
+                                                    store.settings.bodyFont,
+                                                    webDefault: kIsWeb
+                                                        ? kWebFontFamily
+                                                        : null,
+                                                  ),
+                                                  // 자간 0 (2026-08-24 소유자 신고 "클로드 앱 폰트가
+                                                  // 좋은데 다르다"). 글꼴은 이미 시스템 것이었고,
+                                                  // 다른 건 머티리얼 기본 자간 +0.5였다 — 영문 SF용
+                                                  // 값이라 한글에 얹으면 벌어져 보인다. 애플 메모도
+                                                  // 클로드 앱도 한글 본문 자간은 0이다.
+                                                  letterSpacing: 0,
+                                                  // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
+                                                  // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
+                                                  // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
+                                                  // 계산해 정해 뒀다.
+                                                  color: paperInk,
+                                                ),
+                                                onChanged: _onBodyChanged,
+                                                onTap: _menuOnTap,
+                                                // ── 편집 메뉴를 우리가 그린다 ──────────────────────
+                                                //
+                                                // 2026-08-18 소유자 지시 — "'붙여넣기 / 선택 / 전체선택 >'이
+                                                // 나오게 하고, '텍스트 스캔'은 '>'을 누르면 나오게 해줘."
+                                                //
+                                                // 그동안 이 자리에는 **iOS 가 통째로 그리는 메뉴**가 떴다.
+                                                // 요즘 플러터는 iOS 16 이상이면 시스템 메뉴를 쓰는 것이
+                                                // 기본값이고, 시스템 메뉴는 우리가 순서를 정할 수 없다.
+                                                // '텍스트 스캔'이 거기 섞여 있던 것도 그래서다 — 그건
+                                                // 우리가 넣은 것이 아니라 운영체제가 넣은 것이다.
+                                                //
+                                                // 순서를 정하려면 메뉴를 우리가 그려야 하고, 우리가 그리면
+                                                // **'텍스트 스캔'은 못 가져온다.** 카메라로 글자를 읽어
+                                                // 오는 그 기능은 운영체제 안에만 있고 밖으로 나오지 않는다.
+                                                // 소유자가 그것을 '>' 뒤로 밀라고 한 뜻은 '거의 안 쓴다'
+                                                // 이므로, 잃는 쪽을 택했다.
+                                                //
+                                                // 버튼이 넘치면 플러터가 알아서 '>'로 접는다. 그러니
+                                                // 우리가 할 일은 **중요한 것을 앞에 놓는 것**뿐이다.
+                                                contextMenuBuilder: (ctx, ets) {
+                                                  final ll = L10n.of(ctx);
+                                                  ContextMenuButtonItem? paste;
+                                                  ContextMenuButtonItem?
+                                                  selectAll;
+                                                  final rest =
+                                                      <ContextMenuButtonItem>[];
+                                                  for (final b
+                                                      in ets
+                                                          .contextMenuButtonItems) {
+                                                    switch (b.type) {
+                                                      // 2026-08-18 — 고른 글을 복사할 때도 표시를 벗긴다.
+                                                      case ContextMenuButtonType
+                                                          .copy:
+                                                        rest.add(
+                                                          ContextMenuButtonItem(
+                                                            type:
+                                                                ContextMenuButtonType
+                                                                    .copy,
+                                                            onPressed: () {
+                                                              final v = ets
+                                                                  .textEditingValue;
+                                                              Clipboard.setData(
+                                                                ClipboardData(
+                                                                  text: toPlain(
+                                                                    v.selection
+                                                                        .textInside(
+                                                                          v.text,
+                                                                        ),
+                                                                  ),
+                                                                ),
+                                                              );
+                                                              ets.hideToolbar();
+                                                            },
+                                                          ),
+                                                        );
+                                                      case ContextMenuButtonType
+                                                          .paste:
+                                                        paste = b;
+                                                      case ContextMenuButtonType
+                                                          .selectAll:
+                                                        selectAll = b;
+                                                      default:
+                                                        rest.add(b);
+                                                    }
+                                                  }
+                                                  final items =
+                                                      <ContextMenuButtonItem>[];
+                                                  if (paste != null)
+                                                    items.add(paste);
+                                                  // '선택' — 커서가 놓인 낱말 하나만 잡는다.
+                                                  //
+                                                  // 전체 선택과 손으로 끌기 사이가 비어 있었다. 한 낱말을
+                                                  // 고치려는데 고를 방법이 '전부' 아니면 '손으로 정확히
+                                                  // 끌기'뿐이면, 작은 화면에서는 후자가 거의 안 된다.
+                                                  if (ets
+                                                          .textEditingValue
+                                                          .selection
+                                                          .isCollapsed &&
+                                                      ets
+                                                          .textEditingValue
+                                                          .text
+                                                          .isNotEmpty) {
+                                                    items.add(
+                                                      ContextMenuButtonItem(
+                                                        label: ll.selectWord,
+                                                        onPressed: () {
+                                                          ets.renderEditable
+                                                              .selectWord(
+                                                                cause:
+                                                                    SelectionChangedCause
+                                                                        .toolbar,
+                                                              );
+                                                          // 잡아 놓고 메뉴가 사라지면 다음에 뭘 할지 모른다.
+                                                          WidgetsBinding
+                                                              .instance
+                                                              .addPostFrameCallback((
+                                                                _,
+                                                              ) {
+                                                                ets.showToolbar();
+                                                              });
+                                                        },
+                                                      ),
+                                                    );
+                                                  }
+                                                  if (selectAll != null)
+                                                    items.add(selectAll);
+                                                  items.addAll(rest);
+                                                  return AdaptiveTextSelectionToolbar.buttonItems(
+                                                    anchors:
+                                                        ets.contextMenuAnchors,
+                                                    buttonItems: items,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            // 글 끝 아래의 빈칸.
+                                            //
+                                            // 그냥 두면 눌러도 아무 일이 없다 — 본문 칸 밖이기
+                                            // 때문이다. 종이 아래쪽을 짚었는데 펜이 안 잡히는
+                                            // 셈이라, 누르면 커서를 글 맨 끝에 놓는다.
+                                            GestureDetector(
+                                              behavior: HitTestBehavior.opaque,
+                                              onTap: () {
+                                                _bodyFocus.requestFocus();
+                                                bodyCtl.selection =
+                                                    TextSelection.collapsed(
+                                                      offset:
+                                                          bodyCtl.text.length,
+                                                    );
+                                              },
+                                              child: SizedBox(height: blank),
+                                            ),
+                                            // 글보다 아래, 빈칸보다 아래. 타자를 치는 동안에는
+                                            // 눈에 들어오지 않는 자리다(2026-08-17 소유자 지시).
+                                            const InlineAdBlock(),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      )),
-                    );
-                  }),
-                ]),
-              ),
-            ),
-            // 2026-08-17 소유자 지시 — "편집 화면 맨 아래에 정리된 내역을
-            // 한 줄로 보여 주는 거 없애 줘. 아무 의미 없다."
-            //
-            // 맞다. '마커 51개 제거 · 제목 5개 정리'는 **우리가 열심히
-            // 했다는 증거**지 사용자가 알고 싶은 것이 아니다. 알고 싶은
-            // 것은 '글이 깨끗해졌나' 하나뿐이고 그건 글을 보면 안다.
-            //
-            // 값(note.lastReport)은 남겨 둔다. 저장 형식을 바꾸면 예전
-            // 저장본과 아이클라우드에 올라간 파일까지 건드리게 되는데,
-            // 화면에서 한 줄 빼자고 치를 값이 아니다. 안 보여 줄 뿐이다.
-          ],
-        ),
-        bottomNavigationBar: Padding(
-          // 키보드 높이만큼 막대를 들어 올린다. Scaffold는 아래 막대를 화면
-          // 진짜 바닥에 두기 때문에(bottom - 아래막대높이) 그냥 두면
-          // 키보드에 가린다.
-          //
-          // 상한을 두는 이유: 이 값이 Scaffold 높이에 닿으면 막대가 화면 맨
-          // 위로 튀어 오르고 본문이 사라진다(2026-08-16 실제 사고). 위에서
-          // 구조를 고쳐 여유가 344까지 벌어졌지만, 화면이나 키보드가 어떻게
-          // 바뀌든 다시는 그 선을 넘지 않게 여기서도 막는다. 화면의 60%를
-          // 넘겨 올리는 키보드는 없다.
-          padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom.clamp(
-                  0.0, MediaQuery.sizeOf(context).height * 0.6)),
-          child: SafeArea(
-            child: (_bodyFocus.hasFocus && !_isDesktop)
-                ? _accessoryBar()
-                // 2026-08-19 — 다섯 칸 막대를 걷어냈다. 이제 아래에 남는
-                // 것은 글자를 칠 때 뜨는 보조 막대뿐이다.
-                : const SizedBox.shrink(),
-          ),
-        ),
-        // 떠 있는 단추 둘. 목록 화면과 **똑같은** 문법이다 — 정리가 왼쪽
-        // 채운 하늘, 글쓰기가 오른쪽 연한 하늘. 화면마다 문법이 다르면
-        // 그건 두 앱이다.
-        //
-        // 2026-08-18 소유자 신고 — 한쪽만 글자를 달고 있어서 둘이 같은
-        // 무리로 안 보였고, 종이색 글쓰기 단추는 "못 찾을 정도"였다.
-        //
-        // 글자를 치는 동안에는 감춘다. 키보드 위에 보조 막대가 뜨는데
-        // 그 위에 단추가 또 겹치면 손가락 갈 곳이 없다.
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: (_bodyFocus.hasFocus && !_isDesktop)
-            ? null
-            : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // 정리 — 이 화면의 존재 이유. 길게 누르면 다른 방식을
-                    // 고를 수 있다(2026-08-16에 문을 하나로 합치면서 만든 길).
-                    GestureDetector(
-                      onLongPress: _showPresetSheet,
-                      child: FloatingActionButton(
-                        heroTag: 'ed-tidy',
-                        tooltip: l.tidyAction,
-                        onPressed: () =>
-                            _runTidyWithPreset(buildPresets().first),
-                        child:
-                            const Icon(CupertinoIcons.wand_stars, size: 25),
+                      // 2026-08-17 소유자 지시 — "편집 화면 맨 아래에 정리된 내역을
+                      // 한 줄로 보여 주는 거 없애 줘. 아무 의미 없다."
+                      //
+                      // 맞다. '마커 51개 제거 · 제목 5개 정리'는 **우리가 열심히
+                      // 했다는 증거**지 사용자가 알고 싶은 것이 아니다. 알고 싶은
+                      // 것은 '글이 깨끗해졌나' 하나뿐이고 그건 글을 보면 안다.
+                      //
+                      // 값(note.lastReport)은 남겨 둔다. 저장 형식을 바꾸면 예전
+                      // 저장본과 아이클라우드에 올라간 파일까지 건드리게 되는데,
+                      // 화면에서 한 줄 빼자고 치를 값이 아니다. 안 보여 줄 뿐이다.
+                    ],
+                  ),
+                  bottomNavigationBar: Padding(
+                    // 키보드 높이만큼 막대를 들어 올린다. Scaffold는 아래 막대를 화면
+                    // 진짜 바닥에 두기 때문에(bottom - 아래막대높이) 그냥 두면
+                    // 키보드에 가린다.
+                    //
+                    // 상한을 두는 이유: 이 값이 Scaffold 높이에 닿으면 막대가 화면 맨
+                    // 위로 튀어 오르고 본문이 사라진다(2026-08-16 실제 사고). 위에서
+                    // 구조를 고쳐 여유가 344까지 벌어졌지만, 화면이나 키보드가 어떻게
+                    // 바뀌든 다시는 그 선을 넘지 않게 여기서도 막는다. 화면의 60%를
+                    // 넘겨 올리는 키보드는 없다.
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom.clamp(
+                        0.0,
+                        MediaQuery.sizeOf(context).height * 0.6,
                       ),
                     ),
-                    // 새 노트 — 이 메모와 무관한 일이라 한 계단 옅다.
-                    FloatingActionButton(
-                      heroTag: 'ed-new',
-                      tooltip: l.newNoteTooltip,
-                      backgroundColor: kAccentSoft,
-                      foregroundColor: kOnAccentSoft,
-                      onPressed: () async {
-                        await _save();
-                        final fresh = Note.fresh(body: '');
-                        store.notes.insert(0, fresh);
-                        await store.persist();
-                        if (!mounted) return;
-                        await openNote(context, fresh.id);
-                      },
-                      child: const Icon(CupertinoIcons.square_pencil, size: 24),
+                    child: SafeArea(
+                      child: (_bodyFocus.hasFocus && !_isDesktop)
+                          ? _accessoryBar()
+                          // 2026-08-19 — 다섯 칸 막대를 걷어냈다. 이제 아래에 남는
+                          // 것은 글자를 칠 때 뜨는 보조 막대뿐이다.
+                          : const SizedBox.shrink(),
                     ),
-                  ],
+                  ),
+                  // 떠 있는 단추 둘. 목록 화면과 **똑같은** 문법이다 — 정리가 왼쪽
+                  // 채운 하늘, 글쓰기가 오른쪽 연한 하늘. 화면마다 문법이 다르면
+                  // 그건 두 앱이다.
+                  //
+                  // 2026-08-18 소유자 신고 — 한쪽만 글자를 달고 있어서 둘이 같은
+                  // 무리로 안 보였고, 종이색 글쓰기 단추는 "못 찾을 정도"였다.
+                  //
+                  // 글자를 치는 동안에는 감춘다. 키보드 위에 보조 막대가 뜨는데
+                  // 그 위에 단추가 또 겹치면 손가락 갈 곳이 없다.
+                  floatingActionButtonLocation:
+                      FloatingActionButtonLocation.centerFloat,
+                  floatingActionButton: (_bodyFocus.hasFocus && !_isDesktop)
+                      ? null
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // 정리 — 이 화면의 존재 이유. 길게 누르면 다른 방식을
+                              // 고를 수 있다(2026-08-16에 문을 하나로 합치면서 만든 길).
+                              GestureDetector(
+                                onLongPress: _showPresetSheet,
+                                child: FloatingActionButton(
+                                  heroTag: 'ed-tidy',
+                                  tooltip: l.tidyAction,
+                                  onPressed: () =>
+                                      _runTidyWithPreset(buildPresets().first),
+                                  child: const Icon(
+                                    CupertinoIcons.wand_stars,
+                                    size: 25,
+                                  ),
+                                ),
+                              ),
+                              // 새 노트 — 이 메모와 무관한 일이라 한 계단 옅다.
+                              FloatingActionButton(
+                                heroTag: 'ed-new',
+                                tooltip: l.newNoteTooltip,
+                                backgroundColor: kAccentSoft,
+                                foregroundColor: kOnAccentSoft,
+                                onPressed: () async {
+                                  await _save();
+                                  final fresh = Note.fresh(body: '');
+                                  store.notes.insert(0, fresh);
+                                  await store.persist();
+                                  if (!mounted) return;
+                                  await openNote(context, fresh.id);
+                                },
+                                child: const Icon(
+                                  CupertinoIcons.square_pencil,
+                                  size: 24,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                 ),
               ),
-      ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );
@@ -9942,40 +11030,55 @@ class _PreviewScreenState extends State<PreviewScreen> {
     _busy = false;
   }
 
-  Widget _pane(String label, String text, ScrollController ctl,
-      {required bool tidied}) {
+  Widget _pane(
+    String label,
+    String text,
+    ScrollController ctl, {
+    required bool tidied,
+  }) {
     final c = context.c;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-          child: Row(children: [
-            // 정리된 쪽에만 색을 준다. 둘 다 회색이면 어느 쪽이 결과인지
-            // 이름표를 읽어야 안다.
-            Icon(tidied ? CupertinoIcons.wand_stars : Icons.description_outlined,
-                size: 14, color: tidied ? c.accent : c.sub),
-            const SizedBox(width: 6),
-            Text(label,
+          child: Row(
+            children: [
+              // 정리된 쪽에만 색을 준다. 둘 다 회색이면 어느 쪽이 결과인지
+              // 이름표를 읽어야 안다.
+              Icon(
+                tidied ? CupertinoIcons.wand_stars : Icons.description_outlined,
+                size: 14,
+                color: tidied ? c.accent : c.sub,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
                 style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: tidied ? c.accent : c.sub)),
-          ]),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: tidied ? c.accent : c.sub,
+                ),
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: Container(
             margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
             decoration: BoxDecoration(
-                color: c.codeBg,
-                border: Border.all(color: tidied ? c.accent : c.codeLine),
-                borderRadius: BorderRadius.circular(10)),
+              color: c.codeBg,
+              border: Border.all(color: tidied ? c.accent : c.codeLine),
+              borderRadius: BorderRadius.circular(10),
+            ),
             clipBehavior: Clip.antiAlias,
             child: SingleChildScrollView(
               controller: ctl,
               padding: const EdgeInsets.all(12),
-              child: SelectableText(text,
-                  style: const TextStyle(fontSize: 14, height: 1.6)),
+              child: SelectableText(
+                text,
+                style: const TextStyle(fontSize: 14, height: 1.6),
+              ),
             ),
           ),
         ),
@@ -10003,86 +11106,116 @@ class _PreviewScreenState extends State<PreviewScreen> {
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
               child: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                    color: c.warnBg, borderRadius: BorderRadius.circular(10)),
-                child: Text(l.warningPrefix(w),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: c.warnInk,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ),
-          Expanded(
-            child: LayoutBuilder(builder: (_, box) {
-              // 2026-08-17 소유자 지시 — "아이패드 가로모드는 위 아래로
-              // 하지 말고, 좌/우로 해줘. 좌는 원본, 우는 정리 결과로."
-              //
-              // 잣대를 '아이패드인가'가 아니라 '가로가 넓은가'로 둔다.
-              // 아이패드를 세워 들면 위아래가 맞고, 아이폰을 눕히면 좌우가
-              // 맞다. 기기 이름으로 가르면 그 둘을 다 놓친다. 720은 두 칸에
-              // 각각 글줄 하나가 온전히 들어가는 폭이다.
-              final wide = box.maxWidth >= 720 && box.maxWidth > box.maxHeight;
-              // 원본이 먼저다 — 넓으면 왼쪽, 좁으면 위. 어느 쪽이든 읽는
-              // 방향과 시간의 방향이 같다.
-              final first =
-                  _pane(l.originalLabel, before, _origCtl, tidied: false);
-              final second =
-                  _pane(l.tidyResultLabel, result.text, _tidyCtl, tidied: true);
-              return Stack(children: [
-              if (wide)
-                Row(children: [
-                  Expanded(child: first),
-                  Expanded(child: second),
-                ])
-              else
-                Column(children: [
-                  Expanded(child: first),
-                  Expanded(child: second),
-                ]),
-              // 떠 있는 '동시 스크롤'. 두 칸 위에 얹혀 있어야 무엇에 대한
-              // 스위치인지 자리만으로 안다.
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Material(
-                    color: c.panel,
-                    elevation: 3,
-                    shadowColor: Colors.black26,
-                    borderRadius: BorderRadius.circular(22),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(22),
-                      onTap: () {
-                        setState(() => _sync = !_sync);
-                        // 다시 켠 순간 두 칸이 어긋나 있으면 켠 보람이 없다.
-                        if (_sync) _mirror(_origCtl, _tidyCtl);
-                      },
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(6, 2, 16, 2),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Checkbox.adaptive(
-                            value: _sync,
-                            onChanged: (v) {
-                              setState(() => _sync = v ?? false);
-                              if (_sync) _mirror(_origCtl, _tidyCtl);
-                            },
-                          ),
-                          Text(l.syncScroll,
-                              style: const TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600)),
-                        ]),
-                      ),
-                    ),
+                  color: c.warnBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  l.warningPrefix(w),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: c.warnInk,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              ]);
-            }),
+            ),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (_, box) {
+                // 2026-08-17 소유자 지시 — "아이패드 가로모드는 위 아래로
+                // 하지 말고, 좌/우로 해줘. 좌는 원본, 우는 정리 결과로."
+                //
+                // 잣대를 '아이패드인가'가 아니라 '가로가 넓은가'로 둔다.
+                // 아이패드를 세워 들면 위아래가 맞고, 아이폰을 눕히면 좌우가
+                // 맞다. 기기 이름으로 가르면 그 둘을 다 놓친다. 720은 두 칸에
+                // 각각 글줄 하나가 온전히 들어가는 폭이다.
+                final wide =
+                    box.maxWidth >= 720 && box.maxWidth > box.maxHeight;
+                // 원본이 먼저다 — 넓으면 왼쪽, 좁으면 위. 어느 쪽이든 읽는
+                // 방향과 시간의 방향이 같다.
+                final first = _pane(
+                  l.originalLabel,
+                  before,
+                  _origCtl,
+                  tidied: false,
+                );
+                final second = _pane(
+                  l.tidyResultLabel,
+                  result.text,
+                  _tidyCtl,
+                  tidied: true,
+                );
+                return Stack(
+                  children: [
+                    if (wide)
+                      Row(
+                        children: [
+                          Expanded(child: first),
+                          Expanded(child: second),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          Expanded(child: first),
+                          Expanded(child: second),
+                        ],
+                      ),
+                    // 떠 있는 '동시 스크롤'. 두 칸 위에 얹혀 있어야 무엇에 대한
+                    // 스위치인지 자리만으로 안다.
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Material(
+                          color: c.panel,
+                          elevation: 3,
+                          shadowColor: Colors.black26,
+                          borderRadius: BorderRadius.circular(22),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(22),
+                            onTap: () {
+                              setState(() => _sync = !_sync);
+                              // 다시 켠 순간 두 칸이 어긋나 있으면 켠 보람이 없다.
+                              if (_sync) _mirror(_origCtl, _tidyCtl);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(6, 2, 16, 2),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Checkbox.adaptive(
+                                    value: _sync,
+                                    onChanged: (v) {
+                                      setState(() => _sync = v ?? false);
+                                      if (_sync) _mirror(_origCtl, _tidyCtl);
+                                    },
+                                  ),
+                                  Text(
+                                    l.syncScroll,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
           const SizedBox(height: 8),
         ],
@@ -10096,44 +11229,59 @@ class _PreviewScreenState extends State<PreviewScreen> {
               // 버튼 바로 위 — 여기서 켜면 다음부터 이 화면을 건너뛴다.
               // 손으로 미리보기를 골라 들어온 자리에서는 안 보인다.
               if (!widget.manual)
-              InkWell(
-                onTap: () => setState(() => _skipNext = !_skipNext),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  child: Row(
-                    children: [
-                      Checkbox.adaptive(
-                        value: _skipNext,
-                        onChanged: (v) => setState(() => _skipNext = v ?? false),
-                      ),
-                      Expanded(
-                        child: Text(l.skipPreviewCheck,
-                            style: TextStyle(fontSize: 13, color: context.c.sub)),
-                      ),
-                    ],
+                InkWell(
+                  onTap: () => setState(() => _skipNext = !_skipNext),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 6,
+                    ),
+                    child: Row(
+                      children: [
+                        Checkbox.adaptive(
+                          value: _skipNext,
+                          onChanged: (v) =>
+                              setState(() => _skipNext = v ?? false),
+                        ),
+                        Expanded(
+                          child: Text(
+                            l.skipPreviewCheck,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: context.c.sub,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(l.cancel),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: FilledButton(
-                        onPressed: () async {
-                          // 체크는 '적용'할 때만 반영한다. 취소하면서 끄는 것은
-                          // 뜻이 애매하다.
-                          if (_skipNext) {
-                            store.settings.previewBeforeApply = false;
-                            await store.persistSettings();
-                          }
-                          if (context.mounted) Navigator.pop(context, true);
-                        },
-                        child: Text(l.apply, style: const TextStyle(fontWeight: FontWeight.w700))),
+                      onPressed: () async {
+                        // 체크는 '적용'할 때만 반영한다. 취소하면서 끄는 것은
+                        // 뜻이 애매하다.
+                        if (_skipNext) {
+                          store.settings.previewBeforeApply = false;
+                          await store.persistSettings();
+                        }
+                        if (context.mounted) Navigator.pop(context, true);
+                      },
+                      child: Text(
+                        l.apply,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -10157,11 +11305,11 @@ class _PreviewScreenState extends State<PreviewScreen> {
 /// 화면은 이걸 부르기만 하면 된다 — 규칙을 옮겨 적는 일이 없어야
 /// 옮겨 적기를 잊는 일도 없어진다.
 Widget narrowBody(BuildContext context, Widget child) => Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
-        child: child,
-      ),
-    );
+  child: ConstrainedBox(
+    constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
+    child: child,
+  ),
+);
 
 class TrashScreen extends StatefulWidget {
   const TrashScreen({super.key});
@@ -10187,11 +11335,13 @@ class _TrashScreenState extends State<TrashScreen> {
           if (items.isNotEmpty)
             TextButton(
               onPressed: () async {
-                final ok = await confirmDialog(context,
-                    title: L10n.of(context).trashEmptyAll,
-                    body: L10n.of(context).trashEmptyConfirm,
-                    okLabel: L10n.of(context).delete,
-                    destructive: true);
+                final ok = await confirmDialog(
+                  context,
+                  title: L10n.of(context).trashEmptyAll,
+                  body: L10n.of(context).trashEmptyConfirm,
+                  okLabel: L10n.of(context).delete,
+                  destructive: true,
+                );
                 if (ok) {
                   store.emptyTrash();
                   if (mounted) setState(() {});
@@ -10204,115 +11354,132 @@ class _TrashScreenState extends State<TrashScreen> {
       body: narrowBody(
         context,
         items.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.delete_outline, size: 46, color: c.sub),
-                    const SizedBox(height: 12),
-                    Text(l.trashEmpty,
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.delete_outline, size: 46, color: c.sub),
+                      const SizedBox(height: 12),
+                      Text(
+                        l.trashEmpty,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: c.guideInk)),
-                  ],
+                        style: TextStyle(fontSize: 16, color: c.guideInk),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          : ListView.separated(
-              itemCount: items.length,
-              separatorBuilder: (_, __) => Divider(height: 1, color: c.line),
-              itemBuilder: (_, i) {
-                final e = items[i];
-                final j = (e['note'] as Map).cast<String, dynamic>();
-                final at = (e['deletedAt'] ?? 0) as int;
-                final title = ((j['title'] ?? '') as String).trim();
-                final body = ((j['body'] ?? '') as String).trim();
-                // 2026-08-18 소유자 지시 — "휴지통 안에 리스트에서 내용을
-                // 3줄 정도 보여줘. 그래야 무슨 노트인지 알 것 같애."
-                //
-                // 제목 한 줄과 '며칠 남음'만 있었다. 이 앱의 제목은 대개
-                // 앱이 지어 준 것이라, 지우고 나서 다시 볼 때 그 한 줄로는
-                // 어느 것이었는지 못 알아본다. **되살릴지 말지 정하는
-                // 자리에서 정작 무엇인지가 안 보였다.**
-                //
-                // 빈 줄을 걸러 낸 뒤 한 문단으로 이어 붙이고 세 줄에서
-                // 자른다. 줄바꿈을 그대로 두면 짧은 줄 셋으로 석 줄을 다
-                // 써 버려서 보이는 글자가 오히려 줄어든다.
-                // 잠긴 메모를 지우면 휴지통에서 본문이 보였다. 지운 것은
-                // 아직 지워진 게 아니고 되살릴 수 있는 것이라, 여기서 새면
-                // 잠금이 그대로 뚫린다.
-                final locked = (j['locked'] ?? false) as bool;
-                final lines = locked
-                    ? const <String>[]
-                    : body
-                        .split('\n')
-                        .map((x) => x.trim())
-                        .where((x) => x.isNotEmpty)
-                        .toList();
-                final shown =
-                    title.isNotEmpty ? title : (lines.isEmpty ? l.untitled : lines.first);
-                // 제목이 없어 첫 줄을 제목으로 쓴 판에서는 그 줄을 뺀다.
-                // 같은 문장이 위아래로 두 번 나오면 두 줄을 버리는 셈이다.
-                final preview = locked
-                    ? l.noteLocked
-                    : (title.isNotEmpty ? lines : lines.skip(1)).join('  ');
-                final left = trashDaysLeft(deletedAt: at, nowMs: now);
-                return ListTile(
-                  isThreeLine: true,
-                  titleAlignment: ListTileTitleAlignment.top,
-                  contentPadding:
-                      const EdgeInsets.fromLTRB(16, 10, 8, 10),
-                  title: Text(shown,
+              )
+            : ListView.separated(
+                itemCount: items.length,
+                separatorBuilder: (_, __) => Divider(height: 1, color: c.line),
+                itemBuilder: (_, i) {
+                  final e = items[i];
+                  final j = (e['note'] as Map).cast<String, dynamic>();
+                  final at = (e['deletedAt'] ?? 0) as int;
+                  final title = ((j['title'] ?? '') as String).trim();
+                  final body = ((j['body'] ?? '') as String).trim();
+                  // 2026-08-18 소유자 지시 — "휴지통 안에 리스트에서 내용을
+                  // 3줄 정도 보여줘. 그래야 무슨 노트인지 알 것 같애."
+                  //
+                  // 제목 한 줄과 '며칠 남음'만 있었다. 이 앱의 제목은 대개
+                  // 앱이 지어 준 것이라, 지우고 나서 다시 볼 때 그 한 줄로는
+                  // 어느 것이었는지 못 알아본다. **되살릴지 말지 정하는
+                  // 자리에서 정작 무엇인지가 안 보였다.**
+                  //
+                  // 빈 줄을 걸러 낸 뒤 한 문단으로 이어 붙이고 세 줄에서
+                  // 자른다. 줄바꿈을 그대로 두면 짧은 줄 셋으로 석 줄을 다
+                  // 써 버려서 보이는 글자가 오히려 줄어든다.
+                  // 잠긴 메모를 지우면 휴지통에서 본문이 보였다. 지운 것은
+                  // 아직 지워진 게 아니고 되살릴 수 있는 것이라, 여기서 새면
+                  // 잠금이 그대로 뚫린다.
+                  final locked = (j['locked'] ?? false) as bool;
+                  final lines = locked
+                      ? const <String>[]
+                      : body
+                            .split('\n')
+                            .map((x) => x.trim())
+                            .where((x) => x.isNotEmpty)
+                            .toList();
+                  final shown = title.isNotEmpty
+                      ? title
+                      : (lines.isEmpty ? l.untitled : lines.first);
+                  // 제목이 없어 첫 줄을 제목으로 쓴 판에서는 그 줄을 뺀다.
+                  // 같은 문장이 위아래로 두 번 나오면 두 줄을 버리는 셈이다.
+                  final preview = locked
+                      ? l.noteLocked
+                      : (title.isNotEmpty ? lines : lines.skip(1)).join('  ');
+                  final left = trashDaysLeft(deletedAt: at, nowMs: now);
+                  return ListTile(
+                    isThreeLine: true,
+                    titleAlignment: ListTileTitleAlignment.top,
+                    contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+                    title: Text(
+                      shown,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          height: 1.3,
-                          letterSpacing: -0.2)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (preview.isNotEmpty) ...[
-                        const SizedBox(height: 3),
-                        Text(preview,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (preview.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            preview,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: 14, height: 1.42, color: c.sub)),
+                              fontSize: 14,
+                              height: 1.42,
+                              color: c.sub,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 5),
+                        Text(
+                          l.trashDaysLeftLabel(left),
+                          style: TextStyle(fontSize: 12.5, color: c.sub),
+                        ),
                       ],
-                      const SizedBox(height: 5),
-                      Text(l.trashDaysLeftLabel(left),
-                          style: TextStyle(fontSize: 12.5, color: c.sub)),
-                    ],
-                  ),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    TextButton(
-                      onPressed: () {
-                        store.restoreNote(j['id'] as String);
-                        setState(() {});
-                        _toast(context, l.trashRestored);
-                      },
-                      child: Text(l.trashRestore),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.delete_forever_outlined, color: c.danger),
-                      tooltip: l.trashDeleteNow,
-                      onPressed: () {
-                        store.purgeFromTrash(j['id'] as String);
-                        setState(() {});
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            store.restoreNote(j['id'] as String);
+                            setState(() {});
+                            _toast(context, l.trashRestored);
+                          },
+                          child: Text(l.trashRestore),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_forever_outlined,
+                            color: c.danger,
+                          ),
+                          tooltip: l.trashDeleteNow,
+                          onPressed: () {
+                            store.purgeFromTrash(j['id'] as String);
+                            setState(() {});
+                          },
+                        ),
+                      ],
                     ),
-                  ]),
-                );
-              },
-            ),
+                  );
+                },
+              ),
       ),
     );
   }
 }
-
 
 /// 폴더 관리 — 이름을 바꾸고, 지우고, 더하고, 차례를 바꾼다.
 ///
@@ -10370,10 +11537,13 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l.cancel),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, ctl.text),
-              child: Text(l.done)),
+            onPressed: () => Navigator.pop(ctx, ctl.text),
+            child: Text(l.done),
+          ),
         ],
       ),
     );
@@ -10382,8 +11552,9 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
     final name = normalizeFolder(got);
     if (name.isEmpty) return null;
     // 자기 이름 그대로는 겹침이 아니다(대소문자만 고친 경우).
-    final others =
-        taken.where((e) => e.toLowerCase() != initial.toLowerCase()).toList();
+    final others = taken
+        .where((e) => e.toLowerCase() != initial.toLowerCase())
+        .toList();
     if (!canAddFolder(name, others)) {
       _toast(context, l.folderDupName);
       return null;
@@ -10417,124 +11588,160 @@ class _FolderManageScreenState extends State<FolderManageScreen> {
       body: narrowBody(
         context,
         names.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.folder_outlined, size: 46, color: c.sub),
-                  const SizedBox(height: 12),
-                  Text(l.folderManageEmpty,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: c.guideInk)),
-                ]),
-              ),
-            )
-          : Column(children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(l.folderReorderHint,
-                      style: TextStyle(fontSize: 13, color: c.sub)),
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.folder_outlined, size: 46, color: c.sub),
+                      const SizedBox(height: 12),
+                      Text(
+                        l.folderManageEmpty,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: c.guideInk),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: ReorderableListView.builder(
-                  padding: scrollPad(context),
-                  itemCount: names.length,
-                  onReorder: (from, to) async {
-                    HapticFeedback.selectionClick();
-                    await _pin(reorderFolders(names, from, to));
-                    if (mounted) setState(() {});
-                  },
-                  itemBuilder: (ctx, i) {
-                    final f = names[i];
-                    final n = _count(f);
-                    return ListTile(
-                      key: ValueKey('folder-$f'),
-                      leading: Icon(Icons.folder_outlined, color: c.sub),
-                      title: Text(f,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
-                      subtitle: Text(l.folderNoteCount(n),
-                          style: TextStyle(fontSize: 13, color: c.sub)),
-                      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                        IconButton(
-                          icon: Icon(CupertinoIcons.pencil, color: c.sub),
-                          tooltip: l.folderRename,
-                          onPressed: () async {
-                            final name = await _ask(l.folderRename, f, names);
-                            if (name == null || name == f) return;
-                            final now =
-                                DateTime.now().millisecondsSinceEpoch;
-                            for (final note in store.notes) {
-                              if (normalizeFolder(note.folder).toLowerCase() ==
-                                  f.toLowerCase()) {
-                                note.folder = name;
-                                // 안 올리면 아이클라우드의 옛 판이 이긴다.
-                                note.updatedAt = now;
-                              }
-                            }
-                            if (s.filterFolder.toLowerCase() ==
-                                f.toLowerCase()) {
-                              s.filterFolder = name;
-                            }
-                            await _pin([
-                              for (final x in names) x == f ? name : x,
-                            ]);
-                            await store.persist();
-                            if (!mounted) return;
-                            setState(() {});
-                            _toast(context, l.folderRenamed);
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(CupertinoIcons.trash, color: c.danger),
-                          tooltip: l.folderDelete,
-                          onPressed: () async {
-                            final ok = await confirmDialog(context,
-                                title: l.folderDelete,
-                                body: l.folderDeleteBody(f, n),
-                                okLabel: l.delete,
-                                destructive: true);
-                            if (!ok || !mounted) return;
-                            // 폴더만 떼고 노트는 그대로 둔다.
-                            final now =
-                                DateTime.now().millisecondsSinceEpoch;
-                            for (final note in store.notes) {
-                              if (normalizeFolder(note.folder).toLowerCase() ==
-                                  f.toLowerCase()) {
-                                note.folder = '';
-                                // 안 올리면 아이클라우드의 옛 판이 이긴다.
-                                note.updatedAt = now;
-                              }
-                            }
-                            if (s.filterFolder.toLowerCase() ==
-                                f.toLowerCase()) {
-                              s.filterFolder = '';
-                            }
-                            await _pin(names.where((x) => x != f).toList());
-                            await store.persist();
-                            if (!mounted) return;
-                            setState(() {});
-                            _toast(context, l.folderDeleted);
-                          },
-                        ),
-                        ReorderableDragStartListener(
-                          index: i,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 2, right: 6),
-                            child: Icon(Icons.drag_handle, color: c.sub),
+              )
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        l.folderReorderHint,
+                        style: TextStyle(fontSize: 13, color: c.sub),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ReorderableListView.builder(
+                      padding: scrollPad(context),
+                      itemCount: names.length,
+                      onReorder: (from, to) async {
+                        HapticFeedback.selectionClick();
+                        await _pin(reorderFolders(names, from, to));
+                        if (mounted) setState(() {});
+                      },
+                      itemBuilder: (ctx, i) {
+                        final f = names[i];
+                        final n = _count(f);
+                        return ListTile(
+                          key: ValueKey('folder-$f'),
+                          leading: Icon(Icons.folder_outlined, color: c.sub),
+                          title: Text(
+                            f,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ]),
-                    );
-                  },
-                ),
+                          subtitle: Text(
+                            l.folderNoteCount(n),
+                            style: TextStyle(fontSize: 13, color: c.sub),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(CupertinoIcons.pencil, color: c.sub),
+                                tooltip: l.folderRename,
+                                onPressed: () async {
+                                  final name = await _ask(
+                                    l.folderRename,
+                                    f,
+                                    names,
+                                  );
+                                  if (name == null || name == f) return;
+                                  final now =
+                                      DateTime.now().millisecondsSinceEpoch;
+                                  for (final note in store.notes) {
+                                    if (normalizeFolder(
+                                          note.folder,
+                                        ).toLowerCase() ==
+                                        f.toLowerCase()) {
+                                      note.folder = name;
+                                      // 안 올리면 아이클라우드의 옛 판이 이긴다.
+                                      note.updatedAt = now;
+                                    }
+                                  }
+                                  if (s.filterFolder.toLowerCase() ==
+                                      f.toLowerCase()) {
+                                    s.filterFolder = name;
+                                  }
+                                  await _pin([
+                                    for (final x in names) x == f ? name : x,
+                                  ]);
+                                  await store.persist();
+                                  if (!mounted) return;
+                                  setState(() {});
+                                  _toast(context, l.folderRenamed);
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  CupertinoIcons.trash,
+                                  color: c.danger,
+                                ),
+                                tooltip: l.folderDelete,
+                                onPressed: () async {
+                                  final ok = await confirmDialog(
+                                    context,
+                                    title: l.folderDelete,
+                                    body: l.folderDeleteBody(f, n),
+                                    okLabel: l.delete,
+                                    destructive: true,
+                                  );
+                                  if (!ok || !mounted) return;
+                                  // 폴더만 떼고 노트는 그대로 둔다.
+                                  final now =
+                                      DateTime.now().millisecondsSinceEpoch;
+                                  for (final note in store.notes) {
+                                    if (normalizeFolder(
+                                          note.folder,
+                                        ).toLowerCase() ==
+                                        f.toLowerCase()) {
+                                      note.folder = '';
+                                      // 안 올리면 아이클라우드의 옛 판이 이긴다.
+                                      note.updatedAt = now;
+                                    }
+                                  }
+                                  if (s.filterFolder.toLowerCase() ==
+                                      f.toLowerCase()) {
+                                    s.filterFolder = '';
+                                  }
+                                  await _pin(
+                                    names.where((x) => x != f).toList(),
+                                  );
+                                  await store.persist();
+                                  if (!mounted) return;
+                                  setState(() {});
+                                  _toast(context, l.folderDeleted);
+                                },
+                              ),
+                              ReorderableDragStartListener(
+                                index: i,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 2,
+                                    right: 6,
+                                  ),
+                                  child: Icon(Icons.drag_handle, color: c.sub),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ]),
       ),
     );
   }
@@ -10651,10 +11858,9 @@ class _ConstellationScreenState extends State<ConstellationScreen> {
   }
 
   void _compute() {
-    final all = Store.instance.notes
-        .where((n) => n.body.trim().isNotEmpty)
-        .toList()
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final all =
+        Store.instance.notes.where((n) => n.body.trim().isNotEmpty).toList()
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     final notes = all.take(kMax).toList();
     if (notes.length < kMin) {
       setState(() {
@@ -10663,9 +11869,7 @@ class _ConstellationScreenState extends State<ConstellationScreen> {
       });
       return;
     }
-    final docs = [
-      for (final n in notes) countWords('${n.title} ${n.body}'),
-    ];
+    final docs = [for (final n in notes) countWords('${n.title} ${n.body}')];
     final df = docFreq(docs);
     final vecs = [for (final d in docs) vectorOf(d, df, docs.length)];
     final tags = [for (final n in notes) n.tags.toSet()];
@@ -10682,7 +11886,7 @@ class _ConstellationScreenState extends State<ConstellationScreen> {
     }
     final lone = [
       for (var i = 0; i < notes.length; i++)
-        if (!tied.contains(i)) i
+        if (!tied.contains(i)) i,
     ];
     for (var k = 0; k < lone.length; k++) {
       final a = k / (lone.isEmpty ? 1 : lone.length) * math.pi * 2;
@@ -10704,7 +11908,10 @@ class _ConstellationScreenState extends State<ConstellationScreen> {
                 ? n.body.trim().split('\n').first
                 : n.title,
             source: n.source,
-            size: (math.log(1 + n.body.length) / math.log(20000)).clamp(0.0, 1.0),
+            size: (math.log(1 + n.body.length) / math.log(20000)).clamp(
+              0.0,
+              1.0,
+            ),
             fresh: (1 - (now - n.updatedAt) / (month * 6)).clamp(0.15, 1.0),
           ),
       ];
@@ -10748,49 +11955,57 @@ class _ConstellationScreenState extends State<ConstellationScreen> {
                 preferredSize: const Size.fromHeight(24),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 7),
-                  child: Text(l.skyCounts(_stars.length, _links.length),
-                      style: TextStyle(
-                          fontSize: 12.5,
-                          color: Colors.white.withValues(alpha: 0.55))),
+                  child: Text(
+                    l.skyCounts(_stars.length, _links.length),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: Colors.white.withValues(alpha: 0.55),
+                    ),
+                  ),
                 ),
               ),
       ),
       body: !_ready
           ? const Center(child: CircularProgressIndicator())
           : _notes.length < kMin
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.auto_awesome_outlined,
-                            size: 40,
-                            color: Colors.white.withValues(alpha: 0.35)),
-                        const SizedBox(height: 14),
-                        Text(l.skyEmpty(kMin - _notes.length),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 15,
-                                height: 1.5,
-                                color: Colors.white.withValues(alpha: 0.7))),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_outlined,
+                      size: 40,
+                      color: Colors.white.withValues(alpha: 0.35),
                     ),
-                  ),
-                )
-              : ConstellationView(
-                  stars: _stars,
-                  points: _pts,
-                  links: _links,
-                  colorOf: _colorOf,
-                  onOpen: (id) async {
-                    await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => EditorScreen(noteId: id)));
-                    if (mounted) setState(() {});
-                  },
+                    const SizedBox(height: 14),
+                    Text(
+                      l.skyEmpty(kMin - _notes.length),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.5,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            )
+          : ConstellationView(
+              stars: _stars,
+              points: _pts,
+              links: _links,
+              colorOf: _colorOf,
+              onOpen: (id) async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => EditorScreen(noteId: id)),
+                );
+                if (mounted) setState(() {});
+              },
+            ),
     );
   }
 }
@@ -10831,34 +12046,40 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
     final topTags = tags.take(14).toList();
 
     Widget chip(String label, bool on, VoidCallback tap) => Padding(
-          padding: const EdgeInsets.only(right: 8, bottom: 8),
-          child: ChoiceChip(
-            label: Text(label),
-            selected: on,
-            onSelected: (_) {
-              HapticFeedback.selectionClick();
-              tap();
-            },
-            showCheckmark: false,
-            selectedColor: kAccentFill,
-            labelStyle: TextStyle(
-                color: on ? kOnAccentFill : c.guideInk,
-                fontWeight: on ? FontWeight.w700 : FontWeight.w500),
-          ),
-        );
+      padding: const EdgeInsets.only(right: 8, bottom: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: on,
+        onSelected: (_) {
+          HapticFeedback.selectionClick();
+          tap();
+        },
+        showCheckmark: false,
+        selectedColor: kAccentFill,
+        labelStyle: TextStyle(
+          color: on ? kOnAccentFill : c.guideInk,
+          fontWeight: on ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+    );
 
     Widget section(String title, List<Widget> chips) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 14, bottom: 8),
-              child: Text(title,
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w700, color: c.sub)),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 14, bottom: 8),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: c.sub,
             ),
-            Wrap(children: chips),
-          ],
-        );
+          ),
+        ),
+        Wrap(children: chips),
+      ],
+    );
 
     return SafeArea(
       top: false,
@@ -10879,64 +12100,74 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
-                      color: c.line, borderRadius: BorderRadius.circular(2)),
+                    color: c.line,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              Row(children: [
-                Expanded(
-                  child: Text(l.sortFilterTitle,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l.sortFilterTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w800)),
-                ),
-                // 2026-08-17 소유자 지시 — '초기화' 왼쪽에 붙는다.
-                //
-                // 왜 하필 여기인가: 목록을 정리하겠다고 마음먹은 사람이
-                // 제일 먼저 여는 곳이 이 시트다. 필터로 범위를 좁히고
-                // (예: 태그 하나만 남기고) 곧바로 그 범위를 통째로 지우는
-                // 흐름이 자연스럽다. 목록 화면 어딘가에 상시로 두면
-                // 평소에 안 쓰는 단추가 늘 자리를 먹는다.
-                //
-                // 여기서 지우지는 않는다. 시트를 닫고 목록으로 돌려보낼
-                // 뿐이다. 무엇이 지워지는지 눈으로 보고 고르게 해야 한다.
-                //
-                // 그래서 **빨강이 아니라 하늘색이다.**
-                //
-                // 2026-08-17 소유자 지시로 바꿨는데, 바꾸고 나니 처음부터
-                // 이게 맞았다. 빨강은 이 앱에서 '되돌릴 수 없는 일'을 뜻하는
-                // 색이고 그래서 아껴 써야 힘이 남는다. 이 단추가 하는 일은
-                // 고르기 상태로 들어가는 것뿐이다 — 아무것도 지우지 않고,
-                // 누른 뒤에 마음이 바뀌면 '삭제완료'로 그냥 나오면 된다.
-                //
-                // 위험하지 않은 것을 빨갛게 칠하면 두 가지를 잃는다. 진짜
-                // 위험한 자리(목록의 '선택 삭제', 밀어서 삭제)의 빨강이
-                // 흔해져서 안 무서워지고, 이 단추는 쓸데없이 무서워져서
-                // 손이 안 간다. 빨강은 여기서 아껴 저기서 쓴다.
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
-                  onPressed: () => Navigator.pop(context, 'pick'),
-                  child: Text(l.multiSelectStart,
+                  // 2026-08-17 소유자 지시 — '초기화' 왼쪽에 붙는다.
+                  //
+                  // 왜 하필 여기인가: 목록을 정리하겠다고 마음먹은 사람이
+                  // 제일 먼저 여는 곳이 이 시트다. 필터로 범위를 좁히고
+                  // (예: 태그 하나만 남기고) 곧바로 그 범위를 통째로 지우는
+                  // 흐름이 자연스럽다. 목록 화면 어딘가에 상시로 두면
+                  // 평소에 안 쓰는 단추가 늘 자리를 먹는다.
+                  //
+                  // 여기서 지우지는 않는다. 시트를 닫고 목록으로 돌려보낼
+                  // 뿐이다. 무엇이 지워지는지 눈으로 보고 고르게 해야 한다.
+                  //
+                  // 그래서 **빨강이 아니라 하늘색이다.**
+                  //
+                  // 2026-08-17 소유자 지시로 바꿨는데, 바꾸고 나니 처음부터
+                  // 이게 맞았다. 빨강은 이 앱에서 '되돌릴 수 없는 일'을 뜻하는
+                  // 색이고 그래서 아껴 써야 힘이 남는다. 이 단추가 하는 일은
+                  // 고르기 상태로 들어가는 것뿐이다 — 아무것도 지우지 않고,
+                  // 누른 뒤에 마음이 바뀌면 '삭제완료'로 그냥 나오면 된다.
+                  //
+                  // 위험하지 않은 것을 빨갛게 칠하면 두 가지를 잃는다. 진짜
+                  // 위험한 자리(목록의 '선택 삭제', 밀어서 삭제)의 빨강이
+                  // 흔해져서 안 무서워지고, 이 단추는 쓸데없이 무서워져서
+                  // 손이 안 간다. 빨강은 여기서 아껴 저기서 쓴다.
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () => Navigator.pop(context, 'pick'),
+                    child: Text(
+                      l.multiSelectStart,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, color: c.accent)),
-                ),
-                // '초기화'는 뺐다(2026-08-17 소유자 지시).
-                //
-                // 빼고 나서 왜 필요 없었는지가 보인다 — 이 시트의 모든 갈래에
-                // 이미 '전체' 칩이 하나씩 있다. 출처를 풀려면 출처의 '전체',
-                // 태그를 풀려면 태그의 '전체'를 누르면 된다. 정렬도 세 개
-                // 가운데 하나라 언제든 '최근 수정순'으로 돌아간다.
-                //
-                // 즉 '초기화'는 없는 일을 하는 단추가 아니라 **이미 있는 길을
-                // 한 번 더 낸 단추**였다. 그런 단추는 편의가 아니라 짐이다.
-                // 화면에 놓인 것이 하나 늘 때마다 사람은 그것이 무엇인지
-                // 한 번 더 읽어야 하고, 여기서는 그 값을 못 한다.
-              ]),
+                      style: TextStyle(fontSize: 13, color: c.accent),
+                    ),
+                  ),
+                  // '초기화'는 뺐다(2026-08-17 소유자 지시).
+                  //
+                  // 빼고 나서 왜 필요 없었는지가 보인다 — 이 시트의 모든 갈래에
+                  // 이미 '전체' 칩이 하나씩 있다. 출처를 풀려면 출처의 '전체',
+                  // 태그를 풀려면 태그의 '전체'를 누르면 된다. 정렬도 세 개
+                  // 가운데 하나라 언제든 '최근 수정순'으로 돌아간다.
+                  //
+                  // 즉 '초기화'는 없는 일을 하는 단추가 아니라 **이미 있는 길을
+                  // 한 번 더 낸 단추**였다. 그런 단추는 편의가 아니라 짐이다.
+                  // 화면에 놓인 것이 하나 늘 때마다 사람은 그것이 무엇인지
+                  // 한 번 더 읽어야 하고, 여기서는 그 값을 못 한다.
+                ],
+              ),
               section(l.sortLabel, [
                 chip(l.sortUpdated, s.sortMode == 'updated', () {
                   s.sortMode = 'updated';
@@ -11122,7 +12353,9 @@ class _SyncStalledBarState extends State<SyncStalledBar> {
     setState(() => _busy = true);
     // 계정이 떨어졌으면 로그인부터, 허락만 끊겼으면 허락만.
     final auth = DriveAuth.instance;
-    final ok = auth.signedIn ? await auth.authorizeDrive() : await auth.signIn();
+    final ok = auth.signedIn
+        ? await auth.authorizeDrive()
+        : await auth.signIn();
     if (ok) {
       await applySyncBackend();
       unawaited(ICloudSync.instance.syncNow());
@@ -11135,8 +12368,11 @@ class _SyncStalledBarState extends State<SyncStalledBar> {
     final l = L10n.of(context);
     final sync = ICloudSync.instance;
     return ListenableBuilder(
-      listenable: Listenable.merge(
-          [sync.state, sync.logRevision, DriveAuth.instance.revision]),
+      listenable: Listenable.merge([
+        sync.state,
+        sync.logRevision,
+        DriveAuth.instance.revision,
+      ]),
       builder: (_, __) {
         if (!showAuthBar(
           gdrive: Store.instance.settings.syncBackend == 'gdrive',
@@ -11156,22 +12392,30 @@ class _SyncStalledBarState extends State<SyncStalledBar> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 1),
-                child: Icon(Icons.cloud_off_outlined, size: 18, color: c.warnInk),
+                child: Icon(
+                  Icons.cloud_off_outlined,
+                  size: 18,
+                  color: c.warnInk,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l.syncStalledTitle,
-                        style: TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                            color: c.warnInk)),
+                    Text(
+                      l.syncStalledTitle,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: c.warnInk,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(l.syncStalledSub,
-                        style: TextStyle(
-                            fontSize: 13, height: 1.4, color: c.sub)),
+                    Text(
+                      l.syncStalledSub,
+                      style: TextStyle(fontSize: 13, height: 1.4, color: c.sub),
+                    ),
                   ],
                 ),
               ),
@@ -11180,11 +12424,14 @@ class _SyncStalledBarState extends State<SyncStalledBar> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2))
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : TextButton(
                       onPressed: _fix,
-                      child: Text(l.syncStalledFix,
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      child: Text(
+                        l.syncStalledFix,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
             ],
           ),
@@ -11215,51 +12462,63 @@ class SyncBusyBanner extends StatelessWidget {
         return Container(
           width: double.infinity,
           color: c.accent.withValues(alpha: 0.10),
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 11),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: c.accent),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 11),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: c.accent,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l.syncFirstTitle,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l.syncFirstTitle,
                             style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: c.accent)),
-                        const SizedBox(height: 3),
-                        Text(l.syncFirstSub,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: c.accent,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            l.syncFirstSub,
                             style: TextStyle(
-                                fontSize: 13.5, height: 1.4, color: c.sub)),
-                      ],
+                              fontSize: 13.5,
+                              height: 1.4,
+                              color: c.sub,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            // 아래 실 한 줄. 동그라미만으로도 되지만, 띠 전체가 살아
-            // 있다는 것을 이 줄이 말한다.
-            SizedBox(
-              height: 2,
-              child: LinearProgressIndicator(
-                backgroundColor: c.accent.withValues(alpha: 0.15),
-                color: c.accent,
+              // 아래 실 한 줄. 동그라미만으로도 되지만, 띠 전체가 살아
+              // 있다는 것을 이 줄이 말한다.
+              SizedBox(
+                height: 2,
+                child: LinearProgressIndicator(
+                  backgroundColor: c.accent.withValues(alpha: 0.15),
+                  color: c.accent,
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         );
       },
     );
@@ -11330,34 +12589,40 @@ class _SyncNapBannerState extends State<SyncNapBanner> {
               onTap: _busy ? null : (wake ? _wake : _sheet),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 13, 14, 13),
-                child: Row(children: [
-                  Icon(
-                    wake
-                        ? Icons.lock_clock_outlined
-                        : Icons.cloud_off_outlined,
-                    size: 22,
-                    color: ink,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      wake ? l.syncStateExpiredGdrive : l.syncStateOffGdrive,
-                      style: TextStyle(
+                child: Row(
+                  children: [
+                    Icon(
+                      wake
+                          ? Icons.lock_clock_outlined
+                          : Icons.cloud_off_outlined,
+                      size: 22,
+                      color: ink,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        wake ? l.syncStateExpiredGdrive : l.syncStateOffGdrive,
+                        style: TextStyle(
                           fontSize: 14.5,
                           height: 1.35,
                           fontWeight: FontWeight.w700,
-                          color: ink),
+                          color: ink,
+                        ),
+                      ),
                     ),
-                  ),
-                  if (_busy)
-                    SizedBox(
+                    if (_busy)
+                      SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: ink))
-                  else
-                    Icon(Icons.chevron_right, size: 22, color: ink),
-                ]),
+                          strokeWidth: 2,
+                          color: ink,
+                        ),
+                      )
+                    else
+                      Icon(Icons.chevron_right, size: 22, color: ink),
+                  ],
+                ),
               ),
             ),
           );
@@ -11421,9 +12686,10 @@ class SyncFreshLabel extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-              fontSize: size,
-              fontWeight: FontWeight.w500,
-              color: context.c.sub),
+            fontSize: size,
+            fontWeight: FontWeight.w500,
+            color: context.c.sub,
+          ),
         );
       },
     );
@@ -11468,9 +12734,10 @@ class _SyncNowButtonState extends State<SyncNowButton> {
     unawaited(HapticFeedback.lightImpact());
     final sw = Stopwatch()..start();
     try {
-      await ICloudSync.instance
-          .recheck()
-          .timeout(const Duration(seconds: 8), onTimeout: () {});
+      await ICloudSync.instance.recheck().timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {},
+      );
     } catch (_) {
       // 실패해도 단추는 조용히 멈춘다. 무슨 일인지는 설정의 동기화 줄이
       // 말한다 — 목록 머리에서 사람을 붙잡을 일이 아니다.
@@ -11497,7 +12764,9 @@ class _SyncNowButtonState extends State<SyncNowButton> {
               width: size - 4,
               height: size - 4,
               child: CircularProgressIndicator(
-                  strokeWidth: 2, color: context.c.accent),
+                strokeWidth: 2,
+                color: context.c.accent,
+              ),
             )
           : Icon(Icons.cloud_sync_outlined, size: size),
       onPressed: _spin ? null : () => unawaited(_go()),
@@ -11531,8 +12800,10 @@ class SyncLogScreen extends StatelessWidget {
       backgroundColor: context.c.bg,
       appBar: AppBar(
         backgroundColor: context.c.bg,
-        title: Text(l.syncLogTitle,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        title: Text(
+          l.syncLogTitle,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        ),
       ),
       body: narrowBody(
         context,
@@ -11546,11 +12817,19 @@ class SyncLogScreen extends StatelessWidget {
               padding: scrollPad(context, top: 10),
               children: [
                 _card(context, [
-                  _line(context, l.syncLogLastUp(up == null ? l.syncLogNever : _short(up)),
-                      strong: up != null),
+                  _line(
+                    context,
+                    l.syncLogLastUp(up == null ? l.syncLogNever : _short(up)),
+                    strong: up != null,
+                  ),
                   _sep(context),
-                  _line(context, l.syncLogLastDown(down == null ? l.syncLogNever : _short(down)),
-                      strong: down != null),
+                  _line(
+                    context,
+                    l.syncLogLastDown(
+                      down == null ? l.syncLogNever : _short(down),
+                    ),
+                    strong: down != null,
+                  ),
                 ]),
                 const SizedBox(height: 18),
                 if (log.isEmpty)
@@ -11564,9 +12843,14 @@ class SyncLogScreen extends StatelessWidget {
                   ]),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 14, 32, 8),
-                  child: Text(l.syncLogNote,
-                      style: TextStyle(
-                          fontSize: 13.5, height: 1.45, color: context.c.sub)),
+                  child: Text(
+                    l.syncLogNote,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      height: 1.45,
+                      color: context.c.sub,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -11585,50 +12869,62 @@ class SyncLogScreen extends StatelessWidget {
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
-      child: Row(children: [
-        Icon(
+      child: Row(
+        children: [
+          Icon(
             e.ok
                 ? (e.up > 0 && e.down > 0
-                    ? Icons.swap_vert
-                    : e.up > 0
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward)
+                      ? Icons.swap_vert
+                      : e.up > 0
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward)
                 : Icons.error_outline,
             size: 18,
-            color: e.ok ? context.c.accent : context.c.sub),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(_stamp(e.atMs),
+            color: e.ok ? context.c.accent : context.c.sub,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _stamp(e.atMs),
               style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w600,
-                  color: context.c.guideInk)),
-        ),
-        Text(parts.join(' · '),
-            style: TextStyle(fontSize: 13.5, color: context.c.sub)),
-      ]),
+                fontSize: 14.5,
+                fontWeight: FontWeight.w600,
+                color: context.c.guideInk,
+              ),
+            ),
+          ),
+          Text(
+            parts.join(' · '),
+            style: TextStyle(fontSize: 13.5, color: context.c.sub),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _line(BuildContext context, String t, {bool strong = false}) => Padding(
+  Widget _line(BuildContext context, String t, {bool strong = false}) =>
+      Padding(
         padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-        child: Text(t,
-            style: TextStyle(
-                fontSize: 15,
-                fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
-                color: strong ? context.c.guideInk : context.c.sub)),
-      );
-
-  Widget _card(BuildContext context, List<Widget> children) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Material(
-            color: context.c.panel,
-            child: Column(children: children),
+        child: Text(
+          t,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
+            color: strong ? context.c.guideInk : context.c.sub,
           ),
         ),
       );
+
+  Widget _card(BuildContext context, List<Widget> children) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: context.c.panel,
+        child: Column(children: children),
+      ),
+    ),
+  );
 
   Widget _sep(BuildContext context) =>
       Divider(height: 1, indent: 16, color: context.c.line);
@@ -11891,48 +13187,72 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 18),
                   decoration: BoxDecoration(
-                      color: c.line, borderRadius: BorderRadius.circular(2)),
+                    color: c.line,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               Center(
                 child: CircleAvatar(
                   radius: 28,
                   backgroundColor: c.infoBg,
-                  child: Icon(Icons.cloud_off_outlined, size: 30, color: c.accent),
+                  child: Icon(
+                    Icons.cloud_off_outlined,
+                    size: 30,
+                    color: c.accent,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
-              Text(_gdrive ? l.syncHelpTitleGdrive : l.syncHelpTitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
+              Text(
+                _gdrive ? l.syncHelpTitleGdrive : l.syncHelpTitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 14),
               const SizedBox(height: 12),
               // 무엇이 막고 있는지 먼저. 절차는 그다음이다.
-              Builder(builder: (_) {
-                final d = _diagnosis(l);
-                return Container(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                  decoration: BoxDecoration(
-                    color: c.infoBg,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(children: [
-                    Icon(d.$2, size: 20, color: c.accent),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(d.$1,
-                          style: TextStyle(
+              Builder(
+                builder: (_) {
+                  final d = _diagnosis(l);
+                  return Container(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                    decoration: BoxDecoration(
+                      color: c.infoBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(d.$2, size: 20, color: c.accent),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            d.$1,
+                            style: TextStyle(
                               fontSize: 15,
                               height: 1.4,
                               fontWeight: FontWeight.w600,
-                              color: c.accent)),
+                              color: c.accent,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ]),
-                );
-              }),
+                  );
+                },
+              ),
               const SizedBox(height: 14),
-              Text(_gdrive ? l.syncHelpStepsGdrive : l.syncHelpSteps,
-                  style: TextStyle(fontSize: 15.5, height: 1.75, color: c.guideInk)),
+              Text(
+                _gdrive ? l.syncHelpStepsGdrive : l.syncHelpSteps,
+                style: TextStyle(
+                  fontSize: 15.5,
+                  height: 1.75,
+                  color: c.guideInk,
+                ),
+              ),
               const SizedBox(height: 16),
               // 웹은 두 걸음이다. 구글이 그린 단추로 계정을 고르고,
               // 그다음 우리 단추로 드라이브 권한을 받는다. 권한 창은
@@ -11945,39 +13265,45 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13)),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
                   ),
                   onPressed: _checking
                       ? null
                       : (_gdrive ? (kIsWeb ? _allowDrive : _googleIn) : _open),
                   child: Text(
-                      _gdrive
-                          ? (kIsWeb ? l.syncAllowDrive : l.syncSignInGoogle)
-                          : l.syncOpenSettings,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                    _gdrive
+                        ? (kIsWeb ? l.syncAllowDrive : l.syncSignInGoogle)
+                        : l.syncOpenSettings,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               const SizedBox(height: 9),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
                 ),
                 onPressed: _checking ? null : _recheck,
                 child: _checking
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : Text(l.syncRecheck),
               ),
               // 버튼 이름만 보고는 무슨 일이 일어나는지 알 수 없다.
               // 눌렀을 때 실제로 하는 일을 그대로 적는다.
               const SizedBox(height: 6),
               if (!_gdrive)
-                Text(l.syncRecheckWhat,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, height: 1.4, color: c.sub)),
+                Text(
+                  l.syncRecheckWhat,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, height: 1.4, color: c.sub),
+                ),
               // 눌렀으면 반드시 무언가 대답한다.
               if (_said != null) ...[
                 const SizedBox(height: 12),
@@ -11987,18 +13313,26 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
                     color: _saidBad ? c.warnBg : c.infoBg,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(children: [
-                    Icon(_saidBad ? Icons.info_outline : Icons.check_circle,
-                        size: 19, color: _saidBad ? c.warnInk : c.accent),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(_said!,
+                  child: Row(
+                    children: [
+                      Icon(
+                        _saidBad ? Icons.info_outline : Icons.check_circle,
+                        size: 19,
+                        color: _saidBad ? c.warnInk : c.accent,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _said!,
                           style: TextStyle(
-                              fontSize: 14.5,
-                              height: 1.4,
-                              color: _saidBad ? c.warnInk : c.accent)),
-                    ),
-                  ]),
+                            fontSize: 14.5,
+                            height: 1.4,
+                            color: _saidBad ? c.warnInk : c.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
               // 2026-08-17 — 여기 '사실 한 줄'을 잠깐 뒀다가 내렸다.
@@ -12013,9 +13347,11 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
               // 제 몫을 했으니 내린다. 값 자체(ICloudSync.facts)는 남겨
               // 둔다 — 다음에 또 막히면 한 줄만 도로 붙이면 된다.
               const SizedBox(height: 12),
-              Text(_gdrive ? l.syncHelpNoteGdrive : l.syncHelpNote,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13.5, height: 1.45, color: c.sub)),
+              Text(
+                _gdrive ? l.syncHelpNoteGdrive : l.syncHelpNote,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13.5, height: 1.45, color: c.sub),
+              ),
             ],
           ),
         ),
@@ -12053,8 +13389,10 @@ class _SyncHelpSheetState extends State<SyncHelpSheet> {
 // '판매 준비 완료'가 되어야 실제 값이 내려온다. 아니면 화면에 값 대신
 // 점 세 개만 남는다(디버그 빌드에서는 kDevUsdPrice 가 자리를 채운다).
 // ignore: prefer_const_declarations
-final bool kPaidTierLive =
-    const bool.fromEnvironment('PAID_TIER', defaultValue: true);
+final bool kPaidTierLive = const bool.fromEnvironment(
+  'PAID_TIER',
+  defaultValue: true,
+);
 
 /// 켜고 나면 곧장 결제 화면을 연다 — **디버그 전용**.
 ///
@@ -12122,7 +13460,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return;
     }
     _pc.nextPage(
-        duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Widget _page(IconData icon, String title, String body) {
@@ -12152,17 +13492,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Icon(icon, size: 62, color: c.accent),
           ),
           const SizedBox(height: 40),
-          Text(title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 27,
-                  height: 1.25,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.5)),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 27,
+              height: 1.25,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.5,
+            ),
+          ),
           const SizedBox(height: 16),
-          Text(body,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16.5, height: 1.6)),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16.5, height: 1.6),
+          ),
         ],
       ),
     );
@@ -12175,82 +13520,102 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final last = _i == _pages - 1;
     return Scaffold(
       body: SafeArea(
-        child: Column(children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: _close,
-              child: Text(l.onbSkip,
-                  style: TextStyle(fontSize: 15, color: c.sub)),
-            ),
-          ),
-          Expanded(
-            child: PageView(
-              controller: _pc,
-              onPageChanged: (v) => setState(() => _i = v),
-              children: [
-                _page(Icons.content_paste_go, l.onbTitle1, l.onbBody1),
-                _page(Icons.table_chart_outlined, l.onbTitle2, l.onbBody2),
-                _page(Icons.devices, l.onbTitle3, l.onbBody3),
-                _page(Icons.workspace_premium, l.onbTitle4,
-                    l.onbBody4(kTrialActiveDays)),
-              ],
-            ),
-          ),
-          // 점. 몇 장인지 알면 사람은 끝까지 넘긴다 — 끝이 안 보이면 만다.
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_pages, (k) {
-              final on = k == _i;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: on ? 22 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: on ? c.accent : c.line,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              );
-            }),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 22, 24, 14),
-            child: Column(children: [
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  onPressed: _next,
-                  child: Text(last ? l.onbStart : l.onbNext,
-                      style: const TextStyle(
-                          fontSize: 16.5, fontWeight: FontWeight.w800)),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _close,
+                child: Text(
+                  l.onbSkip,
+                  style: TextStyle(fontSize: 15, color: c.sub),
                 ),
               ),
-              // 마지막 장에서만 값 화면으로 가는 문을 연다. 그 전에 두면
-              // 기능을 보러 온 사람에게 값부터 들이미는 꼴이 된다.
-              if (last && kPaidTierLive)
-                TextButton(
-                  onPressed: () {
-                    _close();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                            builder: (_) => const PremiumScreen()));
-                  },
-                  child: Text(l.onbSeePremium,
-                      style: TextStyle(
+            ),
+            Expanded(
+              child: PageView(
+                controller: _pc,
+                onPageChanged: (v) => setState(() => _i = v),
+                children: [
+                  _page(Icons.content_paste_go, l.onbTitle1, l.onbBody1),
+                  _page(Icons.table_chart_outlined, l.onbTitle2, l.onbBody2),
+                  _page(Icons.devices, l.onbTitle3, l.onbBody3),
+                  _page(
+                    Icons.workspace_premium,
+                    l.onbTitle4,
+                    l.onbBody4(kTrialActiveDays),
+                  ),
+                ],
+              ),
+            ),
+            // 점. 몇 장인지 알면 사람은 끝까지 넘긴다 — 끝이 안 보이면 만다.
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_pages, (k) {
+                final on = k == _i;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: on ? 22 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: on ? c.accent : c.line,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 14),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: _next,
+                      child: Text(
+                        last ? l.onbStart : l.onbNext,
+                        style: const TextStyle(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 마지막 장에서만 값 화면으로 가는 문을 연다. 그 전에 두면
+                  // 기능을 보러 온 사람에게 값부터 들이미는 꼴이 된다.
+                  if (last && kPaidTierLive)
+                    TextButton(
+                      onPressed: () {
+                        _close();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                const AdFreeScope(child: PremiumScreen()),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        l.onbSeePremium,
+                        style: TextStyle(
                           fontSize: 15.5,
                           fontWeight: FontWeight.w700,
-                          color: c.accent)),
-                ),
-            ]),
-          ),
-        ]),
+                          color: c.accent,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -12322,46 +13687,56 @@ class _PremiumBanner extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-            child: Row(children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .18),
-                  borderRadius: BorderRadius.circular(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .18),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.workspace_premium,
+                    color: ink,
+                    size: 25,
+                  ),
                 ),
-                child: const Icon(Icons.workspace_premium,
-                    color: ink, size: 25),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(premium ? l.premiumHave : l.premiumPitch,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        premium ? l.premiumHave : l.premiumPitch,
                         style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -.2,
-                            color: ink)),
-                    const SizedBox(height: 4),
-                    Text(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -.2,
+                          color: ink,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
                         trialLeftDays > 0
                             ? l.trialBadge(trialLeftDays)
                             : l.premiumPerks,
                         style: TextStyle(
-                            fontSize: 14.5,
-                            height: 1.35,
-                            fontWeight: trialLeftDays > 0
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: Colors.white.withValues(alpha: .93))),
-                  ],
+                          fontSize: 14.5,
+                          height: 1.35,
+                          fontWeight: trialLeftDays > 0
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: Colors.white.withValues(alpha: .93),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              const Icon(Icons.chevron_right, color: ink),
-            ]),
+                const SizedBox(width: 6),
+                const Icon(Icons.chevron_right, color: ink),
+              ],
+            ),
           ),
         ),
       ),
@@ -12400,8 +13775,9 @@ class _PressableState extends State<_Pressable> {
   // 손을 떼도 최소 130ms 는 눌린 상태를 유지한다. 안 그러면 톡 치는 순간
   // 눌림이 몇 ms 만에 지나가 눈에 안 들어온다.
   void _release() {
-    final held =
-        DateTime.now().difference(_at ?? DateTime.now()).inMilliseconds;
+    final held = DateTime.now()
+        .difference(_at ?? DateTime.now())
+        .inMilliseconds;
     final wait = held < 130 ? 130 - held : 0;
     Future<void>.delayed(Duration(milliseconds: wait), () {
       if (mounted && _down) setState(() => _down = false);
@@ -12444,7 +13820,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
     // 기본 등급을 이미 산 사람이 다른 계열 기기에 서 있으면, 그 사람이
     // 볼 것은 '모든 기기' 쪽이다. 고르개를 미리 그리로 넘겨 둔다.
     _allTier = shouldOfferUpgrade(
-        e: st.ent, family: deviceFamily(), now: DateTime.now());
+      e: st.ent,
+      family: deviceFamily(),
+      now: DateTime.now(),
+    );
     _svc.revision.addListener(_tick);
     Store.instance.addListener(_tick);
     // 화면에 들어온 김에 값을 한 번 더 받아 온다. 처음 시동 때 스토어가
@@ -12508,79 +13887,95 @@ class _PremiumScreenState extends State<PremiumScreen> {
 
   /// 이 화면 안에서만 쓰는 작은 섹션 라벨.
   Widget _label(String t) => Padding(
-        padding: const EdgeInsets.only(top: 30, bottom: 10, left: 4),
-        child: Text(t,
-            style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: context.c.sub)),
-      );
+    padding: const EdgeInsets.only(top: 30, bottom: 10, left: 4),
+    child: Text(
+      t,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.2,
+        color: context.c.sub,
+      ),
+    ),
+  );
 
   /// 혜택 한 줄. Bear 처럼 아이콘 + 글 한 줄, 줄 사이는 옅은 구분선.
   ///
   /// 색을 지정하지 않는다 — 테마 기본 글자색이 밝은 화면에서 검정,
   /// 어두운 화면에서 흰색에 가깝다. 대비를 가장 높이는 방법이다.
   Widget _perkRow(IconData icon, String text, {bool last = false}) => Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Icon(icon, size: 23, color: context.c.accent),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(text,
-                    style: const TextStyle(
-                        fontSize: 16, height: 1.45, fontWeight: FontWeight.w600)),
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 23, color: context.c.accent),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 1.45,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ]),
-          ),
-          if (!last) Divider(height: 1, indent: 53, color: context.c.line),
-        ],
-      );
+            ),
+          ],
+        ),
+      ),
+      if (!last) Divider(height: 1, indent: 53, color: context.c.line),
+    ],
+  );
 
   /// 등급 고르개. Xmind 의 '매월 / 매년' 알약을 등급에 옮겼다.
   Widget _tierToggle(L10n l) {
     final c = context.c;
     Widget seg(String t, bool on, VoidCallback tap) => Expanded(
-          child: GestureDetector(
-            onTap: tap,
-            behavior: HitTestBehavior.opaque,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(vertical: 11),
-              decoration: BoxDecoration(
-                color: on ? c.accent : Colors.transparent,
-                borderRadius: BorderRadius.circular(11),
-              ),
-              child: Text(t,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: on ? Colors.white : c.sub)),
+      child: GestureDetector(
+        onTap: tap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 11),
+          decoration: BoxDecoration(
+            color: on ? c.accent : Colors.transparent,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Text(
+            t,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: on ? Colors.white : c.sub,
             ),
           ),
-        );
+        ),
+      ),
+    );
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: c.infoBg,
         borderRadius: BorderRadius.circular(15),
       ),
-      child: Row(children: [
-        seg(l.premiumPlanBase, !_allTier, () {
-          setState(() {
-            _allTier = false;
-          });
-        }),
-        seg(l.premiumPlanAll, _allTier, () {
-          setState(() {
-            _allTier = true;
-          });
-        }),
-      ]),
+      child: Row(
+        children: [
+          seg(l.premiumPlanBase, !_allTier, () {
+            setState(() {
+              _allTier = false;
+            });
+          }),
+          seg(l.premiumPlanAll, _allTier, () {
+            setState(() {
+              _allTier = true;
+            });
+          }),
+        ],
+      ),
     );
   }
 
@@ -12626,46 +14021,62 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Flexible(
-                  child: Text(label,
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          fontSize: 13.5,
-                          color: pressed ? Colors.white : c.sub)),
-                ),
-                if (badge != null) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: pressed ? Colors.white : c.accent,
-                      borderRadius: BorderRadius.circular(8),
+                        fontSize: 13.5,
+                        color: pressed ? Colors.white : c.sub,
+                      ),
                     ),
-                    child: Text(badge,
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: pressed ? c.accent : Colors.white)),
                   ),
+                  if (badge != null) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: pressed ? Colors.white : c.accent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        badge,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: pressed ? c.accent : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ]),
+              ),
               const SizedBox(height: 4),
-              Text(price ?? '···',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.w900,
-                      color: pressed ? Colors.white : null)),
+              Text(
+                price ?? '···',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w900,
+                  color: pressed ? Colors.white : null,
+                ),
+              ),
               if (note != null) ...[
                 const SizedBox(height: 3),
-                Text(note,
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: pressed ? Colors.white : c.sub)),
+                Text(
+                  note,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: pressed ? Colors.white : c.sub,
+                  ),
+                ),
               ],
             ],
           ),
@@ -12733,27 +14144,36 @@ class _PremiumScreenState extends State<PremiumScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                  color: c.accent.withValues(alpha: .34),
-                  blurRadius: 22,
-                  offset: const Offset(0, 10)),
+                color: c.accent.withValues(alpha: .34),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
             ],
           ),
-          child: const Icon(Icons.workspace_premium,
-              size: 40, color: Colors.white),
+          child: const Icon(
+            Icons.workspace_premium,
+            size: 40,
+            color: Colors.white,
+          ),
         ),
       ),
       const SizedBox(height: 22),
-      Text(l.premiumHeadline,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              fontSize: 28,
-              height: 1.22,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.6)),
+      Text(
+        l.premiumHeadline,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontSize: 28,
+          height: 1.22,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.6,
+        ),
+      ),
       const SizedBox(height: 12),
-      Text(l.premiumSubhead,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16, height: 1.55)),
+      Text(
+        l.premiumSubhead,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 16, height: 1.55),
+      ),
     ];
 
     if (trialOn(s.trialDays)) {
@@ -12766,11 +14186,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
               color: c.infoBg,
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text(l.trialBadge(trialLeft(s.trialDays)),
-                style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
-                    color: c.accent)),
+            child: Text(
+              l.trialBadge(trialLeft(s.trialDays)),
+              style: TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w800,
+                color: c.accent,
+              ),
+            ),
           ),
         ),
       ]);
@@ -12785,19 +14208,26 @@ class _PremiumScreenState extends State<PremiumScreen> {
             color: c.infoBg,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Column(children: [
-            Text(
+          child: Column(
+            children: [
+              Text(
                 '${l.premiumHave} · ${tier == 2 ? l.premiumPlanAll : l.premiumPlanBase}',
                 textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-            if (offerUp) ...[
-              const SizedBox(height: 8),
-              Text(l.premiumUpgradeHere,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (offerUp) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l.premiumUpgradeHere,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, height: 1.5)),
+                  style: const TextStyle(fontSize: 15, height: 1.5),
+                ),
+              ],
             ],
-          ]),
+          ),
         ),
       ]);
     }
@@ -12811,16 +14241,18 @@ class _PremiumScreenState extends State<PremiumScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: c.line),
         ),
-        child: Column(children: [
-          // 아이콘을 다섯 개 다르게 쓰던 것을 체크 하나로 통일했다.
-          // Notion·Xmind 둘 다 그렇게 한다 — 아이콘이 제각각이면 눈이
-          // 그림을 하나씩 해석하느라 정작 글을 안 읽는다. 같은 체크가
-          // 다섯 번 서면 그 줄들이 '받는 것의 목록'으로 한 번에 읽힌다.
-          _perkRow(Icons.check, l.premiumPerkNoAds),
-          _perkRow(Icons.check, l.premiumPerkTidy(kFreeTidyPerDay)),
-          _perkRow(Icons.check, l.premiumPerkWizard(kFreeWizardPerDay)),
-          _perkRow(Icons.check, l.premiumPerkWeb, last: true),
-        ]),
+        child: Column(
+          children: [
+            // 아이콘을 다섯 개 다르게 쓰던 것을 체크 하나로 통일했다.
+            // Notion·Xmind 둘 다 그렇게 한다 — 아이콘이 제각각이면 눈이
+            // 그림을 하나씩 해석하느라 정작 글을 안 읽는다. 같은 체크가
+            // 다섯 번 서면 그 줄들이 '받는 것의 목록'으로 한 번에 읽힌다.
+            _perkRow(Icons.check, l.premiumPerkNoAds),
+            _perkRow(Icons.check, l.premiumPerkTidy(kFreeTidyPerDay)),
+            _perkRow(Icons.check, l.premiumPerkWizard(kFreeWizardPerDay)),
+            _perkRow(Icons.check, l.premiumPerkWeb, last: true),
+          ],
+        ),
       ),
       // '믿을 만한가' 블록 삭제(2026-09-07 소유자 지시): '계속 만들고
       // 있습니다'가 오히려 버그가 계속 있다는 뉘앙스로 읽힌다는 판단.
@@ -12838,8 +14270,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: c.glassLine),
           ),
-          child: Text(l.premiumNoStore,
-              style: const TextStyle(fontSize: 15, height: 1.55)),
+          child: Text(
+            l.premiumNoStore,
+            style: const TextStyle(fontSize: 15, height: 1.55),
+          ),
         ),
       ]);
     } else {
@@ -12855,56 +14289,71 @@ class _PremiumScreenState extends State<PremiumScreen> {
         // 회색 설명문으로 두었더니 정작 등급을 고르는 근거가 제일 안
         // 읽히는 글이 되어 있었다.
         Text(
-            _allTier
-                ? l.premiumUnlockAll
-                : (family == kFamilyGoogle
+          _allTier
+              ? l.premiumUnlockAll
+              : (family == kFamilyGoogle
                     ? l.premiumUnlockGoogle
                     : l.premiumUnlockApple),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: 19, height: 1.35, fontWeight: FontWeight.w800)),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 19,
+            height: 1.35,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text(_allTier ? l.premiumScopeAll : l.premiumScopeBase,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, height: 1.5, color: c.sub)),
+        Text(
+          _allTier ? l.premiumScopeAll : l.premiumScopeBase,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 14, height: 1.5, color: c.sub),
+        ),
         const SizedBox(height: 24),
         // 체험 안내는 값 **바로 위**에 한 줄. Bear 가 그렇게 둔다 —
         // 값을 보기 직전이 '지금 당장 돈이 나가지 않는다'는 사실이 가장
         // 크게 들리는 자리다.
         if (tier == 0)
-          Text(l.premiumTrialThen(kTrialActiveDays),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 15, fontWeight: FontWeight.w700, color: c.sub)),
+          Text(
+            l.premiumTrialThen(kTrialActiveDays),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: c.sub,
+            ),
+          ),
         if (tier == 0) const SizedBox(height: 14),
         // 두 카드 높이를 같게(stretch) 하되, 세로 ListView 안에서는
         // 높이 제약이 없어 stretch가 무한대로 늘어난다(스크롤 끝=무한대,
         // 하단 무한 여백의 진짜 원인). IntrinsicHeight로 높이를 '큰 카드'
         // 기준으로 확정해 무한대를 없앤다.
         IntrinsicHeight(
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Expanded(
-            child: _priceCard(
-              id: _allTier ? kProductAllMonthly : kProductMonthly,
-              label: l.premiumMonthly,
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _priceCard(
+                  id: _allTier ? kProductAllMonthly : kProductMonthly,
+                  label: l.premiumMonthly,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _priceCard(
+                  id: _allTier ? kProductAllYearly : kProductYearly,
+                  label: l.premiumYearly,
+                  badge: pct != null ? l.premiumSave(pct) : l.premiumBestValue,
+                  // 연 얼마를 월 얼마로 환산해 함께 적는다 — 옆 카드(월간)와
+                  // 같은 단위가 되어야 비로소 견줄 수 있다.
+                  note: () {
+                    final m = _perMonthOf(
+                      _allTier ? kProductAllYearly : kProductYearly,
+                    );
+                    return m == null ? null : '$m/${l.premiumPerMonth}';
+                  }(),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _priceCard(
-              id: _allTier ? kProductAllYearly : kProductYearly,
-              label: l.premiumYearly,
-              badge: pct != null ? l.premiumSave(pct) : l.premiumBestValue,
-              // 연 얼마를 월 얼마로 환산해 함께 적는다 — 옆 카드(월간)와
-              // 같은 단위가 되어야 비로소 견줄 수 있다.
-              note: () {
-                final m = _perMonthOf(
-                    _allTier ? kProductAllYearly : kProductYearly);
-                return m == null ? null : '$m/${l.premiumPerMonth}';
-              }(),
-            ),
-          ),
-          ]),
         ),
         if (_allTier) ...[
           const SizedBox(height: 12),
@@ -12921,16 +14370,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: TextButton.icon(
             onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
             icon: Icon(Icons.download_outlined, size: 19, color: c.accent),
-            label: Text(l.premiumRestore,
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: c.accent)),
+            label: Text(
+              l.premiumRestore,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: c.accent,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 10),
-        Text(l.premiumAutoRenew,
-            style: TextStyle(fontSize: 13, height: 1.6, color: c.sub)),
+        Text(
+          l.premiumAutoRenew,
+          style: TextStyle(fontSize: 13, height: 1.6, color: c.sub),
+        ),
         const SizedBox(height: 8),
         Wrap(
           alignment: WrapAlignment.center,
@@ -12939,24 +14393,32 @@ class _PremiumScreenState extends State<PremiumScreen> {
             if (_apple)
               TextButton(
                 onPressed: () => unawaited(_open(appleEulaUrl())),
-                child:
-                    Text(l.premiumTerms, style: const TextStyle(fontSize: 15)),
+                child: Text(
+                  l.premiumTerms,
+                  style: const TextStyle(fontSize: 15),
+                ),
               ),
             TextButton(
               onPressed: () => unawaited(_open(privacyUrl())),
-              child:
-                  Text(l.premiumPrivacy, style: const TextStyle(fontSize: 15)),
+              child: Text(
+                l.premiumPrivacy,
+                style: const TextStyle(fontSize: 15),
+              ),
             ),
           ],
         ),
       ]);
       if (!_svc.hasProducts) {
-        body.add(Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(l.premiumLoading,
+        body.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              l.premiumLoading,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14.5)),
-        ));
+              style: const TextStyle(fontSize: 14.5),
+            ),
+          ),
+        );
       }
     }
 
@@ -12978,9 +14440,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
           if (_svc.supported)
             TextButton(
               onPressed: _svc.busy ? null : () => unawaited(_svc.restore()),
-              child: Text(l.premiumRestore,
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700)),
+              child: Text(
+                l.premiumRestore,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           const SizedBox(width: 4),
         ],
@@ -13020,40 +14486,58 @@ mixin SettingsRows<W extends StatefulWidget> on State<W> {
   ///
   /// 이름과 고르개는 한 줄에(그 둘은 짝이다), 안내는 그 아래 통째로 편다.
   /// 이 화면에서 두 단인 자리는 여기 하나뿐이었다.
-  Widget _dropRow<T>(String label, String? sub, T value,
-      List<(T, String)> options, ValueChanged<T> onChanged) {
+  Widget _dropRow<T>(
+    String label,
+    String? sub,
+    T value,
+    List<(T, String)> options,
+    ValueChanged<T> onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 10, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Expanded(
-              child: Text(label,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
                   style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 17)),
-            ),
-            DropdownButton<T>(
-              value: value,
-              underline: const SizedBox.shrink(),
-              items: options
-                  .map((o) => DropdownMenuItem(value: o.$1, child: Text(o.$2)))
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) {
-                  onChanged(v);
-                  store.persistSettings();
-                  setState(() {});
-                }
-              },
-            ),
-          ]),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                  ),
+                ),
+              ),
+              DropdownButton<T>(
+                value: value,
+                underline: const SizedBox.shrink(),
+                items: options
+                    .map(
+                      (o) => DropdownMenuItem(value: o.$1, child: Text(o.$2)),
+                    )
+                    .toList(),
+                onChanged: (v) {
+                  if (v != null) {
+                    onChanged(v);
+                    store.persistSettings();
+                    setState(() {});
+                  }
+                },
+              ),
+            ],
+          ),
           if (sub != null)
             Padding(
               padding: const EdgeInsets.only(top: 2, right: 6),
-              child: Text(sub,
-                  style: TextStyle(
-                      fontSize: 14, height: 1.4, color: context.c.sub)),
+              child: Text(
+                sub,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.4,
+                  color: context.c.sub,
+                ),
+              ),
             ),
         ],
       ),
@@ -13062,11 +14546,16 @@ mixin SettingsRows<W extends StatefulWidget> on State<W> {
 
   /// 애플 설정 앱식 작은 회색 머리글.
   Widget _secHeader(String t) => Padding(
-        padding: const EdgeInsets.fromLTRB(32, 22, 16, 6),
-        child: Text(t,
-            style: TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w600, color: context.c.sub)),
-      );
+    padding: const EdgeInsets.fromLTRB(32, 22, 16, 6),
+    child: Text(
+      t,
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: context.c.sub,
+      ),
+    ),
+  );
 
   /// 둥근 카드 한 장.
   ///
@@ -13075,50 +14564,57 @@ mixin SettingsRows<W extends StatefulWidget> on State<W> {
   /// 2026-08-14에 홈 목록에서 실제로 겪었다. Material을 직접 두면 그 경고가
   /// 사라지고 눌렀을 때 반응도 제대로 보인다. 여기도 안에 ListTile이 들어간다.
   Widget _card(List<Widget> children) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Material(
-            color: context.c.panel,
-            child: Column(children: children),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: context.c.panel,
+        child: Column(children: children),
+      ),
+    ),
+  );
 
   Widget _sep() => Divider(height: 1, indent: 16, color: context.c.line);
 
-  Widget _switchRow(String title, String? sub, bool value, ValueChanged<bool> apply) =>
-      SwitchListTile.adaptive(
-        // 2026-08-14 소유자 요청: 설정 글자가 너무 작다. 항목은 기본 크기(17),
-        // 안내문구도 같은 17에 아주 진한 회색(다크에서는 흰색에 가까운 회색).
-        // 애플 설정 앱은 안내문구를 13pt 회색으로 쓰지만, 여기서는 소유자가
-        // 명시적으로 크게 해 달라고 했다 — 관습보다 사용자 지시가 우선이다.
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-        // 2026-08-18 소유자 지시 — "설정에서 군데군데 폰트 사이즈 크게
-        // 나오는 부분이 있다. 세련되게 해줘."
-        //
-        // 08-14에 "설정 글자가 너무 작다"는 말을 듣고 안내문구까지 17로
-        // 올렸는데, 그때 커져야 했던 것은 **항목 이름**뿐이었다. 안내문구가
-        // 같은 크기가 되니 무엇이 이름이고 무엇이 설명인지 구별이 사라졌다.
-        // **크기가 같으면 위계가 없다.**
-        //
-        // 이름 17, 설명 14. 애플은 13을 쓰지만 한글은 한 눈금 크게 잡는다.
-        subtitle: sub == null
-            ? null
-            : Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(sub,
-                    style: TextStyle(
-                        fontSize: 14, height: 1.4, color: context.c.sub)),
-              ),
-        value: value,
-        onChanged: (v) {
-          apply(v);
-          store.persistSettings();
-          setState(() {});
-        },
-      );
+  Widget _switchRow(
+    String title,
+    String? sub,
+    bool value,
+    ValueChanged<bool> apply,
+  ) => SwitchListTile.adaptive(
+    // 2026-08-14 소유자 요청: 설정 글자가 너무 작다. 항목은 기본 크기(17),
+    // 안내문구도 같은 17에 아주 진한 회색(다크에서는 흰색에 가까운 회색).
+    // 애플 설정 앱은 안내문구를 13pt 회색으로 쓰지만, 여기서는 소유자가
+    // 명시적으로 크게 해 달라고 했다 — 관습보다 사용자 지시가 우선이다.
+    title: Text(
+      title,
+      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+    ),
+    // 2026-08-18 소유자 지시 — "설정에서 군데군데 폰트 사이즈 크게
+    // 나오는 부분이 있다. 세련되게 해줘."
+    //
+    // 08-14에 "설정 글자가 너무 작다"는 말을 듣고 안내문구까지 17로
+    // 올렸는데, 그때 커져야 했던 것은 **항목 이름**뿐이었다. 안내문구가
+    // 같은 크기가 되니 무엇이 이름이고 무엇이 설명인지 구별이 사라졌다.
+    // **크기가 같으면 위계가 없다.**
+    //
+    // 이름 17, 설명 14. 애플은 13을 쓰지만 한글은 한 눈금 크게 잡는다.
+    subtitle: sub == null
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              sub,
+              style: TextStyle(fontSize: 14, height: 1.4, color: context.c.sub),
+            ),
+          ),
+    value: value,
+    onChanged: (v) {
+      apply(v);
+      store.persistSettings();
+      setState(() {});
+    },
+  );
 }
 
 /// 정리 규칙 세부 화면.
@@ -13148,17 +14644,24 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
       backgroundColor: context.c.bg,
       appBar: AppBar(
         backgroundColor: context.c.bg,
-        title: Text(l.tidyRulesTitle,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        title: Text(
+          l.tidyRulesTitle,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        ),
       ),
       body: ListView(
         padding: scrollPad(context, top: 6),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 0, 16, 12),
-            child: Text(l.tidyRulesSub,
-                style: TextStyle(
-                    fontSize: 15, height: 1.35, color: context.c.guideInk)),
+            child: Text(
+              l.tidyRulesSub,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.35,
+                color: context.c.guideInk,
+              ),
+            ),
           ),
           _card([
             // 2026-08-18 — 기본값이 '그대로 두기'로 바뀌었으니 맨 위도
@@ -13203,19 +14706,31 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
               (0, l.indentNone),
             ], (v) => s.bulletIndent = v),
             _sep(),
-            _switchRow(l.headingPadTitle, l.headingPadSub, s.headingPad,
-                (v) => s.headingPad = v),
+            _switchRow(
+              l.headingPadTitle,
+              l.headingPadSub,
+              s.headingPad,
+              (v) => s.headingPad = v,
+            ),
             _sep(),
             // 2026-08-30 소유자 지시 — 알아본 소제목을 제목2로.
             // 여백(위 2줄·아래 1줄)과 한 짝이라 바로 아래에 둔다.
-            _switchRow(l.headingBigTitle, l.headingBigSub, s.headingBig,
-                (v) => s.headingBig = v),
+            _switchRow(
+              l.headingBigTitle,
+              l.headingBigSub,
+              s.headingBig,
+              (v) => s.headingBig = v,
+            ),
             _sep(),
             // 표 둘. '표를 다시 세울까'가 먼저고, '넓은 표를 어떻게
             // 놓을까'가 그다음이다. 순서를 바꾸면 두 번째 줄이 무엇에
             // 대한 말인지 모른다.
-            _switchRow(l.tableFixTitle, l.tableFixSub, s.tableFix,
-                (v) => s.tableFix = v),
+            _switchRow(
+              l.tableFixTitle,
+              l.tableFixSub,
+              s.tableFix,
+              (v) => s.tableFix = v,
+            ),
             _sep(),
             _dropRow(l.wideTableTitle, null, s.wideTables, [
               ('auto', l.wideTableAuto),
@@ -13223,14 +14738,26 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
               ('records', l.wideTableRecords),
             ], (v) => s.wideTables = v),
             _sep(),
-            _switchRow(l.fillerHeadingTitle, l.fillerHeadingSub, s.smartFillerHeading,
-                (v) => s.smartFillerHeading = v),
+            _switchRow(
+              l.fillerHeadingTitle,
+              l.fillerHeadingSub,
+              s.smartFillerHeading,
+              (v) => s.smartFillerHeading = v,
+            ),
             _sep(),
-            _switchRow(l.dashListTitle, l.dashListSub, s.smartDashList,
-                (v) => s.smartDashList = v),
+            _switchRow(
+              l.dashListTitle,
+              l.dashListSub,
+              s.smartDashList,
+              (v) => s.smartDashList = v,
+            ),
             _sep(),
-            _switchRow(l.citationsTitle, l.citationsSub, s.removeCitations,
-                (v) => s.removeCitations = v),
+            _switchRow(
+              l.citationsTitle,
+              l.citationsSub,
+              s.removeCitations,
+              (v) => s.removeCitations = v,
+            ),
           ]),
         ],
       ),
@@ -13258,9 +14785,7 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen>
-    with SettingsRows {
-
+class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
   /// 바로가기가 겨냥하는 자리들.
   ///
   /// 목록을 ListView가 아니라 SingleChildScrollView + Column으로 그리는
@@ -13296,6 +14821,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       );
     });
   }
+
   final ScrollController _settingsScroll = ScrollController();
   bool _aiChecking = false;
   bool _aiAdvOpen = false;
@@ -13315,7 +14841,9 @@ class _SettingsScreenState extends State<SettingsScreen>
   /// 예비 사다리를 보여 준다.
   List<String> _aiPickList() {
     final s = store.settings;
-    final p = s.aiProvider.isNotEmpty ? s.aiProvider : (providerOfKey(s.aiKey) ?? '');
+    final p = s.aiProvider.isNotEmpty
+        ? s.aiProvider
+        : (providerOfKey(s.aiKey) ?? '');
     if (s.aiModels.isNotEmpty && p.isNotEmpty) {
       final f = filterChatModels(p, s.aiModels);
       if (f.isNotEmpty) return f;
@@ -13405,8 +14933,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     s.aiModel = r.model;
     await store.persistSettings();
     if (!mounted) return;
-    final found = L10n.of(context)
-        .aiModelsFound(filterChatModels(r.provider, r.models).length);
+    final found = L10n.of(
+      context,
+    ).aiModelsFound(filterChatModels(r.provider, r.models).length);
     // 목록을 받았다는 것과 쓸 수 있다는 것은 다르다. 진짜로 한 번 불러 본다.
     setState(() => _aiMsg = '$found\n${L10n.of(context).aiPinging}');
     try {
@@ -13424,7 +14953,6 @@ class _SettingsScreenState extends State<SettingsScreen>
       });
     }
   }
-
 
   /// 글자 크기 — 쓰던 앱과 눈으로 맞출 수 있게 견본을 같이 보여 준다.
   /// 숫자를 코드에 박아 두면 맞출 때마다 설치 왕복이 생긴다(2026-08-14).
@@ -13454,8 +14982,9 @@ class _SettingsScreenState extends State<SettingsScreen>
       _toast(context, l.lockUnavailable(lockVendor));
       return;
     }
-    final ok = await LockService.instance
-        .ask(want ? l.lockReasonOn : l.lockReasonOff);
+    final ok = await LockService.instance.ask(
+      want ? l.lockReasonOn : l.lockReasonOff,
+    );
     if (!ok || !mounted) return;
     setState(() => s.lockOn = want);
     await store.persistSettings();
@@ -13464,26 +14993,30 @@ class _SettingsScreenState extends State<SettingsScreen>
   Widget _paperBlock(L10n l, AppSettings s) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     String nameOf(String id) => switch (id) {
-          'moleskine' => l.paperMoleskine,
-          'sepia' => l.paperSepia,
-          'manuscript' => l.paperManuscript,
-          'frost' => l.paperFrost,
-          'plain' => l.paperPlain,
-          'kraft' => l.paperKraft,
-          'walnut' => l.paperWalnut,
-          'sky' => l.paperSky,
-          _ => l.paperNone,
-        };
+      'moleskine' => l.paperMoleskine,
+      'sepia' => l.paperSepia,
+      'manuscript' => l.paperManuscript,
+      'frost' => l.paperFrost,
+      'plain' => l.paperPlain,
+      'kraft' => l.paperKraft,
+      'walnut' => l.paperWalnut,
+      'sky' => l.paperSky,
+      _ => l.paperNone,
+    };
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.paperTitle,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+          Text(
+            l.paperTitle,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+          ),
           const SizedBox(height: 2),
-          Text(l.paperSub,
-              style: TextStyle(fontSize: 15, color: context.c.guideInk)),
+          Text(
+            l.paperSub,
+            style: TextStyle(fontSize: 15, color: context.c.guideInk),
+          ),
           const SizedBox(height: 12),
           SizedBox(
             height: 104,
@@ -13508,9 +15041,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         width: 62,
                         height: 76,
                         decoration: BoxDecoration(
-                          color: isNone
-                              ? context.c.panel
-                              : Color(p.bgOf(dark)),
+                          color: isNone ? context.c.panel : Color(p.bgOf(dark)),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: on ? context.c.accent : context.c.line,
@@ -13519,51 +15050,57 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: isNone
-                            ? Icon(Icons.block,
-                                size: 20, color: context.c.sub)
-                            : Stack(children: [
-                                Positioned.fill(
-                                  child: CustomPaint(
-                                    painter: _PaperPainter(
-                                      ruling: p.ruling,
-                                      color: Color(p.ruleOf(dark)),
-                                      // 견본은 실제 글자 크기와 상관없이
-                                      // 좁게 그린다 — 62×76 안에 결이
-                                      // 보여야 한다.
-                                      lineHeight: 11,
-                                      colWidth: 11,
-                                      scroll: 0,
-                                      headPad: 0,
+                            ? Icon(Icons.block, size: 20, color: context.c.sub)
+                            : Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: _PaperPainter(
+                                        ruling: p.ruling,
+                                        color: Color(p.ruleOf(dark)),
+                                        // 견본은 실제 글자 크기와 상관없이
+                                        // 좁게 그린다 — 62×76 안에 결이
+                                        // 보여야 한다.
+                                        lineHeight: 11,
+                                        colWidth: 11,
+                                        scroll: 0,
+                                        headPad: 0,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                // 글자는 딱 하나만 그린다.
-                                //
-                                // 2026-08-17 소유자 신고로 고친 자리다. 여기에
-                                // Text가 둘 있었다 — CustomPaint의 child로 '가',
-                                // 그 위에 '가 T'. 둘 다 Center라 같은 자리에
-                                // 정확히 포개져 글자가 뭉갰다.
-                                //
-                                // 영어 한 낱말로 정한 것도 소유자 지시다. 어느
-                                // 언어로 쓰든 이 칩이 보여 줄 것은 '이 바탕에
-                                // 이 글자색'이지 글자 그 자체가 아니다.
-                                Center(
-                                  child: Text('sample',
+                                  // 글자는 딱 하나만 그린다.
+                                  //
+                                  // 2026-08-17 소유자 신고로 고친 자리다. 여기에
+                                  // Text가 둘 있었다 — CustomPaint의 child로 '가',
+                                  // 그 위에 '가 T'. 둘 다 Center라 같은 자리에
+                                  // 정확히 포개져 글자가 뭉갰다.
+                                  //
+                                  // 영어 한 낱말로 정한 것도 소유자 지시다. 어느
+                                  // 언어로 쓰든 이 칩이 보여 줄 것은 '이 바탕에
+                                  // 이 글자색'이지 글자 그 자체가 아니다.
+                                  Center(
+                                    child: Text(
+                                      'sample',
                                       style: TextStyle(
-                                          fontSize: 13,
-                                          height: 1,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(p.inkOf(dark)))),
-                                ),
-                              ]),
+                                        fontSize: 13,
+                                        height: 1,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(p.inkOf(dark)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                       const SizedBox(height: 5),
-                      Text(nameOf(p.id),
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight:
-                                  on ? FontWeight.w700 : FontWeight.w400,
-                              color: on ? context.c.accent : context.c.sub)),
+                      Text(
+                        nameOf(p.id),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: on ? FontWeight.w700 : FontWeight.w400,
+                          color: on ? context.c.accent : context.c.sub,
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -13622,638 +15159,886 @@ class _SettingsScreenState extends State<SettingsScreen>
             controller: _settingsScroll,
             color: context.c.bg,
             child: SingleChildScrollView(
-        controller: _settingsScroll,
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-          // 2026-08-14 소유자 요청: 설정 메뉴를 그룹으로 묶는다.
-          //
-          // 전에는 열여섯 줄이 한 줄로 늘어서 있었고, 성격이 다른 것들이 섞여
-          // 있었다 — 글자 크기(화면) 다음에 미리보기(동작), 그 다음에 등폭
-          // 글꼴(화면), 그 다음에 출처 제거(정리 규칙) 하는 식이었다.
-          // 사용자는 목록을 위에서 아래로 훑으며 "지금 내가 무엇을 고르는
-          // 중이지?"를 계속 다시 물어야 했다.
-          //
-          // 묶는 기준은 사용자가 던지는 질문으로 잡았다.
-          //   "이 앱이 어떻게 보이나"        → 보기
-          //   "정리를 누르면 무엇이 바뀌나"   → 정리 규칙
-          //   "정리를 누르면 어떻게 되나"     → 정리할 때
-          // 화면 생김새는 애플 설정 앱의 관습을 그대로 따른다(작은 회색
-          // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
-          // 2026-08-16 — 아이클라우드 상태 한 줄. 켜졌는지 꺼졌는지를
-          // 사용자가 알 수 있어야 한다. 애플 기기가 아니면 아예 안 보인다.
-          // 2026-08-16 소유자 신고 — "이건 어떻게 설정하라는 건지 모르겠다."
-          // 맞는 말이다. '꺼짐'이라고만 쓰고 끝내면 사용자가 할 수 있는 게
-          // 없다. 그래서 세 가지를 바꿨다.
-          //   ① 원인을 갈랐다(로그인 안 됨 / 앱에서 꺼짐)
-          //   ② 줄 전체를 누를 수 있게 하고, 누르면 순서를 글로 보여 준다
-          //   ③ 그 안에 [설정 열기]와 [다시 확인]을 넣었다
-          // 아이클라우드 항목으로 바로 뛰는 주소는 비공개 API라 심사에서
-          // 반려된다 — 그래서 '설정 앱까지'만 열어 주고 나머지는 글로 잡는다.
-          if (syncVisible) ...[
-            _secHeader(l.syncTitle),
-            _card([
-              // 2026-08-19 소유자 지시 — "베어는 설정에 '동기화' 부분 따로
-              // 2depth 설정 상세히 하던데, 우리는 이보다 더 상세히 해야
-              // 하는 거 아닐까?"
-              //
-              // 맞다. 그리고 까닭이 베어보다 하나 더 있다. 우리는 창고를
-              // **고르게** 한다. 애플만 쓰던 때는 켜짐/꺼짐이면 됐지만,
-              // 아이클라우드와 구글 드라이브 중에 고르는 순간 사람은
-              // "내 노트가 지금 어디에 있나"를 알아야 한다. 그건 한 줄에
-              // 안 들어간다.
-              //
-              // 그래서 여기는 문패만 둔다. 상태 한 줄과 화살표.
-              ValueListenableBuilder<SyncState>(
-                valueListenable: ICloudSync.instance.state,
-                builder: (_, st, __) {
-                  final s2 = store.settings;
-                  final paused = s2.syncBackend == 'none';
-                  final ok = !paused && st == SyncState.ok;
-                  final busy = !paused && st == SyncState.running;
-                  final say = SyncSay.of(l, st,
-                      paused: paused,
-                      everSynced: ICloudSync.instance.lastSyncMs.value > 0);
-                  final title = say.title;
-                  final sub = say.sub;
-                  return InkWell(
-                    onTap: () async {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                              builder: (_) => const SyncSettingsScreen()));
-                      if (mounted) setState(() {});
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-                      child: Row(children: [
-                        Icon(
-                            paused
-                                ? Icons.cloud_off_outlined
-                                : ok
-                                    ? Icons.cloud_done_outlined
-                                    : busy
+              controller: _settingsScroll,
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 2026-08-14 소유자 요청: 설정 메뉴를 그룹으로 묶는다.
+                  //
+                  // 전에는 열여섯 줄이 한 줄로 늘어서 있었고, 성격이 다른 것들이 섞여
+                  // 있었다 — 글자 크기(화면) 다음에 미리보기(동작), 그 다음에 등폭
+                  // 글꼴(화면), 그 다음에 출처 제거(정리 규칙) 하는 식이었다.
+                  // 사용자는 목록을 위에서 아래로 훑으며 "지금 내가 무엇을 고르는
+                  // 중이지?"를 계속 다시 물어야 했다.
+                  //
+                  // 묶는 기준은 사용자가 던지는 질문으로 잡았다.
+                  //   "이 앱이 어떻게 보이나"        → 보기
+                  //   "정리를 누르면 무엇이 바뀌나"   → 정리 규칙
+                  //   "정리를 누르면 어떻게 되나"     → 정리할 때
+                  // 화면 생김새는 애플 설정 앱의 관습을 그대로 따른다(작은 회색
+                  // 머리글 + 둥근 흰 카드 + 카드 안 구분선). 독자 설계 금지 원칙.
+                  // 2026-08-16 — 아이클라우드 상태 한 줄. 켜졌는지 꺼졌는지를
+                  // 사용자가 알 수 있어야 한다. 애플 기기가 아니면 아예 안 보인다.
+                  // 2026-08-16 소유자 신고 — "이건 어떻게 설정하라는 건지 모르겠다."
+                  // 맞는 말이다. '꺼짐'이라고만 쓰고 끝내면 사용자가 할 수 있는 게
+                  // 없다. 그래서 세 가지를 바꿨다.
+                  //   ① 원인을 갈랐다(로그인 안 됨 / 앱에서 꺼짐)
+                  //   ② 줄 전체를 누를 수 있게 하고, 누르면 순서를 글로 보여 준다
+                  //   ③ 그 안에 [설정 열기]와 [다시 확인]을 넣었다
+                  // 아이클라우드 항목으로 바로 뛰는 주소는 비공개 API라 심사에서
+                  // 반려된다 — 그래서 '설정 앱까지'만 열어 주고 나머지는 글로 잡는다.
+                  if (syncVisible) ...[
+                    _secHeader(l.syncTitle),
+                    _card([
+                      // 2026-08-19 소유자 지시 — "베어는 설정에 '동기화' 부분 따로
+                      // 2depth 설정 상세히 하던데, 우리는 이보다 더 상세히 해야
+                      // 하는 거 아닐까?"
+                      //
+                      // 맞다. 그리고 까닭이 베어보다 하나 더 있다. 우리는 창고를
+                      // **고르게** 한다. 애플만 쓰던 때는 켜짐/꺼짐이면 됐지만,
+                      // 아이클라우드와 구글 드라이브 중에 고르는 순간 사람은
+                      // "내 노트가 지금 어디에 있나"를 알아야 한다. 그건 한 줄에
+                      // 안 들어간다.
+                      //
+                      // 그래서 여기는 문패만 둔다. 상태 한 줄과 화살표.
+                      ValueListenableBuilder<SyncState>(
+                        valueListenable: ICloudSync.instance.state,
+                        builder: (_, st, __) {
+                          final s2 = store.settings;
+                          final paused = s2.syncBackend == 'none';
+                          final ok = !paused && st == SyncState.ok;
+                          final busy = !paused && st == SyncState.running;
+                          final say = SyncSay.of(
+                            l,
+                            st,
+                            paused: paused,
+                            everSynced:
+                                ICloudSync.instance.lastSyncMs.value > 0,
+                          );
+                          final title = say.title;
+                          final sub = say.sub;
+                          return InkWell(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const SyncSettingsScreen(),
+                                ),
+                              );
+                              if (mounted) setState(() {});
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                13,
+                                16,
+                                13,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    paused
+                                        ? Icons.cloud_off_outlined
+                                        : ok
+                                        ? Icons.cloud_done_outlined
+                                        : busy
                                         ? Icons.cloud_sync_outlined
                                         : Icons.cloud_off_outlined,
-                            size: 22,
-                            color: ok ? context.c.accent : context.c.sub),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(title,
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                      color: ok
-                                          ? context.c.accent
-                                          : context.c.guideInk)),
-                              if (sub != null) ...[
-                                const SizedBox(height: 2),
-                                Text(sub,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        height: 1.35,
-                                        color: context.c.sub)),
-                              ],
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.chevron_right, color: context.c.sub),
-                      ]),
-                    ),
-                  );
-                },
-              ),
-            ]),
-          ],
-          // ── 프리미엄 ──────────────────────────────────────────────
-          //
-          // 2026-09-02 소유자 지시 — 동기화 바로 아래. 처음에는 맨 위였고,
-          // 그다음엔 맨 아래로 내렸는데, 맨 아래는 아무도 안 내려가는
-          // 자리였다. 동기화 다음이 맞다 — 동기화는 "이 앱을 계속 쓰겠다"고
-          // 정한 사람이 여는 칸이고, 그 사람이 곧 값을 낼 만한 사람이다.
-          if (kPaidTierLive)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-              child: _PremiumBanner(
-                premium: store.settings.premium,
-                trialLeftDays: trialOn(store.settings.trialDays)
-                    ? trialLeft(store.settings.trialDays)
-                    : 0,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const PremiumScreen())),
-              ),
-            ),
-          KeyedSubtree(
-              key: _anchors['theme'], child: _secHeader(l.settingsSecView)),
-          _card([
-            // 2026-08-16 소유자 요청 — 다크 모드 선택(기기 따름/라이트/다크).
-            // 2026-08-17 소유자 요청 — "'다크 모드 시간에는 다크 모드로'
-            // 등의 옵션도 같이 설정받아야 할 듯."
-            //
-            // 이건 이미 되고 있었다. '기기 설정 따름'이 그 일을 한다 —
-            // 아이폰·안드로이드 모두 해 질 녘에 어두운 모드로 바꾸는 일정을
-            // 갖고 있고 우리는 그걸 그대로 따른다. 문제는 그 사실이
-            // '기기 설정 따름'이라는 말에서 안 읽혔다는 것이다.
-            //
-            // 기능을 새로 만드는 것보다, 이미 있는 기능이 있다고 말해 주는
-            // 쪽이 먼저다.
-            _dropRow(l.themeTitle, l.themeSystemNote, s.themeMode, [
-              ('system', l.themeSystem),
-              ('light', l.themeLight),
-              ('dark', l.themeDark),
-            ], (v) => s.themeMode = v),
-            _sep(),
-            // 2026-08-18 — 설정 두 뎁스, 둘째.
-            //
-            // 글자 크기와 줄 간격은 미닫이 둘에 견본 상자 하나, 세 조각이다.
-            // 오늘 글자 크기를 안 바꿀 사람도 그 세 조각을 지나쳐야 다음
-            // 항목에 닿았다.
-            //
-            // 지금 값을 오른쪽에 적어 둔다 — 들어가 보지 않고도 몇이고
-            // 얼마인지 알 수 있으면, 안 들어가도 되는 날이 생긴다. 그게
-            // 뎁스를 하나 더 두면서 잃는 것을 되갚는 유일한 방법이다.
-            KeyedSubtree(
-              key: _anchors['fontsize'],
-              child: ListTile(
-                leading: Icon(Icons.text_fields, color: context.c.sub),
-                title: Text(l.typographyTitle,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w600)),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(
-                      '${s.bodyFontSize.round()}pt · '
-                      '${s.bodyLineHeight.toStringAsFixed(1)}',
-                      style: TextStyle(fontSize: 15, color: context.c.sub)),
-                  const SizedBox(width: 4),
-                  Icon(Icons.chevron_right, color: context.c.sub),
-                ]),
-                onTap: () async {
-                  await Navigator.push<void>(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const TypographyScreen()));
-                  if (mounted) setState(() {});
-                },
-              ),
-            ),
-            _sep(),
-            KeyedSubtree(key: _anchors['paper'], child: _paperBlock(l, s)),
-          ]),
-          if (lockVisible)
-            KeyedSubtree(
-                key: _anchors['lock'], child: _secHeader(l.lockSectionTitle)),
-          if (lockVisible)
-            _card([
-            // _switchRow를 안 쓴다. 그건 값을 바로 바꾸고 저장하는데,
-            // 잠금은 **확인을 받은 뒤에만** 바뀌어야 한다. 확인이 안 되면
-            // 스위치가 원래 자리로 돌아와야 하고, 그러려면 값을 우리가
-            // 직접 쥐고 있어야 한다.
-            SwitchListTile.adaptive(
-              title: Text(l.lockTitle,
-                  style:
-                      const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(l.lockSub(lockVendor),
-                    style: TextStyle(
-                        fontSize: 17, height: 1.35, color: context.c.guideInk)),
-              ),
-              value: s.lockOn,
-              onChanged: (v) => unawaited(_toggleLock(v)),
-            ),
-            if (s.lockOn) ...[
-              _sep(),
-              _dropRow<int>(l.lockDelayTitle, null, s.lockGraceSec, [
-                (kLockNow, l.lockDelayNow),
-                (kLockAfter1m, l.lockDelay1m),
-                (kLockAfter5m, l.lockDelay5m),
-              ], (v) => s.lockGraceSec = v),
-            ],
-            _sep(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              child: Text(l.lockNote,
-                  style: TextStyle(fontSize: 15, color: context.c.guideInk)),
-            ),
-          ]),
-          KeyedSubtree(
-              key: _anchors['tidy'], child: _secHeader(l.settingsSecTidy)),
-          _card([
-            // 2026-08-17 소유자 지적 — "세부 정리 규칙은 한 뎁스 더 들어가서
-            // 설정할 수 있게. 너무 다 꺼내 놓는 게 마음에 안 든다."
-            //
-            // 아홉 줄이 첫 화면에 통째로 펼쳐져 있었다. 그중 여덟은 한 번
-            // 정하고 다시 안 여는 것들이다. 애플 설정 앱이 하는 방식이
-            // 이것이다 — 첫 화면에는 이름만, 세부는 들어가서.
-            ListTile(
-              leading: Icon(Icons.tune, color: context.c.sub),
-              title: Text(l.tidyRulesTitle,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              subtitle: Text(l.tidyRulesSub,
-                  style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-              trailing: const Icon(Icons.chevron_right, size: 20),
-              onTap: () async {
-                await Navigator.push<void>(context,
-                    MaterialPageRoute(builder: (_) => const TidyRulesScreen()));
-                if (mounted) setState(() {});
-              },
-            ),
-            // 2026-08-30 소유자 지시 — 여기 있던 '붙여넣을 때마다 묻지
-            // 않게'는 맨 아래로 내리고, 그 자리에 '나만의 자동 바꾸기
-            // 규칙'을 올린다.
-            //
-            // 옳은 자리다. 둘은 같은 물음에 답한다 — **'정리'를 누르면
-            // 내 글이 어떻게 바뀌나.** 하나는 앱이 아는 규칙이고 하나는
-            // 내가 적어 둔 규칙일 뿐이다. 붙여넣기 물음은 그 물음과
-            // 아무 상관이 없는, 아이폰 운영체제 쪽 이야기였다.
-            _sep(),
-            KeyedSubtree(
-              key: _anchors['rules'],
-              child: ListTile(
-                leading: Icon(Icons.find_replace, color: context.c.sub),
-                title: Text(l.rulesSectionTitle,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w600)),
-                subtitle: Text(l.rulesSectionDesc,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  if (s.customRules.isNotEmpty)
-                    Text('${s.customRules.length}',
-                        style: TextStyle(fontSize: 16, color: context.c.sub)),
-                  const SizedBox(width: 4),
-                  Icon(Icons.chevron_right, color: context.c.sub),
-                ]),
-                onTap: () async {
-                  await Navigator.push<void>(context,
-                      MaterialPageRoute(builder: (_) => const RulesScreen()));
-                  if (mounted) setState(() {});
-                },
-              ),
-            ),
-          ]),
-          _secHeader(l.settingsSecWhen),
-          _card([
-            // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
-            _switchRow(l.previewTitle2, l.previewSub2, s.previewBeforeApply,
-                (v) => s.previewBeforeApply = v),
-            // 2026-09-07 소유자 지시 — '앱 공유·평가' 아래에 있던 것을 여기로
-            // 올린다. 앞서(2026-08-30) 맨 아래로 내린 판단을 뒤집는다:
-            // 붙여넣기 물음을 끄는 일은 결국 '정리하기 직전에 겪는 마찰'이라
-            // 정리 묶음 안에서 읽혀야 뜬금없지 않다. 공유·평가는 앱 밖으로
-            // 나가는 일이라 그 사이에 끼면 갈래가 섞인다.
-            if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-              _sep(),
-              ListTile(
-                leading: Icon(Icons.content_paste_go, color: context.c.sub),
-                title: Text(l.pasteTipTitle,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w600)),
-                subtitle: Text(l.pasteTipSub,
-                    style: TextStyle(fontSize: 14, color: context.c.guideInk)),
-                trailing: const Icon(Icons.chevron_right, size: 20),
-                onTap: () => showPasteTip(context),
-              ),
-            ],
-          ]),
-          // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 이 구역
-          // 전체(키 입력·안내·자동 태그 스위치·모델 고르기)가 없다.
-          if (aiUiVisible()) ...[
-          KeyedSubtree(
-              key: _anchors['ai'], child: _secHeader(l.aiSectionTitle)),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
-            child: Text(l.aiSectionDesc,
-                style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
-          ),
-          // 2026-08-16 소유자 요청 — 메모는 동기화되는데 키는 안 된다는 것을
-          // 여기서 분명히 말해 준다. 말 안 하면 사용자는 다른 기기에서 키가
-          // 비어 있는 것을 '버그'로 읽는다. 실제로는 우리가 일부러 안 보낸다.
-          if (syncVisible && !s.aiKeySync)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(32, 0, 16, 8),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Icon(Icons.lock_outline, size: 17, color: context.c.sub),
-                const SizedBox(width: 7),
-                Expanded(
-                  child: Text(l.aiKeyNotSynced,
-                      style: TextStyle(
-                          fontSize: 15, height: 1.4, color: context.c.sub)),
-                ),
-              ]),
-            ),
-          _card([
-            // 2026-08-18 소유자 지시 — 글을 고치고 조용해지면 태그를
-            // 다시 뽑는다. 남의 API 요금을 쓰는 일이라 끄는 길을 둔다.
-            _switchRow(l.autoTagTitle, l.autoTagSub, s.autoTagAi,
-                (v) => s.autoTagAi = v),
-            // 2026-08-20 소유자 지시 — "api키 동기화 : 최소한 아이클라우드는
-            // 하자. 구글 드라이브도 하자."
-            //
-            // 설명이 창고에 따라 달라진다. 두 길은 성질이 다르기 때문이다 —
-            // 애플은 애플도 못 읽고, 구글은 구글이 읽는다. 한 문장으로
-            // 덮으면 둘 중 하나는 거짓말이 된다.
-            if (syncVisible) ...[
-              _sep(),
-              _switchRow(
-                  l.aiKeySyncTitle,
-                  s.syncBackend == 'gdrive'
-                      ? l.aiKeySyncSubGdrive
-                      : l.aiKeySyncSubApple,
-                  s.aiKeySync,
-                  (v) => s.aiKeySync = v),
-            ],
-            _sep(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 키 한 칸이 전부다. 회사도 모델도 키에서 알아낸다.
-                  // (소유자: "키 발급 시 모델을 알려주지 않는데?" — 맞는 말이라
-                  //  모델 선택을 기본 화면에서 치웠다. 2026-08-16 승인)
-                  // 2026-08-17 소유자 지시 — "입력칸에 소제목을 넣지 말고,
-                  // 그냥 소제목으로 빼고, 입력칸은 입력칸스럽게 보이게 해줘."
-                  //
-                  // 그동안 'API 키 (Gemini · Claude · ChatGPT · Grok)'가
-                  // 칸 **안**에 힌트로 들어가 있었다. 힌트는 글자를 한 자라도
-                  // 치면 사라진다. 즉 이 칸이 무엇을 받는 칸인지 알려 주는
-                  // 유일한 글자가, 값을 넣는 순간 없어졌다. 나중에 다시 와서
-                  // 보면 점 마흔 개만 있고 이게 무슨 칸인지 알 길이 없다.
-                  //
-                  // 이름표는 칸 밖에서 늘 보여야 하고, 칸 안에는 **모양의
-                  // 본보기**만 있으면 된다. 회사 이름은 이름표로 올리고,
-                  // 안에는 키가 어떻게 생겼는지를 둔다.
-                  //
-                  // 테두리 없는 밑줄 칸도 고쳤다. 밑줄 하나로는 '여기를 눌러
-                  // 넣으라'는 신호가 약하다 — 칸처럼 보여야 칸으로 쓴다.
-                  Text(l.aiKeyHint,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          initialValue: s.aiKey,
-                          obscureText: true,
-                          style: const TextStyle(fontSize: 15),
-                          decoration: InputDecoration(
-                            // 나라말이 필요 없는 자리다. 어느 말을 쓰든
-                            // 키는 이렇게 생겼다.
-                            hintText: 'sk-…  ·  AIza…  ·  sk-ant-…  ·  xai-…',
-                            hintStyle:
-                                TextStyle(fontSize: 14, color: context.c.sub),
-                            filled: true,
-                            fillColor: context.c.field,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
+                                    size: 22,
+                                    color: ok
+                                        ? context.c.accent
+                                        : context.c.sub,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          title,
+                                          style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w700,
+                                            color: ok
+                                                ? context.c.accent
+                                                : context.c.guideInk,
+                                          ),
+                                        ),
+                                        if (sub != null) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            sub,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              height: 1.35,
+                                              color: context.c.sub,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: context.c.sub,
+                                  ),
+                                ],
+                              ),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: context.c.line),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide:
-                                  BorderSide(color: context.c.accent, width: 2),
-                            ),
-                          ),
-                          onChanged: (v) {
-                            final nv = v.trim();
-                            if (nv == s.aiKey) return;
-                            s.aiKey = nv;
-                            // 키가 바뀌면 앞서 알아낸 것은 **전부 남의
-                            // 것이다.** 이걸 안 지워서, 구글 키를 넣은
-                            // 화면에 ChatGPT와 gpt-5-nano가 남아 있었다.
-                            s.aiProvider = '';
-                            s.aiModel = '';
-                            s.aiModels = [];
-                            _aiMsg = '';
-                            store.persistSettings();
-                            setState(() {});
-                            // 붙여넣었으면 그게 곧 "써 달라"는 뜻이다.
-                            // 누를 단추를 하나라도 줄인다.
-                            _aiAutoTimer?.cancel();
-                            if (nv.length >= 20) {
-                              _aiAutoTimer = Timer(
-                                  const Duration(milliseconds: 900),
-                                  _verifyAiKey);
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton.tonal(
-                        onPressed: _aiChecking ? null : _verifyAiKey,
-                        child: Text(_aiChecking ? l.aiKeyChecking : l.aiKeyVerify),
-                      ),
-                    ],
-                  ),
-                  if (_aiStatusLine(l).isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(_aiStatusLine(l),
-                          style: TextStyle(fontSize: 14, height: 1.3, color: context.c.guideInk)),
-                    ),
-                  if (_aiMsg.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(_aiMsg,
-                          style: TextStyle(fontSize: 14, height: 1.3, color: context.c.guideInk)),
-                    ),
-                  // 회사가 준 줄 밑에 우리 말 처방을 붙인다. 회사 줄을
-                  // 지우지 않는 이유: 그건 우리가 지어낼 수 없는 정보이고,
-                  // 검색해서 해결하려는 사람에게는 그 원문이 필요하다.
-                  if (aiRemedy(l, _aiMsg).isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                      decoration: BoxDecoration(
-                        color: context.c.warnBg,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(Icons.info_outline,
-                                size: 18, color: context.c.warnInk),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(aiRemedy(l, _aiMsg),
-                                  style: TextStyle(
-                                      fontSize: 14.5,
-                                      height: 1.45,
-                                      fontWeight: FontWeight.w600,
-                                      color: context.c.warnInk)),
-                            ),
-                          ]),
-                    ),
-                  // 소유자 지적: "어떤 LLM API 키 발급에 가더라도 세부
-                  // 모델명을 안내해 주지 않는데 사용자가 어떻게 아냐?"
-                  //
-                  // 맞다. 그래서 원래 설계가 키 하나로 끝난다 — 회사를
-                  // 알아내고, 회사에 물어 목록을 받고, 제일 싼 것을 고른다.
-                  // 고급은 **비상구**이지 거쳐야 하는 단계가 아닌데, 그
-                  // 사실이 화면에서 안 읽혔다. 한 줄로 적어 둔다.
-                  // 고급은 **알아내기가 실패했을 때만** 나온다.
-                  //
-                  // 2026-08-17 소유자 지시 — "'고급설정' 같은 건 안된다. (…)
-                  // 내가 llm 마다 api키 다 들어가봐도 세부 모델이 나오는 게
-                  // 없어. 그러니 이걸 설정을 사용자에게 맡길 수는 없다."
-                  //
-                  // 옳다. 어느 회사도 키 발급 화면에서 모델 이름을 알려 주지
-                  // 않는다. 알 수 없는 것을 고르라고 내미는 칸은 도움이 아니라
-                  // 벽이다. 게다가 늘 보이면 사람은 그걸 **거쳐야 하는
-                  // 단계**로 읽는다 — 비상구를 복도 한가운데 두면 아무도
-                  // 그게 비상구인 줄 모른다.
-                  //
-                  // 그래서 성공한 화면에서는 아예 안 보인다. 우리가 회사를
-                  // 못 알아냈을 때만, 그때 처음 나타난다.
-                  if (s.aiKey.trim().isNotEmpty &&
-                      s.aiProvider.isEmpty &&
-                      !_aiChecking) ...[
-                    TextButton(
-                      onPressed: () => setState(() => _aiAdvOpen = !_aiAdvOpen),
-                      child: Text(l.aiAdvancedLabel),
-                    ),
-                    if (!_aiAdvOpen)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12, bottom: 4),
-                        child: Text(l.aiAdvancedNote,
-                            style:
-                                TextStyle(fontSize: 13, color: context.c.sub)),
-                      ),
-                  ],
-                  if (_aiAdvOpen && s.aiProvider.isEmpty) ...[
-                    if (_aiPickList().isNotEmpty)
-                      DropdownButton<String>(
-                        isExpanded: true,
-                        value: _aiPickList().contains(s.aiModel) ? s.aiModel : null,
-                        hint: Text(s.aiModel, overflow: TextOverflow.ellipsis),
-                        items: [
-                          for (final m in _aiPickList())
-                            DropdownMenuItem(
-                                value: m, child: Text(m, overflow: TextOverflow.ellipsis)),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) {
-                            s.aiModel = v;
-                            store.persistSettings();
-                            setState(() {});
-                          }
+                          );
                         },
                       ),
-                    // 목록에도 사다리에도 없는 신형을 쓸 때의 비상구.
-                    TextFormField(
-                      // 2026-08-17 — 값이 바뀌어도 칸은 처음 값을 붙들고
-                      // 있었다. 그래서 고르개와 이 칸이 서로 다른 모델
-                      // 이름을 보여 줬다. 데이터가 아니라 화면이 거짓말을
-                      // 한 것이다. 키를 붙여 값이 바뀌면 새로 그리게 한다.
-                      key: ValueKey('aiModel:${s.aiModel}'),
-                      initialValue: s.aiModel,
-                      decoration: InputDecoration(hintText: l.aiManualModelHint, isDense: true),
-                      onFieldSubmitted: (v) {
-                        if (v.trim().isEmpty) return;
-                        s.aiModel = v.trim();
-                        store.persistSettings();
-                        setState(() {});
+                    ]),
+                  ],
+                  // ── 프리미엄 ──────────────────────────────────────────────
+                  //
+                  // 2026-09-02 소유자 지시 — 동기화 바로 아래. 처음에는 맨 위였고,
+                  // 그다음엔 맨 아래로 내렸는데, 맨 아래는 아무도 안 내려가는
+                  // 자리였다. 동기화 다음이 맞다 — 동기화는 "이 앱을 계속 쓰겠다"고
+                  // 정한 사람이 여는 칸이고, 그 사람이 곧 값을 낼 만한 사람이다.
+                  if (kPaidTierLive)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+                      child: _PremiumBanner(
+                        premium: store.settings.premium,
+                        trialLeftDays: trialOn(store.settings.trialDays)
+                            ? trialLeft(store.settings.trialDays)
+                            : 0,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const AdFreeScope(child: PremiumScreen()),
+                          ),
+                        ),
+                      ),
+                    ),
+                  KeyedSubtree(
+                    key: _anchors['theme'],
+                    child: _secHeader(l.settingsSecView),
+                  ),
+                  _card([
+                    // 2026-08-16 소유자 요청 — 다크 모드 선택(기기 따름/라이트/다크).
+                    // 2026-08-17 소유자 요청 — "'다크 모드 시간에는 다크 모드로'
+                    // 등의 옵션도 같이 설정받아야 할 듯."
+                    //
+                    // 이건 이미 되고 있었다. '기기 설정 따름'이 그 일을 한다 —
+                    // 아이폰·안드로이드 모두 해 질 녘에 어두운 모드로 바꾸는 일정을
+                    // 갖고 있고 우리는 그걸 그대로 따른다. 문제는 그 사실이
+                    // '기기 설정 따름'이라는 말에서 안 읽혔다는 것이다.
+                    //
+                    // 기능을 새로 만드는 것보다, 이미 있는 기능이 있다고 말해 주는
+                    // 쪽이 먼저다.
+                    _dropRow(
+                      l.themeTitle,
+                      l.themeSystemNote,
+                      s.themeMode,
+                      [
+                        ('system', l.themeSystem),
+                        ('light', l.themeLight),
+                        ('dark', l.themeDark),
+                      ],
+                      (v) => s.themeMode = v,
+                    ),
+                    _sep(),
+                    // 2026-08-18 — 설정 두 뎁스, 둘째.
+                    //
+                    // 글자 크기와 줄 간격은 미닫이 둘에 견본 상자 하나, 세 조각이다.
+                    // 오늘 글자 크기를 안 바꿀 사람도 그 세 조각을 지나쳐야 다음
+                    // 항목에 닿았다.
+                    //
+                    // 지금 값을 오른쪽에 적어 둔다 — 들어가 보지 않고도 몇이고
+                    // 얼마인지 알 수 있으면, 안 들어가도 되는 날이 생긴다. 그게
+                    // 뎁스를 하나 더 두면서 잃는 것을 되갚는 유일한 방법이다.
+                    KeyedSubtree(
+                      key: _anchors['fontsize'],
+                      child: ListTile(
+                        leading: Icon(Icons.text_fields, color: context.c.sub),
+                        title: Text(
+                          l.typographyTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${s.bodyFontSize.round()}pt · '
+                              '${s.bodyLineHeight.toStringAsFixed(1)}',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: context.c.sub,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.chevron_right, color: context.c.sub),
+                          ],
+                        ),
+                        onTap: () async {
+                          await Navigator.push<void>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const TypographyScreen(),
+                            ),
+                          );
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    ),
+                    _sep(),
+                    KeyedSubtree(
+                      key: _anchors['paper'],
+                      child: _paperBlock(l, s),
+                    ),
+                  ]),
+                  if (lockVisible)
+                    KeyedSubtree(
+                      key: _anchors['lock'],
+                      child: _secHeader(l.lockSectionTitle),
+                    ),
+                  if (lockVisible)
+                    _card([
+                      // _switchRow를 안 쓴다. 그건 값을 바로 바꾸고 저장하는데,
+                      // 잠금은 **확인을 받은 뒤에만** 바뀌어야 한다. 확인이 안 되면
+                      // 스위치가 원래 자리로 돌아와야 하고, 그러려면 값을 우리가
+                      // 직접 쥐고 있어야 한다.
+                      SwitchListTile.adaptive(
+                        title: Text(
+                          l.lockTitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 17,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            l.lockSub(lockVendor),
+                            style: TextStyle(
+                              fontSize: 17,
+                              height: 1.35,
+                              color: context.c.guideInk,
+                            ),
+                          ),
+                        ),
+                        value: s.lockOn,
+                        onChanged: (v) => unawaited(_toggleLock(v)),
+                      ),
+                      if (s.lockOn) ...[
+                        _sep(),
+                        _dropRow<int>(
+                          l.lockDelayTitle,
+                          null,
+                          s.lockGraceSec,
+                          [
+                            (kLockNow, l.lockDelayNow),
+                            (kLockAfter1m, l.lockDelay1m),
+                            (kLockAfter5m, l.lockDelay5m),
+                          ],
+                          (v) => s.lockGraceSec = v,
+                        ),
+                      ],
+                      _sep(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+                        child: Text(
+                          l.lockNote,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: context.c.guideInk,
+                          ),
+                        ),
+                      ),
+                    ]),
+                  KeyedSubtree(
+                    key: _anchors['tidy'],
+                    child: _secHeader(l.settingsSecTidy),
+                  ),
+                  _card([
+                    // 2026-08-17 소유자 지적 — "세부 정리 규칙은 한 뎁스 더 들어가서
+                    // 설정할 수 있게. 너무 다 꺼내 놓는 게 마음에 안 든다."
+                    //
+                    // 아홉 줄이 첫 화면에 통째로 펼쳐져 있었다. 그중 여덟은 한 번
+                    // 정하고 다시 안 여는 것들이다. 애플 설정 앱이 하는 방식이
+                    // 이것이다 — 첫 화면에는 이름만, 세부는 들어가서.
+                    ListTile(
+                      leading: Icon(Icons.tune, color: context.c.sub),
+                      title: Text(
+                        l.tidyRulesTitle,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: Text(
+                        l.tidyRulesSub,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.c.guideInk,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right, size: 20),
+                      onTap: () async {
+                        await Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TidyRulesScreen(),
+                          ),
+                        );
+                        if (mounted) setState(() {});
                       },
                     ),
+                    // 2026-08-30 소유자 지시 — 여기 있던 '붙여넣을 때마다 묻지
+                    // 않게'는 맨 아래로 내리고, 그 자리에 '나만의 자동 바꾸기
+                    // 규칙'을 올린다.
+                    //
+                    // 옳은 자리다. 둘은 같은 물음에 답한다 — **'정리'를 누르면
+                    // 내 글이 어떻게 바뀌나.** 하나는 앱이 아는 규칙이고 하나는
+                    // 내가 적어 둔 규칙일 뿐이다. 붙여넣기 물음은 그 물음과
+                    // 아무 상관이 없는, 아이폰 운영체제 쪽 이야기였다.
+                    _sep(),
+                    KeyedSubtree(
+                      key: _anchors['rules'],
+                      child: ListTile(
+                        leading: Icon(Icons.find_replace, color: context.c.sub),
+                        title: Text(
+                          l.rulesSectionTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          l.rulesSectionDesc,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: context.c.guideInk,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (s.customRules.isNotEmpty)
+                              Text(
+                                '${s.customRules.length}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: context.c.sub,
+                                ),
+                              ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.chevron_right, color: context.c.sub),
+                          ],
+                        ),
+                        onTap: () async {
+                          await Navigator.push<void>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RulesScreen(),
+                            ),
+                          );
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    ),
+                  ]),
+                  _secHeader(l.settingsSecWhen),
+                  _card([
+                    // 미리보기 화면에서 '앞으로 생략'을 켜면 여기로 돌아와 다시 켤 수 있다.
+                    _switchRow(
+                      l.previewTitle2,
+                      l.previewSub2,
+                      s.previewBeforeApply,
+                      (v) => s.previewBeforeApply = v,
+                    ),
+                    // 2026-09-07 소유자 지시 — '앱 공유·평가' 아래에 있던 것을 여기로
+                    // 올린다. 앞서(2026-08-30) 맨 아래로 내린 판단을 뒤집는다:
+                    // 붙여넣기 물음을 끄는 일은 결국 '정리하기 직전에 겪는 마찰'이라
+                    // 정리 묶음 안에서 읽혀야 뜬금없지 않다. 공유·평가는 앱 밖으로
+                    // 나가는 일이라 그 사이에 끼면 갈래가 섞인다.
+                    if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                      _sep(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.content_paste_go,
+                          color: context.c.sub,
+                        ),
+                        title: Text(
+                          l.pasteTipTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          l.pasteTipSub,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: context.c.guideInk,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right, size: 20),
+                        onTap: () => showPasteTip(context),
+                      ),
+                    ],
+                  ]),
+                  // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 이 구역
+                  // 전체(키 입력·안내·자동 태그 스위치·모델 고르기)가 없다.
+                  if (aiUiVisible()) ...[
+                    KeyedSubtree(
+                      key: _anchors['ai'],
+                      child: _secHeader(l.aiSectionTitle),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 0, 16, 6),
+                      child: Text(
+                        l.aiSectionDesc,
+                        style: TextStyle(
+                          fontSize: 17,
+                          height: 1.35,
+                          color: context.c.guideInk,
+                        ),
+                      ),
+                    ),
+                    // 2026-08-16 소유자 요청 — 메모는 동기화되는데 키는 안 된다는 것을
+                    // 여기서 분명히 말해 준다. 말 안 하면 사용자는 다른 기기에서 키가
+                    // 비어 있는 것을 '버그'로 읽는다. 실제로는 우리가 일부러 안 보낸다.
+                    if (syncVisible && !s.aiKeySync)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 0, 16, 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.lock_outline,
+                              size: 17,
+                              color: context.c.sub,
+                            ),
+                            const SizedBox(width: 7),
+                            Expanded(
+                              child: Text(
+                                l.aiKeyNotSynced,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.4,
+                                  color: context.c.sub,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    _card([
+                      // 2026-08-18 소유자 지시 — 글을 고치고 조용해지면 태그를
+                      // 다시 뽑는다. 남의 API 요금을 쓰는 일이라 끄는 길을 둔다.
+                      _switchRow(
+                        l.autoTagTitle,
+                        l.autoTagSub,
+                        s.autoTagAi,
+                        (v) => s.autoTagAi = v,
+                      ),
+                      // 2026-08-20 소유자 지시 — "api키 동기화 : 최소한 아이클라우드는
+                      // 하자. 구글 드라이브도 하자."
+                      //
+                      // 설명이 창고에 따라 달라진다. 두 길은 성질이 다르기 때문이다 —
+                      // 애플은 애플도 못 읽고, 구글은 구글이 읽는다. 한 문장으로
+                      // 덮으면 둘 중 하나는 거짓말이 된다.
+                      if (syncVisible) ...[
+                        _sep(),
+                        _switchRow(
+                          l.aiKeySyncTitle,
+                          s.syncBackend == 'gdrive'
+                              ? l.aiKeySyncSubGdrive
+                              : l.aiKeySyncSubApple,
+                          s.aiKeySync,
+                          (v) => s.aiKeySync = v,
+                        ),
+                      ],
+                      _sep(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 키 한 칸이 전부다. 회사도 모델도 키에서 알아낸다.
+                            // (소유자: "키 발급 시 모델을 알려주지 않는데?" — 맞는 말이라
+                            //  모델 선택을 기본 화면에서 치웠다. 2026-08-16 승인)
+                            // 2026-08-17 소유자 지시 — "입력칸에 소제목을 넣지 말고,
+                            // 그냥 소제목으로 빼고, 입력칸은 입력칸스럽게 보이게 해줘."
+                            //
+                            // 그동안 'API 키 (Gemini · Claude · ChatGPT · Grok)'가
+                            // 칸 **안**에 힌트로 들어가 있었다. 힌트는 글자를 한 자라도
+                            // 치면 사라진다. 즉 이 칸이 무엇을 받는 칸인지 알려 주는
+                            // 유일한 글자가, 값을 넣는 순간 없어졌다. 나중에 다시 와서
+                            // 보면 점 마흔 개만 있고 이게 무슨 칸인지 알 길이 없다.
+                            //
+                            // 이름표는 칸 밖에서 늘 보여야 하고, 칸 안에는 **모양의
+                            // 본보기**만 있으면 된다. 회사 이름은 이름표로 올리고,
+                            // 안에는 키가 어떻게 생겼는지를 둔다.
+                            //
+                            // 테두리 없는 밑줄 칸도 고쳤다. 밑줄 하나로는 '여기를 눌러
+                            // 넣으라'는 신호가 약하다 — 칸처럼 보여야 칸으로 쓴다.
+                            Text(
+                              l.aiKeyHint,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    initialValue: s.aiKey,
+                                    obscureText: true,
+                                    style: const TextStyle(fontSize: 15),
+                                    decoration: InputDecoration(
+                                      // 나라말이 필요 없는 자리다. 어느 말을 쓰든
+                                      // 키는 이렇게 생겼다.
+                                      hintText:
+                                          'sk-…  ·  AIza…  ·  sk-ant-…  ·  xai-…',
+                                      hintStyle: TextStyle(
+                                        fontSize: 14,
+                                        color: context.c.sub,
+                                      ),
+                                      filled: true,
+                                      fillColor: context.c.field,
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 14,
+                                          ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(
+                                          color: context.c.line,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(
+                                          color: context.c.accent,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    onChanged: (v) {
+                                      final nv = v.trim();
+                                      if (nv == s.aiKey) return;
+                                      s.aiKey = nv;
+                                      // 키가 바뀌면 앞서 알아낸 것은 **전부 남의
+                                      // 것이다.** 이걸 안 지워서, 구글 키를 넣은
+                                      // 화면에 ChatGPT와 gpt-5-nano가 남아 있었다.
+                                      s.aiProvider = '';
+                                      s.aiModel = '';
+                                      s.aiModels = [];
+                                      _aiMsg = '';
+                                      store.persistSettings();
+                                      setState(() {});
+                                      // 붙여넣었으면 그게 곧 "써 달라"는 뜻이다.
+                                      // 누를 단추를 하나라도 줄인다.
+                                      _aiAutoTimer?.cancel();
+                                      if (nv.length >= 20) {
+                                        _aiAutoTimer = Timer(
+                                          const Duration(milliseconds: 900),
+                                          _verifyAiKey,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                FilledButton.tonal(
+                                  onPressed: _aiChecking ? null : _verifyAiKey,
+                                  child: Text(
+                                    _aiChecking
+                                        ? l.aiKeyChecking
+                                        : l.aiKeyVerify,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_aiStatusLine(l).isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  _aiStatusLine(l),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.3,
+                                    color: context.c.guideInk,
+                                  ),
+                                ),
+                              ),
+                            if (_aiMsg.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  _aiMsg,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.3,
+                                    color: context.c.guideInk,
+                                  ),
+                                ),
+                              ),
+                            // 회사가 준 줄 밑에 우리 말 처방을 붙인다. 회사 줄을
+                            // 지우지 않는 이유: 그건 우리가 지어낼 수 없는 정보이고,
+                            // 검색해서 해결하려는 사람에게는 그 원문이 필요하다.
+                            if (aiRemedy(l, _aiMsg).isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(top: 8),
+                                padding: const EdgeInsets.fromLTRB(
+                                  12,
+                                  10,
+                                  12,
+                                  10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.c.warnBg,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 18,
+                                      color: context.c.warnInk,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        aiRemedy(l, _aiMsg),
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          height: 1.45,
+                                          fontWeight: FontWeight.w600,
+                                          color: context.c.warnInk,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            // 소유자 지적: "어떤 LLM API 키 발급에 가더라도 세부
+                            // 모델명을 안내해 주지 않는데 사용자가 어떻게 아냐?"
+                            //
+                            // 맞다. 그래서 원래 설계가 키 하나로 끝난다 — 회사를
+                            // 알아내고, 회사에 물어 목록을 받고, 제일 싼 것을 고른다.
+                            // 고급은 **비상구**이지 거쳐야 하는 단계가 아닌데, 그
+                            // 사실이 화면에서 안 읽혔다. 한 줄로 적어 둔다.
+                            // 고급은 **알아내기가 실패했을 때만** 나온다.
+                            //
+                            // 2026-08-17 소유자 지시 — "'고급설정' 같은 건 안된다. (…)
+                            // 내가 llm 마다 api키 다 들어가봐도 세부 모델이 나오는 게
+                            // 없어. 그러니 이걸 설정을 사용자에게 맡길 수는 없다."
+                            //
+                            // 옳다. 어느 회사도 키 발급 화면에서 모델 이름을 알려 주지
+                            // 않는다. 알 수 없는 것을 고르라고 내미는 칸은 도움이 아니라
+                            // 벽이다. 게다가 늘 보이면 사람은 그걸 **거쳐야 하는
+                            // 단계**로 읽는다 — 비상구를 복도 한가운데 두면 아무도
+                            // 그게 비상구인 줄 모른다.
+                            //
+                            // 그래서 성공한 화면에서는 아예 안 보인다. 우리가 회사를
+                            // 못 알아냈을 때만, 그때 처음 나타난다.
+                            if (s.aiKey.trim().isNotEmpty &&
+                                s.aiProvider.isEmpty &&
+                                !_aiChecking) ...[
+                              TextButton(
+                                onPressed: () =>
+                                    setState(() => _aiAdvOpen = !_aiAdvOpen),
+                                child: Text(l.aiAdvancedLabel),
+                              ),
+                              if (!_aiAdvOpen)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 12,
+                                    bottom: 4,
+                                  ),
+                                  child: Text(
+                                    l.aiAdvancedNote,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: context.c.sub,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                            if (_aiAdvOpen && s.aiProvider.isEmpty) ...[
+                              if (_aiPickList().isNotEmpty)
+                                DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: _aiPickList().contains(s.aiModel)
+                                      ? s.aiModel
+                                      : null,
+                                  hint: Text(
+                                    s.aiModel,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  items: [
+                                    for (final m in _aiPickList())
+                                      DropdownMenuItem(
+                                        value: m,
+                                        child: Text(
+                                          m,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                  ],
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      s.aiModel = v;
+                                      store.persistSettings();
+                                      setState(() {});
+                                    }
+                                  },
+                                ),
+                              // 목록에도 사다리에도 없는 신형을 쓸 때의 비상구.
+                              TextFormField(
+                                // 2026-08-17 — 값이 바뀌어도 칸은 처음 값을 붙들고
+                                // 있었다. 그래서 고르개와 이 칸이 서로 다른 모델
+                                // 이름을 보여 줬다. 데이터가 아니라 화면이 거짓말을
+                                // 한 것이다. 키를 붙여 값이 바뀌면 새로 그리게 한다.
+                                key: ValueKey('aiModel:${s.aiModel}'),
+                                initialValue: s.aiModel,
+                                decoration: InputDecoration(
+                                  hintText: l.aiManualModelHint,
+                                  isDense: true,
+                                ),
+                                onFieldSubmitted: (v) {
+                                  if (v.trim().isEmpty) return;
+                                  s.aiModel = v.trim();
+                                  store.persistSettings();
+                                  setState(() {});
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ]),
+
+                    // 2026-08-17 소유자 지적 — "'파일에서 가져오기' '내보내기' '백업
+                    // 파일 저장'은 설정 안에 있는 게 아니라 '메뉴'의 항목이어야 한다."
+                    //
+                    // 맞다. 이 셋은 **하는 일**이지 **정하는 일**이 아니다. 설정은 한
+                    // 번 정해 놓고 안 여는 곳이다. 원래 여기 넣었던 것은 넣을 자리가
+                    // 거기밖에 없어서였고, 목록 화면에 메뉴가 생겼으니 옮길 게 아니라
+                    // 여기서 빼야 한다.
+                    //
+                    // 두 군데에 다 두는 것도 답이 아니다. 같은 일이 두 곳에 있으면
+                    // 사용자는 둘이 다른 일인가 의심한다.
+                    //
+                    // 내보내기가 왜 있어야 하는지에 대한 조사 결론은 그대로다 —
+                    // "갇힌다"는 인상은 그 자체로 이탈 사유이고, 네이버 메모 종료를
+                    // 겪은 한국 사용자는 더 그렇다. 그건 기능이 아니라 약속이다.
+                    // 약속은 그대로 두고 자리만 옮겼다.
                   ],
+                  // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로
+                  // 느끼게 하는 여섯 원인 중 하나로 나왔다. 애플 메모 30일, 구글 킵
+                  // 7일이 관습이라 30일을 따랐다(독자 설계 금지).
+                  // 2026-08-18 소유자 지시로 휴지통을 뺐다 — 목록의 삼선 메뉴에
+                  // 이미 있다. 한 가지 일로 가는 문이 둘이면 사용자는 둘이 다른
+                  // 것인가 의심한다. 자주 여는 쪽(목록)에 남긴다.
+                  _secHeader(l.settingsSecInfo),
+                  _card([
+                    // 2026-08-24 소유자 지시 — "다른 앱들처럼 앱공유와
+                    // 평가해주세요를 설정 하단에 만들어줘."
+                    //
+                    // 공유는 웹만 뺀다 — 브라우저의 공유 시트는 기기마다 있고
+                    // 없고가 갈려서, 안 되는 단추를 보여 주느니 뺀다.
+                    // 평가는 스토어 등록 페이지가 있는 iOS·iPadOS에서만 보인다.
+                    // 맥 직배포판과 안드로이드 테스트판에는 아직 리뷰 쓸 곳이
+                    // 없다 — 문을 열어 줬는데 빈 벽이면 앱이 미완성으로 보인다.
+                    if (!kIsWeb) ...[
+                      ListTile(
+                        leading: Icon(
+                          isApplePlatform
+                              ? Icons.ios_share
+                              : Icons.share_outlined,
+                          color: context.c.sub,
+                        ),
+                        title: Text(
+                          l.shareAppTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onTap: () => unawaited(
+                          SharePlus.instance.share(
+                            ShareParams(
+                              text:
+                                  l.shareAppMsg +
+                                  '\n' +
+                                  shareUrl(
+                                    isIOS:
+                                        !kIsWeb &&
+                                        defaultTargetPlatform ==
+                                            TargetPlatform.iOS,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      _sep(),
+                    ],
+                    if (!kIsWeb &&
+                        defaultTargetPlatform == TargetPlatform.iOS) ...[
+                      ListTile(
+                        leading: Icon(Icons.star_outline, color: context.c.sub),
+                        title: Text(
+                          l.rateAppTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onTap: () => unawaited(
+                          launchUrl(
+                            Uri.parse(appStoreReviewUrl()),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                        ),
+                      ),
+                      _sep(),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                      child: Text(
+                        l.settingsFooter,
+                        style: TextStyle(
+                          fontSize: 17,
+                          height: 1.35,
+                          color: context.c.guideInk,
+                        ),
+                      ),
+                    ),
+                    // 버전은 이 화면 맨 위 오른쪽으로 옮겼다(2026-08-17).
+                    // 같은 것을 두 곳에 두면 한 곳은 반드시 뒤처진다.
+                  ]),
+                  // 바로가기(앵커)가 겨냥한 자리를 화면 '맨 위'에 붙이려면 그 아래에
+                  // 화면 한 장만큼의 여유가 있어야 한다. 없으면 목록 끝에 가까운
+                  // 항목은 아무리 스크롤해도 중간까지만 올라온다 — 맥처럼 창이 큰
+                  // 기기에서 특히 그렇다. 맨 아래 항목을 골랐을 때만 티가 나는
+                  // 빈칸이라 이 정도는 값을 치를 만하다.
+                  SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
                 ],
               ),
             ),
-          ]),
-          // 2026-08-17 소유자 지적 — "'파일에서 가져오기' '내보내기' '백업
-          // 파일 저장'은 설정 안에 있는 게 아니라 '메뉴'의 항목이어야 한다."
-          //
-          // 맞다. 이 셋은 **하는 일**이지 **정하는 일**이 아니다. 설정은 한
-          // 번 정해 놓고 안 여는 곳이다. 원래 여기 넣었던 것은 넣을 자리가
-          // 거기밖에 없어서였고, 목록 화면에 메뉴가 생겼으니 옮길 게 아니라
-          // 여기서 빼야 한다.
-          //
-          // 두 군데에 다 두는 것도 답이 아니다. 같은 일이 두 곳에 있으면
-          // 사용자는 둘이 다른 일인가 의심한다.
-          //
-          // 내보내기가 왜 있어야 하는지에 대한 조사 결론은 그대로다 —
-          // "갇힌다"는 인상은 그 자체로 이탈 사유이고, 네이버 메모 종료를
-          // 겪은 한국 사용자는 더 그렇다. 그건 기능이 아니라 약속이다.
-          // 약속은 그대로 두고 자리만 옮겼다.
-
-          ],
-          // 2026-08-16 — 휴지통. 조사에서 "휴지통 없음"이 앱을 미완성으로
-          // 느끼게 하는 여섯 원인 중 하나로 나왔다. 애플 메모 30일, 구글 킵
-          // 7일이 관습이라 30일을 따랐다(독자 설계 금지).
-          // 2026-08-18 소유자 지시로 휴지통을 뺐다 — 목록의 삼선 메뉴에
-          // 이미 있다. 한 가지 일로 가는 문이 둘이면 사용자는 둘이 다른
-          // 것인가 의심한다. 자주 여는 쪽(목록)에 남긴다.
-          _secHeader(l.settingsSecInfo),
-          _card([
-            // 2026-08-24 소유자 지시 — "다른 앱들처럼 앱공유와
-            // 평가해주세요를 설정 하단에 만들어줘."
-            //
-            // 공유는 웹만 뺀다 — 브라우저의 공유 시트는 기기마다 있고
-            // 없고가 갈려서, 안 되는 단추를 보여 주느니 뺀다.
-            // 평가는 스토어 등록 페이지가 있는 iOS·iPadOS에서만 보인다.
-            // 맥 직배포판과 안드로이드 테스트판에는 아직 리뷰 쓸 곳이
-            // 없다 — 문을 열어 줬는데 빈 벽이면 앱이 미완성으로 보인다.
-            if (!kIsWeb) ...[
-              ListTile(
-                leading: Icon(
-                    isApplePlatform ? Icons.ios_share : Icons.share_outlined,
-                    color: context.c.sub),
-                title: Text(l.shareAppTitle,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w600)),
-                onTap: () => unawaited(SharePlus.instance.share(ShareParams(
-                    text: l.shareAppMsg +
-                        '\n' +
-                        shareUrl(
-                            isIOS: !kIsWeb &&
-                                defaultTargetPlatform ==
-                                    TargetPlatform.iOS)))),
-              ),
-              _sep(),
-            ],
-            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ...[
-              ListTile(
-                leading: Icon(Icons.star_outline, color: context.c.sub),
-                title: Text(l.rateAppTitle,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w600)),
-                onTap: () => unawaited(launchUrl(
-                    Uri.parse(appStoreReviewUrl()),
-                    mode: LaunchMode.externalApplication)),
-              ),
-              _sep(),
-            ],
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-              child: Text(l.settingsFooter,
-                  style: TextStyle(fontSize: 17, height: 1.35, color: context.c.guideInk)),
-            ),
-            // 버전은 이 화면 맨 위 오른쪽으로 옮겼다(2026-08-17).
-            // 같은 것을 두 곳에 두면 한 곳은 반드시 뒤처진다.
-          ]),
-          // 바로가기(앵커)가 겨냥한 자리를 화면 '맨 위'에 붙이려면 그 아래에
-          // 화면 한 장만큼의 여유가 있어야 한다. 없으면 목록 끝에 가까운
-          // 항목은 아무리 스크롤해도 중간까지만 올라온다 — 맥처럼 창이 큰
-          // 기기에서 특히 그렇다. 맨 아래 항목을 골랐을 때만 티가 나는
-          // 빈칸이라 이 정도는 값을 치를 만하다.
-          SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
-          ],
-        ),
-      ),
           ),
         ),
       ),
@@ -14287,127 +16072,159 @@ class _TypographyScreenState extends State<TypographyScreen> {
   final store = Store.instance;
 
   Widget _block(L10n l, AppSettings s) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── 본문 글꼴 ──
+        //
+        // 2026-08-27 밤 소유자 지시. 크기와 줄 간격은 있었는데 글꼴이
+        // 없었다. 왜 셋뿐인지는 core/body_font.dart 머리말에 있다.
+        Text(
+          l.bodyFontTitle,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<String>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(
+                value: kBodyFontSystem,
+                label: Text(
+                  l.bodyFontSystem,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+              ButtonSegment(
+                value: kBodyFontNoto,
+                label: Text(
+                  l.bodyFontNoto,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontFamily: 'NotoSansKR',
+                  ),
+                ),
+              ),
+              ButtonSegment(
+                value: kBodyFontMono,
+                label: Text(
+                  l.bodyFontMono,
+                  style: const TextStyle(fontSize: 13, fontFamily: 'D2Coding'),
+                ),
+              ),
+            ],
+            selected: {s.bodyFont},
+            onSelectionChanged: (v) {
+              setState(() => s.bodyFont = v.first);
+              store.persistSettings();
+            },
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
           children: [
-            // ── 본문 글꼴 ──
-            //
-            // 2026-08-27 밤 소유자 지시. 크기와 줄 간격은 있었는데 글꼴이
-            // 없었다. 왜 셋뿐인지는 core/body_font.dart 머리말에 있다.
-            Text(l.bodyFontTitle,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<String>(
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(
-                      value: kBodyFontSystem,
-                      label: Text(l.bodyFontSystem,
-                          style: const TextStyle(fontSize: 13))),
-                  ButtonSegment(
-                      value: kBodyFontNoto,
-                      label: Text(l.bodyFontNoto,
-                          style: const TextStyle(
-                              fontSize: 13, fontFamily: 'NotoSansKR'))),
-                  ButtonSegment(
-                      value: kBodyFontMono,
-                      label: Text(l.bodyFontMono,
-                          style: const TextStyle(
-                              fontSize: 13, fontFamily: 'D2Coding'))),
-                ],
-                selected: {s.bodyFont},
-                onSelectionChanged: (v) {
-                  setState(() => s.bodyFont = v.first);
-                  store.persistSettings();
-                },
+            Expanded(
+              child: Text(
+                l.bodyFontSizeTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                ),
               ),
             ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(l.bodyFontSizeTitle,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
-                ),
-                Text('${s.bodyFontSize.round()}',
-                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
-              ],
-            ),
-            Slider.adaptive(
-              value: s.bodyFontSize,
-              min: MonoTextController.minBodyFontSize,
-              max: MonoTextController.maxBodyFontSize,
-              divisions: (MonoTextController.maxBodyFontSize -
-                      MonoTextController.minBodyFontSize)
-                  .round(),
-              onChanged: (v) => setState(() => s.bodyFontSize = v),
-              onChangeEnd: (_) => store.persistSettings(),
-            ),
-            // 2026-08-18 소유자 지시 — "'본문 글자 크기'와 더불어서 '본문
-            // 줄 간격(행 간격)' 설정도 될까?"
-            //
-            // 견본은 아래 하나를 같이 쓴다. 둘을 따로 두면 사람이 두 군데를
-            // 번갈아 보며 맞춰야 하는데, 글자 크기와 줄 간격은 원래 **같이
-            // 보고 정하는 것**이다. 하나를 키우면 다른 하나가 좁아 보인다.
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(l.bodyLineHeightTitle,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 17)),
-                ),
-                Text(s.bodyLineHeight.toStringAsFixed(1),
-                    style: TextStyle(fontSize: 15, color: context.c.guideInk)),
-              ],
-            ),
-            Slider.adaptive(
-              value: s.bodyLineHeight,
-              min: MonoTextController.minBodyHeight,
-              max: MonoTextController.maxBodyHeight,
-              // 0.1씩. 그보다 잘게 나누면 손가락으로는 같은 자리이고,
-              // 숫자만 흔들려서 고른 값을 다시 못 찾는다.
-              divisions: ((MonoTextController.maxBodyHeight -
-                          MonoTextController.minBodyHeight) *
-                      10)
-                  .round(),
-              onChanged: (v) => setState(() => s.bodyLineHeight = v),
-              onChangeEnd: (_) => store.persistSettings(),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: context.c.codeBg,
-                  border: Border.all(color: context.c.codeLine),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Text(l.bodyFontSizeSample,
-                  style: TextStyle(
-                      fontSize: s.bodyFontSize,
-                      height: s.bodyLineHeight,
-                      // 견본은 고른 글꼴 그대로 보여 준다. 견본이 다른
-                      // 글꼴이면 견본이 아니다.
-                      fontFamily: bodyFontFamily(s.bodyFont,
-                          webDefault: kIsWeb ? kWebFontFamily : null))),
+            Text(
+              '${s.bodyFontSize.round()}',
+              style: TextStyle(fontSize: 15, color: context.c.guideInk),
             ),
           ],
         ),
-      );
-
-  Widget _card(List<Widget> children) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Material(
-            color: context.c.panel,
-            child: Column(children: children),
+        Slider.adaptive(
+          value: s.bodyFontSize,
+          min: MonoTextController.minBodyFontSize,
+          max: MonoTextController.maxBodyFontSize,
+          divisions:
+              (MonoTextController.maxBodyFontSize -
+                      MonoTextController.minBodyFontSize)
+                  .round(),
+          onChanged: (v) => setState(() => s.bodyFontSize = v),
+          onChangeEnd: (_) => store.persistSettings(),
+        ),
+        // 2026-08-18 소유자 지시 — "'본문 글자 크기'와 더불어서 '본문
+        // 줄 간격(행 간격)' 설정도 될까?"
+        //
+        // 견본은 아래 하나를 같이 쓴다. 둘을 따로 두면 사람이 두 군데를
+        // 번갈아 보며 맞춰야 하는데, 글자 크기와 줄 간격은 원래 **같이
+        // 보고 정하는 것**이다. 하나를 키우면 다른 하나가 좁아 보인다.
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l.bodyLineHeightTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+            Text(
+              s.bodyLineHeight.toStringAsFixed(1),
+              style: TextStyle(fontSize: 15, color: context.c.guideInk),
+            ),
+          ],
+        ),
+        Slider.adaptive(
+          value: s.bodyLineHeight,
+          min: MonoTextController.minBodyHeight,
+          max: MonoTextController.maxBodyHeight,
+          // 0.1씩. 그보다 잘게 나누면 손가락으로는 같은 자리이고,
+          // 숫자만 흔들려서 고른 값을 다시 못 찾는다.
+          divisions:
+              ((MonoTextController.maxBodyHeight -
+                          MonoTextController.minBodyHeight) *
+                      10)
+                  .round(),
+          onChanged: (v) => setState(() => s.bodyLineHeight = v),
+          onChangeEnd: (_) => store.persistSettings(),
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: context.c.codeBg,
+            border: Border.all(color: context.c.codeLine),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            l.bodyFontSizeSample,
+            style: TextStyle(
+              fontSize: s.bodyFontSize,
+              height: s.bodyLineHeight,
+              // 견본은 고른 글꼴 그대로 보여 준다. 견본이 다른
+              // 글꼴이면 견본이 아니다.
+              fontFamily: bodyFontFamily(
+                s.bodyFont,
+                webDefault: kIsWeb ? kWebFontFamily : null,
+              ),
+            ),
           ),
         ),
-      );
+      ],
+    ),
+  );
+
+  Widget _card(List<Widget> children) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: context.c.panel,
+        child: Column(children: children),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -14425,16 +16242,23 @@ class _TypographyScreenState extends State<TypographyScreen> {
               const SizedBox(height: 14),
               _card([
                 SwitchListTile.adaptive(
-                  title: Text(l.monoEditorTitle,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 17)),
+                  title: Text(
+                    l.monoEditorTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 17,
+                    ),
+                  ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: Text(l.monoEditorSub,
-                        style: TextStyle(
-                            fontSize: 15,
-                            height: 1.35,
-                            color: context.c.guideInk)),
+                    child: Text(
+                      l.monoEditorSub,
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.35,
+                        color: context.c.guideInk,
+                      ),
+                    ),
                   ),
                   value: s.monoEditor,
                   onChanged: (v) {
@@ -14471,15 +16295,15 @@ class _RulesScreenState extends State<RulesScreen> {
   final store = Store.instance;
 
   Widget _card(List<Widget> children) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Material(
-            color: context.c.panel,
-            child: Column(children: children),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: context.c.panel,
+        child: Column(children: children),
+      ),
+    ),
+  );
 
   Widget _sep() => Divider(height: 1, indent: 16, color: context.c.line);
 
@@ -14503,7 +16327,11 @@ class _RulesScreenState extends State<RulesScreen> {
               initialValue: r.find,
               decoration: InputDecoration(hintText: l.findLabel, isDense: true),
               onChanged: (v) {
-                s.customRules[i] = CustomRule(find: v, replace: r.replace, regex: r.regex);
+                s.customRules[i] = CustomRule(
+                  find: v,
+                  replace: r.replace,
+                  regex: r.regex,
+                );
                 store.persistSettings();
               },
             ),
@@ -14512,9 +16340,16 @@ class _RulesScreenState extends State<RulesScreen> {
           Expanded(
             child: TextFormField(
               initialValue: r.replace,
-              decoration: InputDecoration(hintText: l.replaceAction, isDense: true),
+              decoration: InputDecoration(
+                hintText: l.replaceAction,
+                isDense: true,
+              ),
               onChanged: (v) {
-                s.customRules[i] = CustomRule(find: r.find, replace: v, regex: r.regex);
+                s.customRules[i] = CustomRule(
+                  find: r.find,
+                  replace: v,
+                  regex: r.regex,
+                );
                 store.persistSettings();
               },
             ),
@@ -14583,11 +16418,14 @@ class _RulesScreenState extends State<RulesScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                child: Text(l.rulesSectionDesc,
-                    style: TextStyle(
-                        fontSize: 17,
-                        height: 1.35,
-                        color: context.c.guideInk)),
+                child: Text(
+                  l.rulesSectionDesc,
+                  style: TextStyle(
+                    fontSize: 17,
+                    height: 1.35,
+                    color: context.c.guideInk,
+                  ),
+                ),
               ),
               _card([
                 for (int i = 0; i < s.customRules.length; i++) ...[
@@ -14631,65 +16469,86 @@ Future<String> aiCallOnce({
   required String instruction,
   required String body,
 }) async {
-    final user = '[지시]\n$instruction\n\n[본문]\n$body';
-    if (provider == 'google') {
-      final res = await http.post(
-        Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${Uri.encodeComponent(key)}'),
-        headers: {'content-type': 'application/json'},
-        body: jsonEncode({
-          'system_instruction': {'parts': [{'text': sys}]},
-          'contents': [{'role': 'user', 'parts': [{'text': user}]}],
-        }),
-      );
-      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
-      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      final cands = (j['candidates'] ?? []) as List;
-      if (cands.isEmpty) return '';
-      final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
-      return parts.map((p) => (p['text'] ?? '') as String).join();
-    }
-    if (provider == 'anthropic') {
-      final res = await http.post(
-        Uri.parse('https://api.anthropic.com/v1/messages'),
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01',
-        },
-        body: jsonEncode({
-          'model': model,
-          'max_tokens': 8000,
-          'system': sys,
-          'messages': [{'role': 'user', 'content': user}],
-        }),
-      );
-      if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
-      final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      final content = (j['content'] ?? []) as List;
-      return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
-    }
-    // OpenAI(ChatGPT)와 xAI(Grok)는 동일한 chat/completions 형식
-    final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
+  final user = '[지시]\n$instruction\n\n[본문]\n$body';
+  if (provider == 'google') {
     final res = await http.post(
-      Uri.parse('$base/v1/chat/completions'),
+      Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${Uri.encodeComponent(key)}',
+      ),
+      headers: {'content-type': 'application/json'},
+      body: jsonEncode({
+        'system_instruction': {
+          'parts': [
+            {'text': sys},
+          ],
+        },
+        'contents': [
+          {
+            'role': 'user',
+            'parts': [
+              {'text': user},
+            ],
+          },
+        ],
+      }),
+    );
+    if (res.statusCode != 200)
+      throw Exception(_apiErr(res.statusCode, res.bodyBytes));
+    final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    final cands = (j['candidates'] ?? []) as List;
+    if (cands.isEmpty) return '';
+    final parts = ((cands[0]['content'] ?? {})['parts'] ?? []) as List;
+    return parts.map((p) => (p['text'] ?? '') as String).join();
+  }
+  if (provider == 'anthropic') {
+    final res = await http.post(
+      Uri.parse('https://api.anthropic.com/v1/messages'),
       headers: {
         'content-type': 'application/json',
-        'authorization': 'Bearer ${key}',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
       },
       body: jsonEncode({
         'model': model,
+        'max_tokens': 8000,
+        'system': sys,
         'messages': [
-          {'role': 'system', 'content': sys},
           {'role': 'user', 'content': user},
         ],
       }),
     );
-    if (res.statusCode != 200) throw Exception(_apiErr(res.statusCode, res.bodyBytes));
+    if (res.statusCode != 200)
+      throw Exception(_apiErr(res.statusCode, res.bodyBytes));
     final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    final choices = (j['choices'] ?? []) as List;
-    return choices.isEmpty ? '' : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
+    final content = (j['content'] ?? []) as List;
+    return content.isEmpty ? '' : ((content[0]['text'] ?? '') as String);
   }
+  // OpenAI(ChatGPT)와 xAI(Grok)는 동일한 chat/completions 형식
+  final base = provider == 'xai'
+      ? 'https://api.x.ai'
+      : 'https://api.openai.com';
+  final res = await http.post(
+    Uri.parse('$base/v1/chat/completions'),
+    headers: {
+      'content-type': 'application/json',
+      'authorization': 'Bearer ${key}',
+    },
+    body: jsonEncode({
+      'model': model,
+      'messages': [
+        {'role': 'system', 'content': sys},
+        {'role': 'user', 'content': user},
+      ],
+    }),
+  );
+  if (res.statusCode != 200)
+    throw Exception(_apiErr(res.statusCode, res.bodyBytes));
+  final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  final choices = (j['choices'] ?? []) as List;
+  return choices.isEmpty
+      ? ''
+      : (((choices[0]['message'] ?? {})['content'] ?? '') as String);
+}
 
 /// ── 여기서부터, 키 하나로 회사를 알아내는 길 ──────────────────
 ///
@@ -14706,13 +16565,18 @@ Future<List<String>> _fetchModelIds(String provider, String key) async {
     final ids = <String>[];
     var page = '';
     for (var i = 0; i < 5; i++) {
-      final res = await http.get(Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${Uri.encodeComponent(key)}${page.isEmpty ? '' : '&pageToken=$page'}'));
-      if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+      final res = await http.get(
+        Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${Uri.encodeComponent(key)}${page.isEmpty ? '' : '&pageToken=$page'}',
+        ),
+      );
+      if (res.statusCode != 200)
+        throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
       final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       for (final m in (j['models'] ?? []) as List) {
-        final methods =
-            List<String>.from(((m as Map)['supportedGenerationMethods'] ?? const []) as List);
+        final methods = List<String>.from(
+          ((m as Map)['supportedGenerationMethods'] ?? const []) as List,
+        );
         if (!methods.contains('generateContent')) continue;
         ids.add(((m['name'] ?? '') as String).replaceFirst('models/', ''));
       }
@@ -14722,18 +16586,32 @@ Future<List<String>> _fetchModelIds(String provider, String key) async {
     return ids;
   }
   if (provider == 'anthropic') {
-    final res = await http.get(Uri.parse('https://api.anthropic.com/v1/models?limit=100'),
-        headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'});
-    if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+    final res = await http.get(
+      Uri.parse('https://api.anthropic.com/v1/models?limit=100'),
+      headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'},
+    );
+    if (res.statusCode != 200)
+      throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
     final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
+    return [
+      for (final m in (j['data'] ?? []) as List)
+        ((m as Map)['id'] ?? '') as String,
+    ];
   }
-  final base = provider == 'xai' ? 'https://api.x.ai' : 'https://api.openai.com';
-  final res = await http.get(Uri.parse('$base/v1/models'),
-      headers: {'authorization': 'Bearer $key'});
-  if (res.statusCode != 200) throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
+  final base = provider == 'xai'
+      ? 'https://api.x.ai'
+      : 'https://api.openai.com';
+  final res = await http.get(
+    Uri.parse('$base/v1/models'),
+    headers: {'authorization': 'Bearer $key'},
+  );
+  if (res.statusCode != 200)
+    throw Exception(_apiErr2(res.statusCode, res.bodyBytes));
   final j = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-  return [for (final m in (j['data'] ?? []) as List) ((m as Map)['id'] ?? '') as String];
+  return [
+    for (final m in (j['data'] ?? []) as List)
+      ((m as Map)['id'] ?? '') as String,
+  ];
 }
 
 String _apiErr2(int code, List<int> bodyBytes) {
@@ -14748,8 +16626,6 @@ String _apiErr2(int code, List<int> bodyBytes) {
   return 'API $code';
 }
 
-
-
 /// 키 하나를 들고 네 회사에 차례로 물어, 주인과 모델을 알아낸다.
 ///
 /// 돌려주는 것.
@@ -14760,7 +16636,7 @@ String _apiErr2(int code, List<int> bodyBytes) {
 /// 남의 회사에 키를 보내는 일은 최소로 한다 — 앞글자로 짚이는 곳을 맨
 /// 앞에 두고, **거절당했을 때만** 다음으로 넘어간다.
 Future<({String provider, List<String> models, String model, String listError})>
-    probeAiKey(String key) async {
+probeAiKey(String key) async {
   final k = key.trim();
   if (k.isEmpty) {
     return (provider: '', models: <String>[], model: '', listError: '');
@@ -14780,7 +16656,8 @@ Future<({String provider, List<String> models, String model, String listError})>
       final lo = '$e'.toLowerCase();
       // 이 회사 것이 아니다 → 다음 회사. 그 밖의 사유(잔액·한도·그물)는
       // 주인을 찾았다는 뜻이므로 여기서 멈춘다.
-      final wrongOwner = lo.contains('api 401') ||
+      final wrongOwner =
+          lo.contains('api 401') ||
           lo.contains('api 403') ||
           lo.contains('api 400') ||
           lo.contains('api key not valid') ||
@@ -14791,14 +16668,14 @@ Future<({String provider, List<String> models, String model, String listError})>
         provider: p,
         models: <String>[],
         model: defaultLadder(p).first,
-        listError: '$e'
+        listError: '$e',
       );
     }
     return (
       provider: p,
       models: ids,
       model: pickCheapest(p, ids) ?? defaultLadder(p).first,
-      listError: ''
+      listError: '',
     );
   }
   return (provider: '', models: <String>[], model: '', listError: '');
@@ -14971,8 +16848,9 @@ Future<bool> showAiKeySheet(BuildContext context) async {
             });
             return;
           }
-          final found =
-              l.aiModelsFound(filterChatModels(r.provider, r.models).length);
+          final found = l.aiModelsFound(
+            filterChatModels(r.provider, r.models).length,
+          );
           setD(() => msg = '$found\n${l.aiPinging}');
           try {
             await aiPing(provider: r.provider, model: r.model, key: key);
@@ -15007,15 +16885,20 @@ Future<bool> showAiKeySheet(BuildContext context) async {
         }
 
         return AlertDialog(
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 40,
+          ),
           titlePadding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
           contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
           actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(l.aiKeyInviteTitle,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            l.aiKeyInviteTitle,
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
+          ),
           content: SizedBox(
             width: w < 520 ? w : 460,
             child: SingleChildScrollView(
@@ -15023,11 +16906,14 @@ Future<bool> showAiKeySheet(BuildContext context) async {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(l.aiKeyInviteBody,
-                      style: TextStyle(
-                          fontSize: 14.5,
-                          height: 1.45,
-                          color: ctx.c.guideInk)),
+                  Text(
+                    l.aiKeyInviteBody,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      height: 1.45,
+                      color: ctx.c.guideInk,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: ctl,
@@ -15043,7 +16929,9 @@ Future<bool> showAiKeySheet(BuildContext context) async {
                       fillColor: ctx.c.field,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -15078,35 +16966,43 @@ Future<bool> showAiKeySheet(BuildContext context) async {
                       const Spacer(),
                       FilledButton.tonal(
                         onPressed: checking ? null : verify,
-                        child:
-                            Text(checking ? l.aiKeyChecking : l.aiKeyVerify),
+                        child: Text(checking ? l.aiKeyChecking : l.aiKeyVerify),
                       ),
                     ],
                   ),
                   if (msg.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
-                      child: Text(msg,
-                          style: TextStyle(
-                              fontSize: 13.5,
-                              height: 1.35,
-                              color: ctx.c.guideInk)),
+                      child: Text(
+                        msg,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          height: 1.35,
+                          color: ctx.c.guideInk,
+                        ),
+                      ),
                     ),
                   if (aiRemedy(l, msg).isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
-                      child: Text(aiRemedy(l, msg),
-                          style: TextStyle(
-                              fontSize: 13.5,
-                              height: 1.35,
-                              color: ctx.c.accent)),
+                      child: Text(
+                        aiRemedy(l, msg),
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          height: 1.35,
+                          color: ctx.c.accent,
+                        ),
+                      ),
                     ),
                   const SizedBox(height: 16),
-                  Text(l.aiKeyWhere,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: ctx.c.sub)),
+                  Text(
+                    l.aiKeyWhere,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: ctx.c.sub,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
@@ -15116,32 +17012,45 @@ Future<bool> showAiKeySheet(BuildContext context) async {
                         OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
                             minimumSize: const Size(0, 34),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          onPressed: () => unawaited(launchUrl(
+                          onPressed: () => unawaited(
+                            launchUrl(
                               Uri.parse(e.value),
-                              mode: LaunchMode.externalApplication)),
-                          child: Text(providerLabel(e.key),
-                              style: const TextStyle(fontSize: 13)),
+                              mode: LaunchMode.externalApplication,
+                            ),
+                          ),
+                          child: Text(
+                            providerLabel(e.key),
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 14),
                   // 돈과 비밀 — 묻기 전에 먼저 답한다. 이 두 줄이 없으면
                   // 사람은 '이 앱이 내 키로 뭘 하려는 거지'에서 멈춘다.
-                  Text('${l.aiKeyCost}\n${l.aiKeySafe}',
-                      style: TextStyle(
-                          fontSize: 12.5, height: 1.4, color: ctx.c.sub)),
+                  Text(
+                    '${l.aiKeyCost}\n${l.aiKeySafe}',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.4,
+                      color: ctx.c.sub,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx, ready()),
-                child: Text(l.close)),
+              onPressed: () => Navigator.pop(ctx, ready()),
+              child: Text(l.close),
+            ),
             const SizedBox(width: 8),
             FilledButton(
               onPressed: ready() ? () => Navigator.pop(ctx, true) : null,
