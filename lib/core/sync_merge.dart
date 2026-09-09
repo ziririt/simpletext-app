@@ -166,9 +166,7 @@ MergeResult<T> mergeNotes<T>({
         pulled++;
         // 로컬이 지는데, 마지막으로 끝까지 맞춘 뒤에 고친 수정이고
         // 알맹이도 다르다 — 구름에 올라간 적 없는 글일 수 있다. 백업.
-        if (bodyOf != null &&
-            ls > syncedBeforeMs &&
-            bodyOf(l) != bodyOf(r)) {
+        if (bodyOf != null && ls > syncedBeforeMs && bodyOf(l) != bodyOf(r)) {
           backups.add(l);
         }
       } else if (ls > rs) {

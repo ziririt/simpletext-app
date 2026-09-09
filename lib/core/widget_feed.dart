@@ -53,12 +53,12 @@ class FeedItem {
   final bool pinned;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'preview': preview,
-        'at': updatedAt,
-        'pin': pinned,
-      };
+    'id': id,
+    'title': title,
+    'preview': preview,
+    'at': updatedAt,
+    'pin': pinned,
+  };
 
   @override
   String toString() => 'FeedItem($id, "$title", "$preview")';
@@ -97,13 +97,15 @@ List<FeedItem> widgetFeed(
     final rest = (n.title.trim().isNotEmpty || head.isEmpty)
         ? flat
         : _dropHead(flat, head);
-    out.add(FeedItem(
-      id: n.id,
-      title: head.isEmpty ? untitled : head,
-      preview: _clip(rest, kWidgetPreviewLen),
-      updatedAt: n.updatedAt,
-      pinned: n.pinned,
-    ));
+    out.add(
+      FeedItem(
+        id: n.id,
+        title: head.isEmpty ? untitled : head,
+        preview: _clip(rest, kWidgetPreviewLen),
+        updatedAt: n.updatedAt,
+        pinned: n.pinned,
+      ),
+    );
   }
   return out;
 }
@@ -125,7 +127,7 @@ String _clip(String s, int n) {
 /// 위젯은 옛 글을 들고 있을 수 있다. 모양이 바뀌었을 때 네이티브 쪽이
 /// "이건 내가 아는 판이 아니다"라고 말할 수 있어야 한다.
 Map<String, dynamic> widgetPayload(List<FeedItem> items, int nowMs) => {
-      'v': 1,
-      'at': nowMs,
-      'items': items.map((e) => e.toJson()).toList(),
-    };
+  'v': 1,
+  'at': nowMs,
+  'items': items.map((e) => e.toJson()).toList(),
+};

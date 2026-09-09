@@ -29,14 +29,11 @@ import 'sync_transport.dart';
 List<String> pickFetch({
   required Map<String, int> localStamp,
   required List<RemoteMeta> metas,
-}) =>
-    [
-      for (final m in metas)
-        if (m.up == null ||
-            localStamp[m.id] == null ||
-            m.up! > localStamp[m.id]!)
-          m.id,
-    ];
+}) => [
+  for (final m in metas)
+    if (m.up == null || localStamp[m.id] == null || m.up! > localStamp[m.id]!)
+      m.id,
+];
 
 /// 이 노트를 창고에 올릴 것인가.
 ///
@@ -110,8 +107,7 @@ Duration probeEvery({
   required int nowMs,
   Duration hot = const Duration(seconds: 3),
   Duration cool = const Duration(seconds: 15),
-}) =>
-    nowMs < hotUntilMs ? hot : cool;
+}) => nowMs < hotUntilMs ? hot : cool;
 
 /// 뜨거운 시간이 얼마나 가나.
 const int kProbeHotMs = 2 * 60 * 1000;

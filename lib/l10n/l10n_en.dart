@@ -58,40 +58,40 @@ class L10nEn extends L10n {
       'Skyblue Note — a light, fast notes app that syncs across all your devices.';
   @override
   String get seedBody => [
-        'Hello! 😊 Here is the summary you asked for[1][2].',
-        '',
-        '# Skyblue Note',
-        '',
-        'The table is out of line. Tap the **wand** at the bottom left. 🎉',
-        '',
-        '| Company | Ticker | Return | Weight',
-        '|------|------|--------|',
-        '| Apple | AAPL | +14.2% | 12% |',
-        '|Nvidia|NVDA|+48.9%|22%|',
-        '| Microsoft | MSFT | +21.5% | 18% |',
-        '|Tesla|TSLA|-8.3%|8%|',
-        '',
-        '> Tidy lines it up. The \'Table\' menu pastes it straight into a spreadsheet.',
-        '',
-        '## What gets swept away',
-        '',
-        '- [ ] Filler greetings and emoji 🙂',
-        '- [ ] Footnotes stuck to a sentence[3][4]',
-        '- [ ] A stray asterisk pair at the end of a line**',
-        '- [x] A broken table gets rebuilt',
-        '',
-        '## What stays',
-        '',
-        'Headings, **bold** and quotes stay. On screen they read as meaning; paste them into Notes or a forum and the marks are gone.',
-        '',
-        '---',
-        '',
-        '\t•\tBullets wrapped in tabs — this is how Grok and ChatGPT paste',
-        '\t•\tDoubled   spaces and tabs',
-        '\t•\tThese scattered lines find their place too',
-        '',
-        '> Not happy with it? [Restore original](https://ezlong.com/skybluenote) puts it back.',
-      ].join('\n');
+    'Hello! 😊 Here is the summary you asked for[1][2].',
+    '',
+    '# Skyblue Note',
+    '',
+    'The table is out of line. Tap the **wand** at the bottom left. 🎉',
+    '',
+    '| Company | Ticker | Return | Weight',
+    '|------|------|--------|',
+    '| Apple | AAPL | +14.2% | 12% |',
+    '|Nvidia|NVDA|+48.9%|22%|',
+    '| Microsoft | MSFT | +21.5% | 18% |',
+    '|Tesla|TSLA|-8.3%|8%|',
+    '',
+    '> Tidy lines it up. The \'Table\' menu pastes it straight into a spreadsheet.',
+    '',
+    '## What gets swept away',
+    '',
+    '- [ ] Filler greetings and emoji 🙂',
+    '- [ ] Footnotes stuck to a sentence[3][4]',
+    '- [ ] A stray asterisk pair at the end of a line**',
+    '- [x] A broken table gets rebuilt',
+    '',
+    '## What stays',
+    '',
+    'Headings, **bold** and quotes stay. On screen they read as meaning; paste them into Notes or a forum and the marks are gone.',
+    '',
+    '---',
+    '',
+    '\t•\tBullets wrapped in tabs — this is how Grok and ChatGPT paste',
+    '\t•\tDoubled   spaces and tabs',
+    '\t•\tThese scattered lines find their place too',
+    '',
+    '> Not happy with it? [Restore original](https://ezlong.com/skybluenote) puts it back.',
+  ].join('\n');
 
   @override
   String get done => 'Done';
@@ -165,7 +165,8 @@ class L10nEn extends L10n {
   @override
   String get noteNotFound => 'Note not found';
   @override
-  String get revertedToast => 'Back to the original. The previous text is in Version history.';
+  String get revertedToast =>
+      'Back to the original. The previous text is in Version history.';
 
   // 원본복귀 (2026-08-17)
   @override
@@ -182,12 +183,10 @@ class L10nEn extends L10n {
   String get revertConfirmOk => 'Restore';
 
   @override
-  String get okAction =>
-      'OK';
+  String get okAction => 'OK';
 
   @override
-  String get revertDoneTitle =>
-      'Reverted to the original';
+  String get revertDoneTitle => 'Reverted to the original';
 
   @override
   String get revertDoneBody =>
@@ -272,10 +271,12 @@ class L10nEn extends L10n {
   String get aiPingOk => 'Editing works. You are ready to go.';
 
   @override
-  String aiPingFailed(String err) => 'The list came back, but the edit call was refused — $err';
+  String aiPingFailed(String err) =>
+      'The list came back, but the edit call was refused — $err';
 
   @override
-  String get aiAdvancedNote => 'You usually do not need this. The key alone is enough.';
+  String get aiAdvancedNote =>
+      'You usually do not need this. The key alone is enough.';
 
   // 종이 다섯 벌 추가 (2026-08-17)
   @override
@@ -338,11 +339,13 @@ class L10nEn extends L10n {
   @override
   String get noTablesFound => 'No tables found in this note';
   @override
-  String tableInfo(int n, int cols, int rows) => 'Table $n — $cols cols × $rows rows';
+  String tableInfo(int n, int cols, int rows) =>
+      'Table $n — $cols cols × $rows rows';
   @override
   String get forSpreadsheet => 'For spreadsheets';
   @override
-  String get copiedSpreadsheet => 'Copied — paste into a Google Sheets or Excel cell';
+  String get copiedSpreadsheet =>
+      'Copied — paste into a Google Sheets or Excel cell';
   @override
   String get copiedCsv => 'Copied as CSV';
   @override
@@ -370,21 +373,25 @@ class L10nEn extends L10n {
   @override
   String unknownPrefix(String what) => 'The AI will handle this · $what';
   @override
-  String get aiKeyPromo => 'Add an AI API key in Settings to handle free-form edits like this.';
+  String get aiKeyPromo =>
+      'Add an AI API key in Settings to handle free-form edits like this.';
   @override
   String get aiBusyLabel => 'AI editing…';
   @override
   String get aiKeyInviteTitle => 'Your own AI key makes this much stronger';
   @override
-  String get aiKeyInviteBody => 'Right now only fixed rules are understood. With your own AI key, free-form instructions like "make this more concise" or "rewrite it politely" work too, and tags are pulled by AI.';
+  String get aiKeyInviteBody =>
+      'Right now only fixed rules are understood. With your own AI key, free-form instructions like "make this more concise" or "rewrite it politely" work too, and tags are pulled by AI.';
   @override
   String get aiKeyCta => 'Add AI key';
   @override
   String get aiKeyPasteBtn => 'Paste';
   @override
-  String get aiKeyCost => 'This app simply calls the AI service you already use. Put in the key from whichever you have — Gemini, ChatGPT, Claude or Grok.';
+  String get aiKeyCost =>
+      'This app simply calls the AI service you already use. Put in the key from whichever you have — Gemini, ChatGPT, Claude or Grok.';
   @override
-  String get aiKeySafe => 'The key stays on this device. It is never sent to this app’s servers.';
+  String get aiKeySafe =>
+      'The key stays on this device. It is never sent to this app’s servers.';
   @override
   String get aiKeyWhere => 'Where to get a key';
   @override
@@ -410,9 +417,11 @@ class L10nEn extends L10n {
   @override
   String get headingBigTitle => 'Subheads as Heading 2';
   @override
-  String get headingBigSub => 'Makes detected subheads large and bold (Heading 2)';
+  String get headingBigSub =>
+      'Makes detected subheads large and bold (Heading 2)';
   @override
-  String get aiWorking => 'The AI is editing as you asked. This can take a little while…';
+  String get aiWorking =>
+      'The AI is editing as you asked. This can take a little while…';
   @override
   String get aiEmptyResponse => 'Empty response';
   @override
@@ -457,8 +466,7 @@ class L10nEn extends L10n {
   String get copyAll => 'Copy all';
 
   @override
-  String get copyPlainSub =>
-      'Plain text — markdown marks removed';
+  String get copyPlainSub => 'Plain text — markdown marks removed';
 
   @override
   String get copyRaw => 'Copy as markdown';
@@ -471,7 +479,8 @@ class L10nEn extends L10n {
   @override
   String get tidyCopy => 'Tidy & copy';
   @override
-  String get tidyCopySub => 'Keeps the note as is, copies only the tidied result';
+  String get tidyCopySub =>
+      'Keeps the note as is, copies only the tidied result';
   @override
   String tidyCopied(String summary) => 'Tidied and copied — $summary';
   @override
@@ -491,53 +500,47 @@ class L10nEn extends L10n {
   String get apply => 'Apply tidy now';
 
   @override
-  String get presetAiName =>
-      'Standard tidy';
+  String get presetAiName => 'Standard tidy';
   @override
   String get presetAiDesc =>
       'Makes a pasted AI answer readable. This is enough most of the time';
   @override
-  String get presetStripName =>
-      'Strip all marks';
+  String get presetStripName => 'Strip all marks';
   @override
   String get presetStripDesc =>
       'For chat and SMS. Every mark and emoji goes; tables become aligned text';
   @override
-  String get presetMinimalName =>
-      'Lint only';
+  String get presetMinimalName => 'Lint only';
   @override
   String get presetMinimalDesc =>
       'Keeps the structure, removes only invisible junk';
   @override
-  String get presetTablesName =>
-      'Tables only';
+  String get presetTablesName => 'Tables only';
   @override
   String get presetTablesDesc =>
       'To paste straight into Excel or Google Sheets';
   @override
-  String get presetBlogName =>
-      'For blogs';
+  String get presetBlogName => 'For blogs';
   @override
-  String get presetBlogDesc =>
-      'Keeps link addresses, drops the marks';
+  String get presetBlogDesc => 'Keeps link addresses, drops the marks';
 
   @override
   String get tidySample => [
-        '## Today\'s summary 😊',
-        '',
-        'The **key** points are three[1][2].',
-        '',
-        '- First item',
-        '- Second item',
-        '',
-        '> A quoted line',
-        '',
-        'More on the [blog](https://ezlong.com)',
-        '',
-        '| Item | Value |',
-        '|---|---|',
-        '|Sales|120|',
-      ].join('\n');
+    '## Today\'s summary 😊',
+    '',
+    'The **key** points are three[1][2].',
+    '',
+    '- First item',
+    '- Second item',
+    '',
+    '> A quoted line',
+    '',
+    'More on the [blog](https://ezlong.com)',
+    '',
+    '| Item | Value |',
+    '|---|---|',
+    '|Sales|120|',
+  ].join('\n');
 
   @override
   String get settingsTitle => 'Settings';
@@ -554,17 +557,18 @@ class L10nEn extends L10n {
   String get syncAppleOnly => 'Apple only';
 
   @override
-  String get syncScopeTitle =>
-      'Sync scope';
+  String get syncScopeTitle => 'Sync scope';
 
   @override
   String get syncScopeShared =>
       'Synced across your devices: notes, tidy rules, custom replace rules, folders, saved AI prompts';
 
   @override
-  String get syncStateOffGdrive => 'Please sign in to your Google account again';
+  String get syncStateOffGdrive =>
+      'Please sign in to your Google account again';
   @override
-  String get syncStateExpiredGdrive => 'Your account is still connected, but permission to use Drive has expired. Tap once to renew it.';
+  String get syncStateExpiredGdrive =>
+      'Your account is still connected, but permission to use Drive has expired. Tap once to renew it.';
 
   @override
   String get syncScopePlatformGdrive =>
@@ -585,29 +589,21 @@ class L10nEn extends L10n {
   String get syncScopeNever =>
       'Your AI API key is never uploaded to any cloud, so enter it on each device';
   @override
-  String get syncWhereTitle =>
-      'Where to keep it';
+  String get syncWhereTitle => 'Where to keep it';
   @override
-  String get syncBackendNone =>
-      'Don\'t sync';
+  String get syncBackendNone => 'Don\'t sync';
   @override
-  String get syncBackendNoneSub =>
-      'Keep everything on this device only';
+  String get syncBackendNoneSub => 'Keep everything on this device only';
   @override
-  String get syncBackendIcloud =>
-      'iCloud';
+  String get syncBackendIcloud => 'iCloud';
   @override
-  String get syncBackendIcloudSub =>
-      'Between iPhone, iPad and Mac';
+  String get syncBackendIcloudSub => 'Between iPhone, iPad and Mac';
   @override
-  String get syncBackendGdrive =>
-      'Google Drive';
+  String get syncBackendGdrive => 'Google Drive';
   @override
-  String get syncBackendGdriveSub =>
-      'Other devices and the web too';
+  String get syncBackendGdriveSub => 'Other devices and the web too';
   @override
-  String get syncSoon =>
-      'Coming soon';
+  String get syncSoon => 'Coming soon';
 
   @override
   String get driveSignInFailed => 'Could not connect your Google account';
@@ -618,17 +614,14 @@ class L10nEn extends L10n {
   @override
   String get driveSignedInAs => 'Connected';
   @override
-  String get syncSectionState =>
-      'Right now';
+  String get syncSectionState => 'Right now';
   @override
-  String get syncNowAction =>
-      'Sync now';
+  String get syncNowAction => 'Sync now';
   @override
   String get syncNowBusy => 'Syncing…';
 
   @override
-  String get syncLastNever =>
-      'Not synced yet';
+  String get syncLastNever => 'Not synced yet';
   @override
   String get headingTip => 'Heading';
   @override
@@ -679,7 +672,8 @@ class L10nEn extends L10n {
   @override
   String skyCounts(int stars, int links) => '$stars stars · $links links';
   @override
-  String skyEmpty(int more) => '$more more notes and your constellation appears here. Similar notes are joined by threads.';
+  String skyEmpty(int more) =>
+      '$more more notes and your constellation appears here. Similar notes are joined by threads.';
   @override
   String get travelTitle => 'Time travel';
   @override
@@ -701,7 +695,8 @@ class L10nEn extends L10n {
   @override
   String wipeCounts(int before, int after) => '$before → $after characters';
   @override
-  String get syncStalledSub => 'Google access has lapsed. Your notes are safe on this device.';
+  String get syncStalledSub =>
+      'Google access has lapsed. Your notes are safe on this device.';
   @override
   String get syncStalledFix => 'Reconnect';
   @override
@@ -739,11 +734,13 @@ class L10nEn extends L10n {
   @override
   String get syncFirstTitle => 'Syncing…';
   @override
-  String get syncFirstSub => 'Fetching notes from your other devices. This can take a moment if you have many.';
+  String get syncFirstSub =>
+      'Fetching notes from your other devices. This can take a moment if you have many.';
   @override
   String get syncLogTitle => 'Sync history';
   @override
-  String get syncLogNote => 'Only what moved and when. No note content is stored here.';
+  String get syncLogNote =>
+      'Only what moved and when. No note content is stored here.';
   @override
   String get syncLogEmpty => 'Nothing has moved yet';
   @override
@@ -763,8 +760,7 @@ class L10nEn extends L10n {
   @override
   String syncLogLastDown(String when) => 'Last received · ' + when;
   @override
-  String get syncTroubleTitle =>
-      'If something goes wrong';
+  String get syncTroubleTitle => 'If something goes wrong';
   @override
   String get syncTroubleNote =>
       'Syncing is not a backup. Delete on one device and it goes everywhere. Export a file now and then for the notes that matter.';
@@ -772,22 +768,27 @@ class L10nEn extends L10n {
   String syncLastAt(String when) => 'Last synced $when';
 
   @override
-  String syncStateOn(String where) => 'Kept in $where — the same notes on every device with this app';
+  String syncStateOn(String where) =>
+      'Kept in $where — the same notes on every device with this app';
 
   @override
   String get syncStateOff => 'Turn on iCloud Drive in your device settings';
 
   @override
-  String syncStateSyncing(String where) => 'Syncing with $where… this takes a few seconds to a minute';
+  String syncStateSyncing(String where) =>
+      'Syncing with $where… this takes a few seconds to a minute';
 
   @override
-  String get aiKeyNotSynced => 'Your notes sync to all your devices through the store you chose. Your API key does not — enter it separately on each device.';
+  String get aiKeyNotSynced =>
+      'Your notes sync to all your devices through the store you chose. Your API key does not — enter it separately on each device.';
   @override
   String get aiKeySyncTitle => 'Sync the API key too';
   @override
-  String get aiKeySyncSubApple => 'It travels through the iCloud Keychain — a different road from your notes. Only your devices hold the key, so not even Apple can read it.';
+  String get aiKeySyncSubApple =>
+      'It travels through the iCloud Keychain — a different road from your notes. Only your devices hold the key, so not even Apple can read it.';
   @override
-  String get aiKeySyncSubGdrive => 'Once it is on Google Drive, keeping the API key safe is your own responsibility.';
+  String get aiKeySyncSubGdrive =>
+      'Once it is on Google Drive, keeping the API key safe is your own responsibility.';
 
   @override
   String get autoTagTitle => 'Tag notes automatically';
@@ -850,7 +851,8 @@ class L10nEn extends L10n {
   String get selectWord => 'Select';
 
   @override
-  String get tagAiNeedKey => 'Enter an API key in Settings to use AI auto-tagging.';
+  String get tagAiNeedKey =>
+      'Enter an API key in Settings to use AI auto-tagging.';
 
   @override
   String get toggleListTooltip => 'Hide or show the list';
@@ -859,19 +861,24 @@ class L10nEn extends L10n {
   String get aiDetecting => 'Checking which provider this key belongs to…';
 
   @override
-  String get aiErrNoCredits => 'The key is fine, but the account has no balance. Add a payment method or credits on the provider\'s site. To avoid paying, try a Google Gemini key (starts with AIza…) — it has a free tier.';
+  String get aiErrNoCredits =>
+      'The key is fine, but the account has no balance. Add a payment method or credits on the provider\'s site. To avoid paying, try a Google Gemini key (starts with AIza…) — it has a free tier.';
 
   @override
-  String get aiErrBadKey => 'The key was rejected. Check for stray spaces or quotes, then issue a new key on the provider\'s site.';
+  String get aiErrBadKey =>
+      'The key was rejected. Check for stray spaces or quotes, then issue a new key on the provider\'s site.';
 
   @override
-  String get aiErrRateLimit => 'The provider is busy right now. Nothing is wrong with the app — try again in a moment.';
+  String get aiErrRateLimit =>
+      'The provider is busy right now. Nothing is wrong with the app — try again in a moment.';
 
   @override
-  String get aiErrNoModel => 'That model is not available on this account. Pick another one under \'Advanced — choose a model\'.';
+  String get aiErrNoModel =>
+      'That model is not available on this account. Pick another one under \'Advanced — choose a model\'.';
 
   @override
-  String get aiErrNetwork => 'Could not reach the internet. Check your connection and try again.';
+  String get aiErrNetwork =>
+      'Could not reach the internet. Check your connection and try again.';
 
   @override
   String get multiSelectStart => 'Delete several notes';
@@ -890,8 +897,8 @@ class L10nEn extends L10n {
 
   @override
   String deleteSelectedBody(int n) => n == 1
-          ? '1 note will move to the Trash. You can restore it within 30 days.'
-          : '$n notes will move to the Trash. You can restore them within 30 days.';
+      ? '1 note will move to the Trash. You can restore it within 30 days.'
+      : '$n notes will move to the Trash. You can restore them within 30 days.';
 
   @override
   String get trashTitle => 'Trash';
@@ -912,7 +919,8 @@ class L10nEn extends L10n {
   String get trashEmptyAll => 'Empty';
 
   @override
-  String get trashEmptyConfirm => 'Emptying the trash cannot be undone. Continue?';
+  String get trashEmptyConfirm =>
+      'Emptying the trash cannot be undone. Continue?';
 
   @override
   String get trashRestored => 'Restored';
@@ -921,71 +929,58 @@ class L10nEn extends L10n {
   String trashDaysLeftLabel(int days) => 'Deleted permanently in $days days';
 
   @override
-  String get exportSectionTitle =>
-      'Import & export';
+  String get exportSectionTitle => 'Import & export';
 
   @override
   String get exportSubtitle =>
       'Your notes can leave any time. Markdown opens in Apple Notes, Obsidian, Notion and the rest.';
 
   @override
-  String get exportNote =>
-      'Export this note';
+  String get exportNote => 'Export this note';
 
   @override
-  String get exportAllMd =>
-      'Export all notes';
+  String get exportAllMd => 'Export all notes';
 
   @override
-  String get exportAllMdSub =>
-      'Every note as Markdown, in one zip';
+  String get exportAllMdSub => 'Every note as Markdown, in one zip';
 
   @override
-  String get exportBackup =>
-      'Save a backup file';
+  String get exportBackup => 'Save a backup file';
 
   @override
   String get exportBackupSub =>
       'One file that restores everything here (your API key is left out)';
 
   @override
-  String get exportFailed =>
-      'Export failed';
+  String get exportFailed => 'Export failed';
 
   @override
-  String get printAction =>
-      'Print';
+  String get printAction => 'Print';
 
   @override
-  String get exportPdf =>
-      'Export as PDF';
+  String get exportPdf => 'Export as PDF';
 
   @override
-  String get pdfFailed =>
-      'Could not create the PDF';
+  String get pdfFailed => 'Could not create the PDF';
 
   @override
-  String get exportEmpty =>
-      'There are no notes to export';
+  String get exportEmpty => 'There are no notes to export';
 
   @override
   String get choosePreset => 'Choose how to tidy';
 
   @override
-  String get importFiles =>
-      'Import from files';
+  String get importFiles => 'Import from files';
 
   @override
   String get importFilesSub =>
       'Markdown and text files become notes. Backup files restore here too';
 
   @override
-  String get importAppend =>
-      'Load a file and append it';
+  String get importAppend => 'Load a file and append it';
 
   @override
-  String get importNone =>
-      'Nothing was imported';
+  String get importNone => 'Nothing was imported';
 
   @override
   String importDone(int n) => 'Imported $n notes';
@@ -997,24 +992,19 @@ class L10nEn extends L10n {
   String get splitEmpty => 'Pick a note on the left';
 
   @override
-  String get historyTitle =>
-      'Version history';
+  String get historyTitle => 'Version history';
 
   @override
-  String get historySub =>
-      'Go back to the text before a tidy or replace';
+  String get historySub => 'Go back to the text before a tidy or replace';
 
   @override
-  String get historyEmpty =>
-      'Nothing to go back to yet';
+  String get historyEmpty => 'Nothing to go back to yet';
 
   @override
-  String get historyRestore =>
-      'Restore';
+  String get historyRestore => 'Restore';
 
   @override
-  String get historyOriginal =>
-      'As pasted';
+  String get historyOriginal => 'As pasted';
 
   @override
   String get historyWhyTidy => 'Before tidy';
@@ -1047,7 +1037,8 @@ class L10nEn extends L10n {
   String get attachRemove => 'Remove attachment';
 
   @override
-  String get attachRemoveBody => 'The file will be deleted from this device. This cannot be undone.';
+  String get attachRemoveBody =>
+      'The file will be deleted from this device. This cannot be undone.';
 
   @override
   String get attachFailed => 'Could not attach the file';
@@ -1059,7 +1050,8 @@ class L10nEn extends L10n {
   String attachAndMore(int n) => 'and ${n} more';
 
   @override
-  String attachOther(String device, String what) => 'Attachment: ${what} is attached on your ${device} (viewable on that device only)';
+  String attachOther(String device, String what) =>
+      'Attachment: ${what} is attached on your ${device} (viewable on that device only)';
 
   @override
   String deviceName(String kind) {
@@ -1115,7 +1107,8 @@ class L10nEn extends L10n {
   String get paperTitle => 'Editor background';
 
   @override
-  String get paperSub => 'Background and ruling as a set. Line spacing follows your text size automatically.';
+  String get paperSub =>
+      'Background and ruling as a set. Line spacing follows your text size automatically.';
 
   @override
   String get paperNone => 'Plain';
@@ -1142,11 +1135,12 @@ class L10nEn extends L10n {
   String lockSub(String vendor) => vendor == 'android'
       ? 'Open the app with your fingerprint, your face, or the screen lock.'
       : vendor == 'windows'
-          ? 'Open the app with Windows Hello or your device PIN.'
-          : 'Open the app with Face ID, Touch ID, or your device passcode.';
+      ? 'Open the app with Windows Hello or your device PIN.'
+      : 'Open the app with Face ID, Touch ID, or your device passcode.';
 
   @override
-  String get lockNote => 'This lock keeps someone who picks up your device from opening the app. It does not encrypt the files stored on the device.';
+  String get lockNote =>
+      'This lock keeps someone who picks up your device from opening the app. It does not encrypt the files stored on the device.';
 
   @override
   String get lockDelayTitle => 'Lock after';
@@ -1170,8 +1164,8 @@ class L10nEn extends L10n {
   String lockUnavailable(String vendor) => vendor == 'android'
       ? 'Fingerprint, face unlock, and screen lock are unavailable on this device.'
       : vendor == 'windows'
-          ? 'Windows Hello and device PIN are unavailable on this device.'
-          : 'Face ID, Touch ID, and device passcode are unavailable on this device.';
+      ? 'Windows Hello and device PIN are unavailable on this device.'
+      : 'Face ID, Touch ID, and device passcode are unavailable on this device.';
 
   @override
   String get lockReasonOpen => 'Verify to open your notes';
@@ -1201,28 +1195,35 @@ class L10nEn extends L10n {
   String get noteUnlockDone => 'This note is unlocked';
 
   @override
-  String get syncDiagSignedOut => 'This device is not signed in to iCloud. Please sign in first.';
+  String get syncDiagSignedOut =>
+      'This device is not signed in to iCloud. Please sign in first.';
 
   @override
-  String get syncDiagNoContainer => 'You are signed in, but this app does not have its iCloud space yet. Turn it on with the steps below.';
+  String get syncDiagNoContainer =>
+      'You are signed in, but this app does not have its iCloud space yet. Turn it on with the steps below.';
 
   @override
-  String get syncDiagPreparing => 'The space is there. Waiting for it to finish getting ready.';
+  String get syncDiagPreparing =>
+      'The space is there. Waiting for it to finish getting ready.';
 
   @override
-  String get syncRecheckWhat => 'Asks the device about iCloud again, from scratch.';
+  String get syncRecheckWhat =>
+      'Asks the device about iCloud again, from scratch.';
 
   @override
   String get syncRecheckOk => 'iCloud is on';
 
   @override
-  String get syncRecheckStill => 'Not on yet. Turn it on in Settings, then tap again. If you just turned it on, try once more in a minute or two.';
+  String get syncRecheckStill =>
+      'Not on yet. Turn it on in Settings, then tap again. If you just turned it on, try once more in a minute or two.';
 
   @override
-  String get syncOpenFailed => 'Could not open Settings. Please open it from the Home Screen.';
+  String get syncOpenFailed =>
+      'Could not open Settings. Please open it from the Home Screen.';
 
   @override
-  String get syncOpenManual => 'Please open Settings yourself: Home Screen › Settings › your name at the top › iCloud.';
+  String get syncOpenManual =>
+      'Please open Settings yourself: Home Screen › Settings › your name at the top › iCloud.';
 
   @override
   String get menuFile => 'File';
@@ -1254,11 +1255,14 @@ class L10nEn extends L10n {
   @override
   String get syncHelpTitleGdrive => 'Reconnect Google Drive';
   @override
-  String get syncHelpStepsGdrive => '1. Tap the button below and choose your Google account\n2. Allow access to Drive\n3. Syncing starts right away';
+  String get syncHelpStepsGdrive =>
+      '1. Tap the button below and choose your Google account\n2. Allow access to Drive\n3. Syncing starts right away';
   @override
-  String get syncHelpNoteGdrive => 'Your notes are still on Drive. They come back once you sign in.';
+  String get syncHelpNoteGdrive =>
+      'Your notes are still on Drive. They come back once you sign in.';
   @override
-  String get syncDiagSignedOutGdrive => 'This device is not signed in to a Google account.';
+  String get syncDiagSignedOutGdrive =>
+      'This device is not signed in to a Google account.';
   @override
   String get syncSignInGoogle => 'Sign in with Google';
   @override
@@ -1267,11 +1271,11 @@ class L10nEn extends L10n {
   String get syncDiagPreparingGdrive =>
       "Signed in. Fetching your notes from Drive. No need to keep watching — you can switch to another app; fetching pauses and picks up where it left off when you return.";
   @override
-  String get syncRecheckStillGdrive => 'Not everything is here yet. The first sync takes a moment when you have many notes \u2014 it keeps going after you close this.';
+  String get syncRecheckStillGdrive =>
+      'Not everything is here yet. The first sync takes a moment when you have many notes \u2014 it keeps going after you close this.';
 
   @override
-  String pastedFrom(String src, String date) =>
-      'from $src on $date';
+  String pastedFrom(String src, String date) => 'from $src on $date';
 
   @override
   String pastedOn(String date) => 'pasted on $date';
@@ -1290,7 +1294,8 @@ class L10nEn extends L10n {
   @override
   String get emphTitle => 'Bold emphasis (**text**)';
   @override
-  String get emphSub => 'Whole sentences over 40 chars always get markers removed only';
+  String get emphSub =>
+      'Whole sentences over 40 chars always get markers removed only';
   @override
   String get emphQuoteSingle => "Single quotes 'emphasis'";
   @override
@@ -1342,19 +1347,23 @@ class L10nEn extends L10n {
   @override
   String get citationsTitle => 'Remove citation links';
   @override
-  String get citationsSub => 'Removes in-text footnote numbers and the “Sources” list at the end';
+  String get citationsSub =>
+      'Removes in-text footnote numbers and the “Sources” list at the end';
   @override
   String get monoEditorTitle => 'Monospaced tables';
   @override
-  String get monoEditorSub => 'Aligns table and code columns exactly. Prose keeps your device font';
+  String get monoEditorSub =>
+      'Aligns table and code columns exactly. Prose keeps your device font';
   @override
   String get dashListTitle => 'Split dash runs into lists';
   @override
-  String get dashListSub => 'Splits one-line runs like "– a – b – c" into a line list';
+  String get dashListSub =>
+      'Splits one-line runs like "– a – b – c" into a line list';
   @override
   String get fillerHeadingTitle => 'Tidy invisible-char headings';
   @override
-  String get fillerHeadingSub => 'Applies spacing and heading rules to ㅤ-wrapped pseudo-headings';
+  String get fillerHeadingSub =>
+      'Applies spacing and heading rules to ㅤ-wrapped pseudo-headings';
   @override
   String get aiSectionTitle => 'AI edit setup';
   @override
@@ -1379,6 +1388,25 @@ class L10nEn extends L10n {
   String get pasteTipLater => 'Later';
   @override
   String get adClose => 'Close ads';
+
+  @override
+  String get bookmarkAdd => 'Bookmark here';
+
+  @override
+  String get bookmarkRemove => 'Remove bookmark';
+
+  @override
+  String get bookmarkTooShort =>
+      'This note fits on one screen — nothing to bookmark';
+
+  @override
+  String bookmarkGoAt(int pct) => 'Go to bookmark · $pct%';
+
+  @override
+  String bookmarkResume(int pct) => 'Resume at $pct%';
+
+  @override
+  String bookmarkSaved(int pct) => 'Bookmarked at $pct%';
   @override
   String get noteDuplicate => 'Duplicate';
   @override
@@ -1397,7 +1425,8 @@ class L10nEn extends L10n {
   @override
   String get sponsorLoading => 'Loading ad…';
   @override
-  String get sponsorFailed => "Couldn't load the ad. Please try again in a moment.";
+  String get sponsorFailed =>
+      "Couldn't load the ad. Please try again in a moment.";
   @override
   String get moreTooltip => 'More';
   @override
@@ -1409,13 +1438,17 @@ class L10nEn extends L10n {
   @override
   String get premiumBestValue => 'Best value';
   @override
-  String get premiumPerks => 'No ads · Unlimited tidying · Unlimited AI editing';
+  String get premiumPerks =>
+      'No ads · Unlimited tidying · Unlimited AI editing';
   @override
-  String get premiumScopeBase => 'It opens on the devices tied to the store you bought from. Either way the web app is included.';
+  String get premiumScopeBase =>
+      'It opens on the devices tied to the store you bought from. Either way the web app is included.';
   @override
-  String get premiumScopeAll => 'One purchase opens everything, even when you use a phone and a computer side by side. Devices added later are included too.';
+  String get premiumScopeAll =>
+      'One purchase opens everything, even when you use a phone and a computer side by side. Devices added later are included too.';
   @override
-  String get premiumAutoRenew => 'Subscriptions renew automatically unless canceled at least 24 hours before the period ends. You can cancel any time in your account settings.';
+  String get premiumAutoRenew =>
+      'Subscriptions renew automatically unless canceled at least 24 hours before the period ends. You can cancel any time in your account settings.';
   @override
   String get premiumRestore => 'Restore purchases';
   @override
@@ -1425,16 +1458,19 @@ class L10nEn extends L10n {
   @override
   String get premiumThanks => 'Thank you. Premium is on.';
   @override
-  String get premiumNoStore => 'You can’t purchase on this device. Once purchased, it applies here as soon as you sign in with the same account.';
+  String get premiumNoStore =>
+      'You can’t purchase on this device. Once purchased, it applies here as soon as you sign in with the same account.';
   @override
-  String get premiumUpgradeHere => 'Upgrade to All Devices to use it here too. The store credits your remaining time.';
+  String get premiumUpgradeHere =>
+      'Upgrade to All Devices to use it here too. The store credits your remaining time.';
   @override
   String get premiumHave => 'Your plan';
   @override
   String get premiumLoading => 'Getting prices from the store';
 
   @override
-  String get premiumPerkNoAds => 'No ads — the top banner and the close-notice too';
+  String get premiumPerkNoAds =>
+      'No ads — the top banner and the close-notice too';
 
   @override
   String get premiumGroupPerks => 'What you get';
@@ -1446,25 +1482,29 @@ class L10nEn extends L10n {
   String get onbTitle1 => 'Paste, and it is tidy';
 
   @override
-  String get onbBody1 => 'Paste an AI answer as it came. Asterisks, hashes and filler greetings come off in one press.';
+  String get onbBody1 =>
+      'Paste an AI answer as it came. Asterisks, hashes and filler greetings come off in one press.';
 
   @override
   String get onbTitle2 => 'Broken tables stand again';
 
   @override
-  String get onbBody2 => 'Misaligned tables are rebuilt, and one tap copies them straight into Excel or Google Sheets.';
+  String get onbBody2 =>
+      'Misaligned tables are rebuilt, and one tap copies them straight into Excel or Google Sheets.';
 
   @override
   String get onbTitle3 => 'The same notes everywhere';
 
   @override
-  String get onbBody3 => 'iPhone, iPad, Mac and the web app in your browser all show the same notes. Other devices you use alongside them keep up as well. Fix it in one place and the rest follow.';
+  String get onbBody3 =>
+      'iPhone, iPad, Mac and the web app in your browser all show the same notes. Other devices you use alongside them keep up as well. Fix it in one place and the rest follow.';
 
   @override
   String get onbTitle4 => 'Everything is open';
 
   @override
-  String onbBody4(int days) => 'Use it without limits for $days days. Decide later, if it turns out to be worth keeping. Nothing to pay now.';
+  String onbBody4(int days) =>
+      'Use it without limits for $days days. Decide later, if it turns out to be worth keeping. Nothing to pay now.';
 
   @override
   String get onbNext => 'Next';
@@ -1479,7 +1519,8 @@ class L10nEn extends L10n {
   String get onbSeePremium => 'See Premium';
 
   @override
-  String get premiumSubhead => 'Nothing covering the screen, nothing to count. Paste, press, done.';
+  String get premiumSubhead =>
+      'Nothing covering the screen, nothing to count. Paste, press, done.';
 
   @override
   String get premiumPerkNew => 'New features first — the moment they are built';
@@ -1509,10 +1550,12 @@ class L10nEn extends L10n {
   String get premiumUnlockAll => 'Unlock on every device you own';
 
   @override
-  String premiumCta(String period, String price) => 'Get it for $price / $period';
+  String premiumCta(String period, String price) =>
+      'Get it for $price / $period';
 
   @override
-  String premiumChargeNote(String period, String price) => 'You will be charged $price per $period.';
+  String premiumChargeNote(String period, String price) =>
+      'You will be charged $price per $period.';
 
   @override
   String premiumTrialThen(int days) => '$days days free, then';
@@ -1521,18 +1564,11 @@ class L10nEn extends L10n {
   String premiumSave(int pct) => 'Save $pct%';
 
   @override
-  String premiumTrustBody(String version) => 'You are on $version. Requests usually ship the same week, and you can see what changed inside the app.';
-
-
-
+  String premiumTrustBody(String version) =>
+      'You are on $version. Requests usually ship the same week, and you can see what changed inside the app.';
 
   @override
   String get premiumPerkWeb => 'The web app too — no ads in the browser';
-
-
-
-
-
 
   @override
   String premiumPerkTidy(int n) => 'Unlimited tidying — no $n-a-day cap';
@@ -1540,10 +1576,9 @@ class L10nEn extends L10n {
   @override
   String premiumPerkWizard(int n) => 'Unlimited AI editing — no $n-a-day cap';
 
-
-
   @override
-  String get sponsorPremiumNote => 'Buy once and neither the banner nor this notice comes back.';
+  String get sponsorPremiumNote =>
+      'Buy once and neither the banner nor this notice comes back.';
   @override
   String get premiumTitle => 'Premium';
   @override
@@ -1555,7 +1590,8 @@ class L10nEn extends L10n {
   @override
   String get limitTitle => 'You have used up today\'s free runs';
   @override
-  String limitTidyBody(int n) => 'The free plan includes $n cleanups a day. It resets tomorrow — Premium removes the limit.';
+  String limitTidyBody(int n) =>
+      'The free plan includes $n cleanups a day. It resets tomorrow — Premium removes the limit.';
   @override
   String limitWizardBody(int n) =>
       'The free plan includes $n AI edits a day. It resets tomorrow — Premium removes the limit.';
@@ -1594,19 +1630,24 @@ class L10nEn extends L10n {
   @override
   String get aiKeyChecking => 'Checking…';
   @override
-  String get aiKeyUnknownFormat => 'Could not identify the provider. All four were asked and none accepted this key. Please copy and paste the key again.';
+  String get aiKeyUnknownFormat =>
+      'Could not identify the provider. All four were asked and none accepted this key. Please copy and paste the key again.';
   @override
   String get aiAdvancedLabel => 'Advanced — choose the model yourself';
   @override
-  String get aiManualModelHint => 'Type a model name (e.g. gemini-2.5-flash-lite)';
+  String get aiManualModelHint =>
+      'Type a model name (e.g. gemini-2.5-flash-lite)';
   @override
-  String aiAutoLabel(String provider, String model) => 'Auto: $provider · $model';
+  String aiAutoLabel(String provider, String model) =>
+      'Auto: $provider · $model';
   @override
   String aiModelsFound(int n) => '$n models available.';
   @override
-  String aiListFailed(String error) => "Couldn't fetch the model list ($error). Using the built-in fallback list.";
+  String aiListFailed(String error) =>
+      "Couldn't fetch the model list ($error). Using the built-in fallback list.";
   @override
-  String aiModelSwitched(String model) => 'Switched to $model because the previous model stopped responding.';
+  String aiModelSwitched(String model) =>
+      'Switched to $model because the previous model stopped responding.';
   @override
   String get rulesSectionTitle => 'My auto-replace rules';
   @override

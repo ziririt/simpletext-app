@@ -93,8 +93,10 @@ class _ConstellationViewState extends State<ConstellationView>
     final r = math.Random(11);
     return [
       for (var i = 0; i < widget.points.length; i++)
-        Pt(0.5 + (r.nextDouble() - 0.5) * 1.4,
-            0.5 + (r.nextDouble() - 0.5) * 1.4)
+        Pt(
+          0.5 + (r.nextDouble() - 0.5) * 1.4,
+          0.5 + (r.nextDouble() - 0.5) * 1.4,
+        ),
     ];
   }
 
@@ -130,54 +132,58 @@ class _ConstellationViewState extends State<ConstellationView>
     final e = Curves.easeOutCubic.transform(k);
     const pad = 44.0;
     final w = size.width - pad * 2, h = size.height - pad * 2;
-    return Offset(pad + (a.x + (b.x - a.x) * e) * w,
-        pad + (a.y + (b.y - a.y) * e) * h);
+    return Offset(
+      pad + (a.x + (b.x - a.x) * e) * w,
+      pad + (a.y + (b.y - a.y) * e) * h,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (_, box) {
-      final size = Size(box.maxWidth, box.maxHeight);
-      return InteractiveViewer(
-        transformationController: _view,
-        minScale: 0.6,
-        maxScale: 5,
-        boundaryMargin: const EdgeInsets.all(200),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapUp: (d) {
-            final i = _hit(d.localPosition, size);
-            if (i < 0) {
-              if (_picked >= 0) setState(() => _picked = -1);
-              return;
-            }
-            // 한 번 누르면 밝히고, 밝힌 별을 또 누르면 그 글로 간다.
-            // 손가락으로 겨냥한 것이 맞는지 눈으로 확인한 뒤에 열리는
-            // 것이라, 잘못 눌러 엉뚱한 글로 가는 일이 없다.
-            if (_picked == i) {
-              widget.onOpen(widget.stars[i].id);
-              return;
-            }
-            HapticFeedback.selectionClick();
-            setState(() => _picked = i);
-          },
-          child: AnimatedBuilder(
-            animation: _in,
-            builder: (_, __) => CustomPaint(
-              size: size,
-              painter: _SkyPainter(
-                stars: widget.stars,
-                links: widget.links,
-                at: (i) => _at(i, size, _in.value),
-                picked: _picked,
-                colorOf: widget.colorOf,
-                t: _in.value,
+    return LayoutBuilder(
+      builder: (_, box) {
+        final size = Size(box.maxWidth, box.maxHeight);
+        return InteractiveViewer(
+          transformationController: _view,
+          minScale: 0.6,
+          maxScale: 5,
+          boundaryMargin: const EdgeInsets.all(200),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (d) {
+              final i = _hit(d.localPosition, size);
+              if (i < 0) {
+                if (_picked >= 0) setState(() => _picked = -1);
+                return;
+              }
+              // 한 번 누르면 밝히고, 밝힌 별을 또 누르면 그 글로 간다.
+              // 손가락으로 겨냥한 것이 맞는지 눈으로 확인한 뒤에 열리는
+              // 것이라, 잘못 눌러 엉뚱한 글로 가는 일이 없다.
+              if (_picked == i) {
+                widget.onOpen(widget.stars[i].id);
+                return;
+              }
+              HapticFeedback.selectionClick();
+              setState(() => _picked = i);
+            },
+            child: AnimatedBuilder(
+              animation: _in,
+              builder: (_, __) => CustomPaint(
+                size: size,
+                painter: _SkyPainter(
+                  stars: widget.stars,
+                  links: widget.links,
+                  at: (i) => _at(i, size, _in.value),
+                  picked: _picked,
+                  colorOf: widget.colorOf,
+                  t: _in.value,
+                ),
               ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }
 
@@ -224,12 +230,14 @@ class _SkyPainter extends CustomPainter {
       line
         ..strokeWidth = 0.6 + l.w * 1.8
         ..color = Colors.white.withValues(
-            alpha: (0.10 + l.w * 0.34) * fade * (on ? 1 : 0.15));
+          alpha: (0.10 + l.w * 0.34) * fade * (on ? 1 : 0.15),
+        );
       canvas.drawLine(a, b, line);
     }
 
     // ── 별 ──
-    final glow = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    final glow = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
     final dot = Paint();
     for (var i = 0; i < stars.length; i++) {
       final s = stars[i];
@@ -254,20 +262,26 @@ class _SkyPainter extends CustomPainter {
         text: TextSpan(
           text: stars[picked].title,
           style: const TextStyle(
-              fontSize: 13,
-              height: 1.3,
-              color: Colors.white,
-              fontWeight: FontWeight.w700),
+            fontSize: 13,
+            height: 1.3,
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         maxLines: 2,
         ellipsis: '…',
         textDirection: TextDirection.ltr,
       )..layout(maxWidth: 180);
       final box = Rect.fromLTWH(
-          o.dx - tp.width / 2 - 8, o.dy + 14, tp.width + 16, tp.height + 10);
+        o.dx - tp.width / 2 - 8,
+        o.dy + 14,
+        tp.width + 16,
+        tp.height + 10,
+      );
       canvas.drawRRect(
-          RRect.fromRectAndRadius(box, const Radius.circular(8)),
-          Paint()..color = Colors.black.withValues(alpha: 0.62));
+        RRect.fromRectAndRadius(box, const Radius.circular(8)),
+        Paint()..color = Colors.black.withValues(alpha: 0.62),
+      );
       tp.paint(canvas, Offset(box.left + 8, box.top + 5));
     }
   }

@@ -65,7 +65,9 @@ class ExportService {
       final used = <String>{};
       for (final n in notes) {
         final base = uniqueName(
-            safeFileName(n.title.isNotEmpty ? n.title : n.body), used);
+          safeFileName(n.title.isNotEmpty ? n.title : n.body),
+          used,
+        );
         final md = noteToMarkdown(
           title: n.title,
           body: n.body,
@@ -104,8 +106,10 @@ class ExportService {
         // 약속은 백업에도 적용된다.
         'settings': _settingsWithoutKey(),
       });
-      final f = await _temp('SkyblueNote-backup-${_stamp()}.json',
-          utf8.encode(j));
+      final f = await _temp(
+        'SkyblueNote-backup-${_stamp()}.json',
+        utf8.encode(j),
+      );
       await SharePlus.instance.share(ShareParams(files: [XFile(f.path)]));
       return true;
     } catch (_) {

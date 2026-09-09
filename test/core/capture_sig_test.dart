@@ -32,8 +32,9 @@ void main() {
 
     test('제미나이 실측 조각을 그대로 알아본다', () {
       final s = captureSignature(
-          '<div class="markdown markdown-main-panel enable-luminous-fast-follows" '
-          'id="model-response-message-contentr_82cc" data-path-to-node="0">글</div>');
+        '<div class="markdown markdown-main-panel enable-luminous-fast-follows" '
+        'id="model-response-message-contentr_82cc" data-path-to-node="0">글</div>',
+      );
       expect(s.contains('markdown-main-panel'), true);
       expect(s.contains('data-path-to-node'), true);
     });
@@ -54,8 +55,9 @@ void main() {
 
     test('id 와 data-* 이름과 호스트를 담는다', () {
       final s = captureSignature(
-          '<div id="root" data-message-author-role="assistant">'
-          '<a href="https://gemini.google.com/app">ㄱ</a></div>');
+        '<div id="root" data-message-author-role="assistant">'
+        '<a href="https://gemini.google.com/app">ㄱ</a></div>',
+      );
       expect(s.contains('#root'), true);
       expect(s.contains('data-message-author-role'), true);
       expect(s.contains('@gemini.google.com'), true);

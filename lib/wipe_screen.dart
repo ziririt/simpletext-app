@@ -48,7 +48,8 @@ class WipeView extends StatefulWidget {
   State<WipeView> createState() => _WipeViewState();
 }
 
-class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin {
+class _WipeViewState extends State<WipeView>
+    with SingleTickerProviderStateMixin {
   final _scroll = ScrollController();
   double _x = -1; // 아직 안 정해짐
   double _w = 0;
@@ -92,8 +93,7 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
         return;
       }
       setState(() => _x += d * 0.18);
-    })
-      ..start();
+    })..start();
   }
 
   void _demo() {
@@ -112,11 +112,11 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
   }
 
   TextStyle get _base => TextStyle(
-        fontSize: widget.fontSize,
-        height: widget.lineHeight,
-        letterSpacing: 0,
-        fontFamily: widget.fontFamily,
-      );
+    fontSize: widget.fontSize,
+    height: widget.lineHeight,
+    letterSpacing: 0,
+    fontFamily: widget.fontFamily,
+  );
 
   /// 정리 전 — 표시를 **그대로 보여 준다.** 이게 요점이다. 별표와
   /// 우물정이 글자로 보이는 그 꼴이 사람들이 겪는 그 꼴이다.
@@ -126,10 +126,12 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
   static const double _padSide = 18;
 
   Widget _rawPane(Color ink, Color mark) => Padding(
-        padding: const EdgeInsets.fromLTRB(_padSide, _padTop, _padSide, 40),
-        child: Text(widget.before,
-            style: _base.copyWith(color: ink.withValues(alpha: 0.75))),
-      );
+    padding: const EdgeInsets.fromLTRB(_padSide, _padTop, _padSide, 40),
+    child: Text(
+      widget.before,
+      style: _base.copyWith(color: ink.withValues(alpha: 0.75)),
+    ),
+  );
 
   /// 정리 후 — 앱이 실제로 그리는 그대로.
   Widget _richPane(Color ink, Color mark) {
@@ -148,7 +150,11 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
     // 만큼만 차지하는 것이 맞다.
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          math.max(_padSide, _x + 16), _padTop, _padSide, 40),
+        math.max(_padSide, _x + 16),
+        _padTop,
+        _padSide,
+        40,
+      ),
       child: RichNoteText(
         text: widget.after,
         fontSize: widget.fontSize,
@@ -165,64 +171,66 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
     final c = Theme.of(context);
     final ink = c.textTheme.bodyMedium?.color ?? Colors.black;
     final mark = ink.withValues(alpha: 0.45);
-    return LayoutBuilder(builder: (_, box) {
-      final w = box.maxWidth;
-      if (_w != w) {
-        _w = w;
-        if (_x < 0) {
-          _x = wipeAt(0.5, w);
-          WidgetsBinding.instance.addPostFrameCallback((_) => _demo());
-        } else {
-          _x = wipeClamp(_x, w);
+    return LayoutBuilder(
+      builder: (_, box) {
+        final w = box.maxWidth;
+        if (_w != w) {
+          _w = w;
+          if (_x < 0) {
+            _x = wipeAt(0.5, w);
+            WidgetsBinding.instance.addPostFrameCallback((_) => _demo());
+          } else {
+            _x = wipeClamp(_x, w);
+          }
         }
-      }
-      final frac = wipeFrac(_x, w);
-      return Listener(
-        // 손이 닿는 **즉시** 멈춘다. 손을 뗄 때까지 기다리면 그 사이에
-        // 화면이 제멋대로 움직이고, 그러면 잡은 느낌이 안 난다.
-        onPointerDown: (_) => _stopGlide(),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragUpdate: (d) {
-            setState(() => _x = wipeDrag(_x, d.delta.dx, w));
-          },
-          onHorizontalDragEnd: (d) {
-            _v = d.velocity.pixelsPerSecond.dx;
-            final to = wipeClamp(wipeProject(_x, _v), w);
-            _glideTo(to);
-            HapticFeedback.selectionClick();
-          },
-          onTapUp: (d) => _glideTo(wipeClamp(d.localPosition.dx, w)),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: SingleChildScrollView(
-                  controller: _scroll,
-                  child: Stack(
-                    children: [
-                      _rawPane(ink, mark),
-                      Positioned.fill(
-                        child: ClipRect(
-                          clipper: _RightOf(_x),
-                          child: Container(
-                            color: c.scaffoldBackgroundColor,
-                            alignment: Alignment.topLeft,
-                            child: _richPane(ink, mark),
+        final frac = wipeFrac(_x, w);
+        return Listener(
+          // 손이 닿는 **즉시** 멈춘다. 손을 뗄 때까지 기다리면 그 사이에
+          // 화면이 제멋대로 움직이고, 그러면 잡은 느낌이 안 난다.
+          onPointerDown: (_) => _stopGlide(),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragUpdate: (d) {
+              setState(() => _x = wipeDrag(_x, d.delta.dx, w));
+            },
+            onHorizontalDragEnd: (d) {
+              _v = d.velocity.pixelsPerSecond.dx;
+              final to = wipeClamp(wipeProject(_x, _v), w);
+              _glideTo(to);
+              HapticFeedback.selectionClick();
+            },
+            onTapUp: (d) => _glideTo(wipeClamp(d.localPosition.dx, w)),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: SingleChildScrollView(
+                    controller: _scroll,
+                    child: Stack(
+                      children: [
+                        _rawPane(ink, mark),
+                        Positioned.fill(
+                          child: ClipRect(
+                            clipper: _RightOf(_x),
+                            child: Container(
+                              color: c.scaffoldBackgroundColor,
+                              alignment: Alignment.topLeft,
+                              child: _richPane(ink, mark),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              _handle(context, ink),
-              _tag(context, widget.beforeLabel, left: true, on: 1 - frac),
-              _tag(context, widget.afterLabel, left: false, on: frac),
-            ],
+                _handle(context, ink),
+                _tag(context, widget.beforeLabel, left: true, on: 1 - frac),
+                _tag(context, widget.afterLabel, left: false, on: frac),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget _handle(BuildContext context, Color ink) {
@@ -246,9 +254,10 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3)),
+                      color: Colors.black.withValues(alpha: 0.22),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
                   ],
                 ),
                 child: const Icon(Icons.code, color: Colors.white, size: 20),
@@ -262,8 +271,12 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
 
   /// 어느 쪽이 무엇인지. 손잡이가 그쪽으로 갈수록 옅어진다 — 덮여
   /// 사라지는 쪽의 이름표가 끝까지 진하면 그게 거짓말이 된다.
-  Widget _tag(BuildContext context, String text,
-      {required bool left, required double on}) {
+  Widget _tag(
+    BuildContext context,
+    String text, {
+    required bool left,
+    required double on,
+  }) {
     final a = math.max(0.0, math.min(1.0, on));
     return Positioned(
       top: 10,
@@ -275,14 +288,19 @@ class _WipeViewState extends State<WipeView> with SingleTickerProviderStateMixin
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(text,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primary)),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
           ),
         ),
       ),

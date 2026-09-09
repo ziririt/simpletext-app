@@ -28,19 +28,18 @@ MergeResult<_N> run({
   int keepDays = 180,
   String Function(_N)? bodyOf,
   int syncedBeforeMs = 0,
-}) =>
-    mergeNotes<_N>(
-      local: local,
-      localTombs: localTombs,
-      remote: remote,
-      remoteTombs: remoteTombs,
-      idOf: (n) => n.id,
-      stampOf: (n) => n.at,
-      nowMs: nowMs,
-      keepDays: keepDays,
-      bodyOf: bodyOf,
-      syncedBeforeMs: syncedBeforeMs,
-    );
+}) => mergeNotes<_N>(
+  local: local,
+  localTombs: localTombs,
+  remote: remote,
+  remoteTombs: remoteTombs,
+  idOf: (n) => n.id,
+  stampOf: (n) => n.at,
+  nowMs: nowMs,
+  keepDays: keepDays,
+  bodyOf: bodyOf,
+  syncedBeforeMs: syncedBeforeMs,
+);
 
 Map<String, _N> byId(List<_N> ns) => {for (final n in ns) n.id: n};
 
@@ -94,7 +93,7 @@ void main() {
         local: [const _N('a', 10)],
         remote: const [],
         remoteTombs: [
-          {'id': 'a', 'deletedAt': 50}
+          {'id': 'a', 'deletedAt': 50},
         ],
       );
       expect(r.notes, isEmpty);
@@ -106,7 +105,7 @@ void main() {
       final r = run(
         local: const [],
         localTombs: [
-          {'id': 'a', 'deletedAt': 50}
+          {'id': 'a', 'deletedAt': 50},
         ],
         remote: [const _N('a', 10)],
       );
@@ -119,7 +118,7 @@ void main() {
       final r = run(
         local: const [],
         localTombs: [
-          {'id': 'a', 'deletedAt': 50}
+          {'id': 'a', 'deletedAt': 50},
         ],
         remote: [const _N('a', 80, '다시 씀')],
       );
@@ -131,7 +130,7 @@ void main() {
       final r = run(
         local: [const _N('a', 50)],
         remoteTombs: [
-          {'id': 'a', 'deletedAt': 50}
+          {'id': 'a', 'deletedAt': 50},
         ],
       );
       expect(r.notes, isEmpty);
@@ -141,10 +140,10 @@ void main() {
     test('삭제 기록은 양쪽을 합치고 늦은 쪽만 남긴다', () {
       final r = run(
         localTombs: [
-          {'id': 'a', 'deletedAt': 10}
+          {'id': 'a', 'deletedAt': 10},
         ],
         remoteTombs: [
-          {'id': 'a', 'deletedAt': 90}
+          {'id': 'a', 'deletedAt': 90},
         ],
       );
       expect(r.tombstones.length, 1);
@@ -171,9 +170,12 @@ void main() {
       // 여행·방학으로 한 기기를 몇 주씩 안 켜는 일이 실제로 있다. 그 기기가
       // 돌아오기 전에 툼스톤을 지우면 위의 부활 사고가 그대로 일어난다.
       final now = 400 * day;
-      final r = run(nowMs: now, localTombs: [
-        {'id': 'x', 'deletedAt': now - 179 * day}
-      ]);
+      final r = run(
+        nowMs: now,
+        localTombs: [
+          {'id': 'x', 'deletedAt': now - 179 * day},
+        ],
+      );
       expect(r.tombstones.length, 1);
     });
   });
@@ -181,11 +183,13 @@ void main() {
   group('망가진 자료가 들어와도 안 죽는다', () {
     test('id가 없거나 이상한 삭제 기록은 조용히 버린다', () {
       // 다른 버전의 앱이 올린 파일, 또는 반쯤 쓰다 만 파일에서 나온다.
-      final r = run(localTombs: [
-        {'deletedAt': 10},
-        {'id': '', 'deletedAt': 10},
-        {'id': 'ok'},
-      ]);
+      final r = run(
+        localTombs: [
+          {'deletedAt': 10},
+          {'id': '', 'deletedAt': 10},
+          {'id': 'ok'},
+        ],
+      );
       expect(r.tombstones.length, 1);
       expect(r.tombstones.single['id'], 'ok');
       expect(r.tombstones.single['deletedAt'], 0);
@@ -212,7 +216,7 @@ void main() {
           const _N('ipad', 110, '아이패드에서 새로 씀'),
         ],
         remoteTombs: [
-          {'id': 'gone', 'deletedAt': 90}
+          {'id': 'gone', 'deletedAt': 90},
         ],
       );
       final m = byId(r.notes);
@@ -263,7 +267,7 @@ void main() {
       final r = run(
         local: const [_N('seed-1', seedAt, '시드')],
         remoteTombs: const [
-          {'id': 'seed-1', 'deletedAt': 500}
+          {'id': 'seed-1', 'deletedAt': 500},
         ],
       );
       expect(r.notes, isEmpty);
@@ -327,7 +331,7 @@ void main() {
       final r = run(
         local: [const _N('a', 900, '쓰던 글')],
         remoteTombs: [
-          {'id': 'a', 'deletedAt': 950}
+          {'id': 'a', 'deletedAt': 950},
         ],
         syncedBeforeMs: 800,
       );

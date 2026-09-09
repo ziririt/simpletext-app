@@ -31,24 +31,27 @@ void main() {
 
     test('링크가 붙은 [1](주소)', () {
       final t = _searchAnswer(
-          '[1](https://example.com/a)',
-          '[2](https://example.com/b)',
-          '[3](https://example.com/c)');
+        '[1](https://example.com/a)',
+        '[2](https://example.com/b)',
+        '[3](https://example.com/c)',
+      );
       expect(guessSource(t).name, kPerplexity);
     });
 
     test('각주 표기 [^1]', () {
       expect(
-          guessSource(_searchAnswer('[^1]', '[^2]', '[^3]')).name, kPerplexity);
+        guessSource(_searchAnswer('[^1]', '[^2]', '[^3]')).name,
+        kPerplexity,
+      );
     });
 
     test('위첨자 ¹²³ — 화면에서 보기 좋으라고 쓰는 것이라 복사하면 따라온다', () {
-      expect(
-          guessSource(_searchAnswer('¹', '²', '³')).name, kPerplexity);
+      expect(guessSource(_searchAnswer('¹', '²', '³')).name, kPerplexity);
     });
 
     test('인라인 각주가 하나도 안 따라와도 끝의 출처 뭉치로 잡는다', () {
-      const t = '테슬라의 최근 인도량은 시장 예상을 웃돌았습니다. '
+      const t =
+          '테슬라의 최근 인도량은 시장 예상을 웃돌았습니다. '
           '특히 중국 공장의 가동률이 회복된 것이 컸고, 에너지 저장 부문도 '
           '분기 기준 최대 실적을 냈습니다. 다만 차량 부문의 총마진은 여전히 '
           '압박을 받고 있습니다. 분석가들은 목표 주가를 소폭 올렸습니다.\n\n'
@@ -70,7 +73,8 @@ void main() {
 
   group('Grok — 점수표에 아예 없었다', () {
     test('[web:n] [post:n] 모양은 Grok이 쓴다', () {
-      const t = '최근 X에서 이 주제가 많이 논의되고 있습니다[post:1]. '
+      const t =
+          '최근 X에서 이 주제가 많이 논의되고 있습니다[post:1]. '
           '보도에 따르면 인도량은 예상을 웃돌았고[web:2], 에너지 부문도 '
           '분기 최대 실적을 냈습니다[web:3]. 다만 마진 압박은 이어집니다. '
           '시장의 반응은 아직 엇갈리는 편입니다.\n\n'
@@ -81,7 +85,8 @@ void main() {
 
   group('문턱을 200자에서 140자로 내렸다', () {
     test('짧게 묻고 짧게 받은 답도 잡힌다', () {
-      const t = '요약하면 세 가지입니다[1]. 첫째는 인도량이 예상을 웃돈 것이고[2], '
+      const t =
+          '요약하면 세 가지입니다[1]. 첫째는 인도량이 예상을 웃돈 것이고[2], '
           '둘째는 차량 부문의 총마진 압박입니다[3]. 셋째는 에너지 저장 부문의 성장입니다. '
           '순서대로 짚어 보겠습니다. 먼저 인도량부터 보겠습니다.\n\n'
           '출처\nhttps://example.com/a\n';
@@ -96,7 +101,8 @@ void main() {
 
   group('사람이 쓴 글은 여전히 건드리지 않는다', () {
     test('서식도 각주도 없으면 아무 말 안 한다', () {
-      final t = '오늘 회의에서 나온 이야기를 적어 둡니다. '
+      final t =
+          '오늘 회의에서 나온 이야기를 적어 둡니다. '
               '다음 주까지 정리하기로 했고, 담당은 아직 안 정해졌습니다. '
               '예산은 다시 확인이 필요합니다. 일정은 다음 회의에서 잡습니다.\n' *
           4;
@@ -104,7 +110,8 @@ void main() {
     });
 
     test('주소 몇 개 적어 둔 메모를 검색형으로 보지 않는다', () {
-      final t = '참고할 링크를 모아 둡니다. 나중에 다시 봅니다.\n'
+      final t =
+          '참고할 링크를 모아 둡니다. 나중에 다시 봅니다.\n'
               'https://example.com/a\n'
               'https://example.com/b\n' *
           3;

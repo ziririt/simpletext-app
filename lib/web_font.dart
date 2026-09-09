@@ -58,10 +58,15 @@ Future<void> loadWebFont() async {
   _done = true;
   try {
     final loader = FontLoader(kWebFontFamily);
-    for (final name in const ['Pretendard-Regular.otf', 'Pretendard-Bold.otf']) {
-      loader.addFont(http
-          .readBytes(Uri.base.resolve('fonts/$name'))
-          .then((b) => ByteData.view(Uint8List.fromList(b).buffer)));
+    for (final name in const [
+      'Pretendard-Regular.otf',
+      'Pretendard-Bold.otf',
+    ]) {
+      loader.addFont(
+        http
+            .readBytes(Uri.base.resolve('fonts/$name'))
+            .then((b) => ByteData.view(Uint8List.fromList(b).buffer)),
+      );
     }
     await loader.load();
   } catch (_) {

@@ -42,27 +42,39 @@ void main() {
   group('월 환산가', () {
     test('원 — 소수 없이, 쉼표 넣어, 기호 앞에', () {
       expect(
-          perMonthLabel(
-              yearlyRaw: 44000, shownPrice: '₩44,000', currencySymbol: '₩'),
-          '₩3,667');
+        perMonthLabel(
+          yearlyRaw: 44000,
+          shownPrice: '₩44,000',
+          currencySymbol: '₩',
+        ),
+        '₩3,667',
+      );
     });
     test('달러 — 소수 두 자리', () {
       expect(
-          perMonthLabel(
-              yearlyRaw: 19.99, shownPrice: r'$19.99', currencySymbol: r'$'),
-          r'$1.67');
+        perMonthLabel(
+          yearlyRaw: 19.99,
+          shownPrice: r'$19.99',
+          currencySymbol: r'$',
+        ),
+        r'$1.67',
+      );
     });
     test('유로 — 기호가 뒤에', () {
       expect(
-          perMonthLabel(
-              yearlyRaw: 19.99, shownPrice: '19,99 €', currencySymbol: '€'),
-          '1.67 €');
+        perMonthLabel(
+          yearlyRaw: 19.99,
+          shownPrice: '19,99 €',
+          currencySymbol: '€',
+        ),
+        '1.67 €',
+      );
     });
     test('값이 0 이하면 셈하지 않는다', () {
       expect(
-          perMonthLabel(
-              yearlyRaw: 0, shownPrice: '₩0', currencySymbol: '₩'),
-          isNull);
+        perMonthLabel(yearlyRaw: 0, shownPrice: '₩0', currencySymbol: '₩'),
+        isNull,
+      );
     });
   });
 }

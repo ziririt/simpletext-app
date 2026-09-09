@@ -50,12 +50,12 @@ class SyncEvent {
   bool get worthKeeping => !ok || up > 0 || down > 0;
 
   Map<String, dynamic> toJson() => {
-        'at': atMs,
-        if (up != 0) 'up': up,
-        if (down != 0) 'dn': down,
-        if (ms != 0) 'ms': ms,
-        if (err != null) 'err': err,
-      };
+    'at': atMs,
+    if (up != 0) 'up': up,
+    if (down != 0) 'dn': down,
+    if (ms != 0) 'ms': ms,
+    if (err != null) 'err': err,
+  };
 
   static SyncEvent? fromJson(Object? o) {
     if (o is! Map) return null;

@@ -28,11 +28,7 @@ const String kBodyFontSystem = 'system';
 const String kBodyFontNoto = 'noto';
 const String kBodyFontMono = 'mono';
 
-const List<String> kBodyFonts = [
-  kBodyFontSystem,
-  kBodyFontNoto,
-  kBodyFontMono,
-];
+const List<String> kBodyFonts = [kBodyFontSystem, kBodyFontNoto, kBodyFontMono];
 
 /// 고른 이름을 실제 글꼴 이름으로. null 이면 지금까지 하던 그대로
 /// (테마가 정한 글꼴)이다.
@@ -40,10 +36,10 @@ const List<String> kBodyFonts = [
 /// [webDefault] 는 웹에서 쓰는 기본 글꼴 이름(Pretendard)이다. 웹에서는
 /// 기기 글꼴을 못 빌려 오므로 '기본'이 그 이름을 가리켜야 한다.
 String? bodyFontFamily(String name, {String? webDefault}) => switch (name) {
-      kBodyFontNoto => 'NotoSansKR',
-      kBodyFontMono => 'D2Coding',
-      _ => webDefault,
-    };
+  kBodyFontNoto => 'NotoSansKR',
+  kBodyFontMono => 'D2Coding',
+  _ => webDefault,
+};
 
 /// 모르는 값이 들어오면 기본으로 되돌린다. 옛 저장본이나 남의 기기가
 /// 보낸 값이 화면을 빈 글꼴로 만들면 안 된다.

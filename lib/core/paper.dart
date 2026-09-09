@@ -80,8 +80,12 @@ class Paper {
 const List<Paper> kPapers = [
   Paper(
     id: kPaperNone,
-    bg: 0, ink: 0, rule: 0,
-    bgDark: 0, inkDark: 0, ruleDark: 0,
+    bg: 0,
+    ink: 0,
+    rule: 0,
+    bgDark: 0,
+    inkDark: 0,
+    ruleDark: 0,
     ruling: kRulingNone,
   ),
 
@@ -90,8 +94,12 @@ const List<Paper> kPapers = [
   // '인쇄된 선'이 아니라 '종이의 결'처럼 보인다. 그 느낌을 색으로 옮겼다.
   Paper(
     id: 'moleskine',
-    bg: 0xFFF4EFE2, ink: 0xFF2B2620, rule: 0xFFE8E1D1,
-    bgDark: 0xFF191714, inkDark: 0xFFE8E0D0, ruleDark: 0xFF25221E,
+    bg: 0xFFF4EFE2,
+    ink: 0xFF2B2620,
+    rule: 0xFFE8E1D1,
+    bgDark: 0xFF191714,
+    inkDark: 0xFFE8E0D0,
+    ruleDark: 0xFF25221E,
     ruling: kRulingLine,
   ),
 
@@ -113,8 +121,12 @@ const List<Paper> kPapers = [
   // 들어야하니."
   Paper(
     id: 'frost',
-    bg: 0xFFFAFAF7, ink: 0xFF23262B, rule: 0xFFECF0F2,
-    bgDark: 0xFF15171A, inkDark: 0xFFE4E7EB, ruleDark: 0xFF1E2228,
+    bg: 0xFFFAFAF7,
+    ink: 0xFF23262B,
+    rule: 0xFFECF0F2,
+    bgDark: 0xFF15171A,
+    inkDark: 0xFFE4E7EB,
+    ruleDark: 0xFF1E2228,
     ruling: kRulingLine,
   ),
 
@@ -130,8 +142,12 @@ const List<Paper> kPapers = [
   // 종이. 화면 같지 않은 가장 무난한 바탕. 줄이 없어 어떤 글에도 맞는다.
   Paper(
     id: 'plain',
-    bg: 0xFFF2F2F0, ink: 0xFF24262A, rule: 0xFFE0E1E3,
-    bgDark: 0xFF17181A, inkDark: 0xFFE6E7EA, ruleDark: 0xFF2B2D30,
+    bg: 0xFFF2F2F0,
+    ink: 0xFF24262A,
+    rule: 0xFFE0E1E3,
+    bgDark: 0xFF17181A,
+    inkDark: 0xFFE6E7EA,
+    ruleDark: 0xFF2B2D30,
     ruling: kRulingNone,
   ),
 
@@ -142,16 +158,24 @@ const List<Paper> kPapers = [
   // 도움이 되고 읽을 때는 방해가 된다.
   Paper(
     id: 'sepia',
-    bg: 0xFFFBF0DA, ink: 0xFF4A3B28, rule: 0xFFEADCC0,
-    bgDark: 0xFF21201D, inkDark: 0xFFD9CDB8, ruleDark: 0xFF33312C,
+    bg: 0xFFFBF0DA,
+    ink: 0xFF4A3B28,
+    rule: 0xFFEADCC0,
+    bgDark: 0xFF21201D,
+    inkDark: 0xFFD9CDB8,
+    ruleDark: 0xFF33312C,
     ruling: kRulingNone,
   ),
 
   // 크라프트. 세피아보다 진하고 노란기가 덜하다.
   Paper(
     id: 'kraft',
-    bg: 0xFFEFE3CE, ink: 0xFF3A2F1E, rule: 0xFFDCCBAE,
-    bgDark: 0xFF1E1B16, inkDark: 0xFFE4D9C4, ruleDark: 0xFF332E25,
+    bg: 0xFFEFE3CE,
+    ink: 0xFF3A2F1E,
+    rule: 0xFFDCCBAE,
+    bgDark: 0xFF1E1B16,
+    inkDark: 0xFFE4D9C4,
+    ruleDark: 0xFF332E25,
     ruling: kRulingNone,
   ),
 
@@ -160,16 +184,24 @@ const List<Paper> kPapers = [
   // 어둡게 하고 싶을 때가 그때다.
   Paper(
     id: 'walnut',
-    bg: 0xFF4A3B2A, ink: 0xFFF6F0E6, rule: 0xFF604E39,
-    bgDark: 0xFF2A211A, inkDark: 0xFFF0E7DA, ruleDark: 0xFF3D3128,
+    bg: 0xFF4A3B2A,
+    ink: 0xFFF6F0E6,
+    rule: 0xFF604E39,
+    bgDark: 0xFF2A211A,
+    inkDark: 0xFFF0E7DA,
+    ruleDark: 0xFF3D3128,
     ruling: kRulingNone,
   ),
 
   // 하늘. 앱의 주조색과 같은 계열이라 화면 전체가 한 벌로 보인다.
   Paper(
     id: 'sky',
-    bg: 0xFFEAF2F8, ink: 0xFF1F2A33, rule: 0xFFD3E2EE,
-    bgDark: 0xFF131A20, inkDark: 0xFFDDE8F0, ruleDark: 0xFF223039,
+    bg: 0xFFEAF2F8,
+    ink: 0xFF1F2A33,
+    rule: 0xFFD3E2EE,
+    bgDark: 0xFF131A20,
+    inkDark: 0xFFDDE8F0,
+    ruleDark: 0xFF223039,
     ruling: kRulingNone,
   ),
 ];
@@ -273,8 +305,11 @@ const double kMarginDarkenPct = 0.05;
 const int kMarginDarkenFloor = 6;
 
 /// 여백 색. [argb]는 종이 바탕색. 늘 그보다 조금 어둡다.
-int marginTone(int argb,
-    [double pct = kMarginDarkenPct, int floor = kMarginDarkenFloor]) {
+int marginTone(
+  int argb, [
+  double pct = kMarginDarkenPct,
+  int floor = kMarginDarkenFloor,
+]) {
   int down(int v) {
     final cut = (v * pct).round();
     final out = v - (cut > floor ? cut : floor);
@@ -296,7 +331,9 @@ int marginTone(int argb,
 
 double _channel(int v) {
   final c = v / 255.0;
-  return c <= 0.03928 ? c / 12.92 : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
+  return c <= 0.03928
+      ? c / 12.92
+      : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
 }
 
 /// 0xAARRGGBB 또는 0xRRGGBB 값의 상대 휘도.

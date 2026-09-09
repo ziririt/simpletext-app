@@ -55,8 +55,12 @@ class PdfService {
   /// 글꼴은 한 번만 읽는다. 6MB짜리를 메모 열 때마다 파싱하면 눈에 띄게 늦다.
   static Future<void> _loadFonts() async {
     if (_reg != null) return;
-    _reg = pw.Font.ttf(await rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'));
-    _bold = pw.Font.ttf(await rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'));
+    _reg = pw.Font.ttf(
+      await rootBundle.load('assets/fonts/NotoSansKR-Regular.ttf'),
+    );
+    _bold = pw.Font.ttf(
+      await rootBundle.load('assets/fonts/NotoSansKR-Bold.ttf'),
+    );
     _mono = pw.Font.ttf(await rootBundle.load('assets/fonts/D2Coding.ttf'));
   }
 
@@ -142,18 +146,23 @@ class PdfService {
     ];
     return [
       if (title.isNotEmpty)
-        pw.Text(title,
-            style: pw.TextStyle(
-                font: _bold,
-                fontSize: 19,
-                height: 1.32,
-                color: _Ink.head,
-                letterSpacing: -0.3)),
+        pw.Text(
+          title,
+          style: pw.TextStyle(
+            font: _bold,
+            fontSize: 19,
+            height: 1.32,
+            color: _Ink.head,
+            letterSpacing: -0.3,
+          ),
+        ),
       if (meta.isNotEmpty)
         pw.Padding(
           padding: pw.EdgeInsets.only(top: title.isEmpty ? 0 : 7),
-          child: pw.Text(meta.join('   ·   '),
-              style: pw.TextStyle(font: _reg, fontSize: 8.5, color: _Ink.sub)),
+          child: pw.Text(
+            meta.join('   ·   '),
+            style: pw.TextStyle(font: _reg, fontSize: 8.5, color: _Ink.sub),
+          ),
         ),
       pw.Container(
         margin: const pw.EdgeInsets.only(top: 11, bottom: 16),
@@ -172,9 +181,10 @@ class PdfService {
 
       case PKind.hr:
         return pw.Container(
-            margin: const pw.EdgeInsets.symmetric(vertical: 11),
-            height: 0.7,
-            color: _Ink.line);
+          margin: const pw.EdgeInsets.symmetric(vertical: 11),
+          height: 0.7,
+          color: _Ink.line,
+        );
 
       case PKind.h1:
         return _head(b, 15.5, 17);
@@ -195,10 +205,12 @@ class PdfService {
           padding: const pw.EdgeInsets.fromLTRB(11, 2, 0, 2),
           decoration: const pw.BoxDecoration(
             border: pw.Border(
-                left: pw.BorderSide(color: _Ink.accent, width: 2.2)),
+              left: pw.BorderSide(color: _Ink.accent, width: 2.2),
+            ),
           ),
           child: pw.RichText(
-              text: _spanOf(b.spans, 10, color: PdfColor.fromInt(0xFF4A4A4E))),
+            text: _spanOf(b.spans, 10, color: PdfColor.fromInt(0xFF4A4A4E)),
+          ),
         );
 
       case PKind.bullet:
@@ -220,9 +232,15 @@ class PdfService {
             borderRadius: pw.BorderRadius.circular(4),
             border: pw.Border.all(color: _Ink.line, width: 0.6),
           ),
-          child: pw.Text(b.text,
-              style: pw.TextStyle(
-                  font: _mono, fontSize: 8.6, height: 1.45, color: _Ink.body)),
+          child: pw.Text(
+            b.text,
+            style: pw.TextStyle(
+              font: _mono,
+              fontSize: 8.6,
+              height: 1.45,
+              color: _Ink.body,
+            ),
+          ),
         );
 
       case PKind.table:
@@ -231,18 +249,22 @@ class PdfService {
   }
 
   static pw.Widget _head(PBlock b, double size, double top) => pw.Padding(
-        padding: pw.EdgeInsets.only(top: top, bottom: 5),
-        child: pw.RichText(
-            text: _spanOf(b.spans, size,
-                bold: true, color: _Ink.head, height: 1.34)),
-      );
+    padding: pw.EdgeInsets.only(top: top, bottom: 5),
+    child: pw.RichText(
+      text: _spanOf(b.spans, size, bold: true, color: _Ink.head, height: 1.34),
+    ),
+  );
 
   /// 단마다 모양을 바꾼다. 같은 점이 세 단 이어지면 단이 안 보인다.
   static String _dot(int indent) =>
       indent <= 0 ? '•' : (indent == 1 ? '◦' : '–');
 
-  static pw.Widget _listRow(PBlock b, String mark, double markSize,
-      {PdfColor? bulletColor}) {
+  static pw.Widget _listRow(
+    PBlock b,
+    String mark,
+    double markSize, {
+    PdfColor? bulletColor,
+  }) {
     return pw.Padding(
       padding: pw.EdgeInsets.fromLTRB(b.indent * 15.0, 1.5, 0, 1.5),
       child: pw.Row(
@@ -251,12 +273,15 @@ class PdfService {
           pw.Container(
             width: 16,
             padding: const pw.EdgeInsets.only(top: 0.5),
-            child: pw.Text(mark,
-                style: pw.TextStyle(
-                    font: _reg,
-                    fontSize: markSize,
-                    height: 1.62,
-                    color: bulletColor ?? _Ink.sub)),
+            child: pw.Text(
+              mark,
+              style: pw.TextStyle(
+                font: _reg,
+                fontSize: markSize,
+                height: 1.62,
+                color: bulletColor ?? _Ink.sub,
+              ),
+            ),
           ),
           pw.Expanded(child: pw.RichText(text: _spanOf(b.spans, 10))),
         ],
@@ -287,16 +312,21 @@ class PdfService {
                   color: b.checked ? _Ink.accent : null,
                   borderRadius: pw.BorderRadius.circular(2),
                   border: pw.Border.all(
-                      color: b.checked ? _Ink.accent : _Ink.sub, width: 0.9),
+                    color: b.checked ? _Ink.accent : _Ink.sub,
+                    width: 0.9,
+                  ),
                 ),
               ),
             ),
           ),
           pw.Expanded(
             child: pw.RichText(
-              text: _spanOf(b.spans, 10,
-                  color: b.checked ? _Ink.sub : null,
-                  lineThrough: b.checked),
+              text: _spanOf(
+                b.spans,
+                10,
+                color: b.checked ? _Ink.sub : null,
+                lineThrough: b.checked,
+              ),
             ),
           ),
         ],
@@ -309,12 +339,17 @@ class PdfService {
     final head = b.rows.first;
     final body = b.rows.skip(1).toList();
     pw.Widget cell(String s, {required bool bold}) => pw.Padding(
-          padding: const pw.EdgeInsets.fromLTRB(7, 5.5, 7, 5.5),
-          child: pw.RichText(
-            text: _spanOf(inlineSpans(s), 8.8,
-                bold: bold, color: bold ? _Ink.head : _Ink.body, height: 1.4),
-          ),
-        );
+      padding: const pw.EdgeInsets.fromLTRB(7, 5.5, 7, 5.5),
+      child: pw.RichText(
+        text: _spanOf(
+          inlineSpans(s),
+          8.8,
+          bold: bold,
+          color: bold ? _Ink.head : _Ink.body,
+          height: 1.4,
+        ),
+      ),
+    );
     return pw.Container(
       margin: const pw.EdgeInsets.symmetric(vertical: 8),
       child: pw.Table(
@@ -349,8 +384,9 @@ class PdfService {
       fontSize: size,
       height: height,
       color: color ?? _Ink.body,
-      decoration:
-          lineThrough ? pw.TextDecoration.lineThrough : pw.TextDecoration.none,
+      decoration: lineThrough
+          ? pw.TextDecoration.lineThrough
+          : pw.TextDecoration.none,
       decorationColor: _Ink.sub,
     );
     if (spans.isEmpty) return pw.TextSpan(text: '', style: base);
@@ -361,9 +397,10 @@ class PdfService {
           return pw.TextSpan(
             text: s.text,
             style: base.copyWith(
-                font: _mono,
-                fontSize: size * 0.9,
-                color: PdfColor.fromInt(0xFFB5266B)),
+              font: _mono,
+              fontSize: size * 0.9,
+              color: PdfColor.fromInt(0xFFB5266B),
+            ),
           );
         }
         return pw.TextSpan(

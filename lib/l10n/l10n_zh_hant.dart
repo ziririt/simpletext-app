@@ -54,44 +54,43 @@ class L10nZhHant extends L10n {
   @override
   String get rateAppTitle => '為我們評分';
   @override
-  String get shareAppMsg =>
-      'Skyblue Note — 輕快的筆記應用程式，在所有裝置間同步。';
+  String get shareAppMsg => 'Skyblue Note — 輕快的筆記應用程式，在所有裝置間同步。';
   @override
   String get seedBody => [
-        '您好！😊 以下是您要的整理結果[1][2]。',
-        '',
-        '# Skyblue Note',
-        '',
-        '表格錯位了吧。點一下左下角的**魔法棒**。🎉',
-        '',
-        '| 公司 | 代碼 | 漲跌幅 | 比重',
-        '|------|------|--------|',
-        '| 蘋果 | AAPL | +14.2% | 12% |',
-        '|輝達|NVDA|+48.9%|22%|',
-        '| 微軟 | MSFT | +21.5% | 18% |',
-        '|特斯拉|TSLA|-8.3%|8%|',
-        '',
-        '> 整理後各欄對齊。選單裡的「表格」可直接貼進試算表。',
-        '',
-        '## 會被清掉的',
-        '',
-        '- [ ] 客套開場白和表情符號 🙂',
-        '- [ ] 黏在句尾的註腳[3][4]',
-        '- [ ] 行尾落單的星號**',
-        '- [x] 錯位的表格會重新排好',
-        '',
-        '## 會保留的',
-        '',
-        '標題、**粗體**和引用都保留。螢幕上顯示為格式，複製到記事本或論壇時符號會自動去掉。',
-        '',
-        '---',
-        '',
-        '\t•\t用定位字元包住的項目符號 — Grok 和 ChatGPT 就是這樣貼出來的',
-        '\t•\t重複的   空格和定位字元',
-        '\t•\t散開的這幾行也會歸位',
-        '',
-        '> 不滿意就用選單裡的[還原原文](https://ezlong.com/skybluenote)還原。',
-      ].join('\n');
+    '您好！😊 以下是您要的整理結果[1][2]。',
+    '',
+    '# Skyblue Note',
+    '',
+    '表格錯位了吧。點一下左下角的**魔法棒**。🎉',
+    '',
+    '| 公司 | 代碼 | 漲跌幅 | 比重',
+    '|------|------|--------|',
+    '| 蘋果 | AAPL | +14.2% | 12% |',
+    '|輝達|NVDA|+48.9%|22%|',
+    '| 微軟 | MSFT | +21.5% | 18% |',
+    '|特斯拉|TSLA|-8.3%|8%|',
+    '',
+    '> 整理後各欄對齊。選單裡的「表格」可直接貼進試算表。',
+    '',
+    '## 會被清掉的',
+    '',
+    '- [ ] 客套開場白和表情符號 🙂',
+    '- [ ] 黏在句尾的註腳[3][4]',
+    '- [ ] 行尾落單的星號**',
+    '- [x] 錯位的表格會重新排好',
+    '',
+    '## 會保留的',
+    '',
+    '標題、**粗體**和引用都保留。螢幕上顯示為格式，複製到記事本或論壇時符號會自動去掉。',
+    '',
+    '---',
+    '',
+    '\t•\t用定位字元包住的項目符號 — Grok 和 ChatGPT 就是這樣貼出來的',
+    '\t•\t重複的   空格和定位字元',
+    '\t•\t散開的這幾行也會歸位',
+    '',
+    '> 不滿意就用選單裡的[還原原文](https://ezlong.com/skybluenote)還原。',
+  ].join('\n');
 
   @override
   String get done => '完成';
@@ -131,8 +130,7 @@ class L10nZhHant extends L10n {
   String get unpinConfirmTitle => '取消置頂這則筆記？';
 
   @override
-  String get unpinConfirmBody =>
-      '在清單中長按筆記即可重新置頂。';
+  String get unpinConfirmBody => '在清單中長按筆記即可重新置頂。';
   @override
   String get deleteTooltip => '刪除';
   @override
@@ -182,12 +180,10 @@ class L10nZhHant extends L10n {
   String get revertConfirmOk => '還原';
 
   @override
-  String get okAction =>
-      '確定';
+  String get okAction => '確定';
 
   @override
-  String get revertDoneTitle =>
-      '已還原為原文';
+  String get revertDoneTitle => '已還原為原文';
 
   @override
   String get revertDoneBody =>
@@ -294,8 +290,7 @@ class L10nZhHant extends L10n {
   String get paperSky => '天空';
 
   @override
-  String get themeSystemNote =>
-      '跟隨裝置時，裝置切到深色的時間，App 也會一起切換。';
+  String get themeSystemNote => '跟隨裝置時，裝置切到深色的時間，App 也會一起切換。';
 
   @override
   String folderMoved(String name) => '已移到 $name';
@@ -375,13 +370,15 @@ class L10nZhHant extends L10n {
   @override
   String get aiKeyInviteTitle => '填入自己的 AI 金鑰，功能會更強';
   @override
-  String get aiKeyInviteBody => '現在只能理解固定規則。填入自己的 AI 金鑰後，「寫得更簡潔一點」「改成敬語」這類自由指令也能直接處理，標籤也由 AI 擷取。';
+  String get aiKeyInviteBody =>
+      '現在只能理解固定規則。填入自己的 AI 金鑰後，「寫得更簡潔一點」「改成敬語」這類自由指令也能直接處理，標籤也由 AI 擷取。';
   @override
   String get aiKeyCta => '填入 AI 金鑰';
   @override
   String get aiKeyPasteBtn => '貼上';
   @override
-  String get aiKeyCost => '本 App 直接呼叫您已經在用的 AI 服務。Gemini、ChatGPT、Claude、Grok 中，填入您已有的那一個的金鑰即可。';
+  String get aiKeyCost =>
+      '本 App 直接呼叫您已經在用的 AI 服務。Gemini、ChatGPT、Claude、Grok 中，填入您已有的那一個的金鑰即可。';
   @override
   String get aiKeySafe => '金鑰只存在這台裝置上，不會傳送到本 App 的伺服器。';
   @override
@@ -456,15 +453,13 @@ class L10nZhHant extends L10n {
   String get copyAll => '複製全部';
 
   @override
-  String get copyPlainSub =>
-      '純文字 — 去掉 #、** 等符號';
+  String get copyPlainSub => '純文字 — 去掉 #、** 等符號';
 
   @override
   String get copyRaw => '依 Markdown 複製';
 
   @override
-  String get copyRawSub =>
-      '用於 Notion、Slack、GitHub 等支援 Markdown 的地方';
+  String get copyRawSub => '用於 Notion、Slack、GitHub 等支援 Markdown 的地方';
   @override
   String get copiedAll => '已複製全文';
   @override
@@ -490,53 +485,43 @@ class L10nZhHant extends L10n {
   String get apply => '立即套用整理';
 
   @override
-  String get presetAiName =>
-      '標準整理';
+  String get presetAiName => '標準整理';
   @override
-  String get presetAiDesc =>
-      '把貼上的 AI 回答變得可讀。多數情況夠用';
+  String get presetAiDesc => '把貼上的 AI 回答變得可讀。多數情況夠用';
   @override
-  String get presetStripName =>
-      '清除所有符號';
+  String get presetStripName => '清除所有符號';
   @override
-  String get presetStripDesc =>
-      '傳到 LINE·簡訊時。符號和表情全部清掉，表格排成對齊的文字表';
+  String get presetStripDesc => '傳到 LINE·簡訊時。符號和表情全部清掉，表格排成對齊的文字表';
   @override
-  String get presetMinimalName =>
-      '只去雜質';
+  String get presetMinimalName => '只去雜質';
   @override
-  String get presetMinimalDesc =>
-      '保留結構，只清除看不見的雜質';
+  String get presetMinimalDesc => '保留結構，只清除看不見的雜質';
   @override
-  String get presetTablesName =>
-      '只取表格';
+  String get presetTablesName => '只取表格';
   @override
-  String get presetTablesDesc =>
-      '直接貼到 Excel 或 Google 試算表';
+  String get presetTablesDesc => '直接貼到 Excel 或 Google 試算表';
   @override
-  String get presetBlogName =>
-      '部落格用';
+  String get presetBlogName => '部落格用';
   @override
-  String get presetBlogDesc =>
-      '保留連結網址，去掉符號';
+  String get presetBlogDesc => '保留連結網址，去掉符號';
 
   @override
   String get tidySample => [
-        '## 今日小結 😊',
-        '',
-        '**要點**有三條[1][2]。',
-        '',
-        '- 第一條',
-        '- 第二條',
-        '',
-        '> 引用一行',
-        '',
-        '詳見[部落格](https://ezlong.com)',
-        '',
-        '| 項目 | 值 |',
-        '|---|---|',
-        '|營收|120|',
-      ].join('\n');
+    '## 今日小結 😊',
+    '',
+    '**要點**有三條[1][2]。',
+    '',
+    '- 第一條',
+    '- 第二條',
+    '',
+    '> 引用一行',
+    '',
+    '詳見[部落格](https://ezlong.com)',
+    '',
+    '| 項目 | 值 |',
+    '|---|---|',
+    '|營收|120|',
+  ].join('\n');
 
   @override
   String get settingsTitle => '設定';
@@ -553,12 +538,10 @@ class L10nZhHant extends L10n {
   String get syncAppleOnly => '僅限 Apple 裝置';
 
   @override
-  String get syncScopeTitle =>
-      '同步範圍';
+  String get syncScopeTitle => '同步範圍';
 
   @override
-  String get syncScopeShared =>
-      '裝置間同步：備忘錄、整理規則、手動新增的取代規則、資料夾、常用 AI 編輯指令';
+  String get syncScopeShared => '裝置間同步：備忘錄、整理規則、手動新增的取代規則、資料夾、常用 AI 編輯指令';
 
   @override
   String get syncStateOffGdrive => '請重新登入你的 Google 帳號';
@@ -570,8 +553,7 @@ class L10nZhHant extends L10n {
       'Google 雲端硬碟的存放處由使用本應用的所有裝置共用。裝上本應用並用同一個 Google 帳號登入即可';
 
   @override
-  String get syncScopeDevice =>
-      '每台裝置各自：字級、行距、背景、外觀、排序';
+  String get syncScopeDevice => '每台裝置各自：字級、行距、背景、外觀、排序';
 
   @override
   String get syncScopePlatform =>
@@ -581,32 +563,23 @@ class L10nZhHant extends L10n {
   String get typographyTitle => '字體與行距';
 
   @override
-  String get syncScopeNever =>
-      'AI API 金鑰不會上傳到任何雲端，需要在每台裝置分別輸入';
+  String get syncScopeNever => 'AI API 金鑰不會上傳到任何雲端，需要在每台裝置分別輸入';
   @override
-  String get syncWhereTitle =>
-      '放在哪裡';
+  String get syncWhereTitle => '放在哪裡';
   @override
-  String get syncBackendNone =>
-      '不同步';
+  String get syncBackendNone => '不同步';
   @override
-  String get syncBackendNoneSub =>
-      '只保存在這台裝置';
+  String get syncBackendNoneSub => '只保存在這台裝置';
   @override
-  String get syncBackendIcloud =>
-      'iCloud';
+  String get syncBackendIcloud => 'iCloud';
   @override
-  String get syncBackendIcloudSub =>
-      '在 iPhone·iPad·Mac 之間';
+  String get syncBackendIcloudSub => '在 iPhone·iPad·Mac 之間';
   @override
-  String get syncBackendGdrive =>
-      'Google Drive';
+  String get syncBackendGdrive => 'Google Drive';
   @override
-  String get syncBackendGdriveSub =>
-      '還包括其他裝置與網頁';
+  String get syncBackendGdriveSub => '還包括其他裝置與網頁';
   @override
-  String get syncSoon =>
-      '準備中';
+  String get syncSoon => '準備中';
 
   @override
   String get driveSignInFailed => '無法連接你的 Google 帳號';
@@ -617,17 +590,14 @@ class L10nZhHant extends L10n {
   @override
   String get driveSignedInAs => '已連接';
   @override
-  String get syncSectionState =>
-      '目前狀態';
+  String get syncSectionState => '目前狀態';
   @override
-  String get syncNowAction =>
-      '立即同步';
+  String get syncNowAction => '立即同步';
   @override
   String get syncNowBusy => '正在同步…';
 
   @override
-  String get syncLastNever =>
-      '還沒有同步過';
+  String get syncLastNever => '還沒有同步過';
   @override
   String get headingTip => '標題';
   @override
@@ -762,11 +732,9 @@ class L10nZhHant extends L10n {
   @override
   String syncLogLastDown(String when) => '最近一次下載 · ' + when;
   @override
-  String get syncTroubleTitle =>
-      '出問題時';
+  String get syncTroubleTitle => '出問題時';
   @override
-  String get syncTroubleNote =>
-      '同步不是備份。在一台裝置上刪掉，別處也會消失。重要的筆記請偶爾匯出成檔案。';
+  String get syncTroubleNote => '同步不是備份。在一台裝置上刪掉，別處也會消失。重要的筆記請偶爾匯出成檔案。';
   @override
   String syncLastAt(String when) => '上次同步 $when';
 
@@ -780,11 +748,13 @@ class L10nZhHant extends L10n {
   String syncStateSyncing(String where) => '正在與 $where 同步… 需要幾秒到幾十秒';
 
   @override
-  String get aiKeyNotSynced => '備忘會透過所選的存放處同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
+  String get aiKeyNotSynced =>
+      '備忘會透過所選的存放處同步到您的所有裝置，但 API 金鑰不會同步 — 請在每台裝置上分別輸入。';
   @override
   String get aiKeySyncTitle => 'API 金鑰也同步';
   @override
-  String get aiKeySyncSubApple => '透過 iCloud 鑰匙圈傳輸，與備忘的通道不同。只有您的裝置持有金鑰，因此連 Apple 也無法讀取。';
+  String get aiKeySyncSubApple =>
+      '透過 iCloud 鑰匙圈傳輸，與備忘的通道不同。只有您的裝置持有金鑰，因此連 Apple 也無法讀取。';
   @override
   String get aiKeySyncSubGdrive => '存放在 Google 雲端硬碟上的 API 金鑰，安全由各自負責。';
 
@@ -792,8 +762,7 @@ class L10nZhHant extends L10n {
   String get autoTagTitle => '自動加入標籤';
 
   @override
-  String get autoTagSub =>
-      '編輯後稍作停頓，AI 會重新擷取標籤。你手動改過標籤的筆記不會被更動';
+  String get autoTagSub => '編輯後稍作停頓，AI 會重新擷取標籤。你手動改過標籤的筆記不會被更動';
 
   @override
   String get syncStateSignedOut => '點按查看方法';
@@ -812,8 +781,7 @@ class L10nZhHant extends L10n {
   String get syncRecheck => '重新檢查';
 
   @override
-  String get syncHelpNote =>
-      '剛安裝完成時可能需要一兩分鐘準備。稍後點一下重新檢查即可。';
+  String get syncHelpNote => '剛安裝完成時可能需要一兩分鐘準備。稍後點一下重新檢查即可。';
 
   @override
   String get sortFilterTooltip => '排序和篩選';
@@ -858,7 +826,8 @@ class L10nZhHant extends L10n {
   String get aiDetecting => '正在確認這是哪家服務商的金鑰…';
 
   @override
-  String get aiErrNoCredits => '金鑰沒問題，但該帳戶沒有餘額。請在服務商網站新增付款方式或儲值。若不想付費，可以試試 Google Gemini 金鑰（以 AIza… 開頭）——它有免費額度。';
+  String get aiErrNoCredits =>
+      '金鑰沒問題，但該帳戶沒有餘額。請在服務商網站新增付款方式或儲值。若不想付費，可以試試 Google Gemini 金鑰（以 AIza… 開頭）——它有免費額度。';
 
   @override
   String get aiErrBadKey => '金鑰被拒絕。請檢查前後是否有空格或引號，仍然不行就到服務商網站重新申請。';
@@ -918,71 +887,55 @@ class L10nZhHant extends L10n {
   String trashDaysLeftLabel(int days) => '$days 天後徹底刪除';
 
   @override
-  String get exportSectionTitle =>
-      '匯入與輸出';
+  String get exportSectionTitle => '匯入與輸出';
 
   @override
-  String get exportSubtitle =>
-      '備忘隨時可以帶走。Markdown 可匯入蘋果備忘錄、Obsidian、Notion 等。';
+  String get exportSubtitle => '備忘隨時可以帶走。Markdown 可匯入蘋果備忘錄、Obsidian、Notion 等。';
 
   @override
-  String get exportNote =>
-      '輸出此備忘';
+  String get exportNote => '輸出此備忘';
 
   @override
-  String get exportAllMd =>
-      '輸出全部備忘';
+  String get exportAllMd => '輸出全部備忘';
 
   @override
-  String get exportAllMdSub =>
-      '所有備忘的 Markdown 打包為一個 ZIP';
+  String get exportAllMdSub => '所有備忘的 Markdown 打包為一個 ZIP';
 
   @override
-  String get exportBackup =>
-      '儲存備份檔案';
+  String get exportBackup => '儲存備份檔案';
 
   @override
-  String get exportBackupSub =>
-      '可完整還原到本 App 的單一檔案（不含 API 金鑰）';
+  String get exportBackupSub => '可完整還原到本 App 的單一檔案（不含 API 金鑰）';
 
   @override
-  String get exportFailed =>
-      '輸出失敗';
+  String get exportFailed => '輸出失敗';
 
   @override
-  String get printAction =>
-      '列印';
+  String get printAction => '列印';
 
   @override
-  String get exportPdf =>
-      '匯出為 PDF';
+  String get exportPdf => '匯出為 PDF';
 
   @override
-  String get pdfFailed =>
-      '無法產生 PDF';
+  String get pdfFailed => '無法產生 PDF';
 
   @override
-  String get exportEmpty =>
-      '沒有可輸出的備忘';
+  String get exportEmpty => '沒有可輸出的備忘';
 
   @override
   String get choosePreset => '選擇整理方式';
 
   @override
-  String get importFiles =>
-      '從檔案匯入';
+  String get importFiles => '從檔案匯入';
 
   @override
-  String get importFilesSub =>
-      'Markdown 和文字檔會變成備忘。備份檔也在這裡還原';
+  String get importFilesSub => 'Markdown 和文字檔會變成備忘。備份檔也在這裡還原';
 
   @override
-  String get importAppend =>
-      '載入檔案並附加到內文';
+  String get importAppend => '載入檔案並附加到內文';
 
   @override
-  String get importNone =>
-      '沒有匯入任何檔案';
+  String get importNone => '沒有匯入任何檔案';
 
   @override
   String importDone(int n) => '已匯入 $n 則備忘';
@@ -994,24 +947,19 @@ class L10nZhHant extends L10n {
   String get splitEmpty => '請在左側選擇一則備忘';
 
   @override
-  String get historyTitle =>
-      '版本紀錄';
+  String get historyTitle => '版本紀錄';
 
   @override
-  String get historySub =>
-      '可以回到整理或取代之前的文字';
+  String get historySub => '可以回到整理或取代之前的文字';
 
   @override
-  String get historyEmpty =>
-      '還沒有可回復的版本';
+  String get historyEmpty => '還沒有可回復的版本';
 
   @override
-  String get historyRestore =>
-      '回復';
+  String get historyRestore => '回復';
 
   @override
-  String get historyOriginal =>
-      '貼上時的原文';
+  String get historyOriginal => '貼上時的原文';
 
   @override
   String get historyWhyTidy => '整理前';
@@ -1056,7 +1004,8 @@ class L10nZhHant extends L10n {
   String attachAndMore(int n) => '等 ${n} 個';
 
   @override
-  String attachOther(String device, String what) => '附件：${device} 上的筆記附有 ${what}（僅可在該裝置查看）';
+  String attachOther(String device, String what) =>
+      '附件：${device} 上的筆記附有 ${what}（僅可在該裝置查看）';
 
   @override
   String deviceName(String kind) {
@@ -1139,8 +1088,8 @@ class L10nZhHant extends L10n {
   String lockSub(String vendor) => vendor == 'android'
       ? '使用指紋、臉部辨識或螢幕鎖定開啟 App。'
       : vendor == 'windows'
-          ? '使用 Windows Hello 或裝置 PIN 開啟 App。'
-          : '使用 Face ID、Touch ID 或裝置密碼開啟 App。';
+      ? '使用 Windows Hello 或裝置 PIN 開啟 App。'
+      : '使用 Face ID、Touch ID 或裝置密碼開啟 App。';
 
   @override
   String get lockNote => '此鎖定用於防止他人拿到裝置後開啟 App，並不會加密裝置中的檔案本身。';
@@ -1167,8 +1116,8 @@ class L10nZhHant extends L10n {
   String lockUnavailable(String vendor) => vendor == 'android'
       ? '此裝置無法使用指紋、臉部辨識或螢幕鎖定。'
       : vendor == 'windows'
-          ? '此裝置無法使用 Windows Hello 或裝置 PIN。'
-          : '此裝置無法使用 Face ID、Touch ID 或裝置密碼。';
+      ? '此裝置無法使用 Windows Hello 或裝置 PIN。'
+      : '此裝置無法使用 Face ID、Touch ID 或裝置密碼。';
 
   @override
   String get lockReasonOpen => '開啟備忘錄需要驗證';
@@ -1237,8 +1186,7 @@ class L10nZhHant extends L10n {
   String get tidyRulesTitle => '整理規則';
 
   @override
-  String get tidyRulesSub =>
-      '決定按下「整理」後文字如何變化。這裡選的只對「基本整理」生效 — 其他方式按名字所說的做。';
+  String get tidyRulesSub => '決定按下「整理」後文字如何變化。這裡選的只對「基本整理」生效 — 其他方式按名字所說的做。';
 
   @override
   String get syncOnTitle => '已開啟';
@@ -1251,7 +1199,8 @@ class L10nZhHant extends L10n {
   @override
   String get syncHelpTitleGdrive => '重新連接 Google 雲端硬碟';
   @override
-  String get syncHelpStepsGdrive => '1. 點擊下方按鈕，選擇您的 Google 帳號\n2. 允許存取雲端硬碟\n3. 隨即開始同步';
+  String get syncHelpStepsGdrive =>
+      '1. 點擊下方按鈕，選擇您的 Google 帳號\n2. 允許存取雲端硬碟\n3. 隨即開始同步';
   @override
   String get syncHelpNoteGdrive => '備忘仍在雲端硬碟中。重新登入後就會回來。';
   @override
@@ -1264,18 +1213,17 @@ class L10nZhHant extends L10n {
   String get syncDiagPreparingGdrive =>
       "已登入，正在從雲端硬碟接收筆記。無需一直盯著螢幕 — 切到其他 App 也沒關係，接收會暫停，回來後從中斷處繼續。";
   @override
-  String get syncRecheckStillGdrive => '尚未全部取回。備忘較多時首次同步需要一點時間 \u2014 關閉此視窗後仍會繼續。';
+  String get syncRecheckStillGdrive =>
+      '尚未全部取回。備忘較多時首次同步需要一點時間 \u2014 關閉此視窗後仍會繼續。';
 
   @override
-  String pastedFrom(String src, String date) =>
-      '$date 來自 $src';
+  String pastedFrom(String src, String date) => '$date 來自 $src';
 
   @override
   String pastedOn(String date) => '$date 貼上';
 
   @override
-  String staleWarn(int days) =>
-      '這個回答已過去 $days 天，其間模型可能已更新。';
+  String staleWarn(int days) => '這個回答已過去 $days 天，其間模型可能已更新。';
   @override
   String get settingsSecView => '顯示';
   @override
@@ -1375,6 +1323,24 @@ class L10nZhHant extends L10n {
   String get pasteTipLater => '稍後';
   @override
   String get adClose => '關閉廣告';
+
+  @override
+  String get bookmarkAdd => '在此加書籤';
+
+  @override
+  String get bookmarkRemove => '移除書籤';
+
+  @override
+  String get bookmarkTooShort => '這篇只有一頁，沒有可加書籤的位置';
+
+  @override
+  String bookmarkGoAt(int pct) => '前往書籤 · $pct%';
+
+  @override
+  String bookmarkResume(int pct) => '從 $pct% 繼續閱讀';
+
+  @override
+  String bookmarkSaved(int pct) => '已在 $pct% 處加書籤';
   @override
   String get noteDuplicate => '複製';
   @override
@@ -1384,8 +1350,7 @@ class L10nZhHant extends L10n {
   @override
   String get sponsorTitle => '一則廣告，成就下一次更新';
   @override
-  String get sponsorBody =>
-      '更好的功能和持續的更新需要您的支持。完整看完一支廣告，今天這個 App 就不再顯示廣告。';
+  String get sponsorBody => '更好的功能和持續的更新需要您的支持。完整看完一支廣告，今天這個 App 就不再顯示廣告。';
   @override
   String get sponsorWatch => '看廣告支持我們';
   @override
@@ -1454,7 +1419,8 @@ class L10nZhHant extends L10n {
   String get onbTitle3 => '每台裝置都是同一份筆記';
 
   @override
-  String get onbBody3 => 'iPhone、iPad、Mac，還有在瀏覽器裡打開的網頁版，看到的都是同一份筆記。同時使用的其他裝置也會跟上。改一處，其餘跟著變。';
+  String get onbBody3 =>
+      'iPhone、iPad、Mac，還有在瀏覽器裡打開的網頁版，看到的都是同一份筆記。同時使用的其他裝置也會跟上。改一處，其餘跟著變。';
 
   @override
   String get onbTitle4 => '全部已經開放';
@@ -1508,7 +1474,8 @@ class L10nZhHant extends L10n {
   String premiumCta(String period, String price) => '以 $price/$period 開始使用';
 
   @override
-  String premiumChargeNote(String period, String price) => '將按 $period 收取 $price。';
+  String premiumChargeNote(String period, String price) =>
+      '將按 $period 收取 $price。';
 
   @override
   String premiumTrialThen(int days) => '免費 $days 天，之後';
@@ -1517,26 +1484,17 @@ class L10nZhHant extends L10n {
   String premiumSave(int pct) => '省 $pct%';
 
   @override
-  String premiumTrustBody(String version) => '您正在使用 $version。收到的建議通常當週就上線，改了什麼在應用程式內即可查看。';
-
-
-
+  String premiumTrustBody(String version) =>
+      '您正在使用 $version。收到的建議通常當週就上線，改了什麼在應用程式內即可查看。';
 
   @override
   String get premiumPerkWeb => '網頁版也一樣 — 瀏覽器裡同樣無廣告';
-
-
-
-
-
 
   @override
   String premiumPerkTidy(int n) => '整理無限次 — 沒有每天 $n 次的上限';
 
   @override
   String premiumPerkWizard(int n) => 'AI 編輯無限次 — 沒有每天 $n 次的上限';
-
-
 
   @override
   String get sponsorPremiumNote => '購買一次，橫幅和這個提示都不會再出現。';
@@ -1553,8 +1511,7 @@ class L10nZhHant extends L10n {
   @override
   String limitTidyBody(int n) => '免費版每天可整理 $n 次，明天恢復。進階版不限次數。';
   @override
-  String limitWizardBody(int n) =>
-      '免費版每天可使用 $n 次 AI 編輯，明天恢復 — 進階版沒有限制。';
+  String limitWizardBody(int n) => '免費版每天可使用 $n 次 AI 編輯，明天恢復 — 進階版沒有限制。';
   @override
   String get limitSeePremium => '查看進階版';
 
@@ -1596,7 +1553,8 @@ class L10nZhHant extends L10n {
   @override
   String get aiManualModelHint => '輸入模型名稱（例如 gemini-2.5-flash-lite）';
   @override
-  String aiAutoLabel(String provider, String model) => '自動選擇：$provider · $model';
+  String aiAutoLabel(String provider, String model) =>
+      '自動選擇：$provider · $model';
   @override
   String aiModelsFound(int n) => '已確認 $n 個可用模型。';
   @override

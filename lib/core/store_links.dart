@@ -29,5 +29,4 @@ String landingUrl() => 'https://ezlong.com/skybluenote/';
 
 /// 공유할 주소. 앱스토어에 있는 판(iOS·iPadOS)은 스토어로, 나머지는
 /// 소개 페이지로 보낸다 — 받은 사람이 바로 깔 수 있는 문이 우선이다.
-String shareUrl({required bool isIOS}) =>
-    isIOS ? appStoreUrl() : landingUrl();
+String shareUrl({required bool isIOS}) => isIOS ? appStoreUrl() : landingUrl();

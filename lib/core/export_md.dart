@@ -43,7 +43,8 @@ String noteToMarkdown({
 }
 
 /// YAML 값 감싸기. 콜론·따옴표가 들어가면 통째로 깨지므로 항상 감싼다.
-String _yamlValue(String v) => '"${v.replaceAll('\\', r'\\').replaceAll('"', r'\"')}"';
+String _yamlValue(String v) =>
+    '"${v.replaceAll('\\', r'\\').replaceAll('"', r'\"')}"';
 
 String _iso(int ms) =>
     DateTime.fromMillisecondsSinceEpoch(ms).toUtc().toIso8601String();
@@ -68,9 +69,28 @@ String safeFileName(String title, {String fallback = 'note', int maxLen = 60}) {
   if (s.isEmpty) return fallback;
   // 윈도우 예약어. 확장자가 붙어도 못 쓴다.
   const reserved = {
-    'con', 'prn', 'aux', 'nul',
-    'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9',
-    'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9',
+    'con',
+    'prn',
+    'aux',
+    'nul',
+    'com1',
+    'com2',
+    'com3',
+    'com4',
+    'com5',
+    'com6',
+    'com7',
+    'com8',
+    'com9',
+    'lpt1',
+    'lpt2',
+    'lpt3',
+    'lpt4',
+    'lpt5',
+    'lpt6',
+    'lpt7',
+    'lpt8',
+    'lpt9',
   };
   if (reserved.contains(s.toLowerCase())) return '$s-';
   return s;

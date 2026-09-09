@@ -92,11 +92,14 @@ class MonoTextController extends TextEditingController {
     // 코드·표 구간 안의 '**'와 '#'은 글자 그대로다. 거기서는 안 그린다.
     final rich = richEnabled
         ? richSpans(text)
-            .where((r) => !spans.any((m) => r.start < m.end && m.start < r.end))
-            .toList()
+              .where(
+                (r) => !spans.any((m) => r.start < m.end && m.start < r.end),
+              )
+              .toList()
         : const <RichSpan>[];
-    final composing =
-        (withComposing && value.isComposingRangeValid) ? value.composing : null;
+    final composing = (withComposing && value.isComposingRangeValid)
+        ? value.composing
+        : null;
     if (spans.isEmpty && rich.isEmpty && composing == null) {
       return TextSpan(text: text, style: style);
     }
@@ -150,14 +153,18 @@ class MonoTextController extends TextEditingController {
       if (!isMono) {
         for (final r in rich) {
           if (r.start <= a && b <= r.end) {
-            segStyle = _dress(segStyle, r.kind,
-                onCaretLine: a >= caretLineStart && a < caretLineEnd);
+            segStyle = _dress(
+              segStyle,
+              r.kind,
+              onCaretLine: a >= caretLineStart && a < caretLineEnd,
+            );
           }
         }
       }
       if (isComposing) {
         segStyle = segStyle.merge(
-            const TextStyle(decoration: TextDecoration.underline));
+          const TextStyle(decoration: TextDecoration.underline),
+        );
       }
       children.add(TextSpan(text: text.substring(a, b), style: segStyle));
     }
@@ -186,12 +193,15 @@ class MonoTextController extends TextEditingController {
         return s.copyWith(color: subColor ?? s.color);
       case RichKind.box:
         return s.copyWith(
-            color: accentColor ?? s.color, fontWeight: FontWeight.w700);
+          color: accentColor ?? s.color,
+          fontWeight: FontWeight.w700,
+        );
       case RichKind.done:
         return s.copyWith(
-            color: (subColor ?? s.color)?.withValues(alpha: 0.7),
-            decoration: TextDecoration.lineThrough,
-            decorationColor: (subColor ?? s.color)?.withValues(alpha: 0.5));
+          color: (subColor ?? s.color)?.withValues(alpha: 0.7),
+          decoration: TextDecoration.lineThrough,
+          decorationColor: (subColor ?? s.color)?.withValues(alpha: 0.5),
+        );
     }
   }
 
@@ -203,6 +213,9 @@ class MonoTextController extends TextEditingController {
     final fs = s.fontSize ?? bodyFontSize;
     final h = s.height ?? lineHeight;
     return s.copyWith(
-        fontSize: fs * k, height: h / k, fontWeight: FontWeight.w700);
+      fontSize: fs * k,
+      height: h / k,
+      fontWeight: FontWeight.w700,
+    );
   }
 }

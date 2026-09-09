@@ -105,26 +105,30 @@ class WidgetBridge {
     await init();
     try {
       final all = Store.instance.notes
-          .map((n) => FeedNote(
-                id: n.id,
-                title: n.title,
-                body: n.body,
-                updatedAt: n.updatedAt,
-                pinned: n.pinned,
-                locked: n.locked,
-              ))
+          .map(
+            (n) => FeedNote(
+              id: n.id,
+              title: n.title,
+              body: n.body,
+              updatedAt: n.updatedAt,
+              pinned: n.pinned,
+              locked: n.locked,
+            ),
+          )
           .toList();
       final items = widgetFeed(all, untitled: w.untitled);
       // 비어 보이는 까닭이 둘이다. 정말 메모가 없는 것과, 있는데 전부
       // 잠긴 것. 둘을 같은 말로 알리면 두 번째 사람은 메모가 사라진 줄 안다.
       final hidden = items.isEmpty && all.any((n) => n.locked);
-      final payload = widgetPayload(
-          items, DateTime.now().millisecondsSinceEpoch)
-        ..['title'] = w.title
-        ..['empty'] = hidden ? w.allLocked : w.empty;
+      final payload =
+          widgetPayload(items, DateTime.now().millisecondsSinceEpoch)
+            ..['title'] = w.title
+            ..['empty'] = hidden ? w.allLocked : w.empty;
       await HomeWidget.saveWidgetData<String>('feed', jsonEncode(payload));
       await HomeWidget.updateWidget(
-          androidName: androidProvider, iOSName: iosWidget);
+        androidName: androidProvider,
+        iOSName: iosWidget,
+      );
     } catch (_) {
       // 위젯 갱신이 실패해도 앱은 그대로 돌아야 한다.
     }

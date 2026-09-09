@@ -11,11 +11,12 @@ void main() {
   group('검색', () {
     test('안 잠근 메모는 본문까지 뒤진다', () {
       final h = searchHaystack(
-          locked: false,
-          title: '제목',
-          body: body,
-          tags: ['투자'],
-          source: 'ChatGPT');
+        locked: false,
+        title: '제목',
+        body: body,
+        tags: ['투자'],
+        source: 'ChatGPT',
+      );
       expect(h.contains('실적'), isTrue);
     });
 
@@ -23,11 +24,12 @@ void main() {
       // 글자를 안 보여 주고도, 본문에만 있는 낱말로 그 메모를 찾아낼 수
       // 있으면 내용이 샌 것이다.
       final h = searchHaystack(
-          locked: true,
-          title: '제목',
-          body: body,
-          tags: ['투자'],
-          source: 'ChatGPT');
+        locked: true,
+        title: '제목',
+        body: body,
+        tags: ['투자'],
+        source: 'ChatGPT',
+      );
       expect(h.contains('실적'), isFalse);
       expect(h.contains('제목'), isTrue);
       expect(h.contains('투자'), isTrue);
@@ -37,8 +39,7 @@ void main() {
 
   group('목록 미리보기', () {
     test('안 잠근 메모는 빈 줄을 걸러 한 문단으로', () {
-      expect(listPreview(locked: false, body: body),
-          '테슬라 실적은 어쩌고  둘째 줄  셋째 줄');
+      expect(listPreview(locked: false, body: body), '테슬라 실적은 어쩌고  둘째 줄  셋째 줄');
     });
 
     test('잠근 메모는 빈 문자열', () {
@@ -61,8 +62,7 @@ void main() {
     test('제목이 없으면 본문 첫 줄 하나만 올린다 — 안 잠근 경우', () {
       // 이은 문단이 아니라 첫 줄이다. 미리보기 카드의 제목이 본문 두 줄로
       // 부풀어 오르던 것을 여기서 막는다.
-      expect(listTitle(locked: false, title: '', body: body),
-          '테슬라 실적은 어쩌고');
+      expect(listTitle(locked: false, title: '', body: body), '테슬라 실적은 어쩌고');
     });
 
     test('제목이 없고 잠갔으면 아무것도 안 올린다', () {

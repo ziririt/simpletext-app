@@ -9,8 +9,7 @@ void main() {
   group('printBlocks', () {
     test('제목은 표시를 걷어내고 뜻만 남긴다', () {
       final b = printBlocks('# 큰제목\n## 중간\n#### 넷째');
-      expect(b.map((e) => e.kind).toList(),
-          [PKind.h1, PKind.h2, PKind.h3]);
+      expect(b.map((e) => e.kind).toList(), [PKind.h1, PKind.h2, PKind.h3]);
       expect(b[0].plain, '큰제목');
       expect(b[2].plain, '넷째'); // 넷 이상은 셋과 같이
     });
@@ -66,8 +65,11 @@ void main() {
 
     test('앞뒤 빈 줄은 떨어내고 가운데 빈 줄은 남긴다', () {
       final b = printBlocks('\n\n가\n\n나\n\n');
-      expect(b.map((e) => e.kind).toList(),
-          [PKind.para, PKind.blank, PKind.para]);
+      expect(b.map((e) => e.kind).toList(), [
+        PKind.para,
+        PKind.blank,
+        PKind.para,
+      ]);
     });
   });
 
@@ -92,10 +94,14 @@ void main() {
     });
 
     test('연결은 사람이 읽는 모양으로 편다', () {
-      expect(inlineSpans('[테슬라](https://x.com/tesla)').first.text,
-          '테슬라 (https://x.com/tesla)');
-      expect(inlineSpans('[https://a.b](https://a.b)').first.text,
-          'https://a.b');
+      expect(
+        inlineSpans('[테슬라](https://x.com/tesla)').first.text,
+        '테슬라 (https://x.com/tesla)',
+      );
+      expect(
+        inlineSpans('[https://a.b](https://a.b)').first.text,
+        'https://a.b',
+      );
     });
   });
 }

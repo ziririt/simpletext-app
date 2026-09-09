@@ -65,7 +65,9 @@ bool isPremiumProduct(String id) => kPremiumProductIds.contains(id);
 
 /// '모든 기기' 등급의 상품인가.
 bool isAllDevices(String id) =>
-    id == kProductAllMonthly || id == kProductAllYearly || id == kProductLifetime;
+    id == kProductAllMonthly ||
+    id == kProductAllYearly ||
+    id == kProductLifetime;
 
 // ---------------------------------------------------------------- 울타리
 //
@@ -157,13 +159,12 @@ class Entitlement {
     int? allUntilMs,
     int? appleUntilMs,
     int? googleUntilMs,
-  }) =>
-      Entitlement(
-        lifetime: lifetime ?? this.lifetime,
-        allUntilMs: allUntilMs ?? this.allUntilMs,
-        appleUntilMs: appleUntilMs ?? this.appleUntilMs,
-        googleUntilMs: googleUntilMs ?? this.googleUntilMs,
-      );
+  }) => Entitlement(
+    lifetime: lifetime ?? this.lifetime,
+    allUntilMs: allUntilMs ?? this.allUntilMs,
+    appleUntilMs: appleUntilMs ?? this.appleUntilMs,
+    googleUntilMs: googleUntilMs ?? this.googleUntilMs,
+  );
 
   /// 기기끼리 맞출 때는 **가진 쪽이 이긴다.**
   ///
@@ -171,18 +172,18 @@ class Entitlement {
   /// 켜지는 순간 "프리미엄 아님"이 최신값이 되어 산 것을 덮어 버린다. 돈을
   /// 낸 사람에게 이보다 나쁜 일은 없다.
   Entitlement merge(Entitlement other) => Entitlement(
-        lifetime: lifetime || other.lifetime,
-        allUntilMs: _max(allUntilMs, other.allUntilMs),
-        appleUntilMs: _max(appleUntilMs, other.appleUntilMs),
-        googleUntilMs: _max(googleUntilMs, other.googleUntilMs),
-      );
+    lifetime: lifetime || other.lifetime,
+    allUntilMs: _max(allUntilMs, other.allUntilMs),
+    appleUntilMs: _max(appleUntilMs, other.appleUntilMs),
+    googleUntilMs: _max(googleUntilMs, other.googleUntilMs),
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'life': lifetime,
-        'all': allUntilMs,
-        'apple': appleUntilMs,
-        'google': googleUntilMs,
-      };
+    'life': lifetime,
+    'all': allUntilMs,
+    'apple': appleUntilMs,
+    'google': googleUntilMs,
+  };
 
   static Entitlement fromJson(Map<String, dynamic>? j) {
     if (j == null) return const Entitlement();

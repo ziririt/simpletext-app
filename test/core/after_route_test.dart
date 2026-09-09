@@ -41,16 +41,19 @@ class _ProbeState extends State<_Probe> {
 
 void main() {
   group('전환이 끝난 뒤에 시작한다 (2026-09-09)', () {
-    testWidgets('미는 동안에는 안 부르고, 끝난 뒤에 한 번 부른다',
-        (tester) async {
+    testWidgets('미는 동안에는 안 부르고, 끝난 뒤에 한 번 부른다', (tester) async {
       final log = <String>[];
       late BuildContext ctx;
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(builder: (c) {
-          ctx = c;
-          return const SizedBox.shrink();
-        }),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
 
       unawaitedPush(ctx, log);
       // 밀기 중간. 아직이다.
@@ -68,23 +71,25 @@ void main() {
       await tester.pumpWidget(MaterialApp(home: _Probe(log)));
       await tester.pump();
       await tester.pump();
-      expect(log, <String>['run'],
-          reason: '애니메이션이 없는 화면까지 기다리면 광고가 영영 안 뜬다');
+      expect(log, <String>['run'], reason: '애니메이션이 없는 화면까지 기다리면 광고가 영영 안 뜬다');
     });
 
-    testWidgets('한 번 읽은 상태를 믿지 않는다 (ProxyAnimation 함정)',
-        (tester) async {
+    testWidgets('한 번 읽은 상태를 믿지 않는다 (ProxyAnimation 함정)', (tester) async {
       // 화면이 만들어지는 순간 ModalRoute.animation 은 아직 진짜 컨트롤러가
       // 아니라 kAlwaysCompleteAnimation 이라 'completed' 라고 답한다.
       // 그 한 번을 믿고 시작하면 미는 도중에 일이 돈다.
       final log = <String>[];
       late BuildContext ctx;
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(builder: (c) {
-          ctx = c;
-          return const SizedBox.shrink();
-        }),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
       unawaitedPush(ctx, log);
       await tester.pump();
       await tester.pump();
@@ -97,12 +102,16 @@ void main() {
     testWidgets('화면이 먼저 사라지면 부르지 않는다', (tester) async {
       final log = <String>[];
       late BuildContext ctx;
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(builder: (c) {
-          ctx = c;
-          return const SizedBox.shrink();
-        }),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
       unawaitedPush(ctx, log);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -114,7 +123,5 @@ void main() {
 }
 
 void unawaitedPush(BuildContext ctx, List<String> log) {
-  Navigator.of(ctx).push(
-    MaterialPageRoute<void>(builder: (_) => _Probe(log)),
-  );
+  Navigator.of(ctx).push(MaterialPageRoute<void>(builder: (_) => _Probe(log)));
 }

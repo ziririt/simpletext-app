@@ -16,7 +16,8 @@ void main() {
     });
 
     test('링크에 붙어 온 utm 표식', () {
-      const t = '자세한 것은 [여기](https://example.com/a?utm_source=chatgpt.com)를 보세요.';
+      const t =
+          '자세한 것은 [여기](https://example.com/a?utm_source=chatgpt.com)를 보세요.';
       expect(sourceFromBody(t).name, kChatGpt);
     });
 
@@ -53,11 +54,17 @@ void main() {
 
     test('x.com 링크 하나로는 그록이라고 안 한다', () {
       // 어느 AI 든 X 를 인용할 수 있다.
-      expect(sourceFromBody('https://x.com/elonmusk/status/1').isKnown, isFalse);
+      expect(
+        sourceFromBody('https://x.com/elonmusk/status/1').isKnown,
+        isFalse,
+      );
     });
   });
 
   test('본문으로 찾은 것도 증거다 — 추정이 아니다', () {
-    expect(sourceFromBody('https://www.perplexity.ai/search/x').certain, isTrue);
+    expect(
+      sourceFromBody('https://www.perplexity.ai/search/x').certain,
+      isTrue,
+    );
   });
 }

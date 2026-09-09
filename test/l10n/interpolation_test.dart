@@ -21,8 +21,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('문구 파일에 죽은 값 자리가 없다 (2026-08-17)', () {
     final dir = Directory('lib/l10n');
-    expect(dir.existsSync(), isTrue,
-        reason: 'lib/l10n 을 못 찾았다 — 테스트를 프로젝트 뿌리에서 돌려야 한다');
+    expect(
+      dir.existsSync(),
+      isTrue,
+      reason: 'lib/l10n 을 못 찾았다 — 테스트를 프로젝트 뿌리에서 돌려야 한다',
+    );
 
     // \$ 다음에 글자나 밑줄이 오면 죽은 값 자리다.
     final dead = RegExp(r'\\\$([A-Za-z_])');
@@ -38,10 +41,14 @@ void main() {
       }
     }
 
-    expect(found, isEmpty,
-        reason: '값이 안 들어가고 글자 그대로 찍힌다. \\\$를 \$로 고칠 것:\n'
-            '${found.take(20).join('\n')}'
-            '${found.length > 20 ? '\n… 그리고 ${found.length - 20}곳 더' : ''}');
+    expect(
+      found,
+      isEmpty,
+      reason:
+          '값이 안 들어가고 글자 그대로 찍힌다. \\\$를 \$로 고칠 것:\n'
+          '${found.take(20).join('\n')}'
+          '${found.length > 20 ? '\n… 그리고 ${found.length - 20}곳 더' : ''}',
+    );
   });
 
   test('가격은 문구에 박지 않는다 (2026-08-26)', () {
@@ -69,9 +76,13 @@ void main() {
       }
     }
 
-    expect(found, isEmpty,
-        reason: '값은 스토어가 준 것을 쓴다. 문구에서 숫자를 빼고 '
-            'ProductDetails.price 를 쓸 것:\n'
-            '${found.take(20).join('\n')}');
+    expect(
+      found,
+      isEmpty,
+      reason:
+          '값은 스토어가 준 것을 쓴다. 문구에서 숫자를 빼고 '
+          'ProductDetails.price 를 쓸 것:\n'
+          '${found.take(20).join('\n')}',
+    );
   });
 }

@@ -139,7 +139,10 @@ final RegExp _delimRe = RegExp(r'^\s*\|?[\s:|-]*-[\s:|-]*\|[\s:|-]*$');
 
 /// 글 한 편을 덩어리로 나눈다.
 List<PBlock> printBlocks(String body) {
-  final lines = body.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+  final lines = body
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
   final out = <PBlock>[];
   var i = 0;
 
@@ -200,43 +203,63 @@ List<PBlock> printBlocks(String body) {
     if (h != null) {
       final n = h.group(1)!.length;
       // 넷 이상은 셋과 같이 그린다. 화면과 같은 규칙이다(rich_spans.dart).
-      out.add(PBlock(
-        n == 1 ? PKind.h1 : (n == 2 ? PKind.h2 : PKind.h3),
-        spans: inlineSpans(h.group(2)!.trim()),
-      ));
+      out.add(
+        PBlock(
+          n == 1 ? PKind.h1 : (n == 2 ? PKind.h2 : PKind.h3),
+          spans: inlineSpans(h.group(2)!.trim()),
+        ),
+      );
       continue;
     }
 
     final q = _quoteRe.firstMatch(t);
     if (q != null) {
-      out.add(PBlock(PKind.quote,
-          spans: inlineSpans(q.group(2)!), indent: _step(q.group(1)!)));
+      out.add(
+        PBlock(
+          PKind.quote,
+          spans: inlineSpans(q.group(2)!),
+          indent: _step(q.group(1)!),
+        ),
+      );
       continue;
     }
 
     final k = _taskRe.firstMatch(t);
     if (k != null) {
       final c = k.group(2)!;
-      out.add(PBlock(PKind.task,
+      out.add(
+        PBlock(
+          PKind.task,
           spans: inlineSpans(k.group(3)!),
           indent: _step(k.group(1)!),
-          checked: c != ' '));
+          checked: c != ' ',
+        ),
+      );
       continue;
     }
 
     final b = _bulletRe.firstMatch(t);
     if (b != null) {
-      out.add(PBlock(PKind.bullet,
-          spans: inlineSpans(b.group(2)!), indent: _step(b.group(1)!)));
+      out.add(
+        PBlock(
+          PKind.bullet,
+          spans: inlineSpans(b.group(2)!),
+          indent: _step(b.group(1)!),
+        ),
+      );
       continue;
     }
 
     final nm = _numRe.firstMatch(t);
     if (nm != null) {
-      out.add(PBlock(PKind.numbered,
+      out.add(
+        PBlock(
+          PKind.numbered,
           spans: inlineSpans(nm.group(3)!),
           indent: _step(nm.group(1)!),
-          marker: nm.group(2)!));
+          marker: nm.group(2)!,
+        ),
+      );
       continue;
     }
 
@@ -285,8 +308,7 @@ List<PSpan> inlineSpans(String line) {
 
   void flush() {
     if (buf.isEmpty) return;
-    out.add(PSpan(buf.toString(),
-        bold: bold, italic: ital, strike: strike));
+    out.add(PSpan(buf.toString(), bold: bold, italic: ital, strike: strike));
     buf.clear();
   }
 
@@ -344,8 +366,8 @@ List<PSpan> inlineSpans(String line) {
 /// [글](주소) 를 사람이 읽는 모양으로. 종이에서는 눌러도 안 열리니 주소를
 /// 버리면 안 된다 — 글과 주소가 같으면 하나만 남긴다.
 String _links(String s) => s.replaceAllMapped(_linkRe, (m) {
-      final t = m.group(1)!.trim();
-      final u = m.group(2)!;
-      if (t.isEmpty || t == u) return u;
-      return '$t ($u)';
-    });
+  final t = m.group(1)!.trim();
+  final u = m.group(2)!;
+  if (t.isEmpty || t == u) return u;
+  return '$t ($u)';
+});

@@ -9,13 +9,11 @@ import 'package:simpletext/core/folders.dart';
 void main() {
   group('폴더 차례는 사람이 정한다', () {
     test('만들어 둔 차례를 사전 순으로 다시 세우지 않는다', () {
-      expect(folderNames(const [], ['하늘', '가방', '나무']),
-          ['하늘', '가방', '나무']);
+      expect(folderNames(const [], ['하늘', '가방', '나무']), ['하늘', '가방', '나무']);
     });
 
     test('차례에 없는데 메모가 쓰는 이름은 사전 순으로 뒤에 붙는다', () {
-      expect(folderNames(['zoo', 'apple'], ['하늘']),
-          ['하늘', 'apple', 'zoo']);
+      expect(folderNames(['zoo', 'apple'], ['하늘']), ['하늘', 'apple', 'zoo']);
     });
 
     test('대소문자만 다른 것은 하나로 본다 — 먼저 정해 둔 쪽이 이긴다', () {

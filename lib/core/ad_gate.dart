@@ -49,5 +49,4 @@ bool interstitialDue({
   required String adFreeDate,
   required int usedSeconds,
   int thresholdSeconds = 300,
-}) =>
-    adFreeDate != dateKey(now) && usedSeconds >= thresholdSeconds;
+}) => adFreeDate != dateKey(now) && usedSeconds >= thresholdSeconds;

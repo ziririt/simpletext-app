@@ -44,10 +44,14 @@ void main() {
         'outline': s.outline,
       }.entries) {
         final r = contrastRatio(_v(e.value), _v(base));
-        expect(r, greaterThanOrEqualTo(10.0),
-            reason: '$name ${e.key} ${_hex(e.value)} 가 카드 ${_hex(base)} '
-                '위에서 ${r.toStringAsFixed(2)}:1 이다. '
-                '색표에서 꺼낼 수 있는 연회색은 언젠가 화면에 나온다.');
+        expect(
+          r,
+          greaterThanOrEqualTo(10.0),
+          reason:
+              '$name ${e.key} ${_hex(e.value)} 가 카드 ${_hex(base)} '
+              '위에서 ${r.toStringAsFixed(2)}:1 이다. '
+              '색표에서 꺼낼 수 있는 연회색은 언젠가 화면에 나온다.',
+        );
       }
     });
   });

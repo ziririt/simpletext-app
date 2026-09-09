@@ -32,6 +32,8 @@ import 'core/store_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
+import 'core/read_mark.dart';
+import 'reading_rail.dart';
 import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'attach_store.dart';
@@ -1687,8 +1689,17 @@ class AppSettings {
   List<String> recentPrompts = [];
   List<CustomRule> customRules = [];
 
+  /// 스크롤 책갈피. 메모 아이디 → ReadMark 의 json.
+  ///
+  /// 2026-09-09 소유자 요청. **메모 안에 넣지 않는 까닭**이 중요하다 —
+  /// 넣으면 읽기만 해도 메모가 바뀐 것이 되어 목록 맨 위로 올라오고
+  /// 동기화가 돈다. 읽는 일이 쓰는 일로 둔갑한다. 그래서 설정에 둔다.
+  /// 대신 기기마다 따로다(core/read_mark.dart 머리말).
+  Map<String, dynamic> readMarks = {};
+
   Map<String, dynamic> toJson() => {
     'rev': settingsRev,
+    'readMarks': readMarks,
     'emphStyle': emphStyle,
     'hrMode': hrMode,
     'headingMode': headingMode,
@@ -1757,6 +1768,10 @@ class AppSettings {
 
   static AppSettings fromJson(Map<String, dynamic> j) {
     final s = AppSettings();
+    final rm = j['readMarks'];
+    if (rm is Map) {
+      s.readMarks = Map<String, dynamic>.from(rm);
+    }
     s.emphStyle = (j['emphStyle'] ?? s.emphStyle) as String;
     // 2026-08-14 — 기본값만 바꾸면 이미 쓰던 기기는 아무것도 안 바뀐다.
     // 저장된 'quoteSingle'을 그대로 읽어 오기 때문이다. 소유자 기기가
@@ -2158,6 +2173,23 @@ class Store extends ChangeNotifier {
     ICloudSync.instance.scheduleUp();
   }
 
+  /// 이 메모에 끼워 둔 스크롤 책갈피. 없으면 null.
+  ReadMark? readMark(String id) => ReadMark.fromJson(settings.readMarks[id]);
+
+  /// 책갈피를 끼우거나 뺀다.
+  ///
+  /// 메모가 아니라 설정을 건드린다(AppSettings.readMarks 머리말). 그래서
+  /// 메모의 고친 시각이 안 움직이고, 읽었다는 이유로 목록 차례가 바뀌지
+  /// 않는다.
+  Future<void> setReadMark(String id, ReadMark? m) async {
+    if (m == null) {
+      if (settings.readMarks.remove(id) == null) return;
+    } else {
+      settings.readMarks[id] = m.toJson();
+    }
+    await persistSettings();
+  }
+
   /// 지우기 — 곧바로 없애지 않고 휴지통으로 보낸다(2026-08-16).
   ///
   /// 조사에서 확인한 것: 메모가 사라지는 사건은 앱을 버리게 만든다. 다른
@@ -2171,6 +2203,9 @@ class Store extends ChangeNotifier {
       notes.removeAt(i);
     }
     tombstones.add({'id': id, 'deletedAt': now});
+    // 메모가 없어지면 책갈피도 갈 곳이 없다. 안 치우면 설정에 죽은
+    // 아이디가 영원히 쌓인다.
+    settings.readMarks.remove(id);
     persist();
   }
 
@@ -6591,6 +6626,20 @@ class _EditorScreenState extends State<EditorScreen>
   /// 실패다. 그래서 스크롤 값을 받아 배경을 같은 만큼 밀어 준다.
   final ScrollController _bodyScroll = ScrollController();
 
+  /// 스크롤 책갈피 (2026-09-09 소유자 요청). 셈은 core/read_mark.dart,
+  /// 눈금과 표시는 reading_rail.dart 에 있다.
+  final GlobalKey<ReadingRailState> _railKey = GlobalKey<ReadingRailState>();
+  ReadMark? _mark;
+
+  /// '이어 읽기' 알림을 지금 띄우고 있는가.
+  ///
+  /// 열자마자 책갈피 자리로 **자동으로 데려가지 않는다.** 사람이 이 메모를
+  /// 다시 여는 까닭은 이어 읽기일 때가 많지만 늘 그렇지는 않고, 묻지도 않고
+  /// 화면을 3천 픽셀 아래로 던지면 그건 되찾아 주는 것이 아니라 뺏는 것이다.
+  /// 그래서 권하기만 한다. 몇 초 뒤 스스로 물러난다.
+  bool _resumeOn = false;
+  Timer? _resumeTimer;
+
   /// 날짜 줄의 높이.
   ///
   /// 2026-08-17 소유자 지시 — "본문 맨 위의 날짜 시간 표시는 고정하지 말고
@@ -7456,6 +7505,7 @@ class _EditorScreenState extends State<EditorScreen>
     // 동기화가 이 노트의 새 판을 받아 오면 화면도 따라 그린다.
     store.addListener(_onStoreChanged);
     if (widget.showMeta) _showMeta = true;
+    _mark = store.readMark(note.id);
   }
 
   /// 화면이 다 밀려 들어온 뒤에 시작할 일들.
@@ -7492,12 +7542,132 @@ class _EditorScreenState extends State<EditorScreen>
       _loadAttachFiles();
       ICloudSync.instance.scheduleUp();
       if (widget.autoTidy) _runTidyWithPreset(buildPresets().first);
+      _offerResume();
     });
+  }
+
+  /// 책갈피가 있으면 '이어 읽기'를 권한다.
+  ///
+  /// 전환이 다 끝난 뒤에 부른다. 미는 도중에 알림이 뜨면 그것도 같이
+  /// 밀려 들어와 어수선하다.
+  void _offerResume() {
+    final m = _mark;
+    if (m == null || !mounted) return;
+    // 스크롤이 붙는 것은 첫 배치 다음이다. 그 전에 물으면 max 가 0이라
+    // '이미 그 자리'로 잘못 판정한다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_bodyScroll.hasClients) return;
+      final pos = _bodyScroll.position;
+      if (pos.maxScrollExtent <= 0) return;
+      if (m.isAt(pos.pixels, pos.maxScrollExtent)) return;
+      setState(() => _resumeOn = true);
+      _resumeTimer?.cancel();
+      // 여섯 초. 읽으려고 연 사람이 한 번 볼 만한 시간이고, 안 볼 사람에게는
+      // 글을 가리는 시간이다. 그 사이 어디쯤이다.
+      _resumeTimer = Timer(const Duration(seconds: 6), () {
+        if (mounted) setState(() => _resumeOn = false);
+      });
+    });
+  }
+
+  void _hideResume() {
+    _resumeTimer?.cancel();
+    if (_resumeOn && mounted) setState(() => _resumeOn = false);
+  }
+
+  /// 지금 자리에 책갈피를 끼운다.
+  Future<void> _setMark() async {
+    if (!_bodyScroll.hasClients) return;
+    final pos = _bodyScroll.position;
+    if (pos.maxScrollExtent <= 0) {
+      _toast(context, L10n.of(context).bookmarkTooShort);
+      return;
+    }
+    final m = ReadMark(
+      pixels: pos.pixels,
+      extent: pos.maxScrollExtent,
+      at: DateTime.now().millisecondsSinceEpoch,
+    );
+    await store.setReadMark(note.id, m);
+    if (!mounted) return;
+    // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다. 이런 데만 준다.
+    HapticFeedback.selectionClick();
+    _resumeTimer?.cancel();
+    setState(() {
+      _mark = m;
+      _resumeOn = false;
+    });
+    _toast(context, L10n.of(context).bookmarkSaved(m.percent));
+  }
+
+  Future<void> _clearMark() async {
+    await store.setReadMark(note.id, null);
+    if (!mounted) return;
+    _resumeTimer?.cancel();
+    setState(() {
+      _mark = null;
+      _resumeOn = false;
+    });
+  }
+
+  void _goMark() {
+    _hideResume();
+    _railKey.currentState?.goToMark();
+  }
+
+  /// 머리 밑에 잠깐 뜨는 '이어 읽기' 알림.
+  Widget? _resumeBanner(L10n l) {
+    final m = _mark;
+    if (!_resumeOn || m == null) return null;
+    final c = context.c;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: _goMark,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 8, 12, 8),
+          decoration: BoxDecoration(
+            color: c.panel,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: c.line),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.bookmark, size: 16, color: c.accent),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  l.bookmarkResume(m.percent),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: c.guideInk,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right, size: 18, color: c.sub),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _cancelOpen?.call();
+    _resumeTimer?.cancel();
     _unbindStatusBarTap();
     store.removeListener(_onStoreChanged);
     _tagTimer?.cancel();
@@ -9902,6 +10072,18 @@ class _EditorScreenState extends State<EditorScreen>
                             if (mounted) setState(() {});
                             return;
                           }
+                          if (v == 'markset') {
+                            await _setMark();
+                            return;
+                          }
+                          if (v == 'markgo') {
+                            _goMark();
+                            return;
+                          }
+                          if (v == 'markclear') {
+                            await _clearMark();
+                            return;
+                          }
                           if (v == 'travel') {
                             await _openTravel();
                             return;
@@ -10156,6 +10338,31 @@ class _EditorScreenState extends State<EditorScreen>
                               note.locked ? lm.noteUnlock : lm.noteLock,
                               tint: note.locked ? ctx.c.accent : null,
                             ),
+                            // 스크롤 책갈피 (2026-09-09 소유자 요청).
+                            //
+                            // 줄이 늘어나면 작은 아이폰에서 메뉴가 잘린다 —
+                            // 그래서 **한 줄만 쓴다.** 책갈피가 없을 때는
+                            // '끼우기' 하나, 있을 때는 '가기 | 빼기' 둘을
+                            // 한 줄에 나눠 담는다(trio 는 두 개도 받는다).
+                            if (_mark == null)
+                              act(
+                                'markset',
+                                Icons.bookmark_add_outlined,
+                                lm.bookmarkAdd,
+                              )
+                            else
+                              trio([
+                                (
+                                  'markgo',
+                                  Icons.bookmark,
+                                  lm.bookmarkGoAt(_mark!.percent),
+                                ),
+                                (
+                                  'markclear',
+                                  Icons.bookmark_remove_outlined,
+                                  lm.bookmarkRemove,
+                                ),
+                              ]),
                             const PopupMenuDivider(height: 6),
                             // 2026-08-29 소유자 지시 — 정리 셋을 한 줄로.
                             trio([
@@ -10265,639 +10472,671 @@ class _EditorScreenState extends State<EditorScreen>
                       ),
                     ],
                   ),
-                  body: Column(
-                    children: [
-                      // 유리 머리가 덮는 자리 — 굴러가지 않는 것이 있을 때만 비운다.
-                      if (_topInsetOutside > 0)
-                        SizedBox(height: _topInsetOutside),
-                      // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
-                      if (_isDesktop) _accessoryBar(atTop: true),
-                      // 날짜 줄은 여기 있었다. 2026-08-17에 본문 스크롤 안으로
-                      // 옮겼다 — 아래 _headKey를 찾을 것.
-                      // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
-                      // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
-                      // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
-                      // 2026-09-02 소유자 지시 — "제목 입력란을 입력란처럼 UI를
-                      // 해줘. 지금은 아무것도 없어서 이게 제목 입력란인지 헷갈린다."
-                      //
-                      // 테두리도 바탕도 없이 큰 글자만 놓여 있었다. 그건 입력칸이
-                      // 아니라 그냥 제목처럼 보인다 — 눌러서 고칠 수 있다는 것을
-                      // 아무도 모른다. 바로 아래 '출처' 칸이 이미 쓰고 있는 방식
-                      // (작은 회색 이름표 + 칸)을 그대로 따른다. 한 화면 안에서
-                      // 두 칸이 다른 모양이면 그것부터 눈에 걸린다.
-                      if (_showMeta)
-                        Padding(
-                          // 위 여백 0 — 날짜 줄이 이미 띄워 놨다. 여기서 또 띄우면 벌어진다.
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  bottom: 5,
-                                  left: 2,
-                                ),
-                                child: Text(
-                                  l.titleFieldLabel,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: context.c.sub,
+                  body: ReadingRail(
+                    key: _railKey,
+                    controller: _bodyScroll,
+                    topInset: _topInsetOutside > 0
+                        ? _topInsetOutside
+                        : _glassInset,
+                    bottomInset: 8,
+                    mark: _mark,
+                    banner: _resumeBanner(l),
+                    child: Column(
+                      children: [
+                        // 유리 머리가 덮는 자리 — 굴러가지 않는 것이 있을 때만 비운다.
+                        if (_topInsetOutside > 0)
+                          SizedBox(height: _topInsetOutside),
+                        // 맥/PC: 입력 도구 막대는 위. 아래는 기능 탭바가 늘 지킨다.
+                        if (_isDesktop) _accessoryBar(atTop: true),
+                        // 날짜 줄은 여기 있었다. 2026-08-17에 본문 스크롤 안으로
+                        // 옮겼다 — 아래 _headKey를 찾을 것.
+                        // 2026-08-16 소유자 요청 — 제목은 자동으로 붙으니 평소엔 숨긴다.
+                        // 태그 버튼(_showMeta)을 켜면 제목·출처·태그가 함께 나와 고칠 수
+                        // 있다. 위 여백 10은 "윗줄과 바짝 붙었다"는 신고의 답.
+                        // 2026-09-02 소유자 지시 — "제목 입력란을 입력란처럼 UI를
+                        // 해줘. 지금은 아무것도 없어서 이게 제목 입력란인지 헷갈린다."
+                        //
+                        // 테두리도 바탕도 없이 큰 글자만 놓여 있었다. 그건 입력칸이
+                        // 아니라 그냥 제목처럼 보인다 — 눌러서 고칠 수 있다는 것을
+                        // 아무도 모른다. 바로 아래 '출처' 칸이 이미 쓰고 있는 방식
+                        // (작은 회색 이름표 + 칸)을 그대로 따른다. 한 화면 안에서
+                        // 두 칸이 다른 모양이면 그것부터 눈에 걸린다.
+                        if (_showMeta)
+                          Padding(
+                            // 위 여백 0 — 날짜 줄이 이미 띄워 놨다. 여기서 또 띄우면 벌어진다.
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: 5,
+                                    left: 2,
                                   ),
-                                ),
-                              ),
-                              TextField(
-                                controller: titleCtl,
-                                focusNode: _titleFocus,
-                                decoration: InputDecoration(
-                                  hintText: l.titleHint,
-                                  isDense: true,
-                                  filled: true,
-                                  fillColor: context.c.panel,
-                                  contentPadding: const EdgeInsets.fromLTRB(
-                                    14,
-                                    12,
-                                    14,
-                                    12,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: context.c.line,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: context.c.accent,
-                                      width: 1.8,
-                                    ),
-                                  ),
-                                ),
-                                // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
-                                // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서
-                                // -0.02em 은 약 -0.45다. 본문은 0 그대로 둔다.
-                                style: const TextStyle(
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.45,
-                                ),
-                                onChanged: (v) {
-                                  // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
-                                  // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
-                                  if (stopAutoTitle(v)) note.titleAuto = false;
-                                  _save();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (_showMeta)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                          child: Row(
-                            children: [
-                              // 2026-08-17 소유자 신고 — "수동으로 출처를 선택해도 이게
-                              // 바로 저장이 된 것인지, 따로 저장 버튼을 눌러야 하는지
-                              // 직관적이지 않다."
-                              //
-                              // 저장은 원래 즉시 되고 있었다. 문제는 그걸 아무도 말해
-                              // 주지 않았다는 것이고, 이름표가 없어 그 칸이 무엇인지도
-                              // 흐렸다는 것이다.
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Text(
-                                  l.sourceFieldLabel,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: context.c.sub,
-                                  ),
-                                ),
-                              ),
-                              DropdownButton<String>(
-                                value: note.source.isEmpty ? '' : note.source,
-                                items: [
-                                  DropdownMenuItem(
-                                    value: '',
-                                    child: Text(l.sourceNone),
-                                  ),
-                                  const DropdownMenuItem(
-                                    value: 'ChatGPT',
-                                    child: Text('ChatGPT'),
-                                  ),
-                                  const DropdownMenuItem(
-                                    value: 'Claude',
-                                    child: Text('Claude'),
-                                  ),
-                                  const DropdownMenuItem(
-                                    value: 'Gemini',
-                                    child: Text('Gemini'),
-                                  ),
-                                  const DropdownMenuItem(
-                                    value: 'Grok',
-                                    child: Text('Grok'),
-                                  ),
-                                  const DropdownMenuItem(
-                                    value: 'Perplexity',
-                                    child: Text('Perplexity'),
-                                  ),
-                                  // 저장 값('기타')은 데이터 호환을 위해 유지, 표시만 번역한다
-                                  DropdownMenuItem(
-                                    value: '기타',
-                                    child: Text(l.sourceOther),
-                                  ),
-                                ],
-                                onChanged: (v) async {
-                                  note.source = v ?? '';
-                                  // 손으로 고른 순간부터는 추측이 아니다.
-                                  note.sourceAuto = false;
-                                  await _save();
-                                  if (!mounted) return;
-                                  setState(() {});
-                                  // 눌렀는데 아무 일도 안 일어난 것처럼 보이면, 사람은
-                                  // 저장 버튼을 찾는다. 없는 버튼을.
-                                  _toast(
-                                    context,
-                                    note.source.isEmpty
-                                        ? L10n.of(context).sourceCleared
-                                        : L10n.of(
-                                            context,
-                                          ).sourceSaved(note.source),
-                                  );
-                                },
-                              ),
-                              const Spacer(),
-                              // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
-                              // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
-                              // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 숨긴다.
-                              if (aiUiVisible())
-                                TextButton.icon(
-                                  onPressed: _tagAiBusy ? null : _autoTags,
-                                  icon: _tagAiBusy
-                                      ? const SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.auto_awesome,
-                                          size: 18,
-                                        ),
-                                  label: Text(
-                                    _tagAiBusy ? l.tagAiWorking : l.tagAiButton,
-                                    style: const TextStyle(
+                                  child: Text(
+                                    l.titleFieldLabel,
+                                    style: TextStyle(
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w600,
+                                      color: context.c.sub,
                                     ),
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-                      // 태그 상자.
-                      // 소유자 요청: 한 줄이 아니라 '입력칸처럼' 보이고 여러 줄로 늘어날 것,
-                      // 그리고 태그 하나하나를 쉽게 지울 수 있을 것.
-                      // 그래서 블럭(칩) + 뒤따르는 입력칸을 한 상자 안에 넣는다.
-                      // 블럭이 늘어나면 상자가 저절로 여러 줄이 된다.
-                      if (_showMeta)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => _tagsFocus.requestFocus(),
-                            child: Container(
-                              width: double.infinity,
-                              constraints: const BoxConstraints(minHeight: 56),
-                              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                              decoration: BoxDecoration(
-                                color: context.c.panel,
-                                border: Border.all(color: context.c.line),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  for (final t in note.tags) _tagChip(t),
-                                  SizedBox(
-                                    width: 170,
-                                    child: TextField(
-                                      controller: tagsCtl,
-                                      focusNode: _tagsFocus,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        border: InputBorder.none,
-                                        hintText: note.tags.isEmpty
-                                            ? l.tagsHint
-                                            : l.tagsBoxHint,
+                                TextField(
+                                  controller: titleCtl,
+                                  focusNode: _titleFocus,
+                                  decoration: InputDecoration(
+                                    hintText: l.titleHint,
+                                    isDense: true,
+                                    filled: true,
+                                    fillColor: context.c.panel,
+                                    contentPadding: const EdgeInsets.fromLTRB(
+                                      14,
+                                      12,
+                                      14,
+                                      12,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: context.c.line,
                                       ),
-                                      onChanged: _onTagTyped,
-                                      onSubmitted: (v) {
-                                        note.tagsAuto = false;
-                                        _commitTags(v, clear: true);
-                                      },
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: context.c.accent,
+                                        width: 1.8,
+                                      ),
                                     ),
                                   ),
-                                ],
+                                  // 큰 글자는 자간을 좁혀야 한다. 글자가 커질수록 사이가
+                                  // 벌어져 보이기 때문이다(애플 타이포 지침). 23px에서
+                                  // -0.02em 은 약 -0.45다. 본문은 0 그대로 둔다.
+                                  style: const TextStyle(
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.45,
+                                  ),
+                                  onChanged: (v) {
+                                    // 한 글자라도 쓰면 그 뒤로는 우리가 안 건드린다.
+                                    // 비우기만 한 것은 "네가 알아서 해"에 가까우므로 안 끈다.
+                                    if (stopAutoTitle(v))
+                                      note.titleAuto = false;
+                                    _save();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (_showMeta)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                            child: Row(
+                              children: [
+                                // 2026-08-17 소유자 신고 — "수동으로 출처를 선택해도 이게
+                                // 바로 저장이 된 것인지, 따로 저장 버튼을 눌러야 하는지
+                                // 직관적이지 않다."
+                                //
+                                // 저장은 원래 즉시 되고 있었다. 문제는 그걸 아무도 말해
+                                // 주지 않았다는 것이고, 이름표가 없어 그 칸이 무엇인지도
+                                // 흐렸다는 것이다.
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: Text(
+                                    l.sourceFieldLabel,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: context.c.sub,
+                                    ),
+                                  ),
+                                ),
+                                DropdownButton<String>(
+                                  value: note.source.isEmpty ? '' : note.source,
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: '',
+                                      child: Text(l.sourceNone),
+                                    ),
+                                    const DropdownMenuItem(
+                                      value: 'ChatGPT',
+                                      child: Text('ChatGPT'),
+                                    ),
+                                    const DropdownMenuItem(
+                                      value: 'Claude',
+                                      child: Text('Claude'),
+                                    ),
+                                    const DropdownMenuItem(
+                                      value: 'Gemini',
+                                      child: Text('Gemini'),
+                                    ),
+                                    const DropdownMenuItem(
+                                      value: 'Grok',
+                                      child: Text('Grok'),
+                                    ),
+                                    const DropdownMenuItem(
+                                      value: 'Perplexity',
+                                      child: Text('Perplexity'),
+                                    ),
+                                    // 저장 값('기타')은 데이터 호환을 위해 유지, 표시만 번역한다
+                                    DropdownMenuItem(
+                                      value: '기타',
+                                      child: Text(l.sourceOther),
+                                    ),
+                                  ],
+                                  onChanged: (v) async {
+                                    note.source = v ?? '';
+                                    // 손으로 고른 순간부터는 추측이 아니다.
+                                    note.sourceAuto = false;
+                                    await _save();
+                                    if (!mounted) return;
+                                    setState(() {});
+                                    // 눌렀는데 아무 일도 안 일어난 것처럼 보이면, 사람은
+                                    // 저장 버튼을 찾는다. 없는 버튼을.
+                                    _toast(
+                                      context,
+                                      note.source.isEmpty
+                                          ? L10n.of(context).sourceCleared
+                                          : L10n.of(
+                                              context,
+                                            ).sourceSaved(note.source),
+                                    );
+                                  },
+                                ),
+                                const Spacer(),
+                                // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
+                                // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
+                                // 심사 지침 3.1.1 — 아이폰·아이패드에서 키가 없으면 숨긴다.
+                                if (aiUiVisible())
+                                  TextButton.icon(
+                                    onPressed: _tagAiBusy ? null : _autoTags,
+                                    icon: _tagAiBusy
+                                        ? const SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.auto_awesome,
+                                            size: 18,
+                                          ),
+                                    label: Text(
+                                      _tagAiBusy
+                                          ? l.tagAiWorking
+                                          : l.tagAiButton,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        // 태그 상자.
+                        // 소유자 요청: 한 줄이 아니라 '입력칸처럼' 보이고 여러 줄로 늘어날 것,
+                        // 그리고 태그 하나하나를 쉽게 지울 수 있을 것.
+                        // 그래서 블럭(칩) + 뒤따르는 입력칸을 한 상자 안에 넣는다.
+                        // 블럭이 늘어나면 상자가 저절로 여러 줄이 된다.
+                        if (_showMeta)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _tagsFocus.requestFocus(),
+                              child: Container(
+                                width: double.infinity,
+                                constraints: const BoxConstraints(
+                                  minHeight: 56,
+                                ),
+                                padding: const EdgeInsets.fromLTRB(
+                                  10,
+                                  8,
+                                  10,
+                                  8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.c.panel,
+                                  border: Border.all(color: context.c.line),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    for (final t in note.tags) _tagChip(t),
+                                    SizedBox(
+                                      width: 170,
+                                      child: TextField(
+                                        controller: tagsCtl,
+                                        focusNode: _tagsFocus,
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          border: InputBorder.none,
+                                          hintText: note.tags.isEmpty
+                                              ? l.tagsHint
+                                              : l.tagsBoxHint,
+                                        ),
+                                        onChanged: _onTagTyped,
+                                        onSubmitted: (v) {
+                                          note.tagsAuto = false;
+                                          _commitTags(v, clear: true);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      // 첨부 줄. 붙은 것이 없으면 자리도 안 차지한다.
-                      if (note.attachments.isNotEmpty) _attachStrip(l),
-                      Expanded(
-                        child: Padding(
-                          // 2026-08-19 소유자 — "편집화면 본문의 폭도 여백미가 너무
-                          // 없는 거 아닐까? bear 정도가 딱 좋은 것 같다."
-                          //
-                          // 16이었다. 글자가 화면 가장자리에 거의 닿는다. 종이에
-                          // 인쇄된 글은 그렇게 놓이지 않는다 — 여백은 남는 자리가
-                          // 아니라 글을 붙잡아 주는 자리다.
-                          //
-                          // 넓은 화면에서 더 주는 이유: 글 칸의 폭은 이미 묶어 뒀지만
-                          // (SplitShell.readWidth), 그 안에서도 글이 상자에 꽉 차
-                          // 있으면 갇혀 보인다.
-                          padding: EdgeInsets.symmetric(
-                            horizontal: (_isDesktop || widget.embedded)
-                                ? 32
-                                : 22,
-                          ),
-                          // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
-                          // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
-                          // 칸이 납작하게 접힌다.
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              // 종이의 줄은 글 뒤에 있다. 그리는 일은 선 몇 개뿐이라
-                              // 싸지만, RepaintBoundary로 감싸서 스크롤할 때 글 칸까지
-                              // 다시 그리지 않게 막는다.
-                              if (onPaper && paper.ruling != kRulingNone)
-                                Positioned.fill(
-                                  child: RepaintBoundary(
-                                    child: AnimatedBuilder(
-                                      animation: _bodyScroll,
-                                      builder: (_, __) => CustomPaint(
-                                        painter: _PaperPainter(
-                                          ruling: paper.ruling,
-                                          color: Color(paper.ruleOf(darkNow)),
-                                          // 줄 간격을 사람이 바꾸면 종이의 줄도 같이
-                                          // 움직여야 한다. 이 둘이 어긋나면 화면 아래로
-                                          // 갈수록 글자가 줄에서 떠오른다.
-                                          lineHeight:
-                                              store.settings.bodyFontSize *
-                                              store.settings.bodyLineHeight,
-                                          colWidth: _colWidth(
-                                            store.settings.bodyFontSize,
+                        // 첨부 줄. 붙은 것이 없으면 자리도 안 차지한다.
+                        if (note.attachments.isNotEmpty) _attachStrip(l),
+                        Expanded(
+                          child: Padding(
+                            // 2026-08-19 소유자 — "편집화면 본문의 폭도 여백미가 너무
+                            // 없는 거 아닐까? bear 정도가 딱 좋은 것 같다."
+                            //
+                            // 16이었다. 글자가 화면 가장자리에 거의 닿는다. 종이에
+                            // 인쇄된 글은 그렇게 놓이지 않는다 — 여백은 남는 자리가
+                            // 아니라 글을 붙잡아 주는 자리다.
+                            //
+                            // 넓은 화면에서 더 주는 이유: 글 칸의 폭은 이미 묶어 뒀지만
+                            // (SplitShell.readWidth), 그 안에서도 글이 상자에 꽉 차
+                            // 있으면 갇혀 보인다.
+                            padding: EdgeInsets.symmetric(
+                              horizontal: (_isDesktop || widget.embedded)
+                                  ? 32
+                                  : 22,
+                            ),
+                            // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
+                            // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
+                            // 칸이 납작하게 접힌다.
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                // 종이의 줄은 글 뒤에 있다. 그리는 일은 선 몇 개뿐이라
+                                // 싸지만, RepaintBoundary로 감싸서 스크롤할 때 글 칸까지
+                                // 다시 그리지 않게 막는다.
+                                if (onPaper && paper.ruling != kRulingNone)
+                                  Positioned.fill(
+                                    child: RepaintBoundary(
+                                      child: AnimatedBuilder(
+                                        animation: _bodyScroll,
+                                        builder: (_, __) => CustomPaint(
+                                          painter: _PaperPainter(
+                                            ruling: paper.ruling,
+                                            color: Color(paper.ruleOf(darkNow)),
+                                            // 줄 간격을 사람이 바꾸면 종이의 줄도 같이
+                                            // 움직여야 한다. 이 둘이 어긋나면 화면 아래로
+                                            // 갈수록 글자가 줄에서 떠오른다.
+                                            lineHeight:
+                                                store.settings.bodyFontSize *
+                                                store.settings.bodyLineHeight,
+                                            colWidth: _colWidth(
+                                              store.settings.bodyFontSize,
+                                            ),
+                                            // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
+                                            // 죽는다. 그때는 0이 맞다.
+                                            scroll: _bodyScroll.hasClients
+                                                ? _bodyScroll.offset
+                                                : 0,
+                                            // 날짜 줄이 본문 위에 같이 굴러가므로 그만큼
+                                            // 줄을 내려 긋는다. 안 그러면 줄이 글자
+                                            // 한가운데를 가로지른다.
+                                            headPad: _headH + _topInsetInside,
                                           ),
-                                          // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
-                                          // 죽는다. 그때는 0이 맞다.
-                                          scroll: _bodyScroll.hasClients
-                                              ? _bodyScroll.offset
-                                              : 0,
-                                          // 날짜 줄이 본문 위에 같이 굴러가므로 그만큼
-                                          // 줄을 내려 긋는다. 안 그러면 줄이 글자
-                                          // 한가운데를 가로지른다.
-                                          headPad: _headH + _topInsetInside,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              // 2026-08-17 소유자 지시 — "화면의 반 정도는 스크롤되게.
-                              // 그래야 하단에 뭔가 더 입력할 수 있다는 느낌이 든다."
-                              //
-                              // 이건 취향이 아니라 글 쓰는 도구의 기본이다. 마지막 줄이
-                              // 화면 맨 아래에 붙어 있으면 (1) 거기가 끝인지 더 있는지
-                              // 눈으로 알 수 없고 (2) 그 줄을 고칠 때 손가락이 가린다.
-                              //
-                              // **스크롤의 임자를 바꿨다.** 전에는 본문 칸이 자기 안에서
-                              // 스스로 굴렀는데(expands + 내부 스크롤), 그 방식에서는
-                              // '글 끝보다 더 내려가기'를 만들 수 없다 — 굴릴 수 있는
-                              // 양이 글 길이로 정해지기 때문이다. 아래에 여백을 주면
-                              // 칸이 작아져서 보이는 글만 줄어든다.
-                              //
-                              // 이제 본문 칸은 글 길이만큼 늘어나기만 하고, 스크롤은
-                              // 이것을 감싼 바깥이 맡는다. 바깥이 [글 + 빈칸]을 함께
-                              // 굴리므로 글 끝을 지나 빈칸까지 내려갈 수 있다.
-                              LayoutBuilder(
-                                builder: (_, box) {
-                                  // 빈칸은 화면의 절반. 마지막 줄을 화면 한가운데까지
-                                  // 끌어올릴 수 있는 양이다.
-                                  // 2026-08-17 소유자 신고 — "본문과 광고의 간격이 너무
-                                  // 멀다. 이래서는 누가 광고를 보겠나. 본문은 아래 여백으로
-                                  // 2줄 정도 남기고 광고가 오게 해."
-                                  //
-                                  // 이 빈칸은 원래 '마지막 줄을 화면 한가운데까지 끌어올릴
-                                  // 자리'로 둔 것이다(화면의 절반). 그 뜻은 여전히 맞다.
-                                  // 다만 **광고가 아래에 붙으면 광고 자체가 그 자리를
-                                  // 준다.** 250픽셀짜리 네모가 이미 굴릴 거리를 만든다.
-                                  // 그러니 광고가 뜰 판에서는 빈칸을 두 줄로 줄인다.
-                                  //
-                                  // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
-                                  // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
-                                  final lineH =
-                                      store.settings.bodyFontSize *
-                                      store.settings.bodyLineHeight;
-                                  final blank = inlineAdLikely()
-                                      ? lineH * 2
-                                      : box.maxHeight * 0.5;
-                                  // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
-                                  // [머리 + 본문 + 빈칸]이 정확히 한 화면이라 스크롤이 안
-                                  // 생긴다. 한 줄짜리 메모에서 화면이 덜컹거리면 더
-                                  // 이상하다. 날짜 줄을 안으로 들인 뒤로는 그 높이도
-                                  // 빼야 셈이 맞는다.
-                                  final minBody =
-                                      (box.maxHeight -
-                                              blank -
-                                              _headH -
-                                              _topInsetInside)
-                                          .clamp(0.0, double.infinity);
-                                  // 편집 화면에서도 당겨서 맞추기(2026-08-27 소유자
-                                  // 요청). 손짓이 잡히는 곳에서만 돈다 — 웹·맥의
-                                  // 트랙패드 굴림은 끌기로 안 잡히고, 그 자리는 머리의
-                                  // 단추가 맡는다.
-                                  //
-                                  // 글을 치는 중에는 안 건다. 자판이 올라와 있을 때
-                                  // 아래로 쓸어내리는 손짓은 '자판 내리기'이지
-                                  // '새로 고침'이 아니다.
-                                  return RefreshIndicator(
-                                    onRefresh: _editorPullSync,
-                                    notificationPredicate: (n) =>
-                                        !_editing && n.depth == 0,
-                                    color: context.c.accent,
-                                    backgroundColor: context.c.panel,
-                                    displacement: 24,
-                                    child: Listener(
-                                      onPointerDown: (e) {
-                                        if (_nearSelectionHandle(e.position)) {
-                                          _setSelHandleDrag(true);
-                                        }
-                                      },
-                                      onPointerUp: (_) =>
-                                          _setSelHandleDrag(false),
-                                      onPointerCancel: (_) =>
-                                          _setSelHandleDrag(false),
-                                      child: SingleChildScrollView(
-                                        controller: _bodyScroll,
-                                        // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
-                                        physics: _selHandleDrag
-                                            ? const NeverScrollableScrollPhysics()
-                                            : const AlwaysScrollableScrollPhysics(),
-                                        // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
-                                        // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
-                                        // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
-                                        // 들어온 신고는 반대쪽이었다 — 뻑뻑하다는 것이다.
-                                        // 짐작으로 박은 값을 뗀다.
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            // 유리 머리가 덮는 자리. 이것이 스크롤 **안**에
-                                            // 있어서, 굴리면 날짜 줄과 글이 머리 밑으로
-                                            // 흘러 들어간다.
-                                            if (_topInsetInside > 0)
-                                              SizedBox(height: _topInsetInside),
-                                            // 날짜 줄. 고정이 아니라 글의 첫머리다 —
-                                            // 종이 맨 위에 적힌 날짜처럼, 읽어 내려가면
-                                            // 같이 올라가 사라진다.
-                                            KeyedSubtree(
-                                              key: _headKey,
-                                              child: _dateLine(note.updatedAt),
-                                            ),
-                                            ConstrainedBox(
-                                              constraints: BoxConstraints(
-                                                minHeight: minBody,
+                                // 2026-08-17 소유자 지시 — "화면의 반 정도는 스크롤되게.
+                                // 그래야 하단에 뭔가 더 입력할 수 있다는 느낌이 든다."
+                                //
+                                // 이건 취향이 아니라 글 쓰는 도구의 기본이다. 마지막 줄이
+                                // 화면 맨 아래에 붙어 있으면 (1) 거기가 끝인지 더 있는지
+                                // 눈으로 알 수 없고 (2) 그 줄을 고칠 때 손가락이 가린다.
+                                //
+                                // **스크롤의 임자를 바꿨다.** 전에는 본문 칸이 자기 안에서
+                                // 스스로 굴렀는데(expands + 내부 스크롤), 그 방식에서는
+                                // '글 끝보다 더 내려가기'를 만들 수 없다 — 굴릴 수 있는
+                                // 양이 글 길이로 정해지기 때문이다. 아래에 여백을 주면
+                                // 칸이 작아져서 보이는 글만 줄어든다.
+                                //
+                                // 이제 본문 칸은 글 길이만큼 늘어나기만 하고, 스크롤은
+                                // 이것을 감싼 바깥이 맡는다. 바깥이 [글 + 빈칸]을 함께
+                                // 굴리므로 글 끝을 지나 빈칸까지 내려갈 수 있다.
+                                LayoutBuilder(
+                                  builder: (_, box) {
+                                    // 빈칸은 화면의 절반. 마지막 줄을 화면 한가운데까지
+                                    // 끌어올릴 수 있는 양이다.
+                                    // 2026-08-17 소유자 신고 — "본문과 광고의 간격이 너무
+                                    // 멀다. 이래서는 누가 광고를 보겠나. 본문은 아래 여백으로
+                                    // 2줄 정도 남기고 광고가 오게 해."
+                                    //
+                                    // 이 빈칸은 원래 '마지막 줄을 화면 한가운데까지 끌어올릴
+                                    // 자리'로 둔 것이다(화면의 절반). 그 뜻은 여전히 맞다.
+                                    // 다만 **광고가 아래에 붙으면 광고 자체가 그 자리를
+                                    // 준다.** 250픽셀짜리 네모가 이미 굴릴 거리를 만든다.
+                                    // 그러니 광고가 뜰 판에서는 빈칸을 두 줄로 줄인다.
+                                    //
+                                    // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
+                                    // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
+                                    final lineH =
+                                        store.settings.bodyFontSize *
+                                        store.settings.bodyLineHeight;
+                                    final blank = inlineAdLikely()
+                                        ? lineH * 2
+                                        : box.maxHeight * 0.5;
+                                    // 본문 칸의 최소 높이를 이렇게 두면, 글이 짧을 때
+                                    // [머리 + 본문 + 빈칸]이 정확히 한 화면이라 스크롤이 안
+                                    // 생긴다. 한 줄짜리 메모에서 화면이 덜컹거리면 더
+                                    // 이상하다. 날짜 줄을 안으로 들인 뒤로는 그 높이도
+                                    // 빼야 셈이 맞는다.
+                                    final minBody =
+                                        (box.maxHeight -
+                                                blank -
+                                                _headH -
+                                                _topInsetInside)
+                                            .clamp(0.0, double.infinity);
+                                    // 편집 화면에서도 당겨서 맞추기(2026-08-27 소유자
+                                    // 요청). 손짓이 잡히는 곳에서만 돈다 — 웹·맥의
+                                    // 트랙패드 굴림은 끌기로 안 잡히고, 그 자리는 머리의
+                                    // 단추가 맡는다.
+                                    //
+                                    // 글을 치는 중에는 안 건다. 자판이 올라와 있을 때
+                                    // 아래로 쓸어내리는 손짓은 '자판 내리기'이지
+                                    // '새로 고침'이 아니다.
+                                    return RefreshIndicator(
+                                      onRefresh: _editorPullSync,
+                                      notificationPredicate: (n) =>
+                                          !_editing && n.depth == 0,
+                                      color: context.c.accent,
+                                      backgroundColor: context.c.panel,
+                                      displacement: 24,
+                                      child: Listener(
+                                        onPointerDown: (e) {
+                                          if (_nearSelectionHandle(
+                                            e.position,
+                                          )) {
+                                            _setSelHandleDrag(true);
+                                          }
+                                        },
+                                        onPointerUp: (_) =>
+                                            _setSelHandleDrag(false),
+                                        onPointerCancel: (_) =>
+                                            _setSelHandleDrag(false),
+                                        child: SingleChildScrollView(
+                                          controller: _bodyScroll,
+                                          // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
+                                          physics: _selHandleDrag
+                                              ? const NeverScrollableScrollPhysics()
+                                              : const AlwaysScrollableScrollPhysics(),
+                                          // 굴림은 이제 앱 하나로 정해 둔다(GlideScrollBehavior).
+                                          // 여기 클램핑을 박아 뒀던 것은 '손으로 글을 끌어
+                                          // 고를 때 튕김이 방해된다'는 짐작이었는데, 정작
+                                          // 들어온 신고는 반대쪽이었다 — 뻑뻑하다는 것이다.
+                                          // 짐작으로 박은 값을 뗀다.
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              // 유리 머리가 덮는 자리. 이것이 스크롤 **안**에
+                                              // 있어서, 굴리면 날짜 줄과 글이 머리 밑으로
+                                              // 흘러 들어간다.
+                                              if (_topInsetInside > 0)
+                                                SizedBox(
+                                                  height: _topInsetInside,
+                                                ),
+                                              // 날짜 줄. 고정이 아니라 글의 첫머리다 —
+                                              // 종이 맨 위에 적힌 날짜처럼, 읽어 내려가면
+                                              // 같이 올라가 사라진다.
+                                              KeyedSubtree(
+                                                key: _headKey,
+                                                child: _dateLine(
+                                                  note.updatedAt,
+                                                ),
                                               ),
-                                              child: TextField(
-                                                key: _bodyKey,
-                                                controller: bodyCtl,
-                                                focusNode: _bodyFocus,
-                                                // 목록에서 엔터를 치면 다음 항목이 따라온다
-                                                // (2026-08-27 소유자 신고). 규칙은 core/list_continue.dart
-                                                // 에 있고 시험으로 못 박았다.
-                                                inputFormatters: const [
-                                                  ListContinueFormatter(),
-                                                ],
-                                                // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
-                                                //
-                                                // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
-                                                // '켜자마자 바로 쓸 수 있음'이었다. 한 번 더 눌러야 쓰기가
-                                                // 시작되는 것은 기능이 아니라 마찰이다.
-                                                autofocus: bodyCtl.text.isEmpty,
-                                                undoController: _undoCtl,
-                                                // expands를 뗐다. 이제 이 칸은 글 길이만큼 늘어나고,
-                                                // 굴리는 일은 바깥이 맡는다.
-                                                maxLines: null,
-                                                // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
-                                                // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
-                                                // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은
-                                                // 돋보기가 아니다 — 기기에서 직접 만져 보며 찾아야 한다.
-                                                //
-                                                // 블록을 끌 때 화면 끝에 닿으면 플러터가 캐럿을 보이게
-                                                // 스크롤한다. 그 한 번에 움직이는 양이 이 여백만큼이라,
-                                                // 기본값(20)보다 줄이면 덜 뛴다. 0으로 두지는 않는다 —
-                                                // 캐럿이 화면 가장자리에 딱 붙으면 손가락에 가려진다.
-                                                scrollPadding:
-                                                    const EdgeInsets.all(12),
-                                                decoration: InputDecoration(
-                                                  hintText: l.bodyHint,
-                                                  border: InputBorder.none,
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                  minHeight: minBody,
                                                 ),
-                                                // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
-                                                // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
-                                                // core/mono_spans.dart가, 실제로 글꼴을 입히는 일은
-                                                // core/mono_controller.dart가 한다.
-                                                // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
-                                                // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
-                                                style: TextStyle(
-                                                  fontSize: store
-                                                      .settings
-                                                      .bodyFontSize,
-                                                  height: store
-                                                      .settings
-                                                      .bodyLineHeight,
-                                                  // 고른 본문 글꼴. '기본'이면 여기 null 이 들어가고
-                                                  // 테마가 정한 글꼴이 그대로 쓰인다(core/body_font.dart).
-                                                  fontFamily: bodyFontFamily(
-                                                    store.settings.bodyFont,
-                                                    webDefault: kIsWeb
-                                                        ? kWebFontFamily
-                                                        : null,
-                                                  ),
-                                                  // 자간 0 (2026-08-24 소유자 신고 "클로드 앱 폰트가
-                                                  // 좋은데 다르다"). 글꼴은 이미 시스템 것이었고,
-                                                  // 다른 건 머티리얼 기본 자간 +0.5였다 — 영문 SF용
-                                                  // 값이라 한글에 얹으면 벌어져 보인다. 애플 메모도
-                                                  // 클로드 앱도 한글 본문 자간은 0이다.
-                                                  letterSpacing: 0,
-                                                  // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
-                                                  // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
-                                                  // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
-                                                  // 계산해 정해 뒀다.
-                                                  color: paperInk,
-                                                ),
-                                                onChanged: _onBodyChanged,
-                                                onTap: _menuOnTap,
-                                                // ── 편집 메뉴를 우리가 그린다 ──────────────────────
-                                                //
-                                                // 2026-08-18 소유자 지시 — "'붙여넣기 / 선택 / 전체선택 >'이
-                                                // 나오게 하고, '텍스트 스캔'은 '>'을 누르면 나오게 해줘."
-                                                //
-                                                // 그동안 이 자리에는 **iOS 가 통째로 그리는 메뉴**가 떴다.
-                                                // 요즘 플러터는 iOS 16 이상이면 시스템 메뉴를 쓰는 것이
-                                                // 기본값이고, 시스템 메뉴는 우리가 순서를 정할 수 없다.
-                                                // '텍스트 스캔'이 거기 섞여 있던 것도 그래서다 — 그건
-                                                // 우리가 넣은 것이 아니라 운영체제가 넣은 것이다.
-                                                //
-                                                // 순서를 정하려면 메뉴를 우리가 그려야 하고, 우리가 그리면
-                                                // **'텍스트 스캔'은 못 가져온다.** 카메라로 글자를 읽어
-                                                // 오는 그 기능은 운영체제 안에만 있고 밖으로 나오지 않는다.
-                                                // 소유자가 그것을 '>' 뒤로 밀라고 한 뜻은 '거의 안 쓴다'
-                                                // 이므로, 잃는 쪽을 택했다.
-                                                //
-                                                // 버튼이 넘치면 플러터가 알아서 '>'로 접는다. 그러니
-                                                // 우리가 할 일은 **중요한 것을 앞에 놓는 것**뿐이다.
-                                                contextMenuBuilder: (ctx, ets) {
-                                                  final ll = L10n.of(ctx);
-                                                  ContextMenuButtonItem? paste;
-                                                  ContextMenuButtonItem?
-                                                  selectAll;
-                                                  final rest =
-                                                      <ContextMenuButtonItem>[];
-                                                  for (final b
-                                                      in ets
-                                                          .contextMenuButtonItems) {
-                                                    switch (b.type) {
-                                                      // 2026-08-18 — 고른 글을 복사할 때도 표시를 벗긴다.
-                                                      case ContextMenuButtonType
-                                                          .copy:
-                                                        rest.add(
-                                                          ContextMenuButtonItem(
-                                                            type:
-                                                                ContextMenuButtonType
-                                                                    .copy,
-                                                            onPressed: () {
-                                                              final v = ets
-                                                                  .textEditingValue;
-                                                              Clipboard.setData(
-                                                                ClipboardData(
-                                                                  text: toPlain(
-                                                                    v.selection
-                                                                        .textInside(
-                                                                          v.text,
-                                                                        ),
-                                                                  ),
-                                                                ),
-                                                              );
-                                                              ets.hideToolbar();
-                                                            },
-                                                          ),
-                                                        );
-                                                      case ContextMenuButtonType
-                                                          .paste:
-                                                        paste = b;
-                                                      case ContextMenuButtonType
-                                                          .selectAll:
-                                                        selectAll = b;
-                                                      default:
-                                                        rest.add(b);
-                                                    }
-                                                  }
-                                                  final items =
-                                                      <ContextMenuButtonItem>[];
-                                                  if (paste != null)
-                                                    items.add(paste);
-                                                  // '선택' — 커서가 놓인 낱말 하나만 잡는다.
+                                                child: TextField(
+                                                  key: _bodyKey,
+                                                  controller: bodyCtl,
+                                                  focusNode: _bodyFocus,
+                                                  // 목록에서 엔터를 치면 다음 항목이 따라온다
+                                                  // (2026-08-27 소유자 신고). 규칙은 core/list_continue.dart
+                                                  // 에 있고 시험으로 못 박았다.
+                                                  inputFormatters: const [
+                                                    ListContinueFormatter(),
+                                                  ],
+                                                  // 빈 메모를 열면 커서가 이미 깜빡이고 있어야 한다.
                                                   //
-                                                  // 전체 선택과 손으로 끌기 사이가 비어 있었다. 한 낱말을
-                                                  // 고치려는데 고를 방법이 '전부' 아니면 '손으로 정확히
-                                                  // 끌기'뿐이면, 작은 화면에서는 후자가 거의 안 된다.
-                                                  if (ets
-                                                          .textEditingValue
-                                                          .selection
-                                                          .isCollapsed &&
-                                                      ets
-                                                          .textEditingValue
-                                                          .text
-                                                          .isNotEmpty) {
-                                                    items.add(
-                                                      ContextMenuButtonItem(
-                                                        label: ll.selectWord,
-                                                        onPressed: () {
-                                                          ets.renderEditable
-                                                              .selectWord(
-                                                                cause:
-                                                                    SelectionChangedCause
-                                                                        .toolbar,
-                                                              );
-                                                          // 잡아 놓고 메뉴가 사라지면 다음에 뭘 할지 모른다.
-                                                          WidgetsBinding
-                                                              .instance
-                                                              .addPostFrameCallback((
-                                                                _,
-                                                              ) {
-                                                                ets.showToolbar();
-                                                              });
-                                                        },
-                                                      ),
+                                                  // 2026-08-16 조사에서 애플 메모의 사랑받는 이유 1위가
+                                                  // '켜자마자 바로 쓸 수 있음'이었다. 한 번 더 눌러야 쓰기가
+                                                  // 시작되는 것은 기능이 아니라 마찰이다.
+                                                  autofocus:
+                                                      bodyCtl.text.isEmpty,
+                                                  undoController: _undoCtl,
+                                                  // expands를 뗐다. 이제 이 칸은 글 길이만큼 늘어나고,
+                                                  // 굴리는 일은 바깥이 맡는다.
+                                                  maxLines: null,
+                                                  // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
+                                                  // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
+                                                  // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은
+                                                  // 돋보기가 아니다 — 기기에서 직접 만져 보며 찾아야 한다.
+                                                  //
+                                                  // 블록을 끌 때 화면 끝에 닿으면 플러터가 캐럿을 보이게
+                                                  // 스크롤한다. 그 한 번에 움직이는 양이 이 여백만큼이라,
+                                                  // 기본값(20)보다 줄이면 덜 뛴다. 0으로 두지는 않는다 —
+                                                  // 캐럿이 화면 가장자리에 딱 붙으면 손가락에 가려진다.
+                                                  scrollPadding:
+                                                      const EdgeInsets.all(12),
+                                                  decoration: InputDecoration(
+                                                    hintText: l.bodyHint,
+                                                    border: InputBorder.none,
+                                                  ),
+                                                  // 줄글은 기기 기본 글꼴 그대로 두고, 표·코드 구간만 등폭으로
+                                                  // 바꿔 그린다(2026-08-14 소유자 요청). 어디가 표인지는
+                                                  // core/mono_spans.dart가, 실제로 글꼴을 입히는 일은
+                                                  // core/mono_controller.dart가 한다.
+                                                  // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
+                                                  // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
+                                                  style: TextStyle(
+                                                    fontSize: store
+                                                        .settings
+                                                        .bodyFontSize,
+                                                    height: store
+                                                        .settings
+                                                        .bodyLineHeight,
+                                                    // 고른 본문 글꼴. '기본'이면 여기 null 이 들어가고
+                                                    // 테마가 정한 글꼴이 그대로 쓰인다(core/body_font.dart).
+                                                    fontFamily: bodyFontFamily(
+                                                      store.settings.bodyFont,
+                                                      webDefault: kIsWeb
+                                                          ? kWebFontFamily
+                                                          : null,
+                                                    ),
+                                                    // 자간 0 (2026-08-24 소유자 신고 "클로드 앱 폰트가
+                                                    // 좋은데 다르다"). 글꼴은 이미 시스템 것이었고,
+                                                    // 다른 건 머티리얼 기본 자간 +0.5였다 — 영문 SF용
+                                                    // 값이라 한글에 얹으면 벌어져 보인다. 애플 메모도
+                                                    // 클로드 앱도 한글 본문 자간은 0이다.
+                                                    letterSpacing: 0,
+                                                    // 종이를 골랐으면 잉크도 종이 것을 쓴다. 아이보리
+                                                    // 종이에 순검정을 얹으면 인쇄물이 아니라 스캔한
+                                                    // 종이처럼 보인다. 색은 core/paper.dart에서 명암비를
+                                                    // 계산해 정해 뒀다.
+                                                    color: paperInk,
+                                                  ),
+                                                  onChanged: _onBodyChanged,
+                                                  onTap: _menuOnTap,
+                                                  // ── 편집 메뉴를 우리가 그린다 ──────────────────────
+                                                  //
+                                                  // 2026-08-18 소유자 지시 — "'붙여넣기 / 선택 / 전체선택 >'이
+                                                  // 나오게 하고, '텍스트 스캔'은 '>'을 누르면 나오게 해줘."
+                                                  //
+                                                  // 그동안 이 자리에는 **iOS 가 통째로 그리는 메뉴**가 떴다.
+                                                  // 요즘 플러터는 iOS 16 이상이면 시스템 메뉴를 쓰는 것이
+                                                  // 기본값이고, 시스템 메뉴는 우리가 순서를 정할 수 없다.
+                                                  // '텍스트 스캔'이 거기 섞여 있던 것도 그래서다 — 그건
+                                                  // 우리가 넣은 것이 아니라 운영체제가 넣은 것이다.
+                                                  //
+                                                  // 순서를 정하려면 메뉴를 우리가 그려야 하고, 우리가 그리면
+                                                  // **'텍스트 스캔'은 못 가져온다.** 카메라로 글자를 읽어
+                                                  // 오는 그 기능은 운영체제 안에만 있고 밖으로 나오지 않는다.
+                                                  // 소유자가 그것을 '>' 뒤로 밀라고 한 뜻은 '거의 안 쓴다'
+                                                  // 이므로, 잃는 쪽을 택했다.
+                                                  //
+                                                  // 버튼이 넘치면 플러터가 알아서 '>'로 접는다. 그러니
+                                                  // 우리가 할 일은 **중요한 것을 앞에 놓는 것**뿐이다.
+                                                  contextMenuBuilder: (ctx, ets) {
+                                                    final ll = L10n.of(ctx);
+                                                    ContextMenuButtonItem?
+                                                    paste;
+                                                    ContextMenuButtonItem?
+                                                    selectAll;
+                                                    final rest =
+                                                        <
+                                                          ContextMenuButtonItem
+                                                        >[];
+                                                    for (final b
+                                                        in ets
+                                                            .contextMenuButtonItems) {
+                                                      switch (b.type) {
+                                                        // 2026-08-18 — 고른 글을 복사할 때도 표시를 벗긴다.
+                                                        case ContextMenuButtonType
+                                                            .copy:
+                                                          rest.add(
+                                                            ContextMenuButtonItem(
+                                                              type:
+                                                                  ContextMenuButtonType
+                                                                      .copy,
+                                                              onPressed: () {
+                                                                final v = ets
+                                                                    .textEditingValue;
+                                                                Clipboard.setData(
+                                                                  ClipboardData(
+                                                                    text: toPlain(
+                                                                      v.selection
+                                                                          .textInside(
+                                                                            v.text,
+                                                                          ),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                                ets.hideToolbar();
+                                                              },
+                                                            ),
+                                                          );
+                                                        case ContextMenuButtonType
+                                                            .paste:
+                                                          paste = b;
+                                                        case ContextMenuButtonType
+                                                            .selectAll:
+                                                          selectAll = b;
+                                                        default:
+                                                          rest.add(b);
+                                                      }
+                                                    }
+                                                    final items =
+                                                        <
+                                                          ContextMenuButtonItem
+                                                        >[];
+                                                    if (paste != null)
+                                                      items.add(paste);
+                                                    // '선택' — 커서가 놓인 낱말 하나만 잡는다.
+                                                    //
+                                                    // 전체 선택과 손으로 끌기 사이가 비어 있었다. 한 낱말을
+                                                    // 고치려는데 고를 방법이 '전부' 아니면 '손으로 정확히
+                                                    // 끌기'뿐이면, 작은 화면에서는 후자가 거의 안 된다.
+                                                    if (ets
+                                                            .textEditingValue
+                                                            .selection
+                                                            .isCollapsed &&
+                                                        ets
+                                                            .textEditingValue
+                                                            .text
+                                                            .isNotEmpty) {
+                                                      items.add(
+                                                        ContextMenuButtonItem(
+                                                          label: ll.selectWord,
+                                                          onPressed: () {
+                                                            ets.renderEditable
+                                                                .selectWord(
+                                                                  cause: SelectionChangedCause
+                                                                      .toolbar,
+                                                                );
+                                                            // 잡아 놓고 메뉴가 사라지면 다음에 뭘 할지 모른다.
+                                                            WidgetsBinding
+                                                                .instance
+                                                                .addPostFrameCallback((
+                                                                  _,
+                                                                ) {
+                                                                  ets.showToolbar();
+                                                                });
+                                                          },
+                                                        ),
+                                                      );
+                                                    }
+                                                    if (selectAll != null)
+                                                      items.add(selectAll);
+                                                    items.addAll(rest);
+                                                    return AdaptiveTextSelectionToolbar.buttonItems(
+                                                      anchors: ets
+                                                          .contextMenuAnchors,
+                                                      buttonItems: items,
                                                     );
-                                                  }
-                                                  if (selectAll != null)
-                                                    items.add(selectAll);
-                                                  items.addAll(rest);
-                                                  return AdaptiveTextSelectionToolbar.buttonItems(
-                                                    anchors:
-                                                        ets.contextMenuAnchors,
-                                                    buttonItems: items,
-                                                  );
-                                                },
+                                                  },
+                                                ),
                                               ),
-                                            ),
-                                            // 글 끝 아래의 빈칸.
-                                            //
-                                            // 그냥 두면 눌러도 아무 일이 없다 — 본문 칸 밖이기
-                                            // 때문이다. 종이 아래쪽을 짚었는데 펜이 안 잡히는
-                                            // 셈이라, 누르면 커서를 글 맨 끝에 놓는다.
-                                            GestureDetector(
-                                              behavior: HitTestBehavior.opaque,
-                                              onTap: () {
-                                                _bodyFocus.requestFocus();
-                                                bodyCtl.selection =
-                                                    TextSelection.collapsed(
-                                                      offset:
-                                                          bodyCtl.text.length,
-                                                    );
-                                              },
-                                              child: SizedBox(height: blank),
-                                            ),
-                                            // 글보다 아래, 빈칸보다 아래. 타자를 치는 동안에는
-                                            // 눈에 들어오지 않는 자리다(2026-08-17 소유자 지시).
-                                            const InlineAdBlock(),
-                                          ],
+                                              // 글 끝 아래의 빈칸.
+                                              //
+                                              // 그냥 두면 눌러도 아무 일이 없다 — 본문 칸 밖이기
+                                              // 때문이다. 종이 아래쪽을 짚었는데 펜이 안 잡히는
+                                              // 셈이라, 누르면 커서를 글 맨 끝에 놓는다.
+                                              GestureDetector(
+                                                behavior:
+                                                    HitTestBehavior.opaque,
+                                                onTap: () {
+                                                  _bodyFocus.requestFocus();
+                                                  bodyCtl.selection =
+                                                      TextSelection.collapsed(
+                                                        offset:
+                                                            bodyCtl.text.length,
+                                                      );
+                                                },
+                                                child: SizedBox(height: blank),
+                                              ),
+                                              // 글보다 아래, 빈칸보다 아래. 타자를 치는 동안에는
+                                              // 눈에 들어오지 않는 자리다(2026-08-17 소유자 지시).
+                                              const InlineAdBlock(),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      // 2026-08-17 소유자 지시 — "편집 화면 맨 아래에 정리된 내역을
-                      // 한 줄로 보여 주는 거 없애 줘. 아무 의미 없다."
-                      //
-                      // 맞다. '마커 51개 제거 · 제목 5개 정리'는 **우리가 열심히
-                      // 했다는 증거**지 사용자가 알고 싶은 것이 아니다. 알고 싶은
-                      // 것은 '글이 깨끗해졌나' 하나뿐이고 그건 글을 보면 안다.
-                      //
-                      // 값(note.lastReport)은 남겨 둔다. 저장 형식을 바꾸면 예전
-                      // 저장본과 아이클라우드에 올라간 파일까지 건드리게 되는데,
-                      // 화면에서 한 줄 빼자고 치를 값이 아니다. 안 보여 줄 뿐이다.
-                    ],
+                        // 2026-08-17 소유자 지시 — "편집 화면 맨 아래에 정리된 내역을
+                        // 한 줄로 보여 주는 거 없애 줘. 아무 의미 없다."
+                        //
+                        // 맞다. '마커 51개 제거 · 제목 5개 정리'는 **우리가 열심히
+                        // 했다는 증거**지 사용자가 알고 싶은 것이 아니다. 알고 싶은
+                        // 것은 '글이 깨끗해졌나' 하나뿐이고 그건 글을 보면 안다.
+                        //
+                        // 값(note.lastReport)은 남겨 둔다. 저장 형식을 바꾸면 예전
+                        // 저장본과 아이클라우드에 올라간 파일까지 건드리게 되는데,
+                        // 화면에서 한 줄 빼자고 치를 값이 아니다. 안 보여 줄 뿐이다.
+                      ],
+                    ),
                   ),
                   bottomNavigationBar: Padding(
                     // 키보드 높이만큼 막대를 들어 올린다. Scaffold는 아래 막대를 화면

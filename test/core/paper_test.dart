@@ -25,10 +25,16 @@ void main() {
     // 먼저 통과해야 한다.
     for (final p in kPapers.where((p) => p.id != kPaperNone)) {
       test('${p.id} — 글자가 읽힌다 (4.5:1 이상)', () {
-        expect(contrastRatio(p.ink, p.bg), greaterThanOrEqualTo(4.5),
-            reason: '${p.id} 라이트');
-        expect(contrastRatio(p.inkDark, p.bgDark), greaterThanOrEqualTo(4.5),
-            reason: '${p.id} 다크');
+        expect(
+          contrastRatio(p.ink, p.bg),
+          greaterThanOrEqualTo(4.5),
+          reason: '${p.id} 라이트',
+        );
+        expect(
+          contrastRatio(p.inkDark, p.bgDark),
+          greaterThanOrEqualTo(4.5),
+          reason: '${p.id} 다크',
+        );
       });
 
       test('${p.id} — 줄이 글자보다 세지 않다 (1.1~3.0)', () {
@@ -53,7 +59,11 @@ void main() {
   group('줄 위치 (2026-08-16)', () {
     test('글줄 높이만큼 정확히 벌어진다', () {
       final ys = ruleOffsets(
-          lineHeight: 27.2, viewHeight: 100, scroll: 0, topPad: 0);
+        lineHeight: 27.2,
+        viewHeight: 100,
+        scroll: 0,
+        topPad: 0,
+      );
       expect(ys.length, 3);
       expect(ys[0], closeTo(27.2, 0.001));
       expect(ys[1] - ys[0], closeTo(27.2, 0.001));
@@ -70,16 +80,27 @@ void main() {
       // (처음엔 이걸 '목록이 같아야 한다'로 썼다가 테스트가 잡아냈다.)
       const lh = 27.2;
       final base = ruleOffsets(
-          lineHeight: lh, viewHeight: 200, scroll: 0, topPad: 12);
+        lineHeight: lh,
+        viewHeight: 200,
+        scroll: 0,
+        topPad: 12,
+      );
       for (final scroll in [lh, lh * 3, lh / 2, 7.0, 123.4]) {
         final ys = ruleOffsets(
-            lineHeight: lh, viewHeight: 200, scroll: scroll, topPad: 12);
+          lineHeight: lh,
+          viewHeight: 200,
+          scroll: scroll,
+          topPad: 12,
+        );
         expect(ys, isNotEmpty, reason: 'scroll=$scroll 에서 줄이 사라졌다');
         for (final y in ys) {
           // 기준 줄에서 몇 칸 떨어졌는지가 정수여야 한다.
           final n = (y + scroll - base.first) / lh;
-          expect((n - n.roundToDouble()).abs(), lessThan(0.0001),
-              reason: 'scroll=$scroll, y=$y 가 격자에서 벗어났다');
+          expect(
+            (n - n.roundToDouble()).abs(),
+            lessThan(0.0001),
+            reason: 'scroll=$scroll, y=$y 가 격자에서 벗어났다',
+          );
         }
         // 이웃한 줄 사이는 언제나 정확히 한 줄 높이.
         for (var i = 1; i < ys.length; i++) {
@@ -91,32 +112,56 @@ void main() {
     test('반 줄만큼 스크롤하면 줄도 반 줄만 움직인다', () {
       const lh = 20.0;
       final ys = ruleOffsets(
-          lineHeight: lh, viewHeight: 100, scroll: 10, topPad: 0);
+        lineHeight: lh,
+        viewHeight: 100,
+        scroll: 10,
+        topPad: 0,
+      );
       expect(ys.first, closeTo(10.0, 0.001));
     });
 
     test('화면 위로 올라간 줄은 안 그린다', () {
       final ys = ruleOffsets(
-          lineHeight: 20, viewHeight: 100, scroll: 1000, topPad: 0);
+        lineHeight: 20,
+        viewHeight: 100,
+        scroll: 1000,
+        topPad: 0,
+      );
       expect(ys.every((y) => y >= 0 && y <= 100), isTrue);
       expect(ys.isNotEmpty, isTrue);
     });
 
     test('말이 안 되는 값에는 빈 목록 — 무한 반복으로 앱을 세우지 않는다', () {
-      expect(ruleOffsets(lineHeight: 0, viewHeight: 100, scroll: 0, topPad: 0),
-          isEmpty);
-      expect(ruleOffsets(lineHeight: -5, viewHeight: 100, scroll: 0, topPad: 0),
-          isEmpty);
-      expect(ruleOffsets(lineHeight: 20, viewHeight: 0, scroll: 0, topPad: 0),
-          isEmpty);
       expect(
-          ruleOffsets(
-              lineHeight: double.nan, viewHeight: 100, scroll: 0, topPad: 0),
-          isEmpty);
+        ruleOffsets(lineHeight: 0, viewHeight: 100, scroll: 0, topPad: 0),
+        isEmpty,
+      );
       expect(
-          ruleOffsets(
-              lineHeight: 20, viewHeight: double.infinity, scroll: 0, topPad: 0),
-          isEmpty);
+        ruleOffsets(lineHeight: -5, viewHeight: 100, scroll: 0, topPad: 0),
+        isEmpty,
+      );
+      expect(
+        ruleOffsets(lineHeight: 20, viewHeight: 0, scroll: 0, topPad: 0),
+        isEmpty,
+      );
+      expect(
+        ruleOffsets(
+          lineHeight: double.nan,
+          viewHeight: 100,
+          scroll: 0,
+          topPad: 0,
+        ),
+        isEmpty,
+      );
+      expect(
+        ruleOffsets(
+          lineHeight: 20,
+          viewHeight: double.infinity,
+          scroll: 0,
+          topPad: 0,
+        ),
+        isEmpty,
+      );
     });
 
     test('세로줄도 칸 너비만큼 벌어진다', () {

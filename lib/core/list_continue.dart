@@ -45,7 +45,8 @@ class ListStep {
   int get hashCode => Object.hash(head, strip);
 
   @override
-  String toString() => 'ListStep(head: ${head.replaceAll(' ', '␣')}, strip: $strip)';
+  String toString() =>
+      'ListStep(head: ${head.replaceAll(' ', '␣')}, strip: $strip)';
 }
 
 /// 할 일 — '- [ ] ' · '* [x] '
@@ -109,7 +110,9 @@ class ListContinueFormatter extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue old, TextEditingValue now) {
+    TextEditingValue old,
+    TextEditingValue now,
+  ) {
     if (!now.selection.isCollapsed) return now;
     final at = now.selection.baseOffset;
     if (at <= 0 || at > now.text.length) return now;

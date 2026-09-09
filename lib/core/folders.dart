@@ -73,7 +73,8 @@ String folderLeaf(String name) {
 }
 
 /// 파일 이름에 넣을 때 쓴다. 빗금은 파일 이름에 못 들어간다.
-String folderFileName(String name) => normalizeFolder(name).replaceAll('/', ' - ');
+String folderFileName(String name) =>
+    normalizeFolder(name).replaceAll('/', ' - ');
 
 /// 화면에 보여 줄 폴더 목록.
 ///

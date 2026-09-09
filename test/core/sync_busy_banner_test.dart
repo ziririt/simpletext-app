@@ -12,12 +12,12 @@ bool show({
   bool paused = false,
   bool everSynced = false,
   bool running = true,
-}) =>
-    showSyncingBanner(
-        active: active,
-        paused: paused,
-        everSynced: everSynced,
-        running: running);
+}) => showSyncingBanner(
+  active: active,
+  paused: paused,
+  everSynced: everSynced,
+  running: running,
+);
 
 void main() {
   test('첫 동기화가 도는 중이면 보인다 — 이 띠가 있어야 할 유일한 순간', () {

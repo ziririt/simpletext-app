@@ -25,7 +25,8 @@
 library;
 
 import 'clipboard_source_io.dart'
-    if (dart.library.js_interop) 'clipboard_source_web.dart' as impl;
+    if (dart.library.js_interop) 'clipboard_source_web.dart'
+    as impl;
 
 class ClipboardSource {
   /// 이 판에서 읽을 수 있는가. 화면에서 쓰지 않고 기록용으로만 둔다 —

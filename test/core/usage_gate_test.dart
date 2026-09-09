@@ -23,11 +23,12 @@ void main() {
 
   test('한도 안이면 쓸 수 있고, 채우면 막힌다', () {
     bool c(int used) => canUse(
-        now: today,
-        savedDate: '2026-08-16',
-        savedCount: used,
-        limit: kFreeTidyPerDay,
-        premium: false);
+      now: today,
+      savedDate: '2026-08-16',
+      savedCount: used,
+      limit: kFreeTidyPerDay,
+      premium: false,
+    );
     expect(c(0), isTrue);
     expect(c(2), isTrue);
     expect(c(3), isFalse);
@@ -36,35 +37,40 @@ void main() {
 
   test('마법사는 두 번까지', () {
     bool w(int used) => canUse(
-        now: today,
-        savedDate: '2026-08-16',
-        savedCount: used,
-        limit: kFreeWizardPerDay,
-        premium: false);
+      now: today,
+      savedDate: '2026-08-16',
+      savedCount: used,
+      limit: kFreeWizardPerDay,
+      premium: false,
+    );
     expect(w(1), isTrue);
     expect(w(2), isFalse);
   });
 
   test('자정이 지나면 다시 열린다', () {
     expect(
-        canUse(
-            now: tomorrow,
-            savedDate: '2026-08-16',
-            savedCount: 3,
-            limit: kFreeTidyPerDay,
-            premium: false),
-        isTrue);
+      canUse(
+        now: tomorrow,
+        savedDate: '2026-08-16',
+        savedCount: 3,
+        limit: kFreeTidyPerDay,
+        premium: false,
+      ),
+      isTrue,
+    );
   });
 
   test('프리미엄은 몇 번을 쓰든 안 막힌다', () {
     expect(
-        canUse(
-            now: today,
-            savedDate: '2026-08-16',
-            savedCount: 9999,
-            limit: kFreeTidyPerDay,
-            premium: true),
-        isTrue);
+      canUse(
+        now: today,
+        savedDate: '2026-08-16',
+        savedCount: 9999,
+        limit: kFreeTidyPerDay,
+        premium: true,
+      ),
+      isTrue,
+    );
   });
 
   test('날짜가 바뀌면 1부터 다시 센다', () {
@@ -74,37 +80,45 @@ void main() {
 
   test('남은 횟수 — 프리미엄은 -1(무제한)', () {
     expect(
-        remaining(
-            now: today,
-            savedDate: '2026-08-16',
-            savedCount: 3,
-            limit: kFreeTidyPerDay,
-            premium: false),
-        0);
+      remaining(
+        now: today,
+        savedDate: '2026-08-16',
+        savedCount: 3,
+        limit: kFreeTidyPerDay,
+        premium: false,
+      ),
+      0,
+    );
     expect(
-        remaining(
-            now: today,
-            savedDate: '2026-08-16',
-            savedCount: 1,
-            limit: kFreeTidyPerDay,
-            premium: false),
-        2);
+      remaining(
+        now: today,
+        savedDate: '2026-08-16',
+        savedCount: 1,
+        limit: kFreeTidyPerDay,
+        premium: false,
+      ),
+      2,
+    );
     expect(
-        remaining(
-            now: today,
-            savedDate: '',
-            savedCount: 0,
-            limit: kFreeTidyPerDay,
-            premium: false),
-        3);
+      remaining(
+        now: today,
+        savedDate: '',
+        savedCount: 0,
+        limit: kFreeTidyPerDay,
+        premium: false,
+      ),
+      3,
+    );
     expect(
-        remaining(
-            now: today,
-            savedDate: '2026-08-16',
-            savedCount: 5,
-            limit: kFreeTidyPerDay,
-            premium: true),
-        -1);
+      remaining(
+        now: today,
+        savedDate: '2026-08-16',
+        savedCount: 5,
+        limit: kFreeTidyPerDay,
+        premium: true,
+      ),
+      -1,
+    );
   });
 
   group('체험 — 달력이 아니라 쓴 날을 센다', () {
@@ -116,9 +130,15 @@ void main() {
 
     test('같은 날 몇 번을 열어도 하루만 센다', () {
       // 이게 깨지면 앱을 자주 켜는 사람의 체험이 하루 만에 끝난다.
-      expect(bumpTrialDays(now: today, lastDate: '2026-08-16', trialDays: 3), 3);
+      expect(
+        bumpTrialDays(now: today, lastDate: '2026-08-16', trialDays: 3),
+        3,
+      );
       final later = DateTime(2026, 8, 16, 23, 59);
-      expect(bumpTrialDays(now: later, lastDate: '2026-08-16', trialDays: 3), 3);
+      expect(
+        bumpTrialDays(now: later, lastDate: '2026-08-16', trialDays: 3),
+        3,
+      );
     });
 
     test('안 켠 날은 안 깎인다 — 두 달 뒤에 열어도 2일째다', () {
@@ -126,7 +146,9 @@ void main() {
       // 사용 방식(띄엄띄엄 쓰기)을 벌주지 않겠다는 뜻이다.
       final muchLater = DateTime(2026, 10, 20, 9, 0);
       expect(
-          bumpTrialDays(now: muchLater, lastDate: '2026-08-16', trialDays: 1), 2);
+        bumpTrialDays(now: muchLater, lastDate: '2026-08-16', trialDays: 1),
+        2,
+      );
       expect(trialOn(2), isTrue);
     });
 
@@ -152,47 +174,54 @@ void main() {
 
     test('체험 중이면 한도를 넘겨도 안 막힌다', () {
       expect(
-          canUseNow(
-              now: today,
-              savedDate: '2026-08-16',
-              savedCount: 999,
-              limit: kFreeTidyPerDay,
-              premium: false,
-              trialDays: 5),
-          isTrue);
+        canUseNow(
+          now: today,
+          savedDate: '2026-08-16',
+          savedCount: 999,
+          limit: kFreeTidyPerDay,
+          premium: false,
+          trialDays: 5,
+        ),
+        isTrue,
+      );
     });
 
     test('체험이 끝나면 그때부터 한도가 산다', () {
       bool c(int used) => canUseNow(
-          now: today,
-          savedDate: '2026-08-16',
-          savedCount: used,
-          limit: kFreeTidyPerDay,
-          premium: false,
-          trialDays: 15);
+        now: today,
+        savedDate: '2026-08-16',
+        savedCount: used,
+        limit: kFreeTidyPerDay,
+        premium: false,
+        trialDays: 15,
+      );
       expect(c(2), isTrue);
       expect(c(3), isFalse);
     });
 
     test('체험 중 남은 횟수는 -1(무제한)로 나온다', () {
       expect(
-          remainingNow(
-              now: today,
-              savedDate: '2026-08-16',
-              savedCount: 3,
-              limit: kFreeTidyPerDay,
-              premium: false,
-              trialDays: 7),
-          -1);
+        remainingNow(
+          now: today,
+          savedDate: '2026-08-16',
+          savedCount: 3,
+          limit: kFreeTidyPerDay,
+          premium: false,
+          trialDays: 7,
+        ),
+        -1,
+      );
       expect(
-          remainingNow(
-              now: today,
-              savedDate: '2026-08-16',
-              savedCount: 1,
-              limit: kFreeTidyPerDay,
-              premium: false,
-              trialDays: 15),
-          2);
+        remainingNow(
+          now: today,
+          savedDate: '2026-08-16',
+          savedCount: 1,
+          limit: kFreeTidyPerDay,
+          premium: false,
+          trialDays: 15,
+        ),
+        2,
+      );
     });
 
     test('끝난 사실은 한 번만 알린다', () {

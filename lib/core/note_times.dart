@@ -36,7 +36,8 @@ class NoteTimes {
   final int? edited;
 
   @override
-  String toString() => 'NoteTimes(start=$start, pasted=$pasted, edited=$edited)';
+  String toString() =>
+      'NoteTimes(start=$start, pasted=$pasted, edited=$edited)';
 }
 
 /// [gapMs] 는 '사실상 같다'고 볼 틈이다.

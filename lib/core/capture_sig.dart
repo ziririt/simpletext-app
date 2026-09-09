@@ -56,14 +56,18 @@ String captureSignature(String? capture, {int max = 700}) {
   for (final m in RegExp(r'\s(data-[a-z0-9-]{1,40})\s*=').allMatches(capture)) {
     add(m.group(1)!);
   }
-  for (final m in RegExp(r'https?://([a-z0-9.-]{1,60})', caseSensitive: false)
-      .allMatches(capture)) {
+  for (final m in RegExp(
+    r'https?://([a-z0-9.-]{1,60})',
+    caseSensitive: false,
+  ).allMatches(capture)) {
     add('@${m.group(1)!.toLowerCase()}');
   }
 
   // 태그 뼈대 — 속성이 벗겨진 HTML 에서는 이것만 남는다.
   final tags = <String>[];
-  for (final m in RegExp(r'<([a-zA-Z][a-zA-Z0-9]{0,12})[\s>/]').allMatches(capture)) {
+  for (final m in RegExp(
+    r'<([a-zA-Z][a-zA-Z0-9]{0,12})[\s>/]',
+  ).allMatches(capture)) {
     final t = m.group(1)!.toLowerCase();
     if (!tags.contains(t)) tags.add(t);
     if (tags.length >= 14) break;
@@ -71,8 +75,9 @@ String captureSignature(String? capture, {int max = 700}) {
 
   // 속성 이름 — 값은 안 본다. 값에는 사람의 글이 들어갈 수 있다.
   final attrs = <String>{};
-  for (final m in RegExp(r'\s([a-zA-Z][a-zA-Z0-9-]{0,24})\s*=\s*[\x22\x27]')
-      .allMatches(capture)) {
+  for (final m in RegExp(
+    r'\s([a-zA-Z][a-zA-Z0-9-]{0,24})\s*=\s*[\x22\x27]',
+  ).allMatches(capture)) {
     attrs.add(m.group(1)!.toLowerCase());
   }
 

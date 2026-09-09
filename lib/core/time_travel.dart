@@ -74,12 +74,14 @@ List<Stop> travelStops({
     out.add(Stop(text: original, at: originalAt, why: 'original', now: false));
   }
   for (var i = 0; i < history.length; i++) {
-    out.add(Stop(
-      text: history[i],
-      at: sideValue(historyAt, history.length, i) ?? 0,
-      why: sideValue(historyWhy, history.length, i) ?? '',
-      now: false,
-    ));
+    out.add(
+      Stop(
+        text: history[i],
+        at: sideValue(historyAt, history.length, i) ?? 0,
+        why: sideValue(historyWhy, history.length, i) ?? '',
+        now: false,
+      ),
+    );
   }
   out.add(Stop(text: body, at: updatedAt, why: '', now: true));
   return out;

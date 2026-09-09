@@ -82,8 +82,7 @@ class IcloudTransport extends SyncTransport {
       if (e is! File) continue;
       final name = e.uri.pathSegments.last;
       if (name.startsWith('.') && name.endsWith(_kPlaceholderTail)) {
-        final real =
-            name.substring(1, name.length - _kPlaceholderTail.length);
+        final real = name.substring(1, name.length - _kPlaceholderTail.length);
         pending.add('$path/$real');
         continue;
       }

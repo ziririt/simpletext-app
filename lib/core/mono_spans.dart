@@ -92,7 +92,8 @@ List<MonoSpan> monoSpans(String text) {
   // 읽혔고, 그런 줄이 둘 이상 이어지니 확정됐다. **글머리표로 시작하는
   // 줄은 표가 아니다** — 칸을 맞출 것이 없다.
   final bulletLine = RegExp(
-      '^[\\t ]*([\u2022\u00b7\u25aa\u2023\u25e6*+-]|\\d{1,3}[.)])[\\t ]');
+    '^[\\t ]*([\u2022\u00b7\u25aa\u2023\u25e6*+-]|\\d{1,3}[.)])[\\t ]',
+  );
   bool looksRaw(String l) =>
       l.trim().isNotEmpty &&
       !bulletLine.hasMatch(l) &&

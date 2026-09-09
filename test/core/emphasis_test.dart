@@ -42,15 +42,19 @@ void main() {
 
     test('옮긴 뒤 사용자가 다시 remove 로 돌려놓으면 그대로 둔다', () {
       // 이걸 안 지키면 고치는 게 아니라 설정을 뺏는 것이 된다.
-      final s = AppSettings.fromJson(
-          {'rev': AppSettings.settingsRev, 'emphStyle': 'remove'});
+      final s = AppSettings.fromJson({
+        'rev': AppSettings.settingsRev,
+        'emphStyle': 'remove',
+      });
       expect(s.emphStyle, 'remove');
     });
 
     test('갈아엎은 뒤 사용자가 따옴표로 되돌려 놓으면 그대로 둔다', () {
       // 이걸 안 지키면 고치는 게 아니라 설정을 뺏는 것이 된다.
-      final s = AppSettings.fromJson(
-          {'rev': AppSettings.settingsRev, 'emphStyle': 'quoteSingle'});
+      final s = AppSettings.fromJson({
+        'rev': AppSettings.settingsRev,
+        'emphStyle': 'quoteSingle',
+      });
       expect(s.emphStyle, 'quoteSingle');
     });
 
@@ -65,19 +69,19 @@ void main() {
         TidyOptions(stripEmphasis: true, emphStyle: emph);
 
     test('기본값에서는 마커만 지우고 따옴표를 붙이지 않는다', () {
-      expect(tidy('이번 분기는 **역대 최고**였다.', o()).text,
-          '이번 분기는 역대 최고였다.');
+      expect(tidy('이번 분기는 **역대 최고**였다.', o()).text, '이번 분기는 역대 최고였다.');
     });
 
     test('따옴표를 고른 사람에게는 그대로 따옴표를 준다', () {
-      expect(tidy('이번 분기는 **역대 최고**였다.', o(emph: 'quoteSingle')).text,
-          "이번 분기는 '역대 최고'였다.");
+      expect(
+        tidy('이번 분기는 **역대 최고**였다.', o(emph: 'quoteSingle')).text,
+        "이번 분기는 '역대 최고'였다.",
+      );
     });
 
     test('한쪽만 찍혀 온 **도 지운다', () {
       // AI 답변에서 흔하다. 지금까지는 본문에 그대로 박혀 나왔다.
-      expect(tidy('비용이 지속적으로 증가**함에 따라', o()).text,
-          '비용이 지속적으로 증가함에 따라');
+      expect(tidy('비용이 지속적으로 증가**함에 따라', o()).text, '비용이 지속적으로 증가함에 따라');
     });
 
     test('줄이 바뀌어 짝이 깨진 **도 지운다', () {

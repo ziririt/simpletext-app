@@ -18,7 +18,7 @@ void main() {
     test('세로줄을 긋는 종이는 없다', () {
       final vertical = [
         for (final p in kPapers)
-          if (drawsVertical(p.ruling)) p.id
+          if (drawsVertical(p.ruling)) p.id,
       ];
       expect(vertical, isEmpty);
     });
@@ -26,7 +26,7 @@ void main() {
     test('가로줄은 몰스킨·서리 둘뿐이다', () {
       final horizontal = [
         for (final p in kPapers)
-          if (drawsHorizontal(p.ruling)) p.id
+          if (drawsHorizontal(p.ruling)) p.id,
       ];
       expect(horizontal, ['moleskine', 'frost']);
     });
@@ -48,16 +48,19 @@ void main() {
     });
 
     test('보이는 차례', () {
-      expect([for (final p in kPapers) p.id], [
-        kPaperNone,
-        'moleskine',
-        'frost',
-        'plain',
-        'sepia',
-        'kraft',
-        'walnut',
-        'sky',
-      ]);
+      expect(
+        [for (final p in kPapers) p.id],
+        [
+          kPaperNone,
+          'moleskine',
+          'frost',
+          'plain',
+          'sepia',
+          'kraft',
+          'walnut',
+          'sky',
+        ],
+      );
     });
 
     // 여백은 어느 종이에서든 **본문보다 어둡다.** 방향이 종이에 따라 갈리면
@@ -70,8 +73,11 @@ void main() {
           final bg = p.bgOf(dark);
           final m = marginTone(bg);
           final reason = '${p.id} dark=$dark';
-          expect(relativeLuminance(m) < relativeLuminance(bg), isTrue,
-              reason: reason);
+          expect(
+            relativeLuminance(m) < relativeLuminance(bg),
+            isTrue,
+            reason: reason,
+          );
           // 살짝. 보이되 제 색을 주장하지는 않는다.
           expect(contrastRatio(bg, m) > 1.03, isTrue, reason: reason);
           expect(contrastRatio(bg, m) < 1.25, isTrue, reason: reason);

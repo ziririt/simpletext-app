@@ -38,7 +38,8 @@ void main() {
 
   group('앞머리 떼기', () {
     test('우리가 내보낸 파일을 그대로 되읽는다', () {
-      const f = '---\n'
+      const f =
+          '---\n'
           'title: "테슬라 정리"\n'
           'tags: ["투자", "테슬라"]\n'
           'source: "ChatGPT"\n'

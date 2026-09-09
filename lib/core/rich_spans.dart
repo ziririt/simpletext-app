@@ -87,8 +87,13 @@ void _one(String line, int base, List<RichSpan> out) {
     // 크기 차이가 남지 않는다(h3는 이미 1.08배다).
     out.add(RichSpan(base, base + h.end, RichKind.marker));
     if (h.end < line.length) {
-      out.add(RichSpan(base + h.end, base + line.length,
-          n == 1 ? RichKind.h1 : (n == 2 ? RichKind.h2 : RichKind.h3)));
+      out.add(
+        RichSpan(
+          base + h.end,
+          base + line.length,
+          n == 1 ? RichKind.h1 : (n == 2 ? RichKind.h2 : RichKind.h3),
+        ),
+      );
     }
     _bold(line, base, out, from: h.end);
     return;

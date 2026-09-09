@@ -36,8 +36,7 @@ bool usesDecimals(String shownPrice) =>
     RegExp(r'[.,]\d{2}(?!\d)').hasMatch(shownPrice);
 
 /// 이 값 글자에서 통화 기호가 숫자 **앞**에 오는가.
-bool symbolLeads(String shownPrice) =>
-    !RegExp(r'^\s*\d').hasMatch(shownPrice);
+bool symbolLeads(String shownPrice) => !RegExp(r'^\s*\d').hasMatch(shownPrice);
 
 /// 연간 값을 열둘로 나눈 '월 얼마'. 셈이 안 되면 null.
 ///

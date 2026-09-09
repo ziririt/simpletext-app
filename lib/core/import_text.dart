@@ -25,8 +25,20 @@ library;
 /// 바이너리를 열면 글자가 깨진 채로 메모가 하나 생긴다 — 사용자는 그걸
 /// 버그로 읽는다. 그래서 목록을 좁게 잡는다.
 const List<String> kTextExtensions = [
-  'md', 'markdown', 'mdown', 'txt', 'text', 'csv', 'tsv',
-  'json', 'log', 'rtf', 'org', 'rst', 'yaml', 'yml',
+  'md',
+  'markdown',
+  'mdown',
+  'txt',
+  'text',
+  'csv',
+  'tsv',
+  'json',
+  'log',
+  'rtf',
+  'org',
+  'rst',
+  'yaml',
+  'yml',
 ];
 
 bool isTextFileName(String name) {
@@ -100,7 +112,11 @@ ParsedText parseTextFile(String fileName, String content) {
 
   if (title.isEmpty) title = titleFromFileName(fileName);
   return ParsedText(
-      title: title, body: text.trimRight(), tags: tags, source: source);
+    title: title,
+    body: text.trimRight(),
+    tags: tags,
+    source: source,
+  );
 }
 
 String _unquote(String v) {

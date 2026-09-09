@@ -10,7 +10,11 @@ void main() {
 
   group('시작 시각', () {
     test('붙여넣은 글이면 붙여넣은 시각이다', () {
-      final n = noteTimes(createdAt: t0, pastedAt: t0 + 5000, updatedAt: t0 + 5000);
+      final n = noteTimes(
+        createdAt: t0,
+        pastedAt: t0 + 5000,
+        updatedAt: t0 + 5000,
+      );
       expect(n.start, t0 + 5000);
       expect(n.pasted, true);
     });
@@ -34,13 +38,18 @@ void main() {
     });
 
     test('방금 만든 글에는 안 붙는다 — 같은 시각을 두 번 적는 것은 소음이다', () {
-      expect(noteTimes(createdAt: t0, pastedAt: 0, updatedAt: t0 + 3000).edited,
-          null);
+      expect(
+        noteTimes(createdAt: t0, pastedAt: 0, updatedAt: t0 + 3000).edited,
+        null,
+      );
     });
 
     test('붙여넣고 곧바로 정리가 돌아 몇 초 뒤로 찍힌 것도 안 붙는다', () {
-      final n =
-          noteTimes(createdAt: t0, pastedAt: t0 + 1000, updatedAt: t0 + 9000);
+      final n = noteTimes(
+        createdAt: t0,
+        pastedAt: t0 + 1000,
+        updatedAt: t0 + 9000,
+      );
       expect(n.edited, null);
     });
 
@@ -54,9 +63,15 @@ void main() {
     test('원본으로 되돌려 수정 시각이 지금이 되어도 붙여넣은 시각은 그대로다', () {
       const pasted = t0;
       final before = noteTimes(
-          createdAt: t0 - 1000, pastedAt: pasted, updatedAt: t0 + 10);
+        createdAt: t0 - 1000,
+        pastedAt: pasted,
+        updatedAt: t0 + 10,
+      );
       final after = noteTimes(
-          createdAt: t0 - 1000, pastedAt: pasted, updatedAt: t0 + 600 * min);
+        createdAt: t0 - 1000,
+        pastedAt: pasted,
+        updatedAt: t0 + 600 * min,
+      );
       expect(before.start, pasted);
       expect(after.start, pasted, reason: '되돌려도 시작은 같다');
       expect(after.edited, t0 + 600 * min);

@@ -17,10 +17,8 @@ class _Reader extends StatelessWidget {
   const _Reader();
 
   @override
-  Widget build(BuildContext context) => Text(
-        OpenNote.of(context) ?? '(없음)',
-        textDirection: TextDirection.ltr,
-      );
+  Widget build(BuildContext context) =>
+      Text(OpenNote.of(context) ?? '(없음)', textDirection: TextDirection.ltr);
 }
 
 class _Host extends StatefulWidget {
@@ -33,13 +31,15 @@ class _HostState extends State<_Host> {
   String? id = 'a';
 
   @override
-  Widget build(BuildContext context) => Column(children: [
-        OpenNote(id: id, child: const _Reader()),
-        TextButton(
-          onPressed: () => setState(() => id = 'b'),
-          child: const Text('바꾸기', textDirection: TextDirection.ltr),
-        ),
-      ]);
+  Widget build(BuildContext context) => Column(
+    children: [
+      OpenNote(id: id, child: const _Reader()),
+      TextButton(
+        onPressed: () => setState(() => id = 'b'),
+        child: const Text('바꾸기', textDirection: TextDirection.ltr),
+      ),
+    ],
+  );
 }
 
 void main() {
@@ -50,22 +50,30 @@ void main() {
     await tester.tap(find.text('바꾸기'));
     await tester.pump();
 
-    expect(find.text('b'), findsOneWidget,
-        reason: 'const 자식이라 부모 rebuild 만으로는 안 바뀐다 — '
-            'OpenNote(InheritedWidget)가 직접 깨워야 한다');
+    expect(
+      find.text('b'),
+      findsOneWidget,
+      reason:
+          'const 자식이라 부모 rebuild 만으로는 안 바뀐다 — '
+          'OpenNote(InheritedWidget)가 직접 깨워야 한다',
+    );
     expect(find.text('a'), findsNothing);
   });
 
   test('같은 번호면 깨우지 않는다', () {
     const child = SizedBox();
     expect(
-      const OpenNote(id: 'a', child: child)
-          .updateShouldNotify(const OpenNote(id: 'a', child: child)),
+      const OpenNote(
+        id: 'a',
+        child: child,
+      ).updateShouldNotify(const OpenNote(id: 'a', child: child)),
       isFalse,
     );
     expect(
-      const OpenNote(id: 'b', child: child)
-          .updateShouldNotify(const OpenNote(id: 'a', child: child)),
+      const OpenNote(
+        id: 'b',
+        child: child,
+      ).updateShouldNotify(const OpenNote(id: 'a', child: child)),
       isTrue,
     );
   });

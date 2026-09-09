@@ -92,8 +92,11 @@ void main() {
     });
 
     test('문턱을 올리면 실이 준다', () {
-      expect(buildLinks(v4(), threshold: 0.99).length <=
-          buildLinks(v4(), threshold: 0.2).length, true);
+      expect(
+        buildLinks(v4(), threshold: 0.99).length <=
+            buildLinks(v4(), threshold: 0.2).length,
+        true,
+      );
     });
 
     test('한 별의 실 수를 죈다 — 안 죄면 바퀴살이 된다', () {
@@ -123,14 +126,23 @@ void main() {
       ];
       final plain = buildLinks(v, threshold: 0.0);
       final withTag = buildLinks(v, threshold: 0.0, tags: tags, sameTag: 0.5);
-      double wOf(List<Link> ls, int a, int b) =>
-          ls.firstWhere((l) => l.a == a && l.b == b, orElse: () => const Link(0, 0, 0)).w;
+      double wOf(List<Link> ls, int a, int b) => ls
+          .firstWhere(
+            (l) => l.a == a && l.b == b,
+            orElse: () => const Link(0, 0, 0),
+          )
+          .w;
       expect(wOf(withTag, 0, 2) > wOf(plain, 0, 2), true);
     });
 
     test('굵기는 1을 안 넘는다', () {
       final v = v4();
-      final tags = [{'ㄱ'}, {'ㄱ'}, {'ㄱ'}, {'ㄱ'}];
+      final tags = [
+        {'ㄱ'},
+        {'ㄱ'},
+        {'ㄱ'},
+        {'ㄱ'},
+      ];
       for (final l in buildLinks(v, threshold: 0.0, tags: tags, sameTag: 0.9)) {
         expect(l.w <= 1, true);
       }
@@ -150,8 +162,7 @@ void main() {
     });
 
     test('0.12 아래로는 안 내려간다 — 우연히 겹친 낱말로 실을 그리면 거짓말이다', () {
-      final docs = List.generate(
-          20, (i) => countWords('공통낱말 ${'낱말$i ' * 40}'));
+      final docs = List.generate(20, (i) => countWords('공통낱말 ${'낱말$i ' * 40}'));
       final df = docFreq(docs);
       final v = [for (final d in docs) vectorOf(d, df, docs.length)];
       expect(pickThreshold(v) >= 0.12, true);
@@ -180,7 +191,13 @@ void main() {
     });
 
     test('화면 밖으로 안 나간다', () {
-      for (final p in layout(12, const [], width: 100, height: 100, rounds: 30)) {
+      for (final p in layout(
+        12,
+        const [],
+        width: 100,
+        height: 100,
+        rounds: 30,
+      )) {
         expect(p.x >= 0 && p.x <= 100, true);
         expect(p.y >= 0 && p.y <= 100, true);
       }
@@ -193,6 +210,7 @@ void main() {
         final dx = p[a].x - p[b].x, dy = p[a].y - p[b].y;
         return dx * dx + dy * dy;
       }
+
       expect(d(0, 1) < d(0, 2), true);
     });
   });

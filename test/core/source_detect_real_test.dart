@@ -48,7 +48,12 @@ void main() {
     });
 
     test('생김새로 찾은 것은 확실이 아니다 — utm 표식이 있는 ChatGPT만 예외', () {
-      for (final s in [sampleClaude, sampleGemini, sampleGrok, samplePerplexity]) {
+      for (final s in [
+        sampleClaude,
+        sampleGemini,
+        sampleGrok,
+        samplePerplexity,
+      ]) {
         expect(guessSource(s).certain, isFalse);
       }
     });
@@ -73,7 +78,7 @@ void main() {
         sampleClaude,
         sampleGemini,
         sampleGrok,
-        samplePerplexity
+        samplePerplexity,
       ]) {
         expect(citationCount(s), 0);
       }

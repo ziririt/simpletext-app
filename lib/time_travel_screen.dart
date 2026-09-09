@@ -103,8 +103,10 @@ class _TimeTravelViewState extends State<TimeTravelView> {
               Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: s.now ? 0.16 : 0.10),
                       borderRadius: BorderRadius.circular(20),
@@ -112,27 +114,35 @@ class _TimeTravelViewState extends State<TimeTravelView> {
                     child: Text(
                       s.now ? widget.nowLabel : widget.whyLabel(s.why),
                       style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: accent),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(widget.whenLabel(s.at),
-                        style: TextStyle(fontSize: 13, color: mark)),
+                    child: Text(
+                      widget.whenLabel(s.at),
+                      style: TextStyle(fontSize: 13, color: mark),
+                    ),
                   ),
-                  Text('${_i + 1} / ${stops.length}',
-                      style: TextStyle(fontSize: 12.5, color: mark)),
+                  Text(
+                    '${_i + 1} / ${stops.length}',
+                    style: TextStyle(fontSize: 12.5, color: mark),
+                  ),
                 ],
               ),
               if (grow.isNotEmpty) ...[
                 const SizedBox(height: 5),
-                Text(grow,
-                    style: TextStyle(
-                        fontSize: 12.5,
-                        color: delta < 0 ? accent : mark,
-                        fontWeight: FontWeight.w600)),
+                Text(
+                  grow,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: delta < 0 ? accent : mark,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ],
           ),
@@ -171,10 +181,12 @@ class _TimeTravelViewState extends State<TimeTravelView> {
                         activeTrackColor: accent,
                         inactiveTrackColor: accent.withValues(alpha: 0.22),
                         thumbColor: accent,
-                        overlayShape:
-                            const RoundSliderOverlayShape(overlayRadius: 18),
-                        tickMarkShape:
-                            const RoundSliderTickMarkShape(tickMarkRadius: 2.5),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 18,
+                        ),
+                        tickMarkShape: const RoundSliderTickMarkShape(
+                          tickMarkRadius: 2.5,
+                        ),
                         activeTickMarkColor: Colors.white,
                         inactiveTickMarkColor: accent.withValues(alpha: 0.45),
                       ),
@@ -190,8 +202,10 @@ class _TimeTravelViewState extends State<TimeTravelView> {
                   if (!s.now)
                     TextButton(
                       onPressed: () => widget.onRestore(s),
-                      child: Text(widget.restoreLabel,
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      child: Text(
+                        widget.restoreLabel,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                 ],
               ),

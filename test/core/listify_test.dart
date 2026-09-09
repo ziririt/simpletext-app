@@ -11,8 +11,7 @@ import 'package:simpletext/core/listify.dart';
 void main() {
   group('붙이기', () {
     test('구분점을 줄마다 붙인다', () {
-      expect(listify('사과\n배\n감', kind: kListBullet),
-          '· 사과\n· 배\n· 감');
+      expect(listify('사과\n배\n감', kind: kListBullet), '· 사과\n· 배\n· 감');
     });
 
     test('대시', () {
@@ -20,8 +19,7 @@ void main() {
     });
 
     test('번호는 1부터 센다', () {
-      expect(listify('사과\n배\n감', kind: kListNumber),
-          '1. 사과\n2. 배\n3. 감');
+      expect(listify('사과\n배\n감', kind: kListNumber), '1. 사과\n2. 배\n3. 감');
     });
 
     test('설정한 글머리 기호를 쓴다', () {
@@ -49,8 +47,7 @@ void main() {
 
   group('들여쓰기', () {
     test('들여쓰기는 살린다', () {
-      expect(listify('  사과\n    배', kind: kListDash),
-          '  - 사과\n    - 배');
+      expect(listify('  사과\n    배', kind: kListDash), '  - 사과\n    - 배');
     });
 
     test('탭도 살린다', () {
@@ -66,8 +63,7 @@ void main() {
     });
 
     test('별표와 엔대시·엠대시도 표시로 본다', () {
-      expect(listify('* 사과\n– 배\n— 감', kind: kListDash),
-          '- 사과\n- 배\n- 감');
+      expect(listify('* 사과\n– 배\n— 감', kind: kListDash), '- 사과\n- 배\n- 감');
     });
 
     test("'1)' 꼴도 번호로 본다", () {
@@ -179,8 +175,7 @@ void main() {
     });
 
     test('빈 줄은 안 건드린다', () {
-      expect(listify('사과\n\n배', kind: kListDash, pad: 2),
-          '  - 사과\n\n  - 배');
+      expect(listify('사과\n\n배', kind: kListDash, pad: 2), '  - 사과\n\n  - 배');
     });
 
     test('pad 가 0이면 예전 그대로다', () {

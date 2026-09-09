@@ -35,12 +35,14 @@ class DriveAuth {
   static final DriveAuth instance = DriveAuth._();
 
   /// 안드로이드가 서버 쪽 상대를 알아보는 데 쓰는 값. 웹 클라이언트 아이디다.
-  static const String webClientId =
-      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+  static const String webClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+  );
 
   /// 아이폰·맥이 쓰는 값. iOS 갈래로 만든 클라이언트 아이디다.
-  static const String iosClientId =
-      String.fromEnvironment('GOOGLE_IOS_CLIENT_ID');
+  static const String iosClientId = String.fromEnvironment(
+    'GOOGLE_IOS_CLIENT_ID',
+  );
 
   /// 이 기기에서 구글 로그인을 쓸 수 있는가.
   ///
@@ -161,8 +163,9 @@ class DriveAuth {
       _mark(await GoogleSignIn.instance.authenticate());
       // 로그인과 권한은 다른 일이다. 붙기만 하고 권한을 안 받으면 토큰이
       // 없어서 다음 동기화가 조용히 아무 일도 안 한다.
-      final a = await _user!.authorizationClient
-          .authorizeScopes(const <String>[kDriveScope]);
+      final a = await _user!.authorizationClient.authorizeScopes(const <String>[
+        kDriveScope,
+      ]);
       return a.accessToken.isNotEmpty;
     } catch (_) {
       _mark(null);
@@ -181,8 +184,9 @@ class DriveAuth {
     final u = _user;
     if (u == null) return false;
     try {
-      final a = await u.authorizationClient
-          .authorizeScopes(const <String>[kDriveScope]);
+      final a = await u.authorizationClient.authorizeScopes(const <String>[
+        kDriveScope,
+      ]);
       final ok = a.accessToken.isNotEmpty;
       if (ok) revision.value++;
       return ok;
@@ -253,8 +257,9 @@ class DriveAuth {
         if (now - _revivedAtMs >= _reviveEveryMs) {
           _revivedAtMs = now;
           try {
-            _mark(await GoogleSignIn.instance
-                .attemptLightweightAuthentication());
+            _mark(
+              await GoogleSignIn.instance.attemptLightweightAuthentication(),
+            );
           } catch (_) {}
           u = _user;
         }
@@ -266,8 +271,9 @@ class DriveAuth {
       }
       // 이 부름 자체가 **조용한 갱신 시도**다. 30초마다 도는 자리에서
       // 이미 하고 있으므로 따로 더 시도할 자리를 만들지 않는다.
-      final a = await u.authorizationClient
-          .authorizationForScopes(const <String>[kDriveScope]);
+      final a = await u.authorizationClient.authorizationForScopes(
+        const <String>[kDriveScope],
+      );
       final t = a?.accessToken;
       authExpired = t == null || t.isEmpty;
       lastWhy = authExpired ? 'no-scope' : '';

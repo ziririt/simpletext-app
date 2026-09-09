@@ -27,18 +27,25 @@ void main() {
     });
 
     test('정렬된 표는 머리글부터 마지막 행까지 잡는다', () {
-      const t = '앞선 줄글입니다.\n\n'
+      const t =
+          '앞선 줄글입니다.\n\n'
           '종목    비중\n'
           '────────────\n'
           '애플    12%\n'
           '테슬라  8%\n'
           '\n'
           '뒤에 오는 줄글입니다.';
-      expect(monoLines(t), ['종목    비중', '────────────', '애플    12%', '테슬라  8%']);
+      expect(monoLines(t), [
+        '종목    비중',
+        '────────────',
+        '애플    12%',
+        '테슬라  8%',
+      ]);
     });
 
     test('표 앞뒤 줄글은 등폭이 아니다', () {
-      const t = '앞선 줄글입니다.\n\n종목    비중\n────────────\n애플    12%\n\n뒤에 오는 줄글입니다.';
+      const t =
+          '앞선 줄글입니다.\n\n종목    비중\n────────────\n애플    12%\n\n뒤에 오는 줄글입니다.';
       final picked = monoLines(t).join('\n');
       expect(picked.contains('줄글'), false);
     });
@@ -78,7 +85,8 @@ void main() {
 
     test('풀어쓴 표는 줄글로 둔다', () {
       // 풀어쓰기는 칸을 맞추지 않는 형식이라 등폭이 필요 없다.
-      const t = '2021년 4월\n  - 확인된 움직임 : 매수\n  - 해석 : 관망\n\n2021년 5월\n  - 확인된 움직임 : 매도';
+      const t =
+          '2021년 4월\n  - 확인된 움직임 : 매수\n  - 해석 : 관망\n\n2021년 5월\n  - 확인된 움직임 : 매도';
       expect(monoSpans(t), isEmpty);
     });
 
@@ -93,7 +101,12 @@ void main() {
       // 엔진도 똑같이 본다(빈 줄이 나올 때까지가 한 표다). 화면과 엔진이 서로
       // 다르게 판단하면, 정리를 눌렀을 때 방금 본 것과 다른 결과가 나온다.
       const t = '종목    비중\n────────────\n애플    12%\n뒤에 붙은 줄';
-      expect(monoLines(t), ['종목    비중', '────────────', '애플    12%', '뒤에 붙은 줄']);
+      expect(monoLines(t), [
+        '종목    비중',
+        '────────────',
+        '애플    12%',
+        '뒤에 붙은 줄',
+      ]);
     });
   });
 
@@ -102,24 +115,41 @@ void main() {
     // 한다. 표 출력 형식을 바꾸면서 여기를 안 고치면, 정리 직후 표가 줄글 글꼴로
     // 그려져 칸이 어긋나 보인다.
     test('정리한 결과의 표 블록이 그대로 등폭 구간이 된다', () {
-      const raw = '| 종목 | 티커 | 수익률 | 비중\n'
+      const raw =
+          '| 종목 | 티커 | 수익률 | 비중\n'
           '|------|------|--------|\n'
           '| 애플 | AAPL | +14.2% | 12% |\n'
           '| 마이크로소프트 | MSFT | +21.5%\n'
           '|테슬라|TSLA|-8.3%|8%|';
-      final out = tidy(raw, buildPresets().firstWhere((p) => p.id == 'ai').opts).text;
-      final tableLines = out.split('\n').where((l) => l.trim().isNotEmpty).toList();
+      final out = tidy(
+        raw,
+        buildPresets().firstWhere((p) => p.id == 'ai').opts,
+      ).text;
+      final tableLines = out
+          .split('\n')
+          .where((l) => l.trim().isNotEmpty)
+          .toList();
       expect(monoLines(out), tableLines);
     });
 
     test('표 + 줄글이 섞인 결과에서 표만 골라낸다', () {
-      const raw = '### 요약\n\n- 첫째 줄입니다.\n\n| 기업 | 반응 |\n|---|---|\n| Apple | 혼재 |';
-      final out = tidy(raw, buildPresets().firstWhere((p) => p.id == 'ai').opts).text;
+      const raw =
+          '### 요약\n\n- 첫째 줄입니다.\n\n| 기업 | 반응 |\n|---|---|\n| Apple | 혼재 |';
+      final out = tidy(
+        raw,
+        buildPresets().firstWhere((p) => p.id == 'ai').opts,
+      ).text;
       final picked = monoLines(out);
-      expect(picked.any((l) => RegExp(r'^─+$').hasMatch(l)), true,
-          reason: '표 구분선이 등폭 구간에 없다');
-      expect(picked.any((l) => l.contains('첫째 줄')), false,
-          reason: '줄글이 등폭 구간에 섞였다');
+      expect(
+        picked.any((l) => RegExp(r'^─+$').hasMatch(l)),
+        true,
+        reason: '표 구분선이 등폭 구간에 없다',
+      );
+      expect(
+        picked.any((l) => l.contains('첫째 줄')),
+        false,
+        reason: '줄글이 등폭 구간에 섞였다',
+      );
     });
   });
 }

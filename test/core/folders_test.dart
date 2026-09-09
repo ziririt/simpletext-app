@@ -98,8 +98,11 @@ void main() {
     });
 
     test('대소문자를 무시하고 사전 순', () {
-      expect(folderNames(['banana', 'Apple', 'cherry'], const []),
-          ['Apple', 'banana', 'cherry']);
+      expect(folderNames(['banana', 'Apple', 'cherry'], const []), [
+        'Apple',
+        'banana',
+        'cherry',
+      ]);
     });
 
     test('순서가 그때그때 달라지지 않는다', () {

@@ -77,8 +77,9 @@ class PurchaseService {
         _bump();
         return;
       }
-      final r = await InAppPurchase.instance
-          .queryProductDetails(kPremiumProductIds.toSet());
+      final r = await InAppPurchase.instance.queryProductDetails(
+        kPremiumProductIds.toSet(),
+      );
       for (final p in r.productDetails) {
         _products[p.id] = p;
       }
@@ -126,8 +127,9 @@ class PurchaseService {
       // 구독도 buyNonConsumable로 산다 — 소모품이 아니기 때문이다.
       // buyConsumable로 사면 스토어가 '쓰고 없어지는 것'으로 다뤄
       // 복원이 안 된다.
-      await InAppPurchase.instance
-          .buyNonConsumable(purchaseParam: PurchaseParam(productDetails: p));
+      await InAppPurchase.instance.buyNonConsumable(
+        purchaseParam: PurchaseParam(productDetails: p),
+      );
     } catch (e) {
       lastError = '$e';
       busy = false;

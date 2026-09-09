@@ -40,8 +40,10 @@ Apple      낮음           혼재''';
     test('AT02 Google Sheets TSV', () {
       final t = extractTables(at01In).tables;
       expect(t.length, 1);
-      expect(tableToTSV(t[0]),
-          '기업\tAI CapEx 부담\t시장 반응\nMicrosoft\t높음\t긍정적\nMeta\t높음\t부정적\nApple\t낮음\t혼재');
+      expect(
+        tableToTSV(t[0]),
+        '기업\tAI CapEx 부담\t시장 반응\nMicrosoft\t높음\t긍정적\nMeta\t높음\t부정적\nApple\t낮음\t혼재',
+      );
     });
 
     const at03In = '''| 종목 | 티커 | 수익률 | 비중
@@ -62,7 +64,10 @@ Apple      낮음           혼재''';
     test('AT03 깨진 표 복구', () {
       final r = tidy(at03In, aiOpts());
       expect(r.text, at03Exp);
-      expect(r.warnings.any((w) => w.contains('엔비디아') && w.contains('초과 셀 1개 병합')), true);
+      expect(
+        r.warnings.any((w) => w.contains('엔비디아') && w.contains('초과 셀 1개 병합')),
+        true,
+      );
     });
 
     test('AT04 코드블록 보호', () {
@@ -204,8 +209,11 @@ table = "A | B"
       final tidied = tidy(brokenIn, aiOpts()).text;
       final after = extractTables(tidied).tables;
       expect(after.length, 1, reason: '정리된 본문에서 표를 다시 찾지 못했다');
-      expect(tableToTSV(after.first), tableToTSV(before.first),
-          reason: '왕복 후 스프레드시트 데이터가 달라졌다');
+      expect(
+        tableToTSV(after.first),
+        tableToTSV(before.first),
+        reason: '왕복 후 스프레드시트 데이터가 달라졌다',
+      );
     });
 
     test('두 번 정리해도 결과가 그대로다', () {
@@ -268,17 +276,21 @@ table = "A | B"
   // 표 탐지가 '|'와 '─'만 보고 있어서 표를 통째로 놓쳤고, 폰 화면에서 표가 줄글로
   // 뭉개져 보였다(사용자 화면 캡처로 확인). 붙여넣기의 가장 흔한 경로라 반드시 잡아야 한다.
   group('탭으로 구분된 표 (앱에서 복사한 경우 · 2026-08-12)', () {
-    const tsvIn = '역할\t예시 비중\n'
+    const tsvIn =
+        '역할\t예시 비중\n'
         '2~3년 은퇴 연결자금\t20%\n'
         '미국시장 핵심지수\t45%\n'
         '반도체·네트워크\t10%';
 
     test('탭 표를 표로 인식해 칸을 맞춘다', () {
-      expect(tidy(tsvIn, aiOpts()).text, '역할                 예시 비중\n'
-          '──────────────────────────────\n'
-          '2~3년 은퇴 연결자금  20%\n'
-          '미국시장 핵심지수    45%\n'
-          '반도체·네트워크      10%');
+      expect(
+        tidy(tsvIn, aiOpts()).text,
+        '역할                 예시 비중\n'
+        '──────────────────────────────\n'
+        '2~3년 은퇴 연결자금  20%\n'
+        '미국시장 핵심지수    45%\n'
+        '반도체·네트워크      10%',
+      );
     });
 
     test('탭 표도 스프레드시트로 옮길 수 있다', () {
@@ -359,8 +371,11 @@ table = "A | B"
 | 둘째 | 두 번째 항목에 대한 설명도 길게 들어갑니다 여기에 | 참고 |''';
       final text = tidy(withBlank, aiOpts()).text;
       expect(text.contains('비고 : 참고'), true);
-      expect(RegExp(r'비고 : \s*$', multiLine: true).hasMatch(text), false,
-          reason: '빈 칸인데 줄을 만들었다');
+      expect(
+        RegExp(r'비고 : \s*$', multiLine: true).hasMatch(text),
+        false,
+        reason: '빈 칸인데 줄을 만들었다',
+      );
     });
 
     test('일반 문서를 표로 오인하지 않는다', () {
@@ -377,9 +392,15 @@ table = "A | B"
     });
 
     test('설정으로 자동 전환을 끌 수 있다', () {
-      final always = tidy(wideIn, aiOpts().copyWith(wideTables: 'aligned')).text;
+      final always = tidy(
+        wideIn,
+        aiOpts().copyWith(wideTables: 'aligned'),
+      ).text;
       expect(always.contains('─'), true, reason: 'aligned 고정이 동작하지 않았다');
-      final never = tidy(narrowIn, aiOpts().copyWith(wideTables: 'records')).text;
+      final never = tidy(
+        narrowIn,
+        aiOpts().copyWith(wideTables: 'records'),
+      ).text;
       expect(never.contains('─'), false, reason: 'records 고정이 동작하지 않았다');
     });
   });
@@ -408,21 +429,25 @@ table = "A | B"
     test('갈래1 국기 — 지역표시자 두 개가 통째로 사라진다', () {
       final r = tidy('오늘 🇰🇷 시장은 🇺🇸 보다 강했다', aiOpts());
       expect(r.text, '오늘 시장은 보다 강했다');
-      expect(RegExp(r'[\u{1F1E6}-\u{1F1FF}]', unicode: true).hasMatch(r.text), false,
-          reason: '국기의 절반(지역표시자)만 지워지고 나머지가 남았다');
+      expect(
+        RegExp(r'[\u{1F1E6}-\u{1F1FF}]', unicode: true).hasMatch(r.text),
+        false,
+        reason: '국기의 절반(지역표시자)만 지워지고 나머지가 남았다',
+      );
     });
 
     test('갈래2 피부톤 — 변형자까지 함께 사라진다', () {
       final r = tidy('좋아요 👍🏻 감사합니다', aiOpts());
       expect(r.text, '좋아요 감사합니다');
-      expect(RegExp(r'[\u{1F3FB}-\u{1F3FF}]', unicode: true).hasMatch(r.text), false,
-          reason: '피부톤 변형자가 홀로 남았다');
+      expect(
+        RegExp(r'[\u{1F3FB}-\u{1F3FF}]', unicode: true).hasMatch(r.text),
+        false,
+        reason: '피부톤 변형자가 홀로 남았다',
+      );
     });
 
     test('갈래3 ZWJ 결합 — 조각이 남지 않는다', () {
-      final r = tidy(
-          '개발자 👨‍💻 와 가족 👨‍👩‍👧‍👦 이야기',
-          aiOpts());
+      final r = tidy('개발자 👨‍💻 와 가족 👨‍👩‍👧‍👦 이야기', aiOpts());
       expect(r.text, '개발자 와 가족 이야기');
       expect(r.text.contains('‍'), false, reason: 'ZWJ가 본문에 남았다');
     });
@@ -440,9 +465,7 @@ table = "A | B"
     });
 
     test('네 갈래가 한 줄에 섞여 있어도 전부 사라진다', () {
-      final r = tidy(
-          '🇰🇷 한국 👍🏻 좋아요 👨‍💻 개발 1️⃣ 첫째 ✅ 끝',
-          aiOpts());
+      final r = tidy('🇰🇷 한국 👍🏻 좋아요 👨‍💻 개발 1️⃣ 첫째 ✅ 끝', aiOpts());
       expect(r.text, '한국 좋아요 개발 첫째 끝');
     });
 
@@ -474,14 +497,20 @@ table = "A | B"
 - 첫째 항목''';
 
     test('강조 → 작은따옴표 / 구분선 유지 / 제목 텍스트만', () {
-      final r = tidy(userIn, aiOpts().copyWith(emphStyle: 'quoteSingle', hrMode: 'keep'));
+      final r = tidy(
+        userIn,
+        aiOpts().copyWith(emphStyle: 'quoteSingle', hrMode: 'keep'),
+      );
       expect(r.text.contains("'통장으로 들어오는 방향'이 된다."), true);
       expect(r.text.split('\n').any((l) => l.trim() == '---'), true);
       expect(r.text.contains('부자가 된다는 말보다'), true);
       expect(r.text.contains('##'), false);
     });
     test('강조 → 큰따옴표', () {
-      final r = tidy('**핵심 지표**를 본다', aiOpts().copyWith(emphStyle: 'quoteDouble'));
+      final r = tidy(
+        '**핵심 지표**를 본다',
+        aiOpts().copyWith(emphStyle: 'quoteDouble'),
+      );
       expect(r.text.contains('"핵심 지표"를 본다'), true);
     });
     test('강조 유지 모드', () {
@@ -494,42 +523,80 @@ table = "A | B"
       expect(r.text.contains("'"), false);
     });
     test('제목 → ■ 기호', () {
-      expect(tidy('## 소제목', aiOpts().copyWith(headingMode: 'prefix', headingSymbol: '■')).text, '■ 소제목');
+      expect(
+        tidy(
+          '## 소제목',
+          aiOpts().copyWith(headingMode: 'prefix', headingSymbol: '■'),
+        ).text,
+        '■ 소제목',
+      );
     });
     test('제목 → [대괄호]', () {
-      expect(tidy('## 소제목', aiOpts().copyWith(headingMode: 'bracket')).text, '[소제목]');
+      expect(
+        tidy('## 소제목', aiOpts().copyWith(headingMode: 'bracket')).text,
+        '[소제목]',
+      );
     });
     test('제목 유지 모드', () {
-      expect(tidy('## **소제목**', aiOpts().copyWith(headingMode: 'keep')).text, '## 소제목');
+      expect(
+        tidy('## **소제목**', aiOpts().copyWith(headingMode: 'keep')).text,
+        '## 소제목',
+      );
     });
     test('글머리 → •', () {
       expect(tidy('- 항목', aiOpts().copyWith(bulletChar: '•')).text, '• 항목');
     });
     test('글머리 원래대로', () {
-      expect(tidy('- **항목**', aiOpts().copyWith(bulletChar: 'keep')).text, '- 항목');
+      expect(
+        tidy('- **항목**', aiOpts().copyWith(bulletChar: 'keep')).text,
+        '- 항목',
+      );
     });
   });
 
   group('v1.3 구조 규칙 (사용자 브리핑 fixture)', () {
     test('대시 나열 → 줄 목록', () {
-      final r = tidy('– 마소 506.06달러. +1.21% – 아마존 278.09달러. +1.32% – 알파벳 355.84달러. +0.67%', aiOpts());
-      expect(r.text, '· 마소 506.06달러. +1.21%\n· 아마존 278.09달러. +1.32%\n· 알파벳 355.84달러. +0.67%');
+      final r = tidy(
+        '– 마소 506.06달러. +1.21% – 아마존 278.09달러. +1.32% – 알파벳 355.84달러. +0.67%',
+        aiOpts(),
+      );
+      expect(
+        r.text,
+        '· 마소 506.06달러. +1.21%\n· 아마존 278.09달러. +1.32%\n· 알파벳 355.84달러. +0.67%',
+      );
     });
     test('라벨 + 대시 나열 분리', () {
-      final r = tidy('테슬라 – 330.88달러. +0.70%. 시장 약세를 견디고 상승 – 금리 민감 성장주 부담은 잔존', aiOpts());
-      expect(r.text, '테슬라\n· 330.88달러. +0.70%. 시장 약세를 견디고 상승\n· 금리 민감 성장주 부담은 잔존');
+      final r = tidy(
+        '테슬라 – 330.88달러. +0.70%. 시장 약세를 견디고 상승 – 금리 민감 성장주 부담은 잔존',
+        aiOpts(),
+      );
+      expect(
+        r.text,
+        '테슬라\n· 330.88달러. +0.70%. 시장 약세를 견디고 상승\n· 금리 민감 성장주 부담은 잔존',
+      );
     });
     test('ㅤ 소제목 + 빈 줄 패딩(기본 모드)', () {
-      final r = tidy('ㅤ ㅤ 지수 마감 ㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%', aiOpts());
-      expect(r.text, '지수 마감\n\n· S&P500 7,753.11. -0.06%\n· 다우 53,975.98. -0.11%');
+      final r = tidy(
+        'ㅤ ㅤ 지수 마감 ㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%',
+        aiOpts(),
+      );
+      expect(
+        r.text,
+        '지수 마감\n\n· S&P500 7,753.11. -0.06%\n· 다우 53,975.98. -0.11%',
+      );
     });
     test('ㅤ 소제목에 제목 규칙 연동(■)', () {
-      final r = tidy('ㅤ ㅤ 지수 마감 ㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%',
-          aiOpts().copyWith(headingMode: 'prefix', headingSymbol: '■'));
+      final r = tidy(
+        'ㅤ ㅤ 지수 마감 ㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%',
+        aiOpts().copyWith(headingMode: 'prefix', headingSymbol: '■'),
+      );
       expect(r.text.startsWith('■ 지수 마감'), true);
     });
     test('단일 – 글머리 인식', () {
-      expect(tidy('– 공포탐욕지수: 제공 자료에 수치 없음.', aiOpts()).text, '· 공포탐욕지수: 제공 자료에 수치 없음.');
+      expect(
+        tidy('– 공포탐욕지수: 제공 자료에 수치 없음.', aiOpts()).text,
+        '· 공포탐욕지수: 제공 자료에 수치 없음.',
+      );
     });
     test('본문 속 단일 대시는 분리 안 함', () {
       final r = tidy('유가와 장기금리 동반 상승 – 그래서 할인율 부담이 커졌다.', aiOpts());
@@ -539,16 +606,28 @@ table = "A | B"
 
   group('v1.3 사용자 치환 규칙', () {
     test('일반 치환 + 정규식 치환', () {
-      final r = tidy('500만원을 투자했다.\n투자는 각자의 판단으로.', aiOpts().copyWith(customRules: [
-        const CustomRule(find: '투자는 각자의 판단으로.', replace: '※ 투자 판단의 책임은 각자에게 있습니다.'),
-        const CustomRule(find: r'(\d+)만원', replace: r'$1만 원', regex: true),
-      ]));
+      final r = tidy(
+        '500만원을 투자했다.\n투자는 각자의 판단으로.',
+        aiOpts().copyWith(
+          customRules: [
+            const CustomRule(
+              find: '투자는 각자의 판단으로.',
+              replace: '※ 투자 판단의 책임은 각자에게 있습니다.',
+            ),
+            const CustomRule(find: r'(\d+)만원', replace: r'$1만 원', regex: true),
+          ],
+        ),
+      );
       expect(r.text.contains('※ 투자 판단의 책임은 각자에게 있습니다.'), true);
       expect(r.text.contains('500만 원을'), true);
     });
     test('코드블록 보호', () {
-      final r = tidy('본문 value 단어.\n\n```python\nvalue = 1\n```',
-          aiOpts().copyWith(customRules: [const CustomRule(find: 'value', replace: 'VALUE')]));
+      final r = tidy(
+        '본문 value 단어.\n\n```python\nvalue = 1\n```',
+        aiOpts().copyWith(
+          customRules: [const CustomRule(find: 'value', replace: 'VALUE')],
+        ),
+      );
       expect(r.text.contains('VALUE 단어'), true);
       expect(r.text.contains('value = 1'), true);
     });
@@ -570,10 +649,13 @@ table = "A | B"
 
     test('### 이하는 소제목(제목3)로 나간다', () {
       expect(
-          tidy('### 작은제목\n\n본문.', bigOpts).text.startsWith('### 작은제목'), true);
+        tidy('### 작은제목\n\n본문.', bigOpts).text.startsWith('### 작은제목'),
+        true,
+      );
       expect(
-          tidy('#### 더 작은제목\n\n본문.', bigOpts).text.startsWith('### 더 작은제목'),
-          true);
+        tidy('#### 더 작은제목\n\n본문.', bigOpts).text.startsWith('### 더 작은제목'),
+        true,
+      );
     });
 
     test('제목 표시 없이 생김새로 알아본 줄은 소제목(제목3)', () {
@@ -622,15 +704,19 @@ table = "A | B"
       expect(tidy(padIn, padOpts).text, padExp);
     });
     test('## 소제목에도 여백 규칙 적용', () {
-      expect(tidy('도입 문장.\n\n## 소제목\n\n- 항목 하나', padOpts).text,
-          '도입 문장.\nㅤ\nㅤ\n소제목\nㅤ\n  · 항목 하나');
+      expect(
+        tidy('도입 문장.\n\n## 소제목\n\n- 항목 하나', padOpts).text,
+        '도입 문장.\nㅤ\nㅤ\n소제목\nㅤ\n  · 항목 하나',
+      );
     });
     test('여백 끔이면 기존 방식', () {
       expect(tidy(padIn, aiOpts()).text.startsWith('지수 마감\n\n· S&P500'), true);
     });
     test('기존 여백 흡수 (4줄/2줄 버그 재현 fixture)', () {
-      const preSpaced = '도입 문장.\nㅤ\nㅤ\nㅤ ㅤ 지수 마감 ㅤ\nㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%';
-      const exp = '도입 문장.\nㅤ\nㅤ\n지수 마감\nㅤ\n  · S&P500 7,753.11. -0.06%\n  · 다우 53,975.98. -0.11%';
+      const preSpaced =
+          '도입 문장.\nㅤ\nㅤ\nㅤ ㅤ 지수 마감 ㅤ\nㅤ\n– S&P500 7,753.11. -0.06% – 다우 53,975.98. -0.11%';
+      const exp =
+          '도입 문장.\nㅤ\nㅤ\n지수 마감\nㅤ\n  · S&P500 7,753.11. -0.06%\n  · 다우 53,975.98. -0.11%';
       expect(tidy(preSpaced, padOpts).text, exp);
     });
   });
@@ -691,7 +777,11 @@ table = "A | B"
       expect(RegExp(r'\[\d+\]').hasMatch(out), false, reason: '각주 번호가 남았다');
       expect(out.contains('techm.kr'), false, reason: '출처 목록이 남았다');
       expect(out.contains('ridicorp.com'), false, reason: '출처 목록이 남았다');
-      expect(RegExp(r'^출처$', multiLine: true).hasMatch(out), false, reason: '출처 제목이 남았다');
+      expect(
+        RegExp(r'^출처$', multiLine: true).hasMatch(out),
+        false,
+        reason: '출처 제목이 남았다',
+      );
     });
 
     test('본문은 그대로 남는다', () {
@@ -736,8 +826,10 @@ table = "A | B"
   // 제목은 이미 '본문 맨 윗줄'을 쓰고 있었는데, 그 맨 윗줄이 시각이라 쓸모없는
   // 제목이 붙었다. 즉 문제는 한 곳 — 시각 줄이 안 지워진 것이다.
   group('출력 시각 머리글 제거 (2026-08-14)', () {
-    String firstLineOf(String raw) =>
-        tidy(raw, aiOpts()).text.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+    String firstLineOf(String raw) => tidy(
+      raw,
+      aiOpts(),
+    ).text.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
 
     const body = '\n\n2026년 설비투자 전망은 약 7,300억 달러까지 올라왔다.';
 
@@ -755,8 +847,11 @@ table = "A | B"
         'Generated: 2026-08-03 13:58 UTC',
       ];
       for (final s in stamps) {
-        expect(firstLineOf('$s$body'), '2026년 설비투자 전망은 약 7,300억 달러까지 올라왔다.',
-            reason: '"$s"를 못 지웠다');
+        expect(
+          firstLineOf('$s$body'),
+          '2026년 설비투자 전망은 약 7,300억 달러까지 올라왔다.',
+          reason: '"$s"를 못 지웠다',
+        );
       }
     });
 
@@ -776,7 +871,8 @@ table = "A | B"
 
     test('시각 줄을 지우면 그 다음 줄이 제목감이 된다', () {
       // 앱은 정리 결과의 맨 윗줄을 제목으로 쓴다. 이 테스트가 그 계약을 지킨다.
-      const raw = '2026-08-03(월) 13:58 KST\n\n2026년 설비투자 전망은 약 7,300억 달러까지 올라왔다.\n'
+      const raw =
+          '2026-08-03(월) 13:58 KST\n\n2026년 설비투자 전망은 약 7,300억 달러까지 올라왔다.\n'
           '이제 시장은 AI 투자의 크기보다 수익화 속도를 구분해 평가하기 시작했습니다.';
       expect(firstLineOf(raw), '2026년 설비투자 전망은 약 7,300억 달러까지 올라왔다.');
     });
@@ -797,13 +893,20 @@ table = "A | B"
     // 맨 아래에만 있다. (첫줄 또는 끝줄) 중간에 나오는 본문 내의 내용상의 시간
     // 표시는 손대면 안된다."
     test('끝 줄의 출력 시각도 지운다', () {
-      expect(tidy('본문 첫 줄입니다.\n둘째 줄입니다.\n\n2026-08-03(월) 13:58 KST', aiOpts()).text,
-          '본문 첫 줄입니다.\n둘째 줄입니다.');
+      expect(
+        tidy('본문 첫 줄입니다.\n둘째 줄입니다.\n\n2026-08-03(월) 13:58 KST', aiOpts()).text,
+        '본문 첫 줄입니다.\n둘째 줄입니다.',
+      );
     });
 
     test('첫 줄과 끝 줄에 모두 있으면 둘 다 지운다', () {
-      expect(tidy('2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n2026-08-03(월) 13:58 KST', aiOpts()).text,
-          '본문입니다.');
+      expect(
+        tidy(
+          '2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n2026-08-03(월) 13:58 KST',
+          aiOpts(),
+        ).text,
+        '본문입니다.',
+      );
     });
 
     test('문서 중간의 시각은 절대 건드리지 않는다', () {
@@ -817,7 +920,8 @@ table = "A | B"
 
     test('출처 목록 위의 시각도 끝 줄로 본다', () {
       // 출처는 곧 지워지므로, 그 위의 시각 줄이 사실상 마지막 줄이다.
-      const raw = '본문입니다.\n\n2026-08-03(월) 13:58 KST\n\n출처\n[1] 기사 제목 https://example.com/a';
+      const raw =
+          '본문입니다.\n\n2026-08-03(월) 13:58 KST\n\n출처\n[1] 기사 제목 https://example.com/a';
       expect(tidy(raw, aiOpts()).text, '본문입니다.');
     });
 
@@ -827,7 +931,10 @@ table = "A | B"
     });
 
     test('앞뒤 모두 지운 뒤에도 두 번 정리하면 같다', () {
-      final once = tidy('2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n2026-08-03 13:58', aiOpts()).text;
+      final once = tidy(
+        '2026-08-03(월) 13:58 KST\n\n본문입니다.\n\n2026-08-03 13:58',
+        aiOpts(),
+      ).text;
       expect(tidy(once, aiOpts()).text, once);
     });
   });
@@ -841,16 +948,31 @@ table = "A | B"
   group('가장자리 구분선 제거 (2026-08-14)', () {
     TidyOptions keepHr() => aiOpts().copyWith(hrMode: 'keep', removeHr: false);
     String out(String raw) => tidy(raw, keepHr()).text;
-    String firstLineOf(String raw) =>
-        out(raw).split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+    String firstLineOf(String raw) => out(
+      raw,
+    ).split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
 
     test('신고 상황 — 맨 위 ---가 사라지고 본문 첫 줄이 제목감이 된다', () {
       expect(firstLineOf('---\n\n오늘 회의 정리입니다.\n둘째 줄.'), '오늘 회의 정리입니다.');
     });
 
     test('여러 모양의 구분선을 맨 위에서 지운다', () {
-      for (final d in ['---', '***', '___', '===', '─────', '━━━━', '═══', '- - -', '* * *']) {
-        expect(firstLineOf('$d\n\n본문 첫 줄입니다.'), '본문 첫 줄입니다.', reason: '"$d"를 못 지웠다');
+      for (final d in [
+        '---',
+        '***',
+        '___',
+        '===',
+        '─────',
+        '━━━━',
+        '═══',
+        '- - -',
+        '* * *',
+      ]) {
+        expect(
+          firstLineOf('$d\n\n본문 첫 줄입니다.'),
+          '본문 첫 줄입니다.',
+          reason: '"$d"를 못 지웠다',
+        );
       }
     });
 
@@ -866,8 +988,14 @@ table = "A | B"
     });
 
     test('구분선과 출력 시각이 겹쳐 있어도 둘 다 지운다', () {
-      expect(firstLineOf('---\n2026-08-03(월) 13:58 KST\n\n본문 첫 줄입니다.'), '본문 첫 줄입니다.');
-      expect(firstLineOf('2026-08-03(월) 13:58 KST\n---\n\n본문 첫 줄입니다.'), '본문 첫 줄입니다.');
+      expect(
+        firstLineOf('---\n2026-08-03(월) 13:58 KST\n\n본문 첫 줄입니다.'),
+        '본문 첫 줄입니다.',
+      );
+      expect(
+        firstLineOf('2026-08-03(월) 13:58 KST\n---\n\n본문 첫 줄입니다.'),
+        '본문 첫 줄입니다.',
+      );
     });
 
     test('기호가 섞였거나 3개 미만이면 구분선이 아니다', () {
@@ -877,7 +1005,11 @@ table = "A | B"
     test('표의 가로 구분선은 건드리지 않는다', () {
       // 표 안의 ─ 줄은 가장자리가 아니라 표의 일부다.
       final t = out('종목    비중\n────────────\n애플    12%');
-      expect(RegExp(r'^종목\s+비중\n─+\n애플\s+12%$').hasMatch(t), true, reason: '표가 깨졌다: $t');
+      expect(
+        RegExp(r'^종목\s+비중\n─+\n애플\s+12%$').hasMatch(t),
+        true,
+        reason: '표가 깨졌다: $t',
+      );
     });
 
     test('두 번 정리해도 결과가 같다', () {
@@ -897,8 +1029,7 @@ table = "A | B"
   group('답변 일시 줄 (맨 위·맨 아래)', () {
     String tidyAi(String raw) => tidy(raw, aiOpts()).text;
 
-    String wrap(String stamp) =>
-        '$stamp\n\n본문 첫 줄입니다.\n두 번째 줄.\n\n$stamp';
+    String wrap(String stamp) => '$stamp\n\n본문 첫 줄입니다.\n두 번째 줄.\n\n$stamp';
 
     for (final stamp in <String>[
       '2026-08-17(월) 15:57 KST',

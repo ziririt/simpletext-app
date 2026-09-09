@@ -58,18 +58,23 @@ void main() {
 
   test('빈 목록은 빈 목록', () {
     expect(
-      pruneTrash<Map<String, dynamic>>(const [],
-          deletedAtOf: (e) => 0, nowMs: now),
+      pruneTrash<Map<String, dynamic>>(
+        const [],
+        deletedAtOf: (e) => 0,
+        nowMs: now,
+      ),
       isEmpty,
     );
   });
 
   test('보관 일수를 바꿔도 규칙은 같다', () {
     expect(
-        trashExpired(deletedAt: now - 8 * _day, nowMs: now, keepDays: 7),
-        isTrue);
+      trashExpired(deletedAt: now - 8 * _day, nowMs: now, keepDays: 7),
+      isTrue,
+    );
     expect(
-        trashExpired(deletedAt: now - 6 * _day, nowMs: now, keepDays: 7),
-        isFalse);
+      trashExpired(deletedAt: now - 6 * _day, nowMs: now, keepDays: 7),
+      isFalse,
+    );
   });
 }

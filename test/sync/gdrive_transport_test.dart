@@ -16,7 +16,8 @@ import 'package:simpletext/sync/gdrive_transport.dart';
 
 /// 아주 작은 가짜 드라이브. 파일마다 (이름, 방, 내용)을 들고 있다.
 class FakeDrive {
-  final Map<String, Map<String, dynamic>> files = {}; // id -> {name,dir,body,at}
+  final Map<String, Map<String, dynamic>> files =
+      {}; // id -> {name,dir,body,at}
   int _n = 0;
   int calls = 0;
   int uploads = 0;
@@ -29,92 +30,96 @@ class FakeDrive {
   int _clock = 0;
 
   http.Client client() => MockClient((req) async {
-        calls++;
-        final u = req.url;
-        final path = u.path;
+    calls++;
+    final u = req.url;
+    final path = u.path;
 
-        // 내용 받기: /drive/v3/files/{id}?alt=media
-        if (req.method == 'GET' && u.queryParameters['alt'] == 'media') {
-          downloads++;
-          final id = path.split('/').last;
-          final f = files[id];
-          if (f == null) return http.Response('', 404);
-          return http.Response.bytes(
-              utf8.encode(f['body'] as String), 200,
-              headers: {'content-type': 'application/json; charset=utf-8'});
-        }
+    // 내용 받기: /drive/v3/files/{id}?alt=media
+    if (req.method == 'GET' && u.queryParameters['alt'] == 'media') {
+      downloads++;
+      final id = path.split('/').last;
+      final f = files[id];
+      if (f == null) return http.Response('', 404);
+      return http.Response.bytes(
+        utf8.encode(f['body'] as String),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    }
 
-        // 목록: /drive/v3/files?q=...
-        if (req.method == 'GET' && path.endsWith('/drive/v3/files')) {
-          final q = u.queryParameters['q'] ?? '';
-          final dir = RegExp(r"value = '([^']*)'").firstMatch(q)?.group(1) ?? '';
-          final name = RegExp(r"name = '([^']*)'").firstMatch(q)?.group(1);
-          final hit = files.entries.where((e) =>
-              e.value['dir'] == dir &&
-              (name == null || e.value['name'] == name));
-          return http.Response(
-              jsonEncode({
-                'files': [
-                  for (final e in hit)
-                    {
-                      'id': e.key,
-                      'name': e.value['name'],
-                      'modifiedTime': e.value['at'],
-                      'appProperties': {
-                        'dir': e.value['dir'],
-                        if (e.value['up'] != null) 'up': e.value['up'],
-                      },
-                    }
-                ]
-              }),
-              200);
-        }
+    // 목록: /drive/v3/files?q=...
+    if (req.method == 'GET' && path.endsWith('/drive/v3/files')) {
+      final q = u.queryParameters['q'] ?? '';
+      final dir = RegExp(r"value = '([^']*)'").firstMatch(q)?.group(1) ?? '';
+      final name = RegExp(r"name = '([^']*)'").firstMatch(q)?.group(1);
+      final hit = files.entries.where(
+        (e) =>
+            e.value['dir'] == dir && (name == null || e.value['name'] == name),
+      );
+      return http.Response(
+        jsonEncode({
+          'files': [
+            for (final e in hit)
+              {
+                'id': e.key,
+                'name': e.value['name'],
+                'modifiedTime': e.value['at'],
+                'appProperties': {
+                  'dir': e.value['dir'],
+                  if (e.value['up'] != null) 'up': e.value['up'],
+                },
+              },
+          ],
+        }),
+        200,
+      );
+    }
 
-        // 딱지 만들기
-        if (req.method == 'POST' && path.endsWith('/drive/v3/files')) {
-          final j = jsonDecode(req.body) as Map<String, dynamic>;
-          final id = 'id${++_n}';
-          files[id] = {
-            'name': j['name'],
-            'dir': (j['appProperties'] as Map)['dir'],
-            'body': '{}',
-            'at': '${++_clock}',
-          };
-          return http.Response(jsonEncode({'id': id}), 200);
-        }
+    // 딱지 만들기
+    if (req.method == 'POST' && path.endsWith('/drive/v3/files')) {
+      final j = jsonDecode(req.body) as Map<String, dynamic>;
+      final id = 'id${++_n}';
+      files[id] = {
+        'name': j['name'],
+        'dir': (j['appProperties'] as Map)['dir'],
+        'body': '{}',
+        'at': '${++_clock}',
+      };
+      return http.Response(jsonEncode({'id': id}), 200);
+    }
 
-        // 내용 얹기
-        if (req.method == 'PATCH' && path.contains('/upload/drive/v3/files/')) {
-          uploads++;
-          final id = path.split('/').last;
-          final f = files[id];
-          if (f == null) return http.Response('', 404);
-          f['body'] = req.body;
-          f['at'] = '${++_clock}';
-          return http.Response(jsonEncode({'id': id}), 200);
-        }
+    // 내용 얹기
+    if (req.method == 'PATCH' && path.contains('/upload/drive/v3/files/')) {
+      uploads++;
+      final id = path.split('/').last;
+      final f = files[id];
+      if (f == null) return http.Response('', 404);
+      f['body'] = req.body;
+      f['at'] = '${++_clock}';
+      return http.Response(jsonEncode({'id': id}), 200);
+    }
 
-        // 딱지 고치기: PATCH /drive/v3/files/{id} (얹기 호스트가 아닌 쪽)
-        if (req.method == 'PATCH' && !path.contains('/upload/')) {
-          final id = path.split('/').last;
-          final f = files[id];
-          if (f == null) return http.Response('', 404);
-          final j = jsonDecode(req.body) as Map<String, dynamic>;
-          final props = j['appProperties'];
-          if (props is Map && props['up'] != null) {
-            f['up'] = '${props['up']}';
-          }
-          return http.Response(jsonEncode({'id': id}), 200);
-        }
+    // 딱지 고치기: PATCH /drive/v3/files/{id} (얹기 호스트가 아닌 쪽)
+    if (req.method == 'PATCH' && !path.contains('/upload/')) {
+      final id = path.split('/').last;
+      final f = files[id];
+      if (f == null) return http.Response('', 404);
+      final j = jsonDecode(req.body) as Map<String, dynamic>;
+      final props = j['appProperties'];
+      if (props is Map && props['up'] != null) {
+        f['up'] = '${props['up']}';
+      }
+      return http.Response(jsonEncode({'id': id}), 200);
+    }
 
-        // 지우기
-        if (req.method == 'DELETE') {
-          files.remove(path.split('/').last);
-          return http.Response('', 204);
-        }
+    // 지우기
+    if (req.method == 'DELETE') {
+      files.remove(path.split('/').last);
+      return http.Response('', 204);
+    }
 
-        return http.Response('', 400);
-      });
+    return http.Response('', 400);
+  });
 }
 
 void main() {
@@ -166,8 +171,11 @@ void main() {
       await t.write('notes/a.json', {'id': 'a'});
       await t.readDir('notes');
       drive.files.clear();
-      expect(await t.readDir('notes'), isEmpty,
-          reason: '없어진 것을 붙들고 있으면 지운 메모가 되살아난다');
+      expect(
+        await t.readDir('notes'),
+        isEmpty,
+        reason: '없어진 것을 붙들고 있으면 지운 메모가 되살아난다',
+      );
     });
 
     test('쓰면 딱지에 시각이 남는다', () async {
@@ -198,8 +206,11 @@ void main() {
 
       final got = await t.readMany(['notes/a.json']);
       expect(got['notes/a.json']!.ok, isTrue);
-      expect(drive.files['old1']!['up'], '3',
-          reason: '한 번 받으면 딱지를 달아, 다음부터는 목록만으로 안다');
+      expect(
+        drive.files['old1']!['up'],
+        '3',
+        reason: '한 번 받으면 딱지를 달아, 다음부터는 목록만으로 안다',
+      );
       expect((await t.listMeta('notes'))!.single.up, 3);
     });
 
@@ -226,8 +237,7 @@ void main() {
       final after = drive.downloads;
       await t.readDir('notes');
       await t.readDir('tombs');
-      expect(drive.downloads, after,
-          reason: '방을 번갈아 훑어도 다시 안 받는다');
+      expect(drive.downloads, after, reason: '방을 번갈아 훑어도 다시 안 받는다');
     });
 
     test('이름표는 gdrive', () {

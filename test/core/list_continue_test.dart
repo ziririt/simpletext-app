@@ -95,7 +95,9 @@ void main() {
 
     TextEditingValue typeEnter(String text, int caret) {
       final before = TextEditingValue(
-          text: text, selection: TextSelection.collapsed(offset: caret));
+        text: text,
+        selection: TextSelection.collapsed(offset: caret),
+      );
       final after = TextEditingValue(
         text: text.substring(0, caret) + '\n' + text.substring(caret),
         selection: TextSelection.collapsed(offset: caret + 1),
@@ -118,18 +120,25 @@ void main() {
 
     test('붙여넣기에는 안 끼어든다 — 글자가 여럿 늘면 그건 타자가 아니다', () {
       const before = TextEditingValue(
-          text: '1. 첫째', selection: TextSelection.collapsed(offset: 5));
+        text: '1. 첫째',
+        selection: TextSelection.collapsed(offset: 5),
+      );
       const after = TextEditingValue(
-          text: '1. 첫째\n붙여넣은 글',
-          selection: TextSelection.collapsed(offset: 12));
+        text: '1. 첫째\n붙여넣은 글',
+        selection: TextSelection.collapsed(offset: 12),
+      );
       expect(f.formatEditUpdate(before, after).text, '1. 첫째\n붙여넣은 글');
     });
 
     test('글자를 지울 때는 안 끼어든다', () {
       const before = TextEditingValue(
-          text: '1. 첫째', selection: TextSelection.collapsed(offset: 5));
+        text: '1. 첫째',
+        selection: TextSelection.collapsed(offset: 5),
+      );
       const after = TextEditingValue(
-          text: '1. 첫', selection: TextSelection.collapsed(offset: 4));
+        text: '1. 첫',
+        selection: TextSelection.collapsed(offset: 4),
+      );
       expect(f.formatEditUpdate(before, after).text, '1. 첫');
     });
 

@@ -77,8 +77,12 @@ void main() {
         }
       }
     }
-    expect(bad, isEmpty,
-        reason: 'Container(color:...) 와 decoration: 은 같이 못 쓴다. '
-            '색은 BoxDecoration 안으로 옮겨라: ${bad.join(", ")}');
+    expect(
+      bad,
+      isEmpty,
+      reason:
+          'Container(color:...) 와 decoration: 은 같이 못 쓴다. '
+          '색은 BoxDecoration 안으로 옮겨라: ${bad.join(", ")}',
+    );
   });
 }

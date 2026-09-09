@@ -13,16 +13,15 @@ bool g({
   int taggedLen = 1000,
   int tagCount = 3,
   bool bodyChanged = true,
-}) =>
-    shouldAutoTag(
-      hasKey: hasKey,
-      enabled: enabled,
-      tagsAuto: tagsAuto,
-      bodyLen: bodyLen,
-      taggedLen: taggedLen,
-      tagCount: tagCount,
-      bodyChanged: bodyChanged,
-    );
+}) => shouldAutoTag(
+  hasKey: hasKey,
+  enabled: enabled,
+  tagsAuto: tagsAuto,
+  bodyLen: bodyLen,
+  taggedLen: taggedLen,
+  tagCount: tagCount,
+  bodyChanged: bodyChanged,
+);
 
 void main() {
   group('안 부르는 자리', () {

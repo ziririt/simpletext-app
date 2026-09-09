@@ -131,8 +131,11 @@ class _ScrollHintState extends State<ScrollHint> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2),
-                    child: Icon(Icons.keyboard_arrow_down_rounded,
-                        size: 20, color: ink.withValues(alpha: 0.55)),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20,
+                      color: ink.withValues(alpha: 0.55),
+                    ),
                   ),
                 ],
               ),

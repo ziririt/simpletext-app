@@ -52,7 +52,8 @@ void main() {
     });
 
     test('너무 길면 낱말 사이에서 자른다', () {
-      const long = 'This is a fairly long first line that should be trimmed somewhere sensible';
+      const long =
+          'This is a fairly long first line that should be trimmed somewhere sensible';
       final t = autoTitle(long);
       expect(t.length, lessThanOrEqualTo(40));
       expect(t.endsWith(' '), isFalse);

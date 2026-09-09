@@ -39,7 +39,8 @@ class EditResult {
   int get hashCode => Object.hash(text, start, end);
 
   @override
-  String toString() => 'EditResult(${text.replaceAll('\n', '⏎')}, $start..$end)';
+  String toString() =>
+      'EditResult(${text.replaceAll('\n', '⏎')}, $start..$end)';
 }
 
 /// 고른 자리가 걸친 줄들의 처음과 끝.
@@ -58,11 +59,19 @@ class EditResult {
 /// 줄마다 [f] 를 먹인다. 고른 자리는 고친 덩이 전체로 둔다 — 줄 길이가
 /// 바뀌었는데 옛 자리를 그대로 쓰면 커서가 글자 한가운데로 떨어진다.
 EditResult _mapLines(
-    String text, int start, int end, String Function(String) f) {
+  String text,
+  int start,
+  int end,
+  String Function(String) f,
+) {
   final s = blockSpan(text, start, end);
   final block = text.substring(s.from, s.to);
   final out = block.split('\n').map(f).join('\n');
-  return EditResult(text.replaceRange(s.from, s.to, out), s.from, s.from + out.length);
+  return EditResult(
+    text.replaceRange(s.from, s.to, out),
+    s.from,
+    s.from + out.length,
+  );
 }
 
 final RegExp _head = RegExp(r'^(#{1,6}) ');
@@ -74,9 +83,14 @@ final RegExp _head = RegExp(r'^(#{1,6}) ');
 /// 돌아오는 단추는 스위치가 아니라 미로다.
 EditResult cycleHeading(String text, int start, int end) {
   final s = blockSpan(text, start, end);
-  final first = text.substring(s.from, text.indexOf('\n', s.from) < 0
-      ? s.to
-      : (text.indexOf('\n', s.from) < s.to ? text.indexOf('\n', s.from) : s.to));
+  final first = text.substring(
+    s.from,
+    text.indexOf('\n', s.from) < 0
+        ? s.to
+        : (text.indexOf('\n', s.from) < s.to
+              ? text.indexOf('\n', s.from)
+              : s.to),
+  );
   final m = _head.firstMatch(first.trimLeft());
   final now = m == null ? 0 : m.group(1)!.length;
   final next = now >= 3 ? 0 : now + 1;
@@ -96,8 +110,8 @@ EditResult toggleQuote(String text, int start, int end) {
   final filled = lines.where((l) => l.trim().isNotEmpty);
   // 빈 줄만 있으면 붙이는 쪽이다. 아무것도 없는데 '다 붙어 있다'고
   // 판정하면 첫 누름이 아무 일도 안 하는 것처럼 보인다.
-  final off = filled.isNotEmpty &&
-      filled.every((l) => l.trimLeft().startsWith('> '));
+  final off =
+      filled.isNotEmpty && filled.every((l) => l.trimLeft().startsWith('> '));
   return _mapLines(text, start, end, (line) {
     if (line.trim().isEmpty) return line;
     final indent = line.length - line.trimLeft().length;
@@ -136,15 +150,17 @@ EditResult toggleWrap(String text, int start, int end, String mark) {
   }
 
   // 안에 이미 있다.
-  if (inner.length >= n * 2 &&
-      inner.startsWith(mark) &&
-      inner.endsWith(mark)) {
+  if (inner.length >= n * 2 && inner.startsWith(mark) && inner.endsWith(mark)) {
     final bare = inner.substring(n, inner.length - n);
     return EditResult(text.replaceRange(a, b, bare), a, a + bare.length);
   }
 
   final wrapped = '$mark$inner$mark';
-  return EditResult(text.replaceRange(a, b, wrapped), a + n, a + n + inner.length);
+  return EditResult(
+    text.replaceRange(a, b, wrapped),
+    a + n,
+    a + n + inner.length,
+  );
 }
 
 /// 코드 — 한 줄이면 백틱, 줄이 넘어가면 울타리.
@@ -161,17 +177,24 @@ EditResult toggleCode(String text, int start, int end) {
   final s = blockSpan(text, a, b);
   final block = text.substring(s.from, s.to);
   final lines = block.split('\n');
-  final fenced = lines.length >= 2 &&
+  final fenced =
+      lines.length >= 2 &&
       lines.first.trimRight().startsWith('```') &&
       lines.last.trimRight() == '```';
   if (fenced) {
     final bare = lines.sublist(1, lines.length - 1).join('\n');
     return EditResult(
-        text.replaceRange(s.from, s.to, bare), s.from, s.from + bare.length);
+      text.replaceRange(s.from, s.to, bare),
+      s.from,
+      s.from + bare.length,
+    );
   }
   final out = '```\n$block\n```';
   return EditResult(
-      text.replaceRange(s.from, s.to, out), s.from, s.from + out.length);
+    text.replaceRange(s.from, s.to, out),
+    s.from,
+    s.from + out.length,
+  );
 }
 
 /// 링크 — 고른 글이 있으면 그것이 이름이 되고 커서는 주소 자리로 간다.
@@ -193,7 +216,12 @@ EditResult makeLink(String text, int start, int end) {
 /// 커서 자리에 빈칸을 꽂던 옛 방식과 다르다. 그건 줄 한가운데를 누르면
 /// 글자 사이에 빈칸이 끼는 짓이었다. 들여쓰기는 **줄에 하는 일**이다.
 EditResult indentLines(String text, int start, int end, {int by = 2}) =>
-    _mapLines(text, start, end, (line) => line.isEmpty ? line : '${' ' * by}$line');
+    _mapLines(
+      text,
+      start,
+      end,
+      (line) => line.isEmpty ? line : '${' ' * by}$line',
+    );
 
 /// 내어쓰기 — 줄머리의 빈칸을 [by] 칸까지 걷는다. 탭 하나도 한 칸으로 친다.
 ///
@@ -279,18 +307,24 @@ String bareText(String s) {
   // replaceAll 에 r'$1' 을 넘기면 그 다섯 글자가 그대로 박힌다. 되받는
   // 자리는 replaceAllMapped 뿐이다(2026-08-27 시험이 잡았다).
   t = t.replaceAllMapped(
-      RegExp(r'^([ \t]*)>[ \t]?', multiLine: true), (m) => m.group(1) ?? '');
+    RegExp(r'^([ \t]*)>[ \t]?', multiLine: true),
+    (m) => m.group(1) ?? '',
+  );
   t = t.replaceAllMapped(
-      RegExp(r'^([ \t]*)[-*] \[[ xX]\] ', multiLine: true),
-      (m) => m.group(1) ?? '');
+    RegExp(r'^([ \t]*)[-*] \[[ xX]\] ', multiLine: true),
+    (m) => m.group(1) ?? '',
+  );
   t = t.replaceAllMapped(
-      RegExp(r'^([ \t]*)(?:[•·*+\-–—]|\d+[.)])[ \t]+', multiLine: true),
-      (m) => m.group(1) ?? '');
+    RegExp(r'^([ \t]*)(?:[•·*+\-–—]|\d+[.)])[ \t]+', multiLine: true),
+    (m) => m.group(1) ?? '',
+  );
   // 울타리
   t = t.replaceAll(RegExp(r'^[ \t]*(?:```|~~~).*$', multiLine: true), '');
   // 링크는 이름만 남긴다
   t = t.replaceAllMapped(
-      RegExp(r'\[([^\]\n]*)\]\([^)\n]*\)'), (m) => m.group(1) ?? '');
+    RegExp(r'\[([^\]\n]*)\]\([^)\n]*\)'),
+    (m) => m.group(1) ?? '',
+  );
   // 짝을 이루는 표시들. 짝일 때만 걷는다.
   for (final re in [
     RegExp(r'\*\*\*(.+?)\*\*\*', dotAll: true),
@@ -305,8 +339,11 @@ String bareText(String s) {
 }
 
 /// 찾은 자리들. 정규식이 틀렸으면 빈 목록 — 화면이 죽는 것보다 낫다.
-List<({int start, int end})> findAll(String text, String find,
-    {bool regex = false}) {
+List<({int start, int end})> findAll(
+  String text,
+  String find, {
+  bool regex = false,
+}) {
   if (find.isEmpty) return const [];
   final out = <({int start, int end})>[];
   if (regex) {
@@ -333,8 +370,12 @@ List<({int start, int end})> findAll(String text, String find,
 /// 맴도는 까닭 — 글 끝에서 '다음'을 눌렀는데 아무 일도 안 일어나면
 /// 사람은 찾기가 고장 났다고 읽는다. 처음으로 돌아가는 편이 '더 없다'를
 /// 훨씬 분명하게 말한다.
-({int start, int end})? findNextAfter(String text, String find, int from,
-    {bool regex = false}) {
+({int start, int end})? findNextAfter(
+  String text,
+  String find,
+  int from, {
+  bool regex = false,
+}) {
   final all = findAll(text, find, regex: regex);
   if (all.isEmpty) return null;
   for (final m in all) {
@@ -434,7 +475,10 @@ EditResult applyBlock(String text, int start, int end, String kind) {
     final block = bare.text.substring(s.from, s.to);
     final out = '```\n$block\n```';
     return EditResult(
-        bare.text.replaceRange(s.from, s.to, out), s.from, s.from + out.length);
+      bare.text.replaceRange(s.from, s.to, out),
+      s.from,
+      s.from + out.length,
+    );
   }
   final head = switch (kind) {
     kBlockH1 => '# ',
@@ -473,5 +517,8 @@ EditResult _bare(String text, int start, int end) {
       .where((l) => !_fence.hasMatch(l))
       .join('\n');
   return EditResult(
-      text.replaceRange(s.from, s.to, kept), s.from, s.from + kept.length);
+    text.replaceRange(s.from, s.to, kept),
+    s.from,
+    s.from + kept.length,
+  );
 }

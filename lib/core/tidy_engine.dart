@@ -21,8 +21,7 @@ class CustomRule {
 /// 갖게 됐다. 전체 규칙이 먼저, 노트 규칙이 나중에 돈다 — 노트에서
 /// 정한 것이 그 노트의 마지막 손질이 되게 하기 위해서다. 빈 찾기는
 /// 아직 쓰다 만 규칙이므로 거른다.
-List<CustomRule> mergeRules(
-        List<CustomRule> global, List<CustomRule> note) =>
+List<CustomRule> mergeRules(List<CustomRule> global, List<CustomRule> note) =>
     [...global, ...note].where((r) => r.find.isNotEmpty).toList();
 
 class TidyOptions {
@@ -57,6 +56,7 @@ class TidyOptions {
   bool smartDashList;
   bool smartFillerHeading;
   List<CustomRule>? customRules;
+
   /// 알아본 소제목을 '## '(제목2)로 내보낼 것인가.
   ///
   /// 2026-08-30 소유자 지시 — "소제목은 자동인식해서 '제목2' 폰트
@@ -223,7 +223,12 @@ class TableGrid {
   final List<String> aligns; // left | center | right
   final List<List<String>> rows;
   final bool repaired;
-  const TableGrid({required this.header, required this.aligns, required this.rows, required this.repaired});
+  const TableGrid({
+    required this.header,
+    required this.aligns,
+    required this.rows,
+    required this.repaired,
+  });
 }
 
 class TidyReport {
@@ -241,7 +246,13 @@ class TidyResult {
   final List<String> warnings;
   final List<TableGrid> tables;
   final TidyReport report;
-  const TidyResult({required this.text, required this.summary, required this.warnings, required this.tables, required this.report});
+  const TidyResult({
+    required this.text,
+    required this.summary,
+    required this.warnings,
+    required this.tables,
+    required this.report,
+  });
 }
 
 /// ---------------- 프리셋 5종 (기획서 22절) ----------------
@@ -286,33 +297,95 @@ String _dropOrphanBold(String text, TidyReport rep) {
 }
 
 List<Preset> buildPresets() => [
-      Preset(id: 'ai', name: 'AI 답변 정리', desc: '마크다운 마커·이모지·AI 서두 제거, 표 복구', opts: TidyOptions(
-        stripHeadings: true, stripEmphasis: true, bulletsToDot: true, stripQuotes: true,
-        removeHr: true, removeEmoji: true, removePreamble: true, repairTables: true,
-        linkMode: 'text', stripHtml: true, unescape: true, removeOuterFence: true,
-        smartDashList: true, smartFillerHeading: true, removeCitations: true),
-        userMarks: true),
-      // 2026-08-18 — 셋을 고쳤다.
-      //   · 이모지를 지운다. '싹'인데 이모지가 남으면 말이 안 된다.
-      //   · 인사말을 걷는다. 같은 까닭이다.
-      //   · 표를 탭(TSV)이 아니라 줄 맞춘 글자표로 놓는다. 이 방식이 가는
-      //     곳은 카톡·문자인데, 거기서 탭은 칸이 뭉개진다. 탭이 필요하면
-      //     '표만 꺼내기'가 따로 있다.
-      Preset(id: 'strip', name: 'Markdown 완전 제거', desc: '기호도 이모지도 다 걷어낸 맨 글자', opts: TidyOptions(
-        stripHeadings: true, stripEmphasis: true, bulletsToDot: true, stripQuotes: true,
-        removeHr: true, removeEmoji: true, removePreamble: true, repairTables: true,
-        linkMode: 'text', stripHtml: true, unescape: true, removeOuterFence: true,
-        smartDashList: true, smartFillerHeading: true, removeCitations: true)),
-      Preset(id: 'minimal', name: '최소 정리', desc: '구조 보존, 잡티(공백·제로폭 문자 등)만 제거', opts: TidyOptions(
-        removeOuterFence: true)),
-      Preset(id: 'tables', name: '표만 뽑기', desc: '문서에서 표를 추출해 TSV로', opts: TidyOptions(
-        tablesOnly: true, repairTables: true, removeOuterFence: true)),
-      Preset(id: 'blog', name: '블로그 붙여넣기', desc: '마커 제거, 링크는 주소 유지, 표 복구', opts: TidyOptions(
-        stripHeadings: true, stripEmphasis: true, bulletsToDot: true, stripQuotes: true,
-        removeHr: true, removePreamble: true, repairTables: true,
-        linkMode: 'textUrl', stripHtml: true, unescape: true, removeOuterFence: true,
-        smartDashList: true, smartFillerHeading: true, removeCitations: true)),
-    ];
+  Preset(
+    id: 'ai',
+    name: 'AI 답변 정리',
+    desc: '마크다운 마커·이모지·AI 서두 제거, 표 복구',
+    opts: TidyOptions(
+      stripHeadings: true,
+      stripEmphasis: true,
+      bulletsToDot: true,
+      stripQuotes: true,
+      removeHr: true,
+      removeEmoji: true,
+      removePreamble: true,
+      repairTables: true,
+      linkMode: 'text',
+      stripHtml: true,
+      unescape: true,
+      removeOuterFence: true,
+      smartDashList: true,
+      smartFillerHeading: true,
+      removeCitations: true,
+    ),
+    userMarks: true,
+  ),
+  // 2026-08-18 — 셋을 고쳤다.
+  //   · 이모지를 지운다. '싹'인데 이모지가 남으면 말이 안 된다.
+  //   · 인사말을 걷는다. 같은 까닭이다.
+  //   · 표를 탭(TSV)이 아니라 줄 맞춘 글자표로 놓는다. 이 방식이 가는
+  //     곳은 카톡·문자인데, 거기서 탭은 칸이 뭉개진다. 탭이 필요하면
+  //     '표만 꺼내기'가 따로 있다.
+  Preset(
+    id: 'strip',
+    name: 'Markdown 완전 제거',
+    desc: '기호도 이모지도 다 걷어낸 맨 글자',
+    opts: TidyOptions(
+      stripHeadings: true,
+      stripEmphasis: true,
+      bulletsToDot: true,
+      stripQuotes: true,
+      removeHr: true,
+      removeEmoji: true,
+      removePreamble: true,
+      repairTables: true,
+      linkMode: 'text',
+      stripHtml: true,
+      unescape: true,
+      removeOuterFence: true,
+      smartDashList: true,
+      smartFillerHeading: true,
+      removeCitations: true,
+    ),
+  ),
+  Preset(
+    id: 'minimal',
+    name: '최소 정리',
+    desc: '구조 보존, 잡티(공백·제로폭 문자 등)만 제거',
+    opts: TidyOptions(removeOuterFence: true),
+  ),
+  Preset(
+    id: 'tables',
+    name: '표만 뽑기',
+    desc: '문서에서 표를 추출해 TSV로',
+    opts: TidyOptions(
+      tablesOnly: true,
+      repairTables: true,
+      removeOuterFence: true,
+    ),
+  ),
+  Preset(
+    id: 'blog',
+    name: '블로그 붙여넣기',
+    desc: '마커 제거, 링크는 주소 유지, 표 복구',
+    opts: TidyOptions(
+      stripHeadings: true,
+      stripEmphasis: true,
+      bulletsToDot: true,
+      stripQuotes: true,
+      removeHr: true,
+      removePreamble: true,
+      repairTables: true,
+      linkMode: 'textUrl',
+      stripHtml: true,
+      unescape: true,
+      removeOuterFence: true,
+      smartDashList: true,
+      smartFillerHeading: true,
+      removeCitations: true,
+    ),
+  ),
+];
 
 /// ================= 유틸 =================
 // 2026-08-14 — `flutter analyze`가 아래 정규식에 valid_regexps(info)를 매긴다.
@@ -331,10 +404,13 @@ List<Preset> buildPresets() => [
 // test/core/tidy_engine_test.dart 그룹 '이모지 제거 — 정규식 갈래별 (2026-08-14)'.
 // 웹(index.html)의 EMOJI_RE도 같은 패턴이다(u 플래그). 고칠 일이 있으면 양쪽 동시.
 final RegExp _emojiRe = RegExp(
-    // ignore: valid_regexps
-    r'(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:[\u{1F3FB}-\u{1F3FF}])?(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*|[\u2600-\u27BF]\uFE0F?|[0-9#*]\uFE0F?\u20E3)',
-    unicode: true);
-final RegExp _zwWithZwj = RegExp('[\u200B\u200C\u200D\u200E\u200F\u2060\uFEFF]');
+  // ignore: valid_regexps
+  r'(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:[\u{1F3FB}-\u{1F3FF}])?(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*|[\u2600-\u27BF]\uFE0F?|[0-9#*]\uFE0F?\u20E3)',
+  unicode: true,
+);
+final RegExp _zwWithZwj = RegExp(
+  '[\u200B\u200C\u200D\u200E\u200F\u2060\uFEFF]',
+);
 final RegExp _zwNoZwj = RegExp('[\u200B\u200C\u200E\u200F\u2060\uFEFF]');
 
 T _mode<T extends Comparable>(List<T> arr) {
@@ -370,12 +446,17 @@ String _grp(int n) {
   while (e >= s && lines[e].trim().isEmpty) e--;
   if (e - s < 1) return (text: text, removed: false);
   final first = lines[s].trim(), last = lines[e].trim();
-  final mOpen = RegExp(r'^(`{3,}|~{3,})\s*([A-Za-z0-9_-]*)\s*$').firstMatch(first);
+  final mOpen = RegExp(
+    r'^(`{3,}|~{3,})\s*([A-Za-z0-9_-]*)\s*$',
+  ).firstMatch(first);
   if (mOpen == null || !RegExp(r'^(`{3,}|~{3,})$').hasMatch(last)) {
     return (text: text, removed: false);
   }
   final lang = (mOpen.group(2) ?? '').toLowerCase();
-  final fenceCount = lines.sublist(s, e + 1).where((l) => RegExp(r'^\s*(```|~~~)').hasMatch(l)).length;
+  final fenceCount = lines
+      .sublist(s, e + 1)
+      .where((l) => RegExp(r'^\s*(```|~~~)').hasMatch(l))
+      .length;
   const wrapperLangs = ['markdown', 'md', 'text', 'txt', 'plaintext', ''];
   if (!wrapperLangs.contains(lang)) return (text: text, removed: false);
   if (lang == '' && fenceCount > 2) return (text: text, removed: false);
@@ -440,6 +521,7 @@ const String _tsTime =
     r'\s*(?:오전|오후|AM|PM|am|pm)?\s*\d{1,2}\s*[:시]\s*\d{2}(?:\s*[:분]\s*\d{2})?\s*초?\s*(?:AM|PM|am|pm)?';
 const String _tsTz =
     r'(?:\s*[(（]?\s*(?:KST|UTC|GMT|JST|PST|PDT|EST|EDT|CST|CET)\s*[+-]?\d{0,2}(?::\d{2})?\s*[)）]?)?';
+
 /// 시각 뒤에 붙는 짧은 꼬리 — 지명·시간대 이름 같은 것.
 ///
 /// 2026-08-18 소유자 신고 — "붙여진 문서 맨 위와 맨 아래에 있는 llm의 답변
@@ -458,13 +540,16 @@ const String _tsTz =
 ///
 /// 날짜만 있고 시각이 없는 줄은 원래부터 안 건드린다(아래 _timeHeader에서
 /// 시각이 필수다). 그래서 '2026-08-17 · 테슬라 급등' 같은 제목은 남는다.
-const String _tsTail =
-    r'(?:\s*[·‧•∙|/,–—-]\s*[^\s·‧•∙|/,–—]{1,12}){0,2}';
+const String _tsTail = r'(?:\s*[·‧•∙|/,–—-]\s*[^\s·‧•∙|/,–—]{1,12}){0,2}';
 
-final RegExp _timeHeader =
-    RegExp('^(?:$_tsLabel)?$_tsDate$_tsWd$_tsTime$_tsTz$_tsTail' r'\.?$');
-final RegExp _timeHeaderLabeled =
-    RegExp('^$_tsLabel$_tsDate$_tsWd$_tsTz$_tsTail' r'\.?$');
+final RegExp _timeHeader = RegExp(
+  '^(?:$_tsLabel)?$_tsDate$_tsWd$_tsTime$_tsTz$_tsTail'
+  r'\.?$',
+);
+final RegExp _timeHeaderLabeled = RegExp(
+  '^$_tsLabel$_tsDate$_tsWd$_tsTz$_tsTail'
+  r'\.?$',
+);
 
 bool isTimeHeader(String line) {
   final t = line.trim();
@@ -545,7 +630,8 @@ int _stripTopNoise(List<String> lines) {
 /// 지워지므로, 출처 바로 위의 줄도 사실상 '끝 줄'이다.
 int _stripBottomNoise(List<String> lines, bool skipCites) {
   bool skippable(String l) =>
-      l.trim().isEmpty || (skipCites && (isCitationLine(l) || _sourceHeading.hasMatch(l)));
+      l.trim().isEmpty ||
+      (skipCites && (isCitationLine(l) || _sourceHeading.hasMatch(l)));
   var removed = 0;
   for (;;) {
     var i = lines.length - 1;
@@ -564,9 +650,12 @@ int _stripBottomNoise(List<String> lines, bool skipCites) {
 
 /// ============ 05. AI Preamble Detection (보수적) ============
 final RegExp _preambleStart = RegExp(
-    r"^(네[,.!\s]|넵[,.!\s]|물론(입니다|이죠|이에요)|알겠(습니다|어요)|안녕하세요|좋(습니다|아요)[,.!\s]|요청하신|말씀하신|아래는|다음은|정리해\s?드리|설명해\s?드리|도와드리|Sure[,.!\s]|Of course[,.!\s]|Certainly[,.!\s]|Absolutely[,.!\s]|Here('s| is| are)\b|Below (is|are)\b|I('|’)?ve\b|I('|’)?d be happy\b|Great question)",
-    caseSensitive: false);
-final RegExp _preambleEnd = RegExp(r'(:|：|(습니다|입니다|드릴게요|드리겠습니다|볼게요|할게요|겠습니다)[.!]?|[.!?:])\s*$');
+  r"^(네[,.!\s]|넵[,.!\s]|물론(입니다|이죠|이에요)|알겠(습니다|어요)|안녕하세요|좋(습니다|아요)[,.!\s]|요청하신|말씀하신|아래는|다음은|정리해\s?드리|설명해\s?드리|도와드리|Sure[,.!\s]|Of course[,.!\s]|Certainly[,.!\s]|Absolutely[,.!\s]|Here('s| is| are)\b|Below (is|are)\b|I('|’)?ve\b|I('|’)?d be happy\b|Great question)",
+  caseSensitive: false,
+);
+final RegExp _preambleEnd = RegExp(
+  r'(:|：|(습니다|입니다|드릴게요|드리겠습니다|볼게요|할게요|겠습니다)[.!]?|[.!?:])\s*$',
+);
 
 int _detectPreamble(List<String> lines) {
   int idx = 0;
@@ -580,7 +669,10 @@ int _detectPreamble(List<String> lines) {
   while (j < lines.length && lines[j].trim().isEmpty) j++;
   if (j >= lines.length) return -1;
   final next = lines[j].trim();
-  final structured = RegExp(r'^(#{1,6}\s|[-*+]\s|\d+[.)]\s|\||>|\*\*|`|=|—|-{3,})').hasMatch(next) ||
+  final structured =
+      RegExp(
+        r'^(#{1,6}\s|[-*+]\s|\d+[.)]\s|\||>|\*\*|`|=|—|-{3,})',
+      ).hasMatch(next) ||
       (idx + 1 < lines.length && lines[idx + 1].isEmpty) ||
       line.endsWith(':') ||
       line.endsWith('：');
@@ -597,12 +689,18 @@ List<String> _splitCells(String line) {
   if (RegExp(r'(?<!\\)\|$').hasMatch(s)) {
     s = s.replaceFirst(RegExp(r'(?<!\\)\|$'), '');
   }
-  return s.split(RegExp(r'(?<!\\)\|')).map((c) => c.trim().replaceAll(r'\|', '|')).toList();
+  return s
+      .split(RegExp(r'(?<!\\)\|'))
+      .map((c) => c.trim().replaceAll(r'\|', '|'))
+      .toList();
 }
 
 bool _isSeparatorCells(List<String> cells) =>
     cells.isNotEmpty &&
-    cells.every((c) => RegExp(r'^:?-+:?$').hasMatch(c) && c.replaceAll(':', '').isNotEmpty);
+    cells.every(
+      (c) =>
+          RegExp(r'^:?-+:?$').hasMatch(c) && c.replaceAll(':', '').isNotEmpty,
+    );
 
 class _Block {
   final int start;
@@ -623,7 +721,9 @@ List<_Block> _detectTsvBlocks(List<String> lines) {
   final blocks = <_Block>[];
   var i = 0;
   while (i < lines.length) {
-    final cells = lines[i].contains('\t') ? _splitTsvCells(lines[i]) : <String>[];
+    final cells = lines[i].contains('\t')
+        ? _splitTsvCells(lines[i])
+        : <String>[];
     if (cells.where((c) => c.isNotEmpty).length >= 2) {
       var j = i;
       while (j + 1 < lines.length &&
@@ -641,7 +741,10 @@ List<_Block> _detectTsvBlocks(List<String> lines) {
   return blocks;
 }
 
-TableGrid _parseTsvTable(List<String> lines, String Function(String)? cellClean) {
+TableGrid _parseTsvTable(
+  List<String> lines,
+  String Function(String)? cellClean,
+) {
   String clean(String c) => cellClean != null ? cellClean(c) : c;
   final rows = lines.map(_splitTsvCells).toList();
   var colCount = 0;
@@ -679,7 +782,8 @@ List<_Block> _detectAlignedBlocks(List<String> lines) {
   for (int i = 1; i < lines.length; i++) {
     if (!_isAlignedRule(lines[i])) continue;
     final header = lines[i - 1];
-    if (header.trim().isEmpty || _splitAlignedCells(header).length < 2) continue;
+    if (header.trim().isEmpty || _splitAlignedCells(header).length < 2)
+      continue;
     int j = i + 1;
     while (j < lines.length && lines[j].trim().isNotEmpty) {
       j++;
@@ -697,7 +801,10 @@ List<_Block> _detectAlignedBlocks(List<String> lines) {
   return blocks;
 }
 
-TableGrid _parseAlignedTable(List<String> lines, String Function(String)? cellClean) {
+TableGrid _parseAlignedTable(
+  List<String> lines,
+  String Function(String)? cellClean,
+) {
   String clean(String c) => cellClean != null ? cellClean(c) : c;
   final header = _splitAlignedCells(lines[0]);
   final colCount = header.length;
@@ -727,7 +834,9 @@ List<_Block> _detectTableBlocks(List<String> lines, bool withRecords) {
   while (i < lines.length) {
     if (_hasUnescapedPipe(lines[i]) && _splitCells(lines[i]).length >= 2) {
       int j = i;
-      while (j + 1 < lines.length && _hasUnescapedPipe(lines[j + 1]) && lines[j + 1].trim().isNotEmpty) {
+      while (j + 1 < lines.length &&
+          _hasUnescapedPipe(lines[j + 1]) &&
+          lines[j + 1].trim().isNotEmpty) {
         j++;
       }
       final rowCount = j - i + 1;
@@ -776,7 +885,11 @@ List<_Block> _detectTableBlocks(List<String> lines, bool withRecords) {
   return blocks;
 }
 
-TableGrid _parseTable(List<String> lines, List<String> warnings, String Function(String)? cellClean) {
+TableGrid _parseTable(
+  List<String> lines,
+  List<String> warnings,
+  String Function(String)? cellClean,
+) {
   bool repaired = false;
   final rawRows = lines.map(_splitCells).toList();
   int sepIdx = -1;
@@ -792,7 +905,10 @@ TableGrid _parseTable(List<String> lines, List<String> warnings, String Function
   if (sepIdx > 0) {
     header = rawRows[sepIdx - 1];
     sepCells = rawRows[sepIdx];
-    dataRows = [...rawRows.sublist(0, sepIdx - 1), ...rawRows.sublist(sepIdx + 1)];
+    dataRows = [
+      ...rawRows.sublist(0, sepIdx - 1),
+      ...rawRows.sublist(sepIdx + 1),
+    ];
   } else {
     header = rawRows[0];
     dataRows = rawRows.sublist(1);
@@ -820,7 +936,10 @@ TableGrid _parseTable(List<String> lines, List<String> warnings, String Function
     if (row.length > colCount) {
       repaired = true;
       final extra = row.length - colCount;
-      final merged = [...row.sublist(0, colCount - 1), row.sublist(colCount - 1).join(' ')];
+      final merged = [
+        ...row.sublist(0, colCount - 1),
+        row.sublist(colCount - 1).join(' '),
+      ];
       final label = row[0].trim().isEmpty ? '행' : row[0].trim();
       warnings.add('$label 행에서 초과 셀 $extra개 병합');
       return merged;
@@ -851,8 +970,14 @@ String _rowToMd(List<String> cells) =>
     '|' + cells.map((c) => c.isEmpty ? ' ' : ' $c ').join('|') + '|';
 
 String tableToMarkdown(TableGrid t) {
-  final sep = t.aligns.map((a) => a == 'center' ? ':---:' : (a == 'right' ? '---:' : '---')).toList();
-  return [_rowToMd(t.header), _rowToMd(sep), ...t.rows.map(_rowToMd)].join('\n');
+  final sep = t.aligns
+      .map((a) => a == 'center' ? ':---:' : (a == 'right' ? '---:' : '---'))
+      .toList();
+  return [
+    _rowToMd(t.header),
+    _rowToMd(sep),
+    ...t.rows.map(_rowToMd),
+  ].join('\n');
 }
 
 String _flat(String c) => c.replaceAll(RegExp(r'[\t\n\r]+'), ' ');
@@ -863,7 +988,8 @@ String _flat(String c) => c.replaceAll(RegExp(r'[\t\n\r]+'), ' ');
 int dispWidth(String s) {
   var w = 0;
   for (final c in s.runes) {
-    final wide = c >= 0x1100 &&
+    final wide =
+        c >= 0x1100 &&
         (c <= 0x115F || // 한글 자모
             c == 0x2329 ||
             c == 0x232A ||
@@ -953,7 +1079,9 @@ bool tableIsWide(TableGrid t) {
 }
 
 String tableToRecords(TableGrid t, TidyOptions o) {
-  final mark = (o.bulletChar.isNotEmpty && o.bulletChar != 'keep') ? o.bulletChar : '-';
+  final mark = (o.bulletChar.isNotEmpty && o.bulletChar != 'keep')
+      ? o.bulletChar
+      : '-';
   // 들여쓰기는 사용자 글머리 설정을 그대로 따른다. 여기서 임의로 최소값을 강제하면
   // 재정리 때 글머리 규칙이 다시 들여쓰기를 바꿔 결과가 계속 달라진다(멱등성 깨짐).
   final pad = ' ' * o.bulletIndent;
@@ -990,7 +1118,9 @@ class _RecordGroup {
 
 _RecordField? _recordFieldOf(String line) {
   final m = RegExp(r'^\s*[-*·•◦]\s+(.+?)\s+:\s+(.+)$').firstMatch(line);
-  return m == null ? null : _RecordField(m.group(1)!.trim(), m.group(2)!.trim());
+  return m == null
+      ? null
+      : _RecordField(m.group(1)!.trim(), m.group(2)!.trim());
 }
 
 List<_Block> _detectRecordBlocks(List<String> lines) {
@@ -998,7 +1128,9 @@ List<_Block> _detectRecordBlocks(List<String> lines) {
   var i = 0;
   while (i < lines.length) {
     final head = lines[i];
-    if (head.trim().isEmpty || RegExp(r'^\s').hasMatch(head) || _recordFieldOf(head) != null) {
+    if (head.trim().isEmpty ||
+        RegExp(r'^\s').hasMatch(head) ||
+        _recordFieldOf(head) != null) {
       i++;
       continue;
     }
@@ -1023,12 +1155,15 @@ List<_Block> _detectRecordBlocks(List<String> lines) {
   while (s < groups.length) {
     final sig = groups[s].fields.map((f) => f.name).join();
     var e = s;
-    while (e + 1 < groups.length && groups[e + 1].fields.map((f) => f.name).join() == sig) {
+    while (e + 1 < groups.length &&
+        groups[e + 1].fields.map((f) => f.name).join() == sig) {
       e++;
     }
     if (e > s) {
-      blocks.add(_Block(groups[s].start, groups[e].end, 'record')
-        ..records.addAll(groups.sublist(s, e + 1)));
+      blocks.add(
+        _Block(groups[s].start, groups[e].end, 'record')
+          ..records.addAll(groups.sublist(s, e + 1)),
+      );
     }
     s = e + 1;
   }
@@ -1046,7 +1181,7 @@ TableGrid _recordBlockToTable(_Block b, String Function(String)? cellClean) {
       ...names.map((n) {
         final f = g.fields.where((x) => x.name == n);
         return f.isEmpty ? '' : f.first.value;
-      })
+      }),
     ].map(clean).toList();
   }).toList();
   return TableGrid(
@@ -1074,12 +1209,23 @@ String _esc(String s) => s
 
 String tableToHTML(TableGrid t) {
   String al(String a) => a != 'left' ? ' style="text-align:$a"' : '';
-  final head = '<tr>' +
-      List.generate(t.header.length, (i) => '<th${al(t.aligns[i])}>${_esc(t.header[i])}</th>').join('') +
+  final head =
+      '<tr>' +
+      List.generate(
+        t.header.length,
+        (i) => '<th${al(t.aligns[i])}>${_esc(t.header[i])}</th>',
+      ).join('') +
       '</tr>';
   final body = t.rows
-      .map((r) =>
-          '<tr>' + List.generate(r.length, (i) => '<td${al(t.aligns[i])}>${_esc(r[i])}</td>').join('') + '</tr>')
+      .map(
+        (r) =>
+            '<tr>' +
+            List.generate(
+              r.length,
+              (i) => '<td${al(t.aligns[i])}>${_esc(r[i])}</td>',
+            ).join('') +
+            '</tr>',
+      )
       .join('\n');
   return '<table>\n<thead>\n$head\n</thead>\n<tbody>\n$body\n</tbody>\n</table>';
 }
@@ -1093,18 +1239,23 @@ String tableToHTML(TableGrid t) {
 bool isCitationLine(String line) {
   var c = line.trim();
   if (c.startsWith('|')) {
-    c = c.replaceFirst(RegExp(r'^\|+'), '').replaceFirst(RegExp(r'\|+$'), '').trim();
+    c = c
+        .replaceFirst(RegExp(r'^\|+'), '')
+        .replaceFirst(RegExp(r'\|+$'), '')
+        .trim();
   }
   if (RegExp(r'^\[\^?\d+\]:\s*(https?://|www\.)\S+').hasMatch(c)) return true;
-  return RegExp(r'^\[\^?\d+\]\s').hasMatch(c) && RegExp(r'(https?://|www\.)\S').hasMatch(c);
+  return RegExp(r'^\[\^?\d+\]\s').hasMatch(c) &&
+      RegExp(r'(https?://|www\.)\S').hasMatch(c);
 }
 
 /// "출처", "참고문헌", "Sources" 같은 목록 제목. 바로 아래가 출처 줄일 때만
 /// 출처 블록의 일부로 보고 지운다(본문에 같은 낱말이 있어도 안전하도록).
 final RegExp _sourceHeading = RegExp(
-    r'^\s*#{0,6}\s*\**\s*(출처|참고|참고자료|참고 자료|참고문헌|인용|주석|각주'
-    r'|sources?|references?|citations?|bibliography|footnotes?)\s*\**\s*:?\s*$',
-    caseSensitive: false);
+  r'^\s*#{0,6}\s*\**\s*(출처|참고|참고자료|참고 자료|참고문헌|인용|주석|각주'
+  r'|sources?|references?|citations?|bibliography|footnotes?)\s*\**\s*:?\s*$',
+  caseSensitive: false,
+);
 
 List<String> _stripCitations(List<String> lines, TidyReport rep) {
   final cite = lines.map(isCitationLine).toList();
@@ -1126,24 +1277,41 @@ List<String> _stripCitations(List<String> lines, TidyReport rep) {
       continue;
     }
     final t = lines[i].trim();
-    final sepOnly = t.contains('|') && RegExp(r'^[|\s:-]+$').hasMatch(t) && RegExp(r'-{2,}').hasMatch(t);
-    if (sepOnly && ((i > 0 && cite[i - 1]) || (i + 1 < lines.length && cite[i + 1]))) continue;
+    final sepOnly =
+        t.contains('|') &&
+        RegExp(r'^[|\s:-]+$').hasMatch(t) &&
+        RegExp(r'-{2,}').hasMatch(t);
+    if (sepOnly &&
+        ((i > 0 && cite[i - 1]) || (i + 1 < lines.length && cite[i + 1])))
+      continue;
     out.add(lines[i]);
   }
   return out;
 }
 
 /// ============ 구조 규칙: "– a – b – c" 나열 문장 → 줄 목록 ============
-List<String> _expandDashLists(List<String> lines, TidyOptions o, TidyReport rep) {
+List<String> _expandDashLists(
+  List<String> lines,
+  TidyOptions o,
+  TidyReport rep,
+) {
   if (!o.smartDashList) return lines;
   final out = <String>[];
   for (final line in lines) {
     final t = line.trim();
     final dashCount = RegExp(r'(^|\s)[–—]\s+').allMatches(t).length;
-    if (dashCount >= 2 && !_hasUnescapedPipe(t) && !RegExp(r'^(```|~~~)').hasMatch(t)) {
+    if (dashCount >= 2 &&
+        !_hasUnescapedPipe(t) &&
+        !RegExp(r'^(```|~~~)').hasMatch(t)) {
       final startsWithDash = RegExp(r'^[–—]\s').hasMatch(t);
-      final bodyText = startsWithDash ? t.replaceFirst(RegExp(r'^[–—]\s+'), '') : t;
-      final pieces = bodyText.split(RegExp(r'\s+[–—]\s+')).map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+      final bodyText = startsWithDash
+          ? t.replaceFirst(RegExp(r'^[–—]\s+'), '')
+          : t;
+      final pieces = bodyText
+          .split(RegExp(r'\s+[–—]\s+'))
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
       for (int i = 0; i < pieces.length; i++) {
         if (i == 0 && !startsWithDash) {
           out.add(pieces[i]); // 라벨 줄 유지
@@ -1171,9 +1339,15 @@ List<String> _expandDashLists(List<String> lines, TidyOptions o, TidyReport rep)
 /// 되어, 글의 뼈대가 뭉개졌다. 원본의 층을 두 단계로 접어 옮긴다 —
 /// 세 단계 이상은 이 앱이 다루는 글(붙여넣은 답변)에서 거의 없고,
 /// 있어도 화면에서 구분이 안 된다.
-String _headingOut(String inner, TidyOptions o, TidyReport rep,
-    {int level = 2}) {
-  final hm = o.headingMode.isNotEmpty ? o.headingMode : (o.stripHeadings ? 'strip' : 'keep');
+String _headingOut(
+  String inner,
+  TidyOptions o,
+  TidyReport rep, {
+  int level = 2,
+}) {
+  final hm = o.headingMode.isNotEmpty
+      ? o.headingMode
+      : (o.stripHeadings ? 'strip' : 'keep');
   rep.headings++;
   if (hm == 'prefix') return '${o.headingSymbol} $inner';
   if (hm == 'bracket') return '[$inner]';
@@ -1189,7 +1363,9 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
 
   if (o.stripHtml) {
     rep.markers += count(RegExp(r'<[^>\n]+>'));
-    t = t.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), ' ').replaceAll(RegExp(r'<[^>\n]+>'), '');
+    t = t
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), ' ')
+        .replaceAll(RegExp(r'<[^>\n]+>'), '');
     t = t
         .replaceAll(RegExp('&nbsp;', caseSensitive: false), ' ')
         .replaceAll(RegExp('&amp;', caseSensitive: false), '&')
@@ -1203,10 +1379,13 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
   // "...입니다. "처럼 줄 끝에 공백만 남는다.
   if (o.inlineCites) {
     // 문서에 출처 목록이 있으면 [n]은 전부 각주다.
-    t = t.replaceAllMapped(RegExp(r'[ \t]*\[\^?\d{1,3}\](?=[\s.,;:!?)\]]|\[|$)'), (m) {
-      rep.citations++;
-      return '';
-    });
+    t = t.replaceAllMapped(
+      RegExp(r'[ \t]*\[\^?\d{1,3}\](?=[\s.,;:!?)\]]|\[|$)'),
+      (m) {
+        rep.citations++;
+        return '';
+      },
+    );
   } else {
     // 출처 목록이 없어도 [6][7][8]처럼 둘 이상 붙어 있으면 각주가 확실하다.
     // (혼자 있는 "[1]"은 "계약서 [1]항" 같은 본문일 수 있어 건드리지 않는다)
@@ -1272,11 +1451,17 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
         return '';
       });
       rep.markers += count(RegExp(r'\*[^*\s][^*\n]*\*'));
-      t = t.replaceAllMapped(RegExp(r'\*([^*\s][^*\n]*?)\*'), (m) => m.group(1)!);
-      t = t.replaceAllMapped(RegExp('(^|[\\s([{"\'])_([^_\\n]+)_(?=\$|[\\s)\\]}.,!?:;"\'])'), (m) {
-        rep.markers++;
-        return m.group(1)! + m.group(2)!;
-      });
+      t = t.replaceAllMapped(
+        RegExp(r'\*([^*\s][^*\n]*?)\*'),
+        (m) => m.group(1)!,
+      );
+      t = t.replaceAllMapped(
+        RegExp('(^|[\\s([{"\'])_([^_\\n]+)_(?=\$|[\\s)\\]}.,!?:;"\'])'),
+        (m) {
+          rep.markers++;
+          return m.group(1)! + m.group(2)!;
+        },
+      );
     } else {
       // '그대로 두기'를 골랐어도 **짝이 없는 '**'는 강조가 아니라 찌꺼기다.**
       //
@@ -1330,7 +1515,12 @@ String _inlineClean(String s, TidyOptions o, TidyReport rep) {
 
 /// ================= Block 처리 =================
 List<String> _processTextSegment(
-    List<String> linesIn, TidyOptions o, TidyReport rep, List<String> warnings, List<TableGrid> tablesOut) {
+  List<String> linesIn,
+  TidyOptions o,
+  TidyReport rep,
+  List<String> warnings,
+  List<TableGrid> tablesOut,
+) {
   var input = linesIn;
   if (o.removeCitations) input = _stripCitations(input, rep);
   final lines = _expandDashLists(input, o, rep);
@@ -1395,10 +1585,10 @@ List<String> _processTextSegment(
         final t = b.kind == 'record'
             ? _recordBlockToTable(b, cellClean)
             : b.kind == 'tsv'
-                ? _parseTsvTable(blockLines, cellClean)
-                : b.kind == 'aligned'
-                    ? _parseAlignedTable(blockLines, cellClean)
-                    : _parseTable(blockLines, w, cellClean);
+            ? _parseTsvTable(blockLines, cellClean)
+            : b.kind == 'aligned'
+            ? _parseAlignedTable(blockLines, cellClean)
+            : _parseTable(blockLines, w, cellClean);
         warnings.addAll(w);
         if (t.repaired || w.isNotEmpty) rep.tablesRepaired++;
         tablesOut.add(t);
@@ -1406,7 +1596,8 @@ List<String> _processTextSegment(
           // 본문 출력 안 함
         } else if (o.tablesToTSV) {
           out.add(tableToTSV(t));
-        } else if (o.wideTables != 'aligned' && (o.wideTables == 'records' || tableIsWide(t))) {
+        } else if (o.wideTables != 'aligned' &&
+            (o.wideTables == 'records' || tableIsWide(t))) {
           // 좁은 표는 칸 맞추기, 넓거나 문장이 든 표는 행 단위 풀어쓰기 (자동 판단)
           out.add(tableToRecords(t, o));
         } else {
@@ -1428,9 +1619,14 @@ List<String> _processTextSegment(
     final line = lines[i];
     RegExpMatch? m;
     // ㅤ(U+3164)로 감싼 유사 소제목
-    if (o.smartFillerHeading && line.contains('ㅤ') && !_hasUnescapedPipe(line)) {
-      final innerT =
-          _inlineClean(line.replaceAll(RegExp('[ㅤ]+'), ' '), o, rep).replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (o.smartFillerHeading &&
+        line.contains('ㅤ') &&
+        !_hasUnescapedPipe(line)) {
+      final innerT = _inlineClean(
+        line.replaceAll(RegExp('[ㅤ]+'), ' '),
+        o,
+        rep,
+      ).replaceAll(RegExp(r'\s+'), ' ').trim();
       if (innerT.isNotEmpty && innerT.length <= 30) {
         // 원본에 제목 표시가 없는데 생김새로 알아본 것 — 이런 줄은
         // 거의 언제나 문단 안의 작은 갈래다. 소제목(제목3)으로 낸다.
@@ -1439,7 +1635,9 @@ List<String> _processTextSegment(
       }
     }
     if ((m = RegExp(r'^\s*(#{1,6})\s+(.*)$').firstMatch(line)) != null) {
-      final hm = o.headingMode.isNotEmpty ? o.headingMode : (o.stripHeadings ? 'strip' : 'keep');
+      final hm = o.headingMode.isNotEmpty
+          ? o.headingMode
+          : (o.stripHeadings ? 'strip' : 'keep');
       String formatted;
       if (hm == 'keep') {
         formatted = (o.stripHeadings || o.headingMode.isNotEmpty)
@@ -1448,8 +1646,12 @@ List<String> _processTextSegment(
       } else {
         // #, ## 는 중간제목(제목2). ### 이하는 소제목(제목3).
         final depth = m!.group(1)!.length;
-        formatted = _headingOut(_inlineClean(m.group(2)!, o, rep).trim(), o, rep,
-            level: depth >= 3 ? 3 : 2);
+        formatted = _headingOut(
+          _inlineClean(m.group(2)!, o, rep).trim(),
+          o,
+          rep,
+          level: depth >= 3 ? 3 : 2,
+        );
       }
       if (o.headingPad) {
         emitHeading(formatted);
@@ -1461,16 +1663,30 @@ List<String> _processTextSegment(
       // (2026-08-26 소유자 지시). 마크다운 구분선 판정보다 먼저 본다.
       rep.markers++;
     } else if (RegExp(r'^\s*([-*_])\s*(\1\s*){2,}$').hasMatch(line)) {
-      final hrm = o.hrMode.isNotEmpty ? o.hrMode : (o.removeHr ? 'remove' : 'keep');
+      final hrm = o.hrMode.isNotEmpty
+          ? o.hrMode
+          : (o.removeHr ? 'remove' : 'keep');
       if (hrm == 'remove') {
         rep.markers++;
       } else {
         out.add(line.trim());
       }
-    } else if (o.stripQuotes && (m = RegExp(r'^(\s*)>\s?(.*)$').firstMatch(line)) != null) {
+    } else if (o.stripQuotes &&
+        (m = RegExp(r'^(\s*)>\s?(.*)$').firstMatch(line)) != null) {
       rep.markers++;
-      out.add(m!.group(1)! + _inlineClean(m.group(2)!.replaceFirst(RegExp(r'^(>\s?)+'), ''), o, rep));
-    } else if (o.bulletsToDot && (m = RegExp(r'^(\s*)([-*+–—])\s+(\[[ xX]\]\s+)?(.*)$').firstMatch(line)) != null) {
+      out.add(
+        m!.group(1)! +
+            _inlineClean(
+              m.group(2)!.replaceFirst(RegExp(r'^(>\s?)+'), ''),
+              o,
+              rep,
+            ),
+      );
+    } else if (o.bulletsToDot &&
+        (m = RegExp(
+              r'^(\s*)([-*+–—])\s+(\[[ xX]\]\s+)?(.*)$',
+            ).firstMatch(line)) !=
+            null) {
       final bc = o.bulletChar;
       final ind = ' ' * o.bulletIndent;
       // 2026-08-18 — 할 일 네모를 살린다.
@@ -1481,18 +1697,33 @@ List<String> _processTextSegment(
       // 한 번에 없어지고 있었다.
       final box = m!.group(3) ?? '';
       if (bc == 'keep') {
-        out.add(ind + m.group(1)! + m.group(2)! + ' ' + box + _inlineClean(m.group(4)!, o, rep));
+        out.add(
+          ind +
+              m.group(1)! +
+              m.group(2)! +
+              ' ' +
+              box +
+              _inlineClean(m.group(4)!, o, rep),
+        );
       } else {
         // 변환 시 원본 들여쓰기는 버리고 설정 들여쓰기만 적용 (누적 방지)
         rep.markers++;
         // 네모가 붙어 있으면 글머리표는 '-'로 남긴다. 편집기는 '- [ ]'와
         // '* [ ]'만 네모로 알아본다(core/rich_spans.dart). 가운뎃점으로
         // 바꿔 버리면 화면에서 네모가 아니라 글자가 된다.
-        out.add(ind + (box.isEmpty ? bc : '-') + ' ' + box +
-            _inlineClean(m.group(4)!, o, rep));
+        out.add(
+          ind +
+              (box.isEmpty ? bc : '-') +
+              ' ' +
+              box +
+              _inlineClean(m.group(4)!, o, rep),
+        );
       }
-    } else if ((m = RegExp(r'^(\s*)(\d+)([.)])\s+(.*)$').firstMatch(line)) != null) {
-      out.add('${m!.group(1)!}${m.group(2)!}. ${_inlineClean(m.group(4)!, o, rep)}');
+    } else if ((m = RegExp(r'^(\s*)(\d+)([.)])\s+(.*)$').firstMatch(line)) !=
+        null) {
+      out.add(
+        '${m!.group(1)!}${m.group(2)!}. ${_inlineClean(m.group(4)!, o, rep)}',
+      );
     } else {
       out.add(_inlineClean(line, o, rep));
     }
@@ -1562,7 +1793,12 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
     for (final s in segs) {
       if (s.type != 'text') continue;
       s.lines = s.lines
-          .map((l) => l.replaceAllMapped(RegExp(r'\\([*_#>\[\]()`~.!+-])'), (m) => m.group(1)!))
+          .map(
+            (l) => l.replaceAllMapped(
+              RegExp(r'\\([*_#>\[\]()`~.!+-])'),
+              (m) => m.group(1)!,
+            ),
+          )
           .toList();
     }
   }
@@ -1575,7 +1811,9 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
       var joined = s.lines.join('\n');
       for (final rule in rules) {
         if (rule.find.isEmpty) continue;
-        final repl = rule.replace.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
+        final repl = rule.replace
+            .replaceAll(r'\n', '\n')
+            .replaceAll(r'\t', '\t');
         try {
           if (rule.regex) {
             joined = joined.replaceAllMapped(RegExp(rule.find), (m) {
@@ -1588,7 +1826,9 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
           } else {
             joined = joined.split(rule.find).join(repl);
           }
-        } catch (_) {/* 잘못된 정규식은 건너뜀 */}
+        } catch (_) {
+          /* 잘못된 정규식은 건너뜀 */
+        }
       }
       s.lines = joined.split('\n');
     }
@@ -1596,7 +1836,9 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
 
   // 06.7 출처 정의 블록 존재 여부 사전 스캔
   if (o.removeCitations) {
-    o.inlineCites = segs.any((s) => s.type == 'text' && s.lines.any(isCitationLine));
+    o.inlineCites = segs.any(
+      (s) => s.type == 'text' && s.lines.any(isCitationLine),
+    );
   }
 
   // 07~09 Block Parsing + Inline Cleaning + Table Engine
@@ -1605,7 +1847,9 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
     if (s.type == 'code') {
       if (!o.tablesOnly) outParts.add(s.lines.join('\n'));
     } else {
-      outParts.add(_processTextSegment(s.lines, o, rep, warnings, tables).join('\n'));
+      outParts.add(
+        _processTextSegment(s.lines, o, rep, warnings, tables).join('\n'),
+      );
     }
   }
   var result = outParts.join('\n');
@@ -1618,9 +1862,14 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
 
   // 10 Whitespace Normalization
   if (o.normalizeWhitespace) {
-    result = result.split('\n').map((l) => l.replaceFirst(RegExp(r'[ \t]+$'), '')).join('\n');
+    result = result
+        .split('\n')
+        .map((l) => l.replaceFirst(RegExp(r'[ \t]+$'), ''))
+        .join('\n');
     result = result.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-    result = result.replaceFirst(RegExp(r'^\n+'), '').replaceFirst(RegExp(r'\n+$'), '');
+    result = result
+        .replaceFirst(RegExp(r'^\n+'), '')
+        .replaceFirst(RegExp(r'\n+$'), '');
   }
 
   // 11 TidyReport
@@ -1639,13 +1888,26 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
   }
   final summary = parts.isNotEmpty ? parts.join(' · ') : '변경 사항 없음';
 
-  return TidyResult(text: result, summary: summary, warnings: warnings, tables: tables, report: rep);
+  return TidyResult(
+    text: result,
+    summary: summary,
+    warnings: warnings,
+    tables: tables,
+    report: rep,
+  );
 }
 
 /// 문서에서 표만 추출 (표 도구용)
 ({List<TableGrid> tables, List<String> warnings}) extractTables(String raw) {
   // detectRecords: 풀어쓴 표도 스프레드시트로 되돌릴 수 있도록 표 도구에서만 인식
-  final r = tidy(raw,
-      TidyOptions(tablesOnly: true, repairTables: true, removeOuterFence: true, detectRecords: true));
+  final r = tidy(
+    raw,
+    TidyOptions(
+      tablesOnly: true,
+      repairTables: true,
+      removeOuterFence: true,
+      detectRecords: true,
+    ),
+  );
   return (tables: r.tables, warnings: r.warnings);
 }

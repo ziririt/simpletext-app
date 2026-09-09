@@ -25,8 +25,7 @@ bool trashExpired({
   required int deletedAt,
   required int nowMs,
   int keepDays = kTrashKeepDays,
-}) =>
-    nowMs - deletedAt >= keepDays * _dayMs;
+}) => nowMs - deletedAt >= keepDays * _dayMs;
 
 /// 완전히 지워지기까지 며칠 남았나. 화면에 "n일 뒤 삭제"로 쓴다.
 ///
@@ -54,8 +53,12 @@ List<T> pruneTrash<T>(
   required int Function(T) deletedAtOf,
   required int nowMs,
   int keepDays = kTrashKeepDays,
-}) =>
-    items
-        .where((e) => !trashExpired(
-            deletedAt: deletedAtOf(e), nowMs: nowMs, keepDays: keepDays))
-        .toList();
+}) => items
+    .where(
+      (e) => !trashExpired(
+        deletedAt: deletedAtOf(e),
+        nowMs: nowMs,
+        keepDays: keepDays,
+      ),
+    )
+    .toList();

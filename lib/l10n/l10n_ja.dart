@@ -54,44 +54,43 @@ class L10nJa extends L10n {
   @override
   String get rateAppTitle => '評価してください';
   @override
-  String get shareAppMsg =>
-      'Skyblue Note — 軽くて速いメモアプリ。すべての端末で同期します。';
+  String get shareAppMsg => 'Skyblue Note — 軽くて速いメモアプリ。すべての端末で同期します。';
   @override
   String get seedBody => [
-        'こんにちは！😊 ご依頼の内容を以下のとおり整理しました[1][2]。',
-        '',
-        '# Skyblue Note',
-        '',
-        '表がずれていますね。左下の**杖**を押してみてください。🎉',
-        '',
-        '| 銘柄 | ティッカー | 騰落率 | 比率',
-        '|------|------|--------|',
-        '| アップル | AAPL | +14.2% | 12% |',
-        '|エヌビディア|NVDA|+48.9%|22%|',
-        '| マイクロソフト | MSFT | +21.5% | 18% |',
-        '|テスラ|TSLA|-8.3%|8%|',
-        '',
-        '> 整えると行がそろいます。メニューの「表」で表計算ソフトにそのまま貼れます。',
-        '',
-        '## 消えるもの',
-        '',
-        '- [ ] あいさつの前置きと絵文字 🙂',
-        '- [ ] 文末にくっついた脚注[3][4]',
-        '- [ ] 行末に取り残された星印**',
-        '- [x] ずれた表は組み直します',
-        '',
-        '## 残るもの',
-        '',
-        '見出しと**太字**と引用はそのまま残します。画面では意味として見え、コピーしてメモ帳や掲示板に貼ると記号は消えます。',
-        '',
-        '---',
-        '',
-        '\t•\tタブで囲まれた箇条書き — Grok や ChatGPT はこう貼ります',
-        '\t•\t重なった   空白とタブ',
-        '\t•\tばらけたこの行も収まります',
-        '',
-        '> 気に入らなければメニューの[元に戻す](https://ezlong.com/skybluenote)で戻せます。',
-      ].join('\n');
+    'こんにちは！😊 ご依頼の内容を以下のとおり整理しました[1][2]。',
+    '',
+    '# Skyblue Note',
+    '',
+    '表がずれていますね。左下の**杖**を押してみてください。🎉',
+    '',
+    '| 銘柄 | ティッカー | 騰落率 | 比率',
+    '|------|------|--------|',
+    '| アップル | AAPL | +14.2% | 12% |',
+    '|エヌビディア|NVDA|+48.9%|22%|',
+    '| マイクロソフト | MSFT | +21.5% | 18% |',
+    '|テスラ|TSLA|-8.3%|8%|',
+    '',
+    '> 整えると行がそろいます。メニューの「表」で表計算ソフトにそのまま貼れます。',
+    '',
+    '## 消えるもの',
+    '',
+    '- [ ] あいさつの前置きと絵文字 🙂',
+    '- [ ] 文末にくっついた脚注[3][4]',
+    '- [ ] 行末に取り残された星印**',
+    '- [x] ずれた表は組み直します',
+    '',
+    '## 残るもの',
+    '',
+    '見出しと**太字**と引用はそのまま残します。画面では意味として見え、コピーしてメモ帳や掲示板に貼ると記号は消えます。',
+    '',
+    '---',
+    '',
+    '\t•\tタブで囲まれた箇条書き — Grok や ChatGPT はこう貼ります',
+    '\t•\t重なった   空白とタブ',
+    '\t•\tばらけたこの行も収まります',
+    '',
+    '> 気に入らなければメニューの[元に戻す](https://ezlong.com/skybluenote)で戻せます。',
+  ].join('\n');
 
   @override
   String get done => '完了';
@@ -131,8 +130,7 @@ class L10nJa extends L10n {
   String get unpinConfirmTitle => '固定を解除しますか？';
 
   @override
-  String get unpinConfirmBody =>
-      'リストでノートを長押しすると、もう一度固定できます。';
+  String get unpinConfirmBody => 'リストでノートを長押しすると、もう一度固定できます。';
   @override
   String get deleteTooltip => '削除';
   @override
@@ -182,12 +180,10 @@ class L10nJa extends L10n {
   String get revertConfirmOk => '戻す';
 
   @override
-  String get okAction =>
-      '確認';
+  String get okAction => '確認';
 
   @override
-  String get revertDoneTitle =>
-      '原文に戻しました';
+  String get revertDoneTitle => '原文に戻しました';
 
   @override
   String get revertDoneBody =>
@@ -294,8 +290,7 @@ class L10nJa extends L10n {
   String get paperSky => 'スカイ';
 
   @override
-  String get themeSystemNote =>
-      '端末に合わせると、端末がダークになる時間にアプリも一緒に変わります。';
+  String get themeSystemNote => '端末に合わせると、端末がダークになる時間にアプリも一緒に変わります。';
 
   @override
   String folderMoved(String name) => '$name に移しました';
@@ -351,7 +346,8 @@ class L10nJa extends L10n {
   @override
   String get wizardTitle => 'AI編集';
   @override
-  String get wizardHint => '言葉で指示してください。例：\n小見出しの上の空白は2行、下は1行にして\nマイクロソフトをMSに置換して';
+  String get wizardHint =>
+      '言葉で指示してください。例：\n小見出しの上の空白は2行、下は1行にして\nマイクロソフトをMSに置換して';
   @override
   String get favSaveButton => 'よく使う指示として登録';
   @override
@@ -375,13 +371,15 @@ class L10nJa extends L10n {
   @override
   String get aiKeyInviteTitle => 'ご自分のAIキーを入れると、もっと強くなります';
   @override
-  String get aiKeyInviteBody => '今は決まった規則しか理解できません。ご自分のAIキーを入れると「もっと簡潔にして」「敬体に直して」のような自由な指示もそのまま処理し、タグもAIが抽出します。';
+  String get aiKeyInviteBody =>
+      '今は決まった規則しか理解できません。ご自分のAIキーを入れると「もっと簡潔にして」「敬体に直して」のような自由な指示もそのまま処理し、タグもAIが抽出します。';
   @override
   String get aiKeyCta => 'AIキーを入れる';
   @override
   String get aiKeyPasteBtn => '貼り付け';
   @override
-  String get aiKeyCost => 'すでにお使いのAIサービスを、このアプリからそのまま呼び出します。Gemini・ChatGPT・Claude・Grokのうち、お使いのもののキーを入れてください。';
+  String get aiKeyCost =>
+      'すでにお使いのAIサービスを、このアプリからそのまま呼び出します。Gemini・ChatGPT・Claude・Grokのうち、お使いのもののキーを入れてください。';
   @override
   String get aiKeySafe => 'キーはこの端末の中だけに保管します。このアプリのサーバーへは送りません。';
   @override
@@ -456,15 +454,13 @@ class L10nJa extends L10n {
   String get copyAll => 'すべてコピー';
 
   @override
-  String get copyPlainSub =>
-      '#, ** などの記号を外した素のテキスト';
+  String get copyPlainSub => '#, ** などの記号を外した素のテキスト';
 
   @override
   String get copyRaw => 'マークダウンのままコピー';
 
   @override
-  String get copyRawSub =>
-      'Notion・Slack・GitHub などマークダウンが通る場所へ';
+  String get copyRawSub => 'Notion・Slack・GitHub などマークダウンが通る場所へ';
   @override
   String get copiedAll => '全文をコピーしました';
   @override
@@ -490,53 +486,43 @@ class L10nJa extends L10n {
   String get apply => '整理をすぐ適用';
 
   @override
-  String get presetAiName =>
-      '標準の整理';
+  String get presetAiName => '標準の整理';
   @override
-  String get presetAiDesc =>
-      '貼り付けたAIの回答をそのまま読める形に。ほとんどはこれで十分です';
+  String get presetAiDesc => '貼り付けたAIの回答をそのまま読める形に。ほとんどはこれで十分です';
   @override
-  String get presetStripName =>
-      '記号をすべて削除';
+  String get presetStripName => '記号をすべて削除';
   @override
-  String get presetStripDesc =>
-      'LINEやSMSへ。記号も絵文字も全部落とし、表は桁をそろえた文字表に';
+  String get presetStripDesc => 'LINEやSMSへ。記号も絵文字も全部落とし、表は桁をそろえた文字表に';
   @override
-  String get presetMinimalName =>
-      '汚れだけ落とす';
+  String get presetMinimalName => '汚れだけ落とす';
   @override
-  String get presetMinimalDesc =>
-      '構造はそのまま、見えないゴミだけ';
+  String get presetMinimalDesc => '構造はそのまま、見えないゴミだけ';
   @override
-  String get presetTablesName =>
-      '表だけ取り出す';
+  String get presetTablesName => '表だけ取り出す';
   @override
-  String get presetTablesDesc =>
-      'ExcelやGoogleスプレッドシートに直接貼るため';
+  String get presetTablesDesc => 'ExcelやGoogleスプレッドシートに直接貼るため';
   @override
-  String get presetBlogName =>
-      'ブログ用';
+  String get presetBlogName => 'ブログ用';
   @override
-  String get presetBlogDesc =>
-      'リンクのアドレスは残し、記号だけ外す';
+  String get presetBlogDesc => 'リンクのアドレスは残し、記号だけ外す';
 
   @override
   String get tidySample => [
-        '## 今日のまとめ 😊',
-        '',
-        '**要点**は三つです[1][2]。',
-        '',
-        '- 一つ目',
-        '- 二つ目',
-        '',
-        '> 引用の一行',
-        '',
-        '詳しくは[ブログ](https://ezlong.com)へ',
-        '',
-        '| 項目 | 値 |',
-        '|---|---|',
-        '|売上|120|',
-      ].join('\n');
+    '## 今日のまとめ 😊',
+    '',
+    '**要点**は三つです[1][2]。',
+    '',
+    '- 一つ目',
+    '- 二つ目',
+    '',
+    '> 引用の一行',
+    '',
+    '詳しくは[ブログ](https://ezlong.com)へ',
+    '',
+    '| 項目 | 値 |',
+    '|---|---|',
+    '|売上|120|',
+  ].join('\n');
 
   @override
   String get settingsTitle => '設定';
@@ -553,8 +539,7 @@ class L10nJa extends L10n {
   String get syncAppleOnly => 'Apple のみ';
 
   @override
-  String get syncScopeTitle =>
-      '同期の範囲';
+  String get syncScopeTitle => '同期の範囲';
 
   @override
   String get syncScopeShared =>
@@ -563,15 +548,15 @@ class L10nJa extends L10n {
   @override
   String get syncStateOffGdrive => 'Google アカウントにもう一度ログインしてください';
   @override
-  String get syncStateExpiredGdrive => 'アカウントはつながっていますが、ドライブの利用許可が期限切れです。一度押して更新してください';
+  String get syncStateExpiredGdrive =>
+      'アカウントはつながっていますが、ドライブの利用許可が期限切れです。一度押して更新してください';
 
   @override
   String get syncScopePlatformGdrive =>
       'Google ドライブの置き場は、このアプリを使うすべての端末で共通です。このアプリを入れて同じ Google アカウントでログインしてください';
 
   @override
-  String get syncScopeDevice =>
-      '端末ごと: 文字サイズ、行間、背景、外観、並び順';
+  String get syncScopeDevice => '端末ごと: 文字サイズ、行間、背景、外観、並び順';
 
   @override
   String get syncScopePlatform =>
@@ -581,32 +566,23 @@ class L10nJa extends L10n {
   String get typographyTitle => '文字と行間';
 
   @override
-  String get syncScopeNever =>
-      'AI の API キーはどの保管先にも保存されないため、端末ごとに入力が必要です';
+  String get syncScopeNever => 'AI の API キーはどの保管先にも保存されないため、端末ごとに入力が必要です';
   @override
-  String get syncWhereTitle =>
-      'どこに置くか';
+  String get syncWhereTitle => 'どこに置くか';
   @override
-  String get syncBackendNone =>
-      '同期しない';
+  String get syncBackendNone => '同期しない';
   @override
-  String get syncBackendNoneSub =>
-      'この端末だけに置きます';
+  String get syncBackendNoneSub => 'この端末だけに置きます';
   @override
-  String get syncBackendIcloud =>
-      'iCloud';
+  String get syncBackendIcloud => 'iCloud';
   @override
-  String get syncBackendIcloudSub =>
-      'iPhone・iPad・Mac のあいだで';
+  String get syncBackendIcloudSub => 'iPhone・iPad・Mac のあいだで';
   @override
-  String get syncBackendGdrive =>
-      'Google Drive';
+  String get syncBackendGdrive => 'Google Drive';
   @override
-  String get syncBackendGdriveSub =>
-      'ほかの端末とウェブまで';
+  String get syncBackendGdriveSub => 'ほかの端末とウェブまで';
   @override
-  String get syncSoon =>
-      '準備中';
+  String get syncSoon => '準備中';
 
   @override
   String get driveSignInFailed => 'Googleアカウントに接続できませんでした';
@@ -617,17 +593,14 @@ class L10nJa extends L10n {
   @override
   String get driveSignedInAs => '接続済み';
   @override
-  String get syncSectionState =>
-      'いまの状態';
+  String get syncSectionState => 'いまの状態';
   @override
-  String get syncNowAction =>
-      'いま同期する';
+  String get syncNowAction => 'いま同期する';
   @override
   String get syncNowBusy => '同期中…';
 
   @override
-  String get syncLastNever =>
-      'まだ一度も同期していません';
+  String get syncLastNever => 'まだ一度も同期していません';
   @override
   String get headingTip => '見出し';
   @override
@@ -762,8 +735,7 @@ class L10nJa extends L10n {
   @override
   String syncLogLastDown(String when) => '最後に受け取った時刻 · ' + when;
   @override
-  String get syncTroubleTitle =>
-      '困ったときは';
+  String get syncTroubleTitle => '困ったときは';
   @override
   String get syncTroubleNote =>
       '同期はバックアップではありません。片方で消せば全部から消えます。大事なメモは時々ファイルに書き出しておいてください。';
@@ -780,11 +752,13 @@ class L10nJa extends L10n {
   String syncStateSyncing(String where) => '$where と同期中… 数秒から数十秒かかります';
 
   @override
-  String get aiKeyNotSynced => 'メモは選んだ保管先で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
+  String get aiKeyNotSynced =>
+      'メモは選んだ保管先で全ての端末に同期されます。ただし API キーは同期されません — 端末ごとに入力してください。';
   @override
   String get aiKeySyncTitle => 'API キーも同期';
   @override
-  String get aiKeySyncSubApple => 'iCloud キーチェーンで運びます。メモとは別の経路で、鍵はご自分の端末だけが持つため Apple もその値を読めません。';
+  String get aiKeySyncSubApple =>
+      'iCloud キーチェーンで運びます。メモとは別の経路で、鍵はご自分の端末だけが持つため Apple もその値を読めません。';
   @override
   String get aiKeySyncSubGdrive => 'Google ドライブに置いた API キーの管理は各自の責任です。';
 
@@ -792,8 +766,7 @@ class L10nJa extends L10n {
   String get autoTagTitle => 'タグを自動で付ける';
 
   @override
-  String get autoTagSub =>
-      '編集して少し置くとAIがタグを付け直します。自分でタグを触ったノートには手を出しません';
+  String get autoTagSub => '編集して少し置くとAIがタグを付け直します。自分でタグを触ったノートには手を出しません';
 
   @override
   String get syncStateSignedOut => 'タップして方法を見る';
@@ -812,8 +785,7 @@ class L10nJa extends L10n {
   String get syncRecheck => '再確認';
 
   @override
-  String get syncHelpNote =>
-      'インストール直後は準備に1〜2分かかることがあります。その場合は再確認を押してください。';
+  String get syncHelpNote => 'インストール直後は準備に1〜2分かかることがあります。その場合は再確認を押してください。';
 
   @override
   String get sortFilterTooltip => '並べ替え・絞り込み';
@@ -858,16 +830,19 @@ class L10nJa extends L10n {
   String get aiDetecting => 'どの提供元のキーか確認しています…';
 
   @override
-  String get aiErrNoCredits => 'キーは正常ですが、そのアカウントに残高がありません。提供元のサイトで支払い方法を登録するかクレジットを追加してください。無料で使いたい場合は Google Gemini のキー（AIza… で始まる）をお試しください — 無料枠があります。';
+  String get aiErrNoCredits =>
+      'キーは正常ですが、そのアカウントに残高がありません。提供元のサイトで支払い方法を登録するかクレジットを追加してください。無料で使いたい場合は Google Gemini のキー（AIza… で始まる）をお試しください — 無料枠があります。';
 
   @override
-  String get aiErrBadKey => 'キーが拒否されました。前後の空白や引用符を確認し、それでも駄目なら提供元で新しいキーを発行してください。';
+  String get aiErrBadKey =>
+      'キーが拒否されました。前後の空白や引用符を確認し、それでも駄目なら提供元で新しいキーを発行してください。';
 
   @override
   String get aiErrRateLimit => '今アクセスが集中しています。アプリの問題ではありません。少し待って再度お試しください。';
 
   @override
-  String get aiErrNoModel => 'このアカウントではそのモデルを使えません。下の「詳細 — モデルを直接選択」で別のモデルを選んでください。';
+  String get aiErrNoModel =>
+      'このアカウントではそのモデルを使えません。下の「詳細 — モデルを直接選択」で別のモデルを選んでください。';
 
   @override
   String get aiErrNetwork => 'インターネットに接続できませんでした。接続を確認してもう一度お試しください。';
@@ -918,71 +893,56 @@ class L10nJa extends L10n {
   String trashDaysLeftLabel(int days) => '$days日後に完全に削除されます';
 
   @override
-  String get exportSectionTitle =>
-      '読み込みと書き出し';
+  String get exportSectionTitle => '読み込みと書き出し';
 
   @override
   String get exportSubtitle =>
       'メモはいつでも取り出せます。Markdownならアップルのメモ・Obsidian・Notionのどれにも入ります。';
 
   @override
-  String get exportNote =>
-      'このメモを書き出す';
+  String get exportNote => 'このメモを書き出す';
 
   @override
-  String get exportAllMd =>
-      'すべてのメモを書き出す';
+  String get exportAllMd => 'すべてのメモを書き出す';
 
   @override
-  String get exportAllMdSub =>
-      'Markdownをまとめて1つのZIPに';
+  String get exportAllMdSub => 'Markdownをまとめて1つのZIPに';
 
   @override
-  String get exportBackup =>
-      'バックアップを保存';
+  String get exportBackup => 'バックアップを保存';
 
   @override
-  String get exportBackupSub =>
-      'このアプリにそのまま戻せる1ファイル（APIキーは除きます）';
+  String get exportBackupSub => 'このアプリにそのまま戻せる1ファイル（APIキーは除きます）';
 
   @override
-  String get exportFailed =>
-      '書き出しに失敗しました';
+  String get exportFailed => '書き出しに失敗しました';
 
   @override
-  String get printAction =>
-      '印刷';
+  String get printAction => '印刷';
 
   @override
-  String get exportPdf =>
-      'PDFで書き出す';
+  String get exportPdf => 'PDFで書き出す';
 
   @override
-  String get pdfFailed =>
-      'PDFを作成できませんでした';
+  String get pdfFailed => 'PDFを作成できませんでした';
 
   @override
-  String get exportEmpty =>
-      '書き出すメモがありません';
+  String get exportEmpty => '書き出すメモがありません';
 
   @override
   String get choosePreset => '整理の方法を選ぶ';
 
   @override
-  String get importFiles =>
-      'ファイルから読み込む';
+  String get importFiles => 'ファイルから読み込む';
 
   @override
-  String get importFilesSub =>
-      'Markdownやテキストをメモに。バックアップの復元もここです';
+  String get importFilesSub => 'Markdownやテキストをメモに。バックアップの復元もここです';
 
   @override
-  String get importAppend =>
-      'ファイルを読み込んで本文に追記';
+  String get importAppend => 'ファイルを読み込んで本文に追記';
 
   @override
-  String get importNone =>
-      '読み込んだファイルがありません';
+  String get importNone => '読み込んだファイルがありません';
 
   @override
   String importDone(int n) => 'メモを$n件読み込みました';
@@ -994,24 +954,19 @@ class L10nJa extends L10n {
   String get splitEmpty => '左からメモを選んでください';
 
   @override
-  String get historyTitle =>
-      'バージョン履歴';
+  String get historyTitle => 'バージョン履歴';
 
   @override
-  String get historySub =>
-      '整理や置換の前の文に戻せます';
+  String get historySub => '整理や置換の前の文に戻せます';
 
   @override
-  String get historyEmpty =>
-      'まだ戻せる版がありません';
+  String get historyEmpty => 'まだ戻せる版がありません';
 
   @override
-  String get historyRestore =>
-      '戻す';
+  String get historyRestore => '戻す';
 
   @override
-  String get historyOriginal =>
-      '貼り付けた原文';
+  String get historyOriginal => '貼り付けた原文';
 
   @override
   String get historyWhyTidy => '整理の直前';
@@ -1056,7 +1011,8 @@ class L10nJa extends L10n {
   String attachAndMore(int n) => 'ほか${n}件';
 
   @override
-  String attachOther(String device, String what) => '添付ファイル：${device} のメモに ${what} が添付されています（その端末でのみ確認できます）';
+  String attachOther(String device, String what) =>
+      '添付ファイル：${device} のメモに ${what} が添付されています（その端末でのみ確認できます）';
 
   @override
   String deviceName(String kind) {
@@ -1139,11 +1095,12 @@ class L10nJa extends L10n {
   String lockSub(String vendor) => vendor == 'android'
       ? '指紋・顔認証、または画面ロックでアプリを開きます。'
       : vendor == 'windows'
-          ? 'Windows Hello またはデバイスの PIN でアプリを開きます。'
-          : 'Face ID・Touch ID、またはデバイスのパスコードでアプリを開きます。';
+      ? 'Windows Hello またはデバイスの PIN でアプリを開きます。'
+      : 'Face ID・Touch ID、またはデバイスのパスコードでアプリを開きます。';
 
   @override
-  String get lockNote => 'このロックは、他人が端末を手にしたときに画面を開けなくするものです。端末内のファイル自体を暗号化するわけではありません。';
+  String get lockNote =>
+      'このロックは、他人が端末を手にしたときに画面を開けなくするものです。端末内のファイル自体を暗号化するわけではありません。';
 
   @override
   String get lockDelayTitle => 'ロックするまで';
@@ -1167,8 +1124,8 @@ class L10nJa extends L10n {
   String lockUnavailable(String vendor) => vendor == 'android'
       ? 'この端末では指紋・顔認証・画面ロックを利用できません。'
       : vendor == 'windows'
-          ? 'このデバイスでは Windows Hello・PIN を利用できません。'
-          : 'この端末では Face ID・Touch ID・パスコードを利用できません。';
+      ? 'このデバイスでは Windows Hello・PIN を利用できません。'
+      : 'この端末では Face ID・Touch ID・パスコードを利用できません。';
 
   @override
   String get lockReasonOpen => 'メモを開くには確認が必要です';
@@ -1201,7 +1158,8 @@ class L10nJa extends L10n {
   String get syncDiagSignedOut => 'この端末は iCloud にサインインしていません。まずサインインしてください。';
 
   @override
-  String get syncDiagNoContainer => 'サインインは済んでいますが、このアプリの iCloud 領域がまだありません。下の手順でオンにしてください。';
+  String get syncDiagNoContainer =>
+      'サインインは済んでいますが、このアプリの iCloud 領域がまだありません。下の手順でオンにしてください。';
 
   @override
   String get syncDiagPreparing => '領域は確保できました。準備が終わるのを待っています。';
@@ -1213,13 +1171,15 @@ class L10nJa extends L10n {
   String get syncRecheckOk => 'iCloud がオンになりました';
 
   @override
-  String get syncRecheckStill => 'まだオンになっていません。設定でオンにしてからもう一度押してください。今オンにした場合は 1〜2 分後にもう一度お試しください。';
+  String get syncRecheckStill =>
+      'まだオンになっていません。設定でオンにしてからもう一度押してください。今オンにした場合は 1〜2 分後にもう一度お試しください。';
 
   @override
   String get syncOpenFailed => '設定アプリを開けませんでした。ホーム画面から直接開いてください。';
 
   @override
-  String get syncOpenManual => '設定アプリを直接開いてください。ホーム画面 › 設定 › 一番上の自分の名前 › iCloud です。';
+  String get syncOpenManual =>
+      '設定アプリを直接開いてください。ホーム画面 › 設定 › 一番上の自分の名前 › iCloud です。';
 
   @override
   String get menuFile => 'ファイル';
@@ -1251,7 +1211,8 @@ class L10nJa extends L10n {
   @override
   String get syncHelpTitleGdrive => 'Google ドライブに再接続';
   @override
-  String get syncHelpStepsGdrive => '1. 下のボタンを押して Google アカウントを選びます\n2. ドライブへのアクセスを許可します\n3. すぐに同期が始まります';
+  String get syncHelpStepsGdrive =>
+      '1. 下のボタンを押して Google アカウントを選びます\n2. ドライブへのアクセスを許可します\n3. すぐに同期が始まります';
   @override
   String get syncHelpNoteGdrive => 'メモはドライブにそのまま残っています。ログインすれば戻ります。';
   @override
@@ -1264,18 +1225,17 @@ class L10nJa extends L10n {
   String get syncDiagPreparingGdrive =>
       "ログインしました。ドライブからノートを受け取っています。画面を見続ける必要はありません — 他のアプリに移っても、受け取りは一時停止し、戻ると続きから再開します。";
   @override
-  String get syncRecheckStillGdrive => 'まだ全部は届いていません。メモが多いと最初の同期に少し時間がかかります \u2014 この画面を閉じても続きます。';
+  String get syncRecheckStillGdrive =>
+      'まだ全部は届いていません。メモが多いと最初の同期に少し時間がかかります \u2014 この画面を閉じても続きます。';
 
   @override
-  String pastedFrom(String src, String date) =>
-      '$date に $src から';
+  String pastedFrom(String src, String date) => '$date に $src から';
 
   @override
   String pastedOn(String date) => '$date に貼り付け';
 
   @override
-  String staleWarn(int days) =>
-      '受け取ってから$days日たった回答です。その間にモデルが変わっている可能性があります。';
+  String staleWarn(int days) => '受け取ってから$days日たった回答です。その間にモデルが変わっている可能性があります。';
   @override
   String get settingsSecView => '表示';
   @override
@@ -1375,6 +1335,24 @@ class L10nJa extends L10n {
   String get pasteTipLater => 'あとで';
   @override
   String get adClose => '広告を閉じる';
+
+  @override
+  String get bookmarkAdd => 'ここにしおり';
+
+  @override
+  String get bookmarkRemove => 'しおりを外す';
+
+  @override
+  String get bookmarkTooShort => '1画面に収まる長さなので、しおりを挟む場所がありません';
+
+  @override
+  String bookmarkGoAt(int pct) => 'しおり $pct% へ';
+
+  @override
+  String bookmarkResume(int pct) => '$pct% から続きを読む';
+
+  @override
+  String bookmarkSaved(int pct) => '$pct% にしおりを挟みました';
   @override
   String get noteDuplicate => '複製';
   @override
@@ -1409,9 +1387,11 @@ class L10nJa extends L10n {
   @override
   String get premiumScopeBase => 'ご購入されたストアの端末で使えます。どちらで購入してもWebアプリは含まれます。';
   @override
-  String get premiumScopeAll => 'スマートフォンとパソコンを併用しても、一度の購入ですべて使えます。今後増える端末もこの等級に含まれます。';
+  String get premiumScopeAll =>
+      'スマートフォンとパソコンを併用しても、一度の購入ですべて使えます。今後増える端末もこの等級に含まれます。';
   @override
-  String get premiumAutoRenew => 'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
+  String get premiumAutoRenew =>
+      'サブスクリプションは期間終了の24時間前までに解約しない限り自動更新され、同額が請求されます。解約は端末の設定からいつでもできます。';
   @override
   String get premiumRestore => '購入を復元';
   @override
@@ -1421,9 +1401,11 @@ class L10nJa extends L10n {
   @override
   String get premiumThanks => 'ありがとうございます。プレミアムが有効になりました。';
   @override
-  String get premiumNoStore => 'この端末では購入できません。購入後、同じアカウントでログインすればこちらにもすぐ反映されます。';
+  String get premiumNoStore =>
+      'この端末では購入できません。購入後、同じアカウントでログインすればこちらにもすぐ反映されます。';
   @override
-  String get premiumUpgradeHere => 'この端末でも使うには「すべての端末」へアップグレードしてください。残り期間はストアが精算します。';
+  String get premiumUpgradeHere =>
+      'この端末でも使うには「すべての端末」へアップグレードしてください。残り期間はストアが精算します。';
   @override
   String get premiumHave => '現在のプラン';
   @override
@@ -1454,13 +1436,15 @@ class L10nJa extends L10n {
   String get onbTitle3 => 'どの端末でも同じノート';
 
   @override
-  String get onbBody3 => 'iPhone・iPad・Mac、そしてブラウザで開くWebアプリまで同じノートを見ます。併用しているほかの端末もついてきます。一つ直せば残りもついてきます。';
+  String get onbBody3 =>
+      'iPhone・iPad・Mac、そしてブラウザで開くWebアプリまで同じノートを見ます。併用しているほかの端末もついてきます。一つ直せば残りもついてきます。';
 
   @override
   String get onbTitle4 => 'すべて開いています';
 
   @override
-  String onbBody4(int days) => '$days日間、上限なしでお試しください。続けたくなったらそのとき決めれば十分です。今すぐのお支払いは不要です。';
+  String onbBody4(int days) =>
+      '$days日間、上限なしでお試しください。続けたくなったらそのとき決めれば十分です。今すぐのお支払いは不要です。';
 
   @override
   String get onbNext => '次へ';
@@ -1508,7 +1492,8 @@ class L10nJa extends L10n {
   String premiumCta(String period, String price) => '$period $priceで利用する';
 
   @override
-  String premiumChargeNote(String period, String price) => '$period $priceが請求されます。';
+  String premiumChargeNote(String period, String price) =>
+      '$period $priceが請求されます。';
 
   @override
   String premiumTrialThen(int days) => '$days日間無料、その後';
@@ -1517,26 +1502,17 @@ class L10nJa extends L10n {
   String premiumSave(int pct) => '$pct%お得';
 
   @override
-  String premiumTrustBody(String version) => '現在$versionです。いただいた要望はたいていその週に反映し、何が変わったかはアプリ内で確認できます。';
-
-
-
+  String premiumTrustBody(String version) =>
+      '現在$versionです。いただいた要望はたいていその週に反映し、何が変わったかはアプリ内で確認できます。';
 
   @override
   String get premiumPerkWeb => 'Webアプリも — ブラウザでも広告なし';
-
-
-
-
-
 
   @override
   String premiumPerkTidy(int n) => '整理が無制限 — 1日$n回の上限なし';
 
   @override
   String premiumPerkWizard(int n) => 'AI編集が無制限 — 1日$n回の上限なし';
-
-
 
   @override
   String get sponsorPremiumNote => '一度ご購入いただければ、バナーもこの案内も二度と出ません。';
@@ -1590,17 +1566,20 @@ class L10nJa extends L10n {
   @override
   String get aiKeyChecking => '確認中…';
   @override
-  String get aiKeyUnknownFormat => 'どの提供元のキーか判別できませんでした。4社すべてに問い合わせましたが受け付けられませんでした。キーをコピーし直して貼り付けてください。';
+  String get aiKeyUnknownFormat =>
+      'どの提供元のキーか判別できませんでした。4社すべてに問い合わせましたが受け付けられませんでした。キーをコピーし直して貼り付けてください。';
   @override
   String get aiAdvancedLabel => '詳細 — モデルを直接選択';
   @override
   String get aiManualModelHint => 'モデル名を入力（例: gemini-2.5-flash-lite）';
   @override
-  String aiAutoLabel(String provider, String model) => '自動選択: $provider · $model';
+  String aiAutoLabel(String provider, String model) =>
+      '自動選択: $provider · $model';
   @override
   String aiModelsFound(int n) => '利用可能なモデルを$n件確認しました。';
   @override
-  String aiListFailed(String error) => 'モデル一覧を取得できませんでした（$error）。内蔵の予備リストで動作します。';
+  String aiListFailed(String error) =>
+      'モデル一覧を取得できませんでした（$error）。内蔵の予備リストで動作します。';
   @override
   String aiModelSwitched(String model) => '以前のモデルが応答しないため、$model に切り替えました。';
   @override

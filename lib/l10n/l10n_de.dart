@@ -30,7 +30,8 @@ class L10nDe extends L10n {
   @override
   String get pasteAndTidy => 'Neue Notiz aus Zwischenablage';
   @override
-  String get clipboardEmpty => 'Die Zwischenablage ist leer. Kopiere zuerst eine KI-Antwort.';
+  String get clipboardEmpty =>
+      'Die Zwischenablage ist leer. Kopiere zuerst eine KI-Antwort.';
   @override
   String get yesterday => 'Gestern';
   @override
@@ -58,40 +59,40 @@ class L10nDe extends L10n {
       'Skyblue Note — eine leichte, schnelle Notizen-App, die auf allen Geräten synchronisiert.';
   @override
   String get seedBody => [
-        'Hallo! 😊 Hier ist die gewünschte Zusammenfassung[1][2].',
-        '',
-        '# Skyblue Note',
-        '',
-        'Die Tabelle ist verrutscht. Tippen Sie unten links auf den **Zauberstab**. 🎉',
-        '',
-        '| Firma | Kürzel | Rendite | Anteil',
-        '|------|------|--------|',
-        '| Apple | AAPL | +14.2% | 12% |',
-        '|Nvidia|NVDA|+48.9%|22%|',
-        '| Microsoft | MSFT | +21.5% | 18% |',
-        '|Tesla|TSLA|-8.3%|8%|',
-        '',
-        '> Nach dem Aufräumen stimmen die Spalten. Über «Tabelle» im Menü landet sie direkt in der Tabellenkalkulation.',
-        '',
-        '## Was verschwindet',
-        '',
-        '- [ ] Höfliche Floskeln und Emojis 🙂',
-        '- [ ] Am Satzende klebende Fußnoten[3][4]',
-        '- [ ] Ein übrig gebliebenes Sternchenpaar am Zeilenende**',
-        '- [x] Die zerbrochene Tabelle wird neu gesetzt',
-        '',
-        '## Was bleibt',
-        '',
-        'Überschriften, **Fettdruck** und Zitate bleiben. Am Bildschirm sieht man die Bedeutung; beim Einfügen in Notizen oder ein Forum fallen die Zeichen weg.',
-        '',
-        '---',
-        '',
-        '\t•\tAufzählungen in Tabulatoren verpackt — so fügen Grok und ChatGPT ein',
-        '\t•\tDoppelte   Leerzeichen und Tabulatoren',
-        '\t•\tAuch diese verstreuten Zeilen finden ihren Platz',
-        '',
-        '> Gefällt es nicht? [Original wiederherstellen](https://ezlong.com/skybluenote) holt es zurück.',
-      ].join('\n');
+    'Hallo! 😊 Hier ist die gewünschte Zusammenfassung[1][2].',
+    '',
+    '# Skyblue Note',
+    '',
+    'Die Tabelle ist verrutscht. Tippen Sie unten links auf den **Zauberstab**. 🎉',
+    '',
+    '| Firma | Kürzel | Rendite | Anteil',
+    '|------|------|--------|',
+    '| Apple | AAPL | +14.2% | 12% |',
+    '|Nvidia|NVDA|+48.9%|22%|',
+    '| Microsoft | MSFT | +21.5% | 18% |',
+    '|Tesla|TSLA|-8.3%|8%|',
+    '',
+    '> Nach dem Aufräumen stimmen die Spalten. Über «Tabelle» im Menü landet sie direkt in der Tabellenkalkulation.',
+    '',
+    '## Was verschwindet',
+    '',
+    '- [ ] Höfliche Floskeln und Emojis 🙂',
+    '- [ ] Am Satzende klebende Fußnoten[3][4]',
+    '- [ ] Ein übrig gebliebenes Sternchenpaar am Zeilenende**',
+    '- [x] Die zerbrochene Tabelle wird neu gesetzt',
+    '',
+    '## Was bleibt',
+    '',
+    'Überschriften, **Fettdruck** und Zitate bleiben. Am Bildschirm sieht man die Bedeutung; beim Einfügen in Notizen oder ein Forum fallen die Zeichen weg.',
+    '',
+    '---',
+    '',
+    '\t•\tAufzählungen in Tabulatoren verpackt — so fügen Grok und ChatGPT ein',
+    '\t•\tDoppelte   Leerzeichen und Tabulatoren',
+    '\t•\tAuch diese verstreuten Zeilen finden ihren Platz',
+    '',
+    '> Gefällt es nicht? [Original wiederherstellen](https://ezlong.com/skybluenote) holt es zurück.',
+  ].join('\n');
 
   @override
   String get done => 'Fertig';
@@ -119,7 +120,8 @@ class L10nDe extends L10n {
   String get previewTitle2 => 'Vorschau vor dem Anwenden';
 
   @override
-  String get previewSub2 => 'Zeigt das Ergebnis zuerst und fragt vor dem Anwenden';
+  String get previewSub2 =>
+      'Zeigt das Ergebnis zuerst und fragt vor dem Anwenden';
   @override
   String get metaTooltip => 'Titel & Tags';
   @override
@@ -165,7 +167,8 @@ class L10nDe extends L10n {
   @override
   String get noteNotFound => 'Notiz nicht gefunden';
   @override
-  String get revertedToast => 'Zurück zum Original. Der vorherige Text liegt im Verlauf.';
+  String get revertedToast =>
+      'Zurück zum Original. Der vorherige Text liegt im Verlauf.';
 
   // 원본복귀 (2026-08-17)
   @override
@@ -182,12 +185,10 @@ class L10nDe extends L10n {
   String get revertConfirmOk => 'Wiederherstellen';
 
   @override
-  String get okAction =>
-      'OK';
+  String get okAction => 'OK';
 
   @override
-  String get revertDoneTitle =>
-      'Auf das Original zurückgesetzt';
+  String get revertDoneTitle => 'Auf das Original zurückgesetzt';
 
   @override
   String get revertDoneBody =>
@@ -272,10 +273,12 @@ class L10nDe extends L10n {
   String get aiPingOk => 'Bearbeiten funktioniert. Sie können loslegen.';
 
   @override
-  String aiPingFailed(String err) => 'Die Liste kam an, aber der Bearbeitungsaufruf wurde abgelehnt — $err';
+  String aiPingFailed(String err) =>
+      'Die Liste kam an, aber der Bearbeitungsaufruf wurde abgelehnt — $err';
 
   @override
-  String get aiAdvancedNote => 'Normalerweise nicht nötig. Der Schlüssel allein genügt.';
+  String get aiAdvancedNote =>
+      'Normalerweise nicht nötig. Der Schlüssel allein genügt.';
 
   // 종이 다섯 벌 추가 (2026-08-17)
   @override
@@ -338,11 +341,13 @@ class L10nDe extends L10n {
   @override
   String get noTablesFound => 'In dieser Notiz wurden keine Tabellen gefunden';
   @override
-  String tableInfo(int n, int cols, int rows) => 'Tabelle $n — $cols Spalten × $rows Zeilen';
+  String tableInfo(int n, int cols, int rows) =>
+      'Tabelle $n — $cols Spalten × $rows Zeilen';
   @override
   String get forSpreadsheet => 'Für Tabellenkalkulation';
   @override
-  String get copiedSpreadsheet => 'Kopiert — in eine Zelle von Google Sheets oder Excel einfügen';
+  String get copiedSpreadsheet =>
+      'Kopiert — in eine Zelle von Google Sheets oder Excel einfügen';
   @override
   String get copiedCsv => 'Als CSV kopiert';
   @override
@@ -375,17 +380,21 @@ class L10nDe extends L10n {
   @override
   String get aiBusyLabel => 'KI bearbeitet…';
   @override
-  String get aiKeyInviteTitle => 'Mit eigenem KI-Schlüssel wird es deutlich stärker';
+  String get aiKeyInviteTitle =>
+      'Mit eigenem KI-Schlüssel wird es deutlich stärker';
   @override
-  String get aiKeyInviteBody => 'Derzeit werden nur feste Regeln verstanden. Mit eigenem KI-Schlüssel funktionieren auch freie Anweisungen wie "schreibe das knapper" oder "formuliere es höflicher", und Tags zieht die KI heraus.';
+  String get aiKeyInviteBody =>
+      'Derzeit werden nur feste Regeln verstanden. Mit eigenem KI-Schlüssel funktionieren auch freie Anweisungen wie "schreibe das knapper" oder "formuliere es höflicher", und Tags zieht die KI heraus.';
   @override
   String get aiKeyCta => 'KI-Schlüssel eingeben';
   @override
   String get aiKeyPasteBtn => 'Einfügen';
   @override
-  String get aiKeyCost => 'Die App ruft einfach den KI-Dienst auf, den du ohnehin nutzt. Trag den Schlüssel von dem ein, den du hast: Gemini, ChatGPT, Claude oder Grok.';
+  String get aiKeyCost =>
+      'Die App ruft einfach den KI-Dienst auf, den du ohnehin nutzt. Trag den Schlüssel von dem ein, den du hast: Gemini, ChatGPT, Claude oder Grok.';
   @override
-  String get aiKeySafe => 'Der Schlüssel bleibt auf diesem Gerät. Er geht nie an die Server dieser App.';
+  String get aiKeySafe =>
+      'Der Schlüssel bleibt auf diesem Gerät. Er geht nie an die Server dieser App.';
   @override
   String get aiKeyWhere => 'Wo es Schlüssel gibt';
   @override
@@ -399,7 +408,8 @@ class L10nDe extends L10n {
   @override
   String get tableFixTitle => 'Tabellen aufräumen';
   @override
-  String get tableFixSub => 'Baut kaputte Tabellen neu auf und richtet die Spalten aus';
+  String get tableFixSub =>
+      'Baut kaputte Tabellen neu auf und richtet die Spalten aus';
   @override
   String get wideTableTitle => 'Breite Tabellen';
   @override
@@ -411,15 +421,18 @@ class L10nDe extends L10n {
   @override
   String get headingBigTitle => 'Zwischentitel als Überschrift 2';
   @override
-  String get headingBigSub => 'Macht erkannte Zwischentitel groß und fett (Überschrift 2)';
+  String get headingBigSub =>
+      'Macht erkannte Zwischentitel groß und fett (Überschrift 2)';
   @override
-  String get aiWorking => 'Die KI bearbeitet den Text wie gewünscht. Das kann einen Moment dauern…';
+  String get aiWorking =>
+      'Die KI bearbeitet den Text wie gewünscht. Das kann einen Moment dauern…';
   @override
   String get aiEmptyResponse => 'Leere Antwort';
   @override
   String aiCallFailed(String error) => 'KI-Aufruf fehlgeschlagen: $error';
   @override
-  String get aiAppliedToast => 'KI-Bearbeitung angewendet — mit Rückgängig wiederherstellbar';
+  String get aiAppliedToast =>
+      'KI-Bearbeitung angewendet — mit Rückgängig wiederherstellbar';
   @override
   String get close => 'Schließen';
   @override
@@ -458,27 +471,28 @@ class L10nDe extends L10n {
   String get copyAll => 'Alles kopieren';
 
   @override
-  String get copyPlainSub =>
-      'Reiner Text — ohne Markdown-Zeichen';
+  String get copyPlainSub => 'Reiner Text — ohne Markdown-Zeichen';
 
   @override
   String get copyRaw => 'Als Markdown kopieren';
 
   @override
-  String get copyRawSub =>
-      'Für Notion, Slack, GitHub und andere Markdown-Apps';
+  String get copyRawSub => 'Für Notion, Slack, GitHub und andere Markdown-Apps';
   @override
   String get copiedAll => 'Gesamten Text kopiert';
   @override
   String get tidyCopy => 'Bereinigt kopieren';
   @override
-  String get tidyCopySub => 'Die Notiz bleibt unverändert; nur das bereinigte Ergebnis wird kopiert';
+  String get tidyCopySub =>
+      'Die Notiz bleibt unverändert; nur das bereinigte Ergebnis wird kopiert';
   @override
   String tidyCopied(String summary) => 'Bereinigt und kopiert — $summary';
   @override
-  String get copyTableSpreadsheet => 'Tabellen für Tabellenkalkulation kopieren';
+  String get copyTableSpreadsheet =>
+      'Tabellen für Tabellenkalkulation kopieren';
   @override
-  String get copiedTableSpreadsheet => 'Tabellen für Tabellenkalkulation kopiert';
+  String get copiedTableSpreadsheet =>
+      'Tabellen für Tabellenkalkulation kopiert';
 
   @override
   String previewTitle(String preset) => '$preset — Vorschau';
@@ -492,53 +506,47 @@ class L10nDe extends L10n {
   String get apply => 'Bereinigung anwenden';
 
   @override
-  String get presetAiName =>
-      'Standard-Aufräumen';
+  String get presetAiName => 'Standard-Aufräumen';
   @override
   String get presetAiDesc =>
       'Macht eine eingefügte KI-Antwort lesbar. Meistens reicht das';
   @override
-  String get presetStripName =>
-      'Alle Zeichen entfernen';
+  String get presetStripName => 'Alle Zeichen entfernen';
   @override
   String get presetStripDesc =>
       'Für Chat und SMS. Alle Zeichen und Emojis fallen weg, Tabellen werden ausgerichtet';
   @override
-  String get presetMinimalName =>
-      'Nur Fusseln';
+  String get presetMinimalName => 'Nur Fusseln';
   @override
   String get presetMinimalDesc =>
       'Behält die Struktur, entfernt nur Unsichtbares';
   @override
-  String get presetTablesName =>
-      'Nur Tabellen';
+  String get presetTablesName => 'Nur Tabellen';
   @override
   String get presetTablesDesc =>
       'Zum direkten Einfügen in Excel oder Google Tabellen';
   @override
-  String get presetBlogName =>
-      'Für Blogs';
+  String get presetBlogName => 'Für Blogs';
   @override
-  String get presetBlogDesc =>
-      'Behält Linkadressen, entfernt die Zeichen';
+  String get presetBlogDesc => 'Behält Linkadressen, entfernt die Zeichen';
 
   @override
   String get tidySample => [
-        '## Zusammenfassung von heute 😊',
-        '',
-        'Die **Kernpunkte** sind drei[1][2].',
-        '',
-        '- Erster Punkt',
-        '- Zweiter Punkt',
-        '',
-        '> Eine zitierte Zeile',
-        '',
-        'Mehr im [Blog](https://ezlong.com)',
-        '',
-        '| Posten | Wert |',
-        '|---|---|',
-        '|Umsatz|120|',
-      ].join('\n');
+    '## Zusammenfassung von heute 😊',
+    '',
+    'Die **Kernpunkte** sind drei[1][2].',
+    '',
+    '- Erster Punkt',
+    '- Zweiter Punkt',
+    '',
+    '> Eine zitierte Zeile',
+    '',
+    'Mehr im [Blog](https://ezlong.com)',
+    '',
+    '| Posten | Wert |',
+    '|---|---|',
+    '|Umsatz|120|',
+  ].join('\n');
 
   @override
   String get settingsTitle => 'Einstellungen';
@@ -555,17 +563,18 @@ class L10nDe extends L10n {
   String get syncAppleOnly => 'Nur Apple';
 
   @override
-  String get syncScopeTitle =>
-      'Umfang der Synchronisierung';
+  String get syncScopeTitle => 'Umfang der Synchronisierung';
 
   @override
   String get syncScopeShared =>
       'Zwischen Ihren Geräten synchronisiert: Notizen, Aufräumregeln, selbst angelegte Ersetzungsregeln, Ordner, gespeicherte KI-Anweisungen';
 
   @override
-  String get syncStateOffGdrive => 'Bitte melden Sie sich erneut in Ihrem Google-Konto an';
+  String get syncStateOffGdrive =>
+      'Bitte melden Sie sich erneut in Ihrem Google-Konto an';
   @override
-  String get syncStateExpiredGdrive => 'Ihr Konto ist weiterhin verbunden, aber die Berechtigung für Drive ist abgelaufen. Einmal tippen, um sie zu erneuern.';
+  String get syncStateExpiredGdrive =>
+      'Ihr Konto ist weiterhin verbunden, aber die Berechtigung für Drive ist abgelaufen. Einmal tippen, um sie zu erneuern.';
 
   @override
   String get syncScopePlatformGdrive =>
@@ -586,29 +595,21 @@ class L10nDe extends L10n {
   String get syncScopeNever =>
       'Der KI-API-Schlüssel wird in keiner Cloud gesichert und muss auf jedem Gerät eingegeben werden';
   @override
-  String get syncWhereTitle =>
-      'Wo aufbewahren';
+  String get syncWhereTitle => 'Wo aufbewahren';
   @override
-  String get syncBackendNone =>
-      'Nicht synchronisieren';
+  String get syncBackendNone => 'Nicht synchronisieren';
   @override
-  String get syncBackendNoneSub =>
-      'Nur auf diesem Gerät';
+  String get syncBackendNoneSub => 'Nur auf diesem Gerät';
   @override
-  String get syncBackendIcloud =>
-      'iCloud';
+  String get syncBackendIcloud => 'iCloud';
   @override
-  String get syncBackendIcloudSub =>
-      'Zwischen iPhone, iPad und Mac';
+  String get syncBackendIcloudSub => 'Zwischen iPhone, iPad und Mac';
   @override
-  String get syncBackendGdrive =>
-      'Google Drive';
+  String get syncBackendGdrive => 'Google Drive';
   @override
-  String get syncBackendGdriveSub =>
-      'Auch andere Geräte und Web';
+  String get syncBackendGdriveSub => 'Auch andere Geräte und Web';
   @override
-  String get syncSoon =>
-      'In Vorbereitung';
+  String get syncSoon => 'In Vorbereitung';
 
   @override
   String get driveSignInFailed => 'Google-Konto konnte nicht verbunden werden';
@@ -619,17 +620,14 @@ class L10nDe extends L10n {
   @override
   String get driveSignedInAs => 'Verbunden';
   @override
-  String get syncSectionState =>
-      'Aktueller Stand';
+  String get syncSectionState => 'Aktueller Stand';
   @override
-  String get syncNowAction =>
-      'Jetzt abgleichen';
+  String get syncNowAction => 'Jetzt abgleichen';
   @override
   String get syncNowBusy => 'Wird abgeglichen…';
 
   @override
-  String get syncLastNever =>
-      'Noch nie abgeglichen';
+  String get syncLastNever => 'Noch nie abgeglichen';
   @override
   String get headingTip => 'Überschrift';
   @override
@@ -680,7 +678,8 @@ class L10nDe extends L10n {
   @override
   String skyCounts(int stars, int links) => '$stars Sterne · $links Fäden';
   @override
-  String skyEmpty(int more) => 'Noch $more Notizen, dann erscheint hier Ihr Sternbild. Ähnliche Notizen werden verbunden.';
+  String skyEmpty(int more) =>
+      'Noch $more Notizen, dann erscheint hier Ihr Sternbild. Ähnliche Notizen werden verbunden.';
   @override
   String get travelTitle => 'Zeitreise';
   @override
@@ -702,7 +701,8 @@ class L10nDe extends L10n {
   @override
   String wipeCounts(int before, int after) => '$before → $after Zeichen';
   @override
-  String get syncStalledSub => 'Der Google-Zugriff ist abgelaufen. Ihre Notizen sind auf diesem Gerät sicher.';
+  String get syncStalledSub =>
+      'Der Google-Zugriff ist abgelaufen. Ihre Notizen sind auf diesem Gerät sicher.';
   @override
   String get syncStalledFix => 'Neu verbinden';
   @override
@@ -740,11 +740,13 @@ class L10nDe extends L10n {
   @override
   String get syncFirstTitle => 'Wird synchronisiert …';
   @override
-  String get syncFirstSub => 'Notizen von Ihren anderen Geräten werden geladen. Bei vielen Notizen dauert es einen Moment.';
+  String get syncFirstSub =>
+      'Notizen von Ihren anderen Geräten werden geladen. Bei vielen Notizen dauert es einen Moment.';
   @override
   String get syncLogTitle => 'Synchronisierungsverlauf';
   @override
-  String get syncLogNote => 'Nur was wann übertragen wurde. Notizinhalte werden hier nicht gespeichert.';
+  String get syncLogNote =>
+      'Nur was wann übertragen wurde. Notizinhalte werden hier nicht gespeichert.';
   @override
   String get syncLogEmpty => 'Bisher wurde nichts übertragen';
   @override
@@ -764,8 +766,7 @@ class L10nDe extends L10n {
   @override
   String syncLogLastDown(String when) => 'Zuletzt empfangen · ' + when;
   @override
-  String get syncTroubleTitle =>
-      'Wenn etwas schiefgeht';
+  String get syncTroubleTitle => 'Wenn etwas schiefgeht';
   @override
   String get syncTroubleNote =>
       'Abgleichen ist kein Backup. Was Sie auf einem Gerät löschen, ist überall weg. Exportieren Sie wichtige Notizen ab und zu als Datei.';
@@ -773,22 +774,28 @@ class L10nDe extends L10n {
   String syncLastAt(String when) => 'Zuletzt abgeglichen: $when';
 
   @override
-  String syncStateOn(String where) => 'In $where abgelegt — dieselben Notizen auf jedem Gerät mit dieser App';
+  String syncStateOn(String where) =>
+      'In $where abgelegt — dieselben Notizen auf jedem Gerät mit dieser App';
 
   @override
-  String get syncStateOff => 'Aktiviere iCloud Drive in den Geräteeinstellungen';
+  String get syncStateOff =>
+      'Aktiviere iCloud Drive in den Geräteeinstellungen';
 
   @override
-  String syncStateSyncing(String where) => 'Wird mit $where abgeglichen… das dauert einige Sekunden bis eine Minute';
+  String syncStateSyncing(String where) =>
+      'Wird mit $where abgeglichen… das dauert einige Sekunden bis eine Minute';
 
   @override
-  String get aiKeyNotSynced => 'Ihre Notizen werden über den gewählten Speicher auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
+  String get aiKeyNotSynced =>
+      'Ihre Notizen werden über den gewählten Speicher auf allen Geräten abgeglichen. Ihr API-Schlüssel nicht — geben Sie ihn auf jedem Gerät einzeln ein.';
   @override
   String get aiKeySyncTitle => 'API-Schlüssel ebenfalls synchronisieren';
   @override
-  String get aiKeySyncSubApple => 'Er reist über den iCloud-Schlüsselbund — ein anderer Weg als der Ihrer Notizen. Nur Ihre Geräte besitzen den Schlüssel, nicht einmal Apple kann ihn lesen.';
+  String get aiKeySyncSubApple =>
+      'Er reist über den iCloud-Schlüsselbund — ein anderer Weg als der Ihrer Notizen. Nur Ihre Geräte besitzen den Schlüssel, nicht einmal Apple kann ihn lesen.';
   @override
-  String get aiKeySyncSubGdrive => 'Sobald der API-Schlüssel auf Google Drive liegt, ist jeder selbst für seine Sicherheit verantwortlich.';
+  String get aiKeySyncSubGdrive =>
+      'Sobald der API-Schlüssel auf Google Drive liegt, ist jeder selbst für seine Sicherheit verantwortlich.';
 
   @override
   String get autoTagTitle => 'Automatisch verschlagworten';
@@ -851,28 +858,35 @@ class L10nDe extends L10n {
   String get selectWord => 'Auswählen';
 
   @override
-  String get tagAiNeedKey => 'Geben Sie in den Einstellungen einen API-Schlüssel ein, um die automatische KI-Verschlagwortung zu nutzen.';
+  String get tagAiNeedKey =>
+      'Geben Sie in den Einstellungen einen API-Schlüssel ein, um die automatische KI-Verschlagwortung zu nutzen.';
 
   @override
   String get toggleListTooltip => 'Liste aus- oder einblenden';
 
   @override
-  String get aiDetecting => 'Es wird geprüft, zu welchem Anbieter dieser Schlüssel gehört…';
+  String get aiDetecting =>
+      'Es wird geprüft, zu welchem Anbieter dieser Schlüssel gehört…';
 
   @override
-  String get aiErrNoCredits => 'Der Schlüssel ist in Ordnung, aber das Konto hat kein Guthaben. Hinterlegen Sie beim Anbieter eine Zahlungsmethode oder laden Sie Guthaben auf. Wenn Sie nichts zahlen möchten, probieren Sie einen Google-Gemini-Schlüssel (beginnt mit AIza…) — er hat ein kostenloses Kontingent.';
+  String get aiErrNoCredits =>
+      'Der Schlüssel ist in Ordnung, aber das Konto hat kein Guthaben. Hinterlegen Sie beim Anbieter eine Zahlungsmethode oder laden Sie Guthaben auf. Wenn Sie nichts zahlen möchten, probieren Sie einen Google-Gemini-Schlüssel (beginnt mit AIza…) — er hat ein kostenloses Kontingent.';
 
   @override
-  String get aiErrBadKey => 'Der Schlüssel wurde abgelehnt. Prüfen Sie überflüssige Leerzeichen oder Anführungszeichen und erstellen Sie sonst einen neuen Schlüssel.';
+  String get aiErrBadKey =>
+      'Der Schlüssel wurde abgelehnt. Prüfen Sie überflüssige Leerzeichen oder Anführungszeichen und erstellen Sie sonst einen neuen Schlüssel.';
 
   @override
-  String get aiErrRateLimit => 'Der Anbieter ist gerade überlastet. Das liegt nicht an der App — versuchen Sie es gleich noch einmal.';
+  String get aiErrRateLimit =>
+      'Der Anbieter ist gerade überlastet. Das liegt nicht an der App — versuchen Sie es gleich noch einmal.';
 
   @override
-  String get aiErrNoModel => 'Dieses Modell ist für dieses Konto nicht verfügbar. Wählen Sie unter \'Erweitert — Modell direkt wählen\' ein anderes.';
+  String get aiErrNoModel =>
+      'Dieses Modell ist für dieses Konto nicht verfügbar. Wählen Sie unter \'Erweitert — Modell direkt wählen\' ein anderes.';
 
   @override
-  String get aiErrNetwork => 'Keine Internetverbindung. Prüfen Sie die Verbindung und versuchen Sie es erneut.';
+  String get aiErrNetwork =>
+      'Keine Internetverbindung. Prüfen Sie die Verbindung und versuchen Sie es erneut.';
 
   @override
   String get multiSelectStart => 'Mehrere Notizen löschen';
@@ -891,8 +905,8 @@ class L10nDe extends L10n {
 
   @override
   String deleteSelectedBody(int n) => n == 1
-          ? '1 Notiz wandert in den Papierkorb. Wiederherstellung innerhalb von 30 Tagen möglich.'
-          : '$n Notizen wandern in den Papierkorb. Wiederherstellung innerhalb von 30 Tagen möglich.';
+      ? '1 Notiz wandert in den Papierkorb. Wiederherstellung innerhalb von 30 Tagen möglich.'
+      : '$n Notizen wandern in den Papierkorb. Wiederherstellung innerhalb von 30 Tagen möglich.';
 
   @override
   String get trashTitle => 'Papierkorb';
@@ -913,80 +927,69 @@ class L10nDe extends L10n {
   String get trashEmptyAll => 'Leeren';
 
   @override
-  String get trashEmptyConfirm => 'Das Leeren des Papierkorbs kann nicht rückgängig gemacht werden. Fortfahren?';
+  String get trashEmptyConfirm =>
+      'Das Leeren des Papierkorbs kann nicht rückgängig gemacht werden. Fortfahren?';
 
   @override
   String get trashRestored => 'Wiederhergestellt';
 
   @override
-  String trashDaysLeftLabel(int days) => 'Wird in $days Tagen endgültig gelöscht';
+  String trashDaysLeftLabel(int days) =>
+      'Wird in $days Tagen endgültig gelöscht';
 
   @override
-  String get exportSectionTitle =>
-      'Importieren & exportieren';
+  String get exportSectionTitle => 'Importieren & exportieren';
 
   @override
   String get exportSubtitle =>
       'Ihre Notizen können jederzeit gehen. Markdown öffnet sich in Apple Notizen, Obsidian, Notion und anderen.';
 
   @override
-  String get exportNote =>
-      'Diese Notiz exportieren';
+  String get exportNote => 'Diese Notiz exportieren';
 
   @override
-  String get exportAllMd =>
-      'Alle Notizen exportieren';
+  String get exportAllMd => 'Alle Notizen exportieren';
 
   @override
-  String get exportAllMdSub =>
-      'Alle Notizen als Markdown in einem ZIP';
+  String get exportAllMdSub => 'Alle Notizen als Markdown in einem ZIP';
 
   @override
-  String get exportBackup =>
-      'Backup sichern';
+  String get exportBackup => 'Backup sichern';
 
   @override
   String get exportBackupSub =>
       'Eine Datei, die hier alles wiederherstellt (ohne Ihren API-Schlüssel)';
 
   @override
-  String get exportFailed =>
-      'Export fehlgeschlagen';
+  String get exportFailed => 'Export fehlgeschlagen';
 
   @override
-  String get printAction =>
-      'Drucken';
+  String get printAction => 'Drucken';
 
   @override
-  String get exportPdf =>
-      'Als PDF exportieren';
+  String get exportPdf => 'Als PDF exportieren';
 
   @override
-  String get pdfFailed =>
-      'PDF konnte nicht erstellt werden';
+  String get pdfFailed => 'PDF konnte nicht erstellt werden';
 
   @override
-  String get exportEmpty =>
-      'Es gibt keine Notizen zum Exportieren';
+  String get exportEmpty => 'Es gibt keine Notizen zum Exportieren';
 
   @override
   String get choosePreset => 'Aufräum-Art wählen';
 
   @override
-  String get importFiles =>
-      'Aus Dateien importieren';
+  String get importFiles => 'Aus Dateien importieren';
 
   @override
   String get importFilesSub =>
       'Markdown- und Textdateien werden zu Notizen. Backups werden hier ebenfalls wiederhergestellt';
 
   @override
-  String get importAppend =>
-      'Datei laden und an den Text anhängen';
+  String get importAppend => 'Datei laden und an den Text anhängen';
 
   @override
-  String get importNone =>
-      'Es wurde nichts importiert';
+  String get importNone => 'Es wurde nichts importiert';
 
   @override
   String importDone(int n) => '$n Notizen importiert';
@@ -998,24 +1001,19 @@ class L10nDe extends L10n {
   String get splitEmpty => 'Wählen Sie links eine Notiz';
 
   @override
-  String get historyTitle =>
-      'Versionsverlauf';
+  String get historyTitle => 'Versionsverlauf';
 
   @override
-  String get historySub =>
-      'Zurück zum Text vor dem Aufräumen oder Ersetzen';
+  String get historySub => 'Zurück zum Text vor dem Aufräumen oder Ersetzen';
 
   @override
-  String get historyEmpty =>
-      'Noch nichts zum Zurückgehen';
+  String get historyEmpty => 'Noch nichts zum Zurückgehen';
 
   @override
-  String get historyRestore =>
-      'Wiederherstellen';
+  String get historyRestore => 'Wiederherstellen';
 
   @override
-  String get historyOriginal =>
-      'Wie eingefügt';
+  String get historyOriginal => 'Wie eingefügt';
 
   @override
   String get historyWhyTidy => 'Vor dem Aufräumen';
@@ -1048,7 +1046,8 @@ class L10nDe extends L10n {
   String get attachRemove => 'Anhang entfernen';
 
   @override
-  String get attachRemoveBody => 'Die Datei wird von diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.';
+  String get attachRemoveBody =>
+      'Die Datei wird von diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.';
 
   @override
   String get attachFailed => 'Datei konnte nicht angehängt werden';
@@ -1060,7 +1059,8 @@ class L10nDe extends L10n {
   String attachAndMore(int n) => 'und ${n} weitere';
 
   @override
-  String attachOther(String device, String what) => 'Anhang: ${what} hängt an der Notiz auf Ihrem ${device} (nur dort einsehbar)';
+  String attachOther(String device, String what) =>
+      'Anhang: ${what} hängt an der Notiz auf Ihrem ${device} (nur dort einsehbar)';
 
   @override
   String deviceName(String kind) {
@@ -1116,7 +1116,8 @@ class L10nDe extends L10n {
   String get paperTitle => 'Editor-Hintergrund';
 
   @override
-  String get paperSub => 'Hintergrund und Linien als Satz. Der Zeilenabstand folgt der Schriftgröße.';
+  String get paperSub =>
+      'Hintergrund und Linien als Satz. Der Zeilenabstand folgt der Schriftgröße.';
 
   @override
   String get paperNone => 'Schlicht';
@@ -1143,11 +1144,12 @@ class L10nDe extends L10n {
   String lockSub(String vendor) => vendor == 'android'
       ? 'Die App mit Fingerabdruck, Gesicht oder der Displaysperre öffnen.'
       : vendor == 'windows'
-          ? 'Die App mit Windows Hello oder der Geräte-PIN öffnen.'
-          : 'Die App mit Face ID, Touch ID oder dem Gerätecode öffnen.';
+      ? 'Die App mit Windows Hello oder der Geräte-PIN öffnen.'
+      : 'Die App mit Face ID, Touch ID oder dem Gerätecode öffnen.';
 
   @override
-  String get lockNote => 'Diese Sperre verhindert, dass jemand mit deinem Gerät die App öffnet. Die Dateien auf dem Gerät werden dadurch nicht verschlüsselt.';
+  String get lockNote =>
+      'Diese Sperre verhindert, dass jemand mit deinem Gerät die App öffnet. Die Dateien auf dem Gerät werden dadurch nicht verschlüsselt.';
 
   @override
   String get lockDelayTitle => 'Sperren nach';
@@ -1171,8 +1173,8 @@ class L10nDe extends L10n {
   String lockUnavailable(String vendor) => vendor == 'android'
       ? 'Fingerabdruck, Gesichtserkennung und Displaysperre sind auf diesem Gerät nicht verfügbar.'
       : vendor == 'windows'
-          ? 'Windows Hello und Geräte-PIN sind auf diesem Gerät nicht verfügbar.'
-          : 'Face ID, Touch ID und Gerätecode sind auf diesem Gerät nicht verfügbar.';
+      ? 'Windows Hello und Geräte-PIN sind auf diesem Gerät nicht verfügbar.'
+      : 'Face ID, Touch ID und Gerätecode sind auf diesem Gerät nicht verfügbar.';
 
   @override
   String get lockReasonOpen => 'Bestätigen, um die Notizen zu öffnen';
@@ -1202,28 +1204,35 @@ class L10nDe extends L10n {
   String get noteUnlockDone => 'Notiz entsperrt';
 
   @override
-  String get syncDiagSignedOut => 'Dieses Gerät ist nicht bei iCloud angemeldet. Bitte zuerst anmelden.';
+  String get syncDiagSignedOut =>
+      'Dieses Gerät ist nicht bei iCloud angemeldet. Bitte zuerst anmelden.';
 
   @override
-  String get syncDiagNoContainer => 'Du bist angemeldet, aber diese App hat noch keinen iCloud-Bereich. Aktiviere ihn mit den Schritten unten.';
+  String get syncDiagNoContainer =>
+      'Du bist angemeldet, aber diese App hat noch keinen iCloud-Bereich. Aktiviere ihn mit den Schritten unten.';
 
   @override
-  String get syncDiagPreparing => 'Der Bereich ist da. Warte darauf, dass er bereit ist.';
+  String get syncDiagPreparing =>
+      'Der Bereich ist da. Warte darauf, dass er bereit ist.';
 
   @override
-  String get syncRecheckWhat => 'Fragt das Gerät erneut nach dem iCloud-Status, von vorn.';
+  String get syncRecheckWhat =>
+      'Fragt das Gerät erneut nach dem iCloud-Status, von vorn.';
 
   @override
   String get syncRecheckOk => 'iCloud ist aktiviert';
 
   @override
-  String get syncRecheckStill => 'Noch nicht aktiviert. Schalte es in den Einstellungen ein und tippe erneut. Wenn du es gerade eingeschaltet hast, versuche es in ein bis zwei Minuten noch einmal.';
+  String get syncRecheckStill =>
+      'Noch nicht aktiviert. Schalte es in den Einstellungen ein und tippe erneut. Wenn du es gerade eingeschaltet hast, versuche es in ein bis zwei Minuten noch einmal.';
 
   @override
-  String get syncOpenFailed => 'Einstellungen konnten nicht geöffnet werden. Bitte vom Home-Bildschirm aus öffnen.';
+  String get syncOpenFailed =>
+      'Einstellungen konnten nicht geöffnet werden. Bitte vom Home-Bildschirm aus öffnen.';
 
   @override
-  String get syncOpenManual => 'Bitte öffne die Einstellungen selbst: Home-Bildschirm › Einstellungen › dein Name oben › iCloud.';
+  String get syncOpenManual =>
+      'Bitte öffne die Einstellungen selbst: Home-Bildschirm › Einstellungen › dein Name oben › iCloud.';
 
   @override
   String get menuFile => 'Ablage';
@@ -1255,11 +1264,14 @@ class L10nDe extends L10n {
   @override
   String get syncHelpTitleGdrive => 'Google Drive neu verbinden';
   @override
-  String get syncHelpStepsGdrive => '1. Tippen Sie unten und wählen Sie Ihr Google-Konto\n2. Erlauben Sie den Zugriff auf Drive\n3. Der Abgleich startet sofort';
+  String get syncHelpStepsGdrive =>
+      '1. Tippen Sie unten und wählen Sie Ihr Google-Konto\n2. Erlauben Sie den Zugriff auf Drive\n3. Der Abgleich startet sofort';
   @override
-  String get syncHelpNoteGdrive => 'Ihre Notizen liegen weiterhin auf Drive. Nach der Anmeldung sind sie wieder da.';
+  String get syncHelpNoteGdrive =>
+      'Ihre Notizen liegen weiterhin auf Drive. Nach der Anmeldung sind sie wieder da.';
   @override
-  String get syncDiagSignedOutGdrive => 'Dieses Gerät ist bei keinem Google-Konto angemeldet.';
+  String get syncDiagSignedOutGdrive =>
+      'Dieses Gerät ist bei keinem Google-Konto angemeldet.';
   @override
   String get syncSignInGoogle => 'Mit Google anmelden';
   @override
@@ -1268,11 +1280,11 @@ class L10nDe extends L10n {
   String get syncDiagPreparingGdrive =>
       "Angemeldet. Notizen werden aus Drive geladen. Sie müssen nicht zusehen — wechseln Sie ruhig die App; das Laden pausiert und setzt beim Zurückkehren genau dort fort.";
   @override
-  String get syncRecheckStillGdrive => 'Noch nicht alles da. Der erste Abgleich dauert etwas, wenn Sie viele Notizen haben \u2014 er läuft weiter, auch wenn Sie schließen.';
+  String get syncRecheckStillGdrive =>
+      'Noch nicht alles da. Der erste Abgleich dauert etwas, wenn Sie viele Notizen haben \u2014 er läuft weiter, auch wenn Sie schließen.';
 
   @override
-  String pastedFrom(String src, String date) =>
-      'von $src am $date';
+  String pastedFrom(String src, String date) => 'von $src am $date';
 
   @override
   String pastedOn(String date) => 'eingefügt am $date';
@@ -1291,7 +1303,8 @@ class L10nDe extends L10n {
   @override
   String get emphTitle => 'Fette Hervorhebung (**Text**)';
   @override
-  String get emphSub => 'Bei ganzen Sätzen über 40 Zeichen werden immer nur die Zeichen entfernt';
+  String get emphSub =>
+      'Bei ganzen Sätzen über 40 Zeichen werden immer nur die Zeichen entfernt';
   @override
   String get emphQuoteSingle => "Einfache Anführungszeichen 'Hervorhebung'";
   @override
@@ -1343,19 +1356,24 @@ class L10nDe extends L10n {
   @override
   String get citationsTitle => 'Quellenlinks entfernen';
   @override
-  String get citationsSub => 'Entfernt Fußnotenzahlen im Text und die Quellenliste am Ende';
+  String get citationsSub =>
+      'Entfernt Fußnotenzahlen im Text und die Quellenliste am Ende';
   @override
   String get monoEditorTitle => 'Tabellen in Monospace';
   @override
-  String get monoEditorSub => 'Richtet Tabellen- und Codespalten exakt aus. Fließtext behält die Geräteschrift';
+  String get monoEditorSub =>
+      'Richtet Tabellen- und Codespalten exakt aus. Fließtext behält die Geräteschrift';
   @override
   String get dashListTitle => 'Gedankenstrich-Reihen in Listen umwandeln';
   @override
-  String get dashListSub => 'Teilt einzeilige Reihen wie „– a – b – c" in eine Zeilenliste';
+  String get dashListSub =>
+      'Teilt einzeilige Reihen wie „– a – b – c" in eine Zeilenliste';
   @override
-  String get fillerHeadingTitle => 'Unsichtbare-Zeichen-Überschriften aufräumen';
+  String get fillerHeadingTitle =>
+      'Unsichtbare-Zeichen-Überschriften aufräumen';
   @override
-  String get fillerHeadingSub => 'Wendet Abstands- und Überschriftenregeln auf ㅤ-umschlossene Pseudo-Überschriften an';
+  String get fillerHeadingSub =>
+      'Wendet Abstands- und Überschriftenregeln auf ㅤ-umschlossene Pseudo-Überschriften an';
   @override
   String get aiSectionTitle => 'KI-Bearbeitung einrichten';
   @override
@@ -1372,7 +1390,8 @@ class L10nDe extends L10n {
   @override
   String get pasteTipTitle => 'Nicht bei jedem Einfügen fragen';
   @override
-  String get pasteTipSub => 'Schalte die Rückfrage aus, die das iPhone bei jedem Einfügen zeigt';
+  String get pasteTipSub =>
+      'Schalte die Rückfrage aus, die das iPhone bei jedem Einfügen zeigt';
   @override
   String get pasteTipBody =>
       'Das iPhone fragt jedes Mal nach, wenn eine App die Zwischenablage liest. Diese App beginnt mit dem Einfügen, deshalb kommt die Frage sehr oft.\n\nEinmal ändern, dann fragt es nie wieder.\n\n1. Tippe unten auf \'Einstellungen öffnen\'\n2. Tippe auf \'Aus anderen Apps einsetzen\'\n3. Wähle \'Erlauben\'\n\nAuch mit Erlaubnis liest diese App die Zwischenablage nur in dem Moment, in dem du auf Einfügen tippst. Sie schaut nie von selbst nach.';
@@ -1380,6 +1399,25 @@ class L10nDe extends L10n {
   String get pasteTipLater => 'Später';
   @override
   String get adClose => 'Werbung schließen';
+
+  @override
+  String get bookmarkAdd => 'Lesezeichen hier';
+
+  @override
+  String get bookmarkRemove => 'Lesezeichen entfernen';
+
+  @override
+  String get bookmarkTooShort =>
+      'Diese Notiz passt auf einen Bildschirm — nichts zu merken';
+
+  @override
+  String bookmarkGoAt(int pct) => 'Zum Lesezeichen · $pct%';
+
+  @override
+  String bookmarkResume(int pct) => 'Bei $pct% weiterlesen';
+
+  @override
+  String bookmarkSaved(int pct) => 'Lesezeichen bei $pct% gesetzt';
   @override
   String get noteDuplicate => 'Duplizieren';
   @override
@@ -1398,7 +1436,8 @@ class L10nDe extends L10n {
   @override
   String get sponsorLoading => 'Anzeige wird geladen…';
   @override
-  String get sponsorFailed => 'Anzeige konnte nicht geladen werden. Bitte gleich noch einmal versuchen.';
+  String get sponsorFailed =>
+      'Anzeige konnte nicht geladen werden. Bitte gleich noch einmal versuchen.';
   @override
   String get moreTooltip => 'Mehr';
   @override
@@ -1410,13 +1449,17 @@ class L10nDe extends L10n {
   @override
   String get premiumBestValue => 'Bester Wert';
   @override
-  String get premiumPerks => 'Keine Werbung · Unbegrenztes Aufräumen · Unbegrenzte KI-Bearbeitung';
+  String get premiumPerks =>
+      'Keine Werbung · Unbegrenztes Aufräumen · Unbegrenzte KI-Bearbeitung';
   @override
-  String get premiumScopeBase => 'Es öffnet sich auf den Geräten des Stores, in dem Sie gekauft haben. In beiden Fällen ist die Web-App enthalten.';
+  String get premiumScopeBase =>
+      'Es öffnet sich auf den Geräten des Stores, in dem Sie gekauft haben. In beiden Fällen ist die Web-App enthalten.';
   @override
-  String get premiumScopeAll => 'Ein Kauf öffnet alles, auch wenn Sie Telefon und Computer nebeneinander nutzen. Später hinzukommende Geräte sind eingeschlossen.';
+  String get premiumScopeAll =>
+      'Ein Kauf öffnet alles, auch wenn Sie Telefon und Computer nebeneinander nutzen. Später hinzukommende Geräte sind eingeschlossen.';
   @override
-  String get premiumAutoRenew => 'Abos verlängern sich automatisch, sofern sie nicht mindestens 24 Stunden vor Ablauf gekündigt werden. Sie können jederzeit in den Kontoeinstellungen kündigen.';
+  String get premiumAutoRenew =>
+      'Abos verlängern sich automatisch, sofern sie nicht mindestens 24 Stunden vor Ablauf gekündigt werden. Sie können jederzeit in den Kontoeinstellungen kündigen.';
   @override
   String get premiumRestore => 'Käufe wiederherstellen';
   @override
@@ -1426,16 +1469,19 @@ class L10nDe extends L10n {
   @override
   String get premiumThanks => 'Danke. Premium ist aktiv.';
   @override
-  String get premiumNoStore => 'Auf diesem Gerät ist kein Kauf möglich. Nach dem Kauf gilt es hier, sobald Sie sich mit demselben Konto anmelden.';
+  String get premiumNoStore =>
+      'Auf diesem Gerät ist kein Kauf möglich. Nach dem Kauf gilt es hier, sobald Sie sich mit demselben Konto anmelden.';
   @override
-  String get premiumUpgradeHere => 'Wechseln Sie zu Alle Geräte, um es auch hier zu nutzen. Die Restlaufzeit rechnet der Store an.';
+  String get premiumUpgradeHere =>
+      'Wechseln Sie zu Alle Geräte, um es auch hier zu nutzen. Die Restlaufzeit rechnet der Store an.';
   @override
   String get premiumHave => 'Ihr Tarif';
   @override
   String get premiumLoading => 'Preise werden vom Store geladen';
 
   @override
-  String get premiumPerkNoAds => 'Keine Werbung — weder das obere Banner noch der Hinweis beim Schließen';
+  String get premiumPerkNoAds =>
+      'Keine Werbung — weder das obere Banner noch der Hinweis beim Schließen';
 
   @override
   String get premiumGroupPerks => 'Premium-Vorteile';
@@ -1447,25 +1493,29 @@ class L10nDe extends L10n {
   String get onbTitle1 => 'Einfügen — und es ist aufgeräumt';
 
   @override
-  String get onbBody1 => 'Fügen Sie die KI-Antwort so ein, wie sie kam. Sternchen, Rauten und Floskeln verschwinden auf einen Druck.';
+  String get onbBody1 =>
+      'Fügen Sie die KI-Antwort so ein, wie sie kam. Sternchen, Rauten und Floskeln verschwinden auf einen Druck.';
 
   @override
   String get onbTitle2 => 'Kaputte Tabellen stehen wieder';
 
   @override
-  String get onbBody2 => 'Verrutschte Tabellen werden neu gesetzt, und ein Tippen fügt sie unverändert in Excel oder Google Tabellen ein.';
+  String get onbBody2 =>
+      'Verrutschte Tabellen werden neu gesetzt, und ein Tippen fügt sie unverändert in Excel oder Google Tabellen ein.';
 
   @override
   String get onbTitle3 => 'Überall dieselben Notizen';
 
   @override
-  String get onbBody3 => 'iPhone, iPad, Mac und die Web-App im Browser zeigen dieselben Notizen. Andere Geräte, die Sie parallel nutzen, ziehen ebenfalls mit. Ändern Sie es an einer Stelle, der Rest folgt.';
+  String get onbBody3 =>
+      'iPhone, iPad, Mac und die Web-App im Browser zeigen dieselben Notizen. Andere Geräte, die Sie parallel nutzen, ziehen ebenfalls mit. Ändern Sie es an einer Stelle, der Rest folgt.';
 
   @override
   String get onbTitle4 => 'Alles ist offen';
 
   @override
-  String onbBody4(int days) => 'Nutzen Sie es $days Tage lang ohne Limit. Entscheiden Sie später, wenn es sich lohnt. Jetzt ist nichts zu zahlen.';
+  String onbBody4(int days) =>
+      'Nutzen Sie es $days Tage lang ohne Limit. Entscheiden Sie später, wenn es sich lohnt. Jetzt ist nichts zu zahlen.';
 
   @override
   String get onbNext => 'Weiter';
@@ -1480,7 +1530,8 @@ class L10nDe extends L10n {
   String get onbSeePremium => 'Premium ansehen';
 
   @override
-  String get premiumSubhead => 'Nichts, was den Bildschirm verdeckt, nichts zu zählen. Einfügen, drücken, fertig.';
+  String get premiumSubhead =>
+      'Nichts, was den Bildschirm verdeckt, nichts zu zählen. Einfügen, drücken, fertig.';
 
   @override
   String get premiumPerkNew => 'Neues zuerst — sobald es fertig ist';
@@ -1510,10 +1561,12 @@ class L10nDe extends L10n {
   String get premiumUnlockAll => 'Auf allen Ihren Geräten freischalten';
 
   @override
-  String premiumCta(String period, String price) => 'Für $price / $period holen';
+  String premiumCta(String period, String price) =>
+      'Für $price / $period holen';
 
   @override
-  String premiumChargeNote(String period, String price) => 'Ihnen werden $price pro $period berechnet.';
+  String premiumChargeNote(String period, String price) =>
+      'Ihnen werden $price pro $period berechnet.';
 
   @override
   String premiumTrialThen(int days) => '$days Tage gratis, danach';
@@ -1522,29 +1575,24 @@ class L10nDe extends L10n {
   String premiumSave(int pct) => '$pct% sparen';
 
   @override
-  String premiumTrustBody(String version) => 'Sie sind auf $version. Wünsche erscheinen meist noch in derselben Woche, und was sich geändert hat, sehen Sie in der App.';
-
-
-
+  String premiumTrustBody(String version) =>
+      'Sie sind auf $version. Wünsche erscheinen meist noch in derselben Woche, und was sich geändert hat, sehen Sie in der App.';
 
   @override
-  String get premiumPerkWeb => 'Auch die Web-App — im Browser ebenfalls ohne Werbung';
-
-
-
-
-
+  String get premiumPerkWeb =>
+      'Auch die Web-App — im Browser ebenfalls ohne Werbung';
 
   @override
-  String premiumPerkTidy(int n) => 'Unbegrenztes Aufräumen — ohne das Limit von $n pro Tag';
+  String premiumPerkTidy(int n) =>
+      'Unbegrenztes Aufräumen — ohne das Limit von $n pro Tag';
 
   @override
-  String premiumPerkWizard(int n) => 'Unbegrenzte KI-Bearbeitung — ohne das Limit von $n pro Tag';
-
-
+  String premiumPerkWizard(int n) =>
+      'Unbegrenzte KI-Bearbeitung — ohne das Limit von $n pro Tag';
 
   @override
-  String get sponsorPremiumNote => 'Einmal kaufen — Banner und dieser Hinweis kommen nicht wieder.';
+  String get sponsorPremiumNote =>
+      'Einmal kaufen — Banner und dieser Hinweis kommen nicht wieder.';
   @override
   String get premiumTitle => 'Premium';
   @override
@@ -1554,9 +1602,11 @@ class L10nDe extends L10n {
   @override
   String get premiumMonthly => 'Monatlich';
   @override
-  String get limitTitle => 'Die kostenlosen Durchläufe für heute sind aufgebraucht';
+  String get limitTitle =>
+      'Die kostenlosen Durchläufe für heute sind aufgebraucht';
   @override
-  String limitTidyBody(int n) => 'Der Gratisplan enthält $n Bereinigungen pro Tag. Morgen geht es weiter – Premium hebt das Limit auf.';
+  String limitTidyBody(int n) =>
+      'Der Gratisplan enthält $n Bereinigungen pro Tag. Morgen geht es weiter – Premium hebt das Limit auf.';
   @override
   String limitWizardBody(int n) =>
       'Die kostenlose Version enthält $n KI-Bearbeitungen pro Tag. Morgen geht es weiter — Premium hebt das Limit auf.';
@@ -1564,10 +1614,12 @@ class L10nDe extends L10n {
   String get limitSeePremium => 'Premium ansehen';
 
   @override
-  String limitLeftTidy(int n) => 'Heute ist noch $n kostenloses Aufräumen übrig.';
+  String limitLeftTidy(int n) =>
+      'Heute ist noch $n kostenloses Aufräumen übrig.';
 
   @override
-  String limitLeftWizard(int n) => 'Heute ist noch $n kostenlose KI-Bearbeitung übrig.';
+  String limitLeftWizard(int n) =>
+      'Heute ist noch $n kostenlose KI-Bearbeitung übrig.';
   @override
   String get premiumYearly => 'Jährlich';
   @override
@@ -1595,19 +1647,24 @@ class L10nDe extends L10n {
   @override
   String get aiKeyChecking => 'Prüfe…';
   @override
-  String get aiKeyUnknownFormat => 'Der Anbieter konnte nicht ermittelt werden. Alle vier wurden gefragt, keiner hat diesen Schlüssel akzeptiert. Bitte kopieren und fügen Sie den Schlüssel erneut ein.';
+  String get aiKeyUnknownFormat =>
+      'Der Anbieter konnte nicht ermittelt werden. Alle vier wurden gefragt, keiner hat diesen Schlüssel akzeptiert. Bitte kopieren und fügen Sie den Schlüssel erneut ein.';
   @override
   String get aiAdvancedLabel => 'Erweitert — Modell selbst wählen';
   @override
-  String get aiManualModelHint => 'Modellnamen eingeben (z. B. gemini-2.5-flash-lite)';
+  String get aiManualModelHint =>
+      'Modellnamen eingeben (z. B. gemini-2.5-flash-lite)';
   @override
-  String aiAutoLabel(String provider, String model) => 'Automatisch: $provider · $model';
+  String aiAutoLabel(String provider, String model) =>
+      'Automatisch: $provider · $model';
   @override
   String aiModelsFound(int n) => '$n verfügbare Modelle bestätigt.';
   @override
-  String aiListFailed(String error) => 'Modellliste konnte nicht geladen werden ($error). Die eingebaute Ersatzliste wird verwendet.';
+  String aiListFailed(String error) =>
+      'Modellliste konnte nicht geladen werden ($error). Die eingebaute Ersatzliste wird verwendet.';
   @override
-  String aiModelSwitched(String model) => 'Das bisherige Modell antwortete nicht mehr – gewechselt zu $model.';
+  String aiModelSwitched(String model) =>
+      'Das bisherige Modell antwortete nicht mehr – gewechselt zu $model.';
   @override
   String get rulesSectionTitle => 'Meine Auto-Ersetzen-Regeln';
   @override

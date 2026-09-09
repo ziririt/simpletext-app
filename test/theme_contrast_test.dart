@@ -13,8 +13,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simpletext/core/paper.dart' show contrastRatio;
-import 'package:simpletext/main.dart'
-    show AppC, kAccentFill, kOnAccentFill;
+import 'package:simpletext/main.dart' show AppC, kAccentFill, kOnAccentFill;
 
 int _v(Color c) => c.toARGB32();
 
@@ -24,37 +23,53 @@ void main() {
   modes.forEach((name, c) {
     group('$name 화면 색 (2026-08-16)', () {
       test('강조색이 바탕과 카드 양쪽에서 읽힌다', () {
-        expect(contrastRatio(_v(c.accent), _v(c.bg)),
-            greaterThanOrEqualTo(4.5),
-            reason: '$name 강조색 on 바탕');
-        expect(contrastRatio(_v(c.accent), _v(c.panel)),
-            greaterThanOrEqualTo(4.5),
-            reason: '$name 강조색 on 카드');
+        expect(
+          contrastRatio(_v(c.accent), _v(c.bg)),
+          greaterThanOrEqualTo(4.5),
+          reason: '$name 강조색 on 바탕',
+        );
+        expect(
+          contrastRatio(_v(c.accent), _v(c.panel)),
+          greaterThanOrEqualTo(4.5),
+          reason: '$name 강조색 on 카드',
+        );
       });
 
       test('안내문구가 읽힌다', () {
         // 이건 '읽어야 하는 문장'용이라 4.5:1을 지킨다.
-        expect(contrastRatio(_v(c.guideInk), _v(c.panel)),
-            greaterThanOrEqualTo(4.5));
-        expect(contrastRatio(_v(c.guideInk), _v(c.bg)),
-            greaterThanOrEqualTo(4.5));
+        expect(
+          contrastRatio(_v(c.guideInk), _v(c.panel)),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
+          contrastRatio(_v(c.guideInk), _v(c.bg)),
+          greaterThanOrEqualTo(4.5),
+        );
       });
 
       test('태그 블럭 글자가 읽힌다', () {
-        expect(contrastRatio(_v(c.tagInk), _v(c.tagBg)),
-            greaterThanOrEqualTo(4.5));
+        expect(
+          contrastRatio(_v(c.tagInk), _v(c.tagBg)),
+          greaterThanOrEqualTo(4.5),
+        );
       });
 
       test('정보 카드와 경고 카드의 글자가 읽힌다', () {
-        expect(contrastRatio(_v(c.accent), _v(c.infoBg)),
-            greaterThanOrEqualTo(4.5));
-        expect(contrastRatio(_v(c.warnInk), _v(c.warnBg)),
-            greaterThanOrEqualTo(4.5));
+        expect(
+          contrastRatio(_v(c.accent), _v(c.infoBg)),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
+          contrastRatio(_v(c.warnInk), _v(c.warnBg)),
+          greaterThanOrEqualTo(4.5),
+        );
       });
 
       test('삭제 빨강이 읽힌다', () {
-        expect(contrastRatio(_v(c.danger), _v(c.panel)),
-            greaterThanOrEqualTo(4.5));
+        expect(
+          contrastRatio(_v(c.danger), _v(c.panel)),
+          greaterThanOrEqualTo(4.5),
+        );
       });
 
       test('보조 글자는 본문만큼 진하다 (10:1)', () {
@@ -75,12 +90,17 @@ void main() {
         // **읽는 사람이 정한 값**이다. 기준은 최소치일 뿐, 이 앱이 어디까지
         // 갈지는 이 앱을 쓰는 사람이 정한다.
         expect(contrastRatio(_v(c.sub), _v(c.bg)), greaterThanOrEqualTo(10.0));
-        expect(contrastRatio(_v(c.sub), _v(c.panel)), greaterThanOrEqualTo(10.0));
+        expect(
+          contrastRatio(_v(c.sub), _v(c.panel)),
+          greaterThanOrEqualTo(10.0),
+        );
       });
 
       test('선택 손잡이가 보인다 (조작점 3:1)', () {
-        expect(contrastRatio(_v(c.selHandle), _v(c.panel)),
-            greaterThanOrEqualTo(3.0));
+        expect(
+          contrastRatio(_v(c.selHandle), _v(c.panel)),
+          greaterThanOrEqualTo(3.0),
+        );
       });
 
       test('구분선은 보이되 시끄럽지 않다', () {
@@ -103,16 +123,20 @@ void main() {
     // 단추는 밝은 바탕에 진한 글자여야 맑다'를 다크에만 적용하고 라이트에는
     // 안 옮긴 상태였다.
     test('라이트·다크 모두 — 밝은 하늘 바탕에 진한 남색 글자', () {
-      expect(contrastRatio(_v(kOnAccentFill), _v(kAccentFill)),
-          greaterThanOrEqualTo(4.5));
+      expect(
+        contrastRatio(_v(kOnAccentFill), _v(kAccentFill)),
+        greaterThanOrEqualTo(4.5),
+      );
     });
 
     // 글자용 강조색은 반대 요구를 받는다 — 밝은 바탕 **위에** 놓이므로
     // 진해야 한다. 그래서 채우는 색과 갈라 뒀고, 여기서 그 둘이 다시
     // 하나로 합쳐지지 않게 지킨다.
     test('글자용 강조색은 밝은 바탕에서 읽힌다', () {
-      expect(contrastRatio(_v(AppC.light.accent), _v(AppC.light.bg)),
-          greaterThanOrEqualTo(4.5));
+      expect(
+        contrastRatio(_v(AppC.light.accent), _v(AppC.light.bg)),
+        greaterThanOrEqualTo(4.5),
+      );
     });
   });
 
@@ -135,8 +159,11 @@ void main() {
           // 흰색과 검정은 중립이라 예외로 둔다(다크 바탕은 OLED를 위해
           // 진짜 검정이어야 하고, 라이트 카드는 흰 종이여야 한다).
           if (v == 0xFFFFFFFF || v == 0xFF000000) continue;
-          expect(bl, greaterThanOrEqualTo(r),
-              reason: '${e.key} ${pair.$2} — 하늘 기운이 없다');
+          expect(
+            bl,
+            greaterThanOrEqualTo(r),
+            reason: '${e.key} ${pair.$2} — 하늘 기운이 없다',
+          );
         }
       }
     });

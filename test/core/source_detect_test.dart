@@ -16,7 +16,10 @@ void main() {
       expect(sourceFromUrl('https://chat.openai.com/c/abc').name, kChatGpt);
       expect(sourceFromUrl('https://claude.ai/chat/x').name, kClaude);
       expect(sourceFromUrl('https://gemini.google.com/app').name, kGemini);
-      expect(sourceFromUrl('https://www.perplexity.ai/search/x').name, kPerplexity);
+      expect(
+        sourceFromUrl('https://www.perplexity.ai/search/x').name,
+        kPerplexity,
+      );
       expect(sourceFromUrl('https://grok.com/chat').name, kGrok);
     });
 
@@ -43,7 +46,8 @@ void main() {
     });
 
     test('각주와 출처 목록이 있으면 검색형', () {
-      final t = '테슬라 주가는 최근 상승했습니다[1]. 인도량이 예상을 넘었고[2], '
+      final t =
+          '테슬라 주가는 최근 상승했습니다[1]. 인도량이 예상을 넘었고[2], '
               '에너지 부문도 성장했습니다[3]. 다만 마진 압박은 계속되고 있습니다. '
               '분석가들은 목표가를 상향했습니다. 시장은 이를 긍정적으로 봤습니다.\n\n'
               '출처\n'
@@ -55,15 +59,17 @@ void main() {
     });
 
     test('구분선과 굵은 번호 머리말이 있으면 ChatGPT 쪽', () {
-      final t = '좋습니다. 정리해 드리겠습니다.\n\n'
-          '1. **첫째 항목** — 이것에 대한 설명입니다. 충분히 길게 씁니다.\n'
-          '2. **둘째 항목** — 이것도 설명입니다. 충분히 길게 씁니다.\n'
-          '3. **셋째 항목** — 마찬가지로 설명입니다.\n\n'
-          '---\n\n'
-          '## 다음 단계\n\n'
-          '- 하나\n- 둘\n- 셋\n\n'
-          '---\n\n'
-          '원하시면 더 자세히 풀어 드릴까요?\n' * 2;
+      final t =
+          '좋습니다. 정리해 드리겠습니다.\n\n'
+              '1. **첫째 항목** — 이것에 대한 설명입니다. 충분히 길게 씁니다.\n'
+              '2. **둘째 항목** — 이것도 설명입니다. 충분히 길게 씁니다.\n'
+              '3. **셋째 항목** — 마찬가지로 설명입니다.\n\n'
+              '---\n\n'
+              '## 다음 단계\n\n'
+              '- 하나\n- 둘\n- 셋\n\n'
+              '---\n\n'
+              '원하시면 더 자세히 풀어 드릴까요?\n' *
+          2;
       expect(guessSource(t).name, kChatGpt);
     });
 
@@ -78,17 +84,20 @@ void main() {
       // 말도 안 하는 것이 맞다. 실제 제미나이는 소제목·구분선·표·코드·
       // 굵게가 한꺼번에 들어 있고, 그건 test/core/llm_samples.dart의
       // 원문으로 확인한다.
-      final t = '물론입니다! 아래에 정리했습니다.\n\n'
-          '* 첫 번째 항목에 대한 설명입니다. 조금 길게 적습니다.\n'
-          '* 두 번째 항목에 대한 설명입니다. 조금 길게 적습니다.\n'
-          '* 세 번째 항목에 대한 설명입니다. 조금 길게 적습니다.\n'
-          '* 네 번째 항목에 대한 설명입니다.\n\n'
-          '| 항목 | 값 |\n| --- | --- |\n| 하나 | 1 |\n| 둘 | 2 |\n' * 2;
+      final t =
+          '물론입니다! 아래에 정리했습니다.\n\n'
+              '* 첫 번째 항목에 대한 설명입니다. 조금 길게 적습니다.\n'
+              '* 두 번째 항목에 대한 설명입니다. 조금 길게 적습니다.\n'
+              '* 세 번째 항목에 대한 설명입니다. 조금 길게 적습니다.\n'
+              '* 네 번째 항목에 대한 설명입니다.\n\n'
+              '| 항목 | 값 |\n| --- | --- |\n| 하나 | 1 |\n| 둘 | 2 |\n' *
+          2;
       expect(guessSource(t).isKnown, isFalse);
     });
 
     test('긴 문단에 불릿이 적으면 Claude 쪽', () {
-      final para = '이 문제를 이해하려면 먼저 배경을 봐야 합니다. '
+      final para =
+          '이 문제를 이해하려면 먼저 배경을 봐야 합니다. '
           '지난 몇 년 동안 시장은 크게 바뀌었고, 그 변화의 원인은 하나가 아니라 '
           '여럿이 겹친 결과였습니다. 그래서 어느 한 가지만 짚어서는 전체 그림이 '
           '보이지 않습니다. 순서대로 짚어 보겠습니다. 먼저 수요 쪽입니다. '
@@ -102,7 +111,8 @@ void main() {
       // 이게 이 파일에서 가장 중요한 테스트다. 처음 만들 때 이 문턱이 없어서
       // 회의 메모가 Claude로 판정됐다 — 문단이 길고 불릿이 없다는 이유만으로.
       // 사람이 쓴 글이 원래 그렇게 생겼다.
-      final t = '오늘 회의에서 나온 이야기를 적어 둡니다. '
+      final t =
+          '오늘 회의에서 나온 이야기를 적어 둡니다. '
               '다음 주까지 정리하기로 했고, 담당은 아직 안 정해졌습니다. '
               '예산은 다시 확인이 필요합니다. 일정은 다음 회의에서 잡습니다.\n' *
           4;
@@ -110,7 +120,8 @@ void main() {
     });
 
     test('서식은 있는데 특징이 섞이면 아무 말도 안 한다', () {
-      final t = '## 회의 메모\n\n'
+      final t =
+          '## 회의 메모\n\n'
               '- 담당 미정\n- 예산 재확인\n\n'
               '이번 주에 결정할 것은 두 가지입니다. 하나는 일정이고 다른 하나는 '
               '범위입니다. 둘 다 다음 회의에서 정합니다.\n\n' *
@@ -126,8 +137,10 @@ void main() {
 
   group('화면에 쓸 이름', () {
     test('확실하면 그대로, 추측이면 꼬리표를 붙인다', () {
-      expect(sourceLabel(const SourceGuess(kChatGpt, certain: true), '(추정)'),
-          'ChatGPT');
+      expect(
+        sourceLabel(const SourceGuess(kChatGpt, certain: true), '(추정)'),
+        'ChatGPT',
+      );
       expect(sourceLabel(const SourceGuess(kChatGpt), '(추정)'), 'ChatGPT(추정)');
     });
 

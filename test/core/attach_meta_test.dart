@@ -2,8 +2,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simpletext/core/attach_meta.dart';
 
-Attach a(String name, {int size = 100, String dev = 'iphone', String id = 'x'}) =>
-    Attach(id: id, name: name, size: size, addedAt: 0, device: dev);
+Attach a(
+  String name, {
+  int size = 100,
+  String dev = 'iphone',
+  String id = 'x',
+}) => Attach(id: id, name: name, size: size, addedAt: 0, device: dev);
 
 void main() {
   group('갈래', () {
@@ -62,8 +66,7 @@ void main() {
     });
 
     test('확장자가 터무니없이 길면 그냥 뒤를 자른다', () {
-      final s = shortName('가나다라마바사아자차카타파하가나다.확장자가아주긴것',
-          max: 12);
+      final s = shortName('가나다라마바사아자차카타파하가나다.확장자가아주긴것', max: 12);
       expect(s.length <= 12, isTrue);
     });
   });
@@ -89,16 +92,20 @@ void main() {
 
   group('안내 줄 나열', () {
     test('하나면 그것만', () {
-      expect(othersSummary([a('결산표.pdf', size: 1258291)], '외 2개'),
-          '결산표.pdf(1.2MB)');
+      expect(
+        othersSummary([a('결산표.pdf', size: 1258291)], '외 2개'),
+        '결산표.pdf(1.2MB)',
+      );
     });
 
     test('여럿이면 첫째와 나머지 셈', () {
       expect(
-          othersSummary(
-              [a('결산표.pdf', size: 1258291, id: '1'), a('b.jpg', id: '2')],
-              '외 1개'),
-          '결산표.pdf(1.2MB) 외 1개');
+        othersSummary([
+          a('결산표.pdf', size: 1258291, id: '1'),
+          a('b.jpg', id: '2'),
+        ], '외 1개'),
+        '결산표.pdf(1.2MB) 외 1개',
+      );
     });
 
     test('없으면 빈 글자', () => expect(othersSummary([], '외 0개'), ''));

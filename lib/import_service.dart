@@ -27,12 +27,7 @@ class ImportService {
       'public.json',
       'public.comma-separated-values-text',
     ],
-    mimeTypes: [
-      'text/plain',
-      'text/markdown',
-      'application/json',
-      'text/csv',
-    ],
+    mimeTypes: ['text/plain', 'text/markdown', 'application/json', 'text/csv'],
   );
 
   /// 파일 여러 개를 메모 여러 개로. 만든 개수를 돌려준다.

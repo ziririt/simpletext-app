@@ -105,8 +105,11 @@ class ICloudSync {
   /// 길만** 낸다 — 이 파일은 통로를 모르는 채로 있어야 시험이 된다.
   String Function()? driveWhy;
 
-  void useBackend(String backend,
-      {DriveToken? driveToken, String Function()? why}) {
+  void useBackend(
+    String backend, {
+    DriveToken? driveToken,
+    String Function()? why,
+  }) {
     paused = backend == 'none';
     driveWhy = why;
     if (backend == 'gdrive' && driveToken != null) {
@@ -120,8 +123,7 @@ class ICloudSync {
   ///
   /// 이름이 그냥 supported 인 것은 창고가 하나뿐이던 시절의 흔적이다.
   /// 지금은 '동기화를 할 수 있는가'와 같은 말이 아니다 — 아래 [active].
-  static bool get supported =>
-      !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+  static bool get supported => !kIsWeb && (Platform.isIOS || Platform.isMacOS);
 
   /// 지금 끼운 통로가 애플 채널을 거치는가.
   ///
@@ -137,8 +139,9 @@ class ICloudSync {
   /// 되고 동기화는 한 번도 안 돌았다. 아무 말 없이 — 그게 제일 나쁘다.
   bool get active => _viaApple ? supported : true;
 
-  final ValueNotifier<SyncState> state =
-      ValueNotifier<SyncState>(SyncState.unsupported);
+  final ValueNotifier<SyncState> state = ValueNotifier<SyncState>(
+    SyncState.unsupported,
+  );
 
   /// 마지막으로 맞춘 시각(밀리초). 0이면 아직 한 번도 못 맞췄다.
   final ValueNotifier<int> lastSyncMs = ValueNotifier<int>(0);
@@ -256,7 +259,9 @@ class ICloudSync {
     // 도중에 바뀌기 때문이다 — 뜨거워지면 다음 물음부터 곧바로 빨라진다.
     _probe = Timer(
       probeEvery(
-          hotUntilMs: _hotUntil, nowMs: DateTime.now().millisecondsSinceEpoch),
+        hotUntilMs: _hotUntil,
+        nowMs: DateTime.now().millisecondsSinceEpoch,
+      ),
       () async {
         await _probeOnce();
         _startProbe();
@@ -594,15 +599,22 @@ class ICloudSync {
       // 시간이 넘은 것과 일이 실패한 것을 한 통에 담았던 것이다. 시간
       // 제한은 '얼마나 기다렸다가 화면에 말할까'를 정하는 것이라고 바로
       // 위에 적어 놓고도, 정작 그 말을 '꺼짐'으로 했다.
-      unawaited(work.then((_) {
-        lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
-        unawaited(_saveSyncedUpTo(lastSyncMs.value));
-        state.value = SyncState.ok;
-        _noteRound(roundStartMs, null);
-      }, onError: (Object e) {
-        state.value = SyncState.off;
-        _noteRound(roundStartMs, e);
-      }).whenComplete(free));
+      unawaited(
+        work
+            .then(
+              (_) {
+                lastSyncMs.value = DateTime.now().millisecondsSinceEpoch;
+                unawaited(_saveSyncedUpTo(lastSyncMs.value));
+                state.value = SyncState.ok;
+                _noteRound(roundStartMs, null);
+              },
+              onError: (Object e) {
+                state.value = SyncState.off;
+                _noteRound(roundStartMs, e);
+              },
+            )
+            .whenComplete(free),
+      );
 
       try {
         await work.timeout(lastSyncMs.value == 0 ? _firstPass : _pass);
@@ -693,8 +705,9 @@ class ICloudSync {
         localStamp: {for (final n in store.notes) n.id: n.updatedAt},
         metas: noteMetas,
       );
-      final got =
-          await _t.readMany([for (final id in need) '$notesDir/$id.json']);
+      final got = await _t.readMany([
+        for (final id in need) '$notesDir/$id.json',
+      ]);
       for (final id in need) {
         final r = got['$notesDir/$id.json'];
         if (r == null) {
@@ -730,8 +743,9 @@ class ICloudSync {
           tombNeed.add(m.id);
         }
       }
-      final tgot =
-          await _t.readMany([for (final id in tombNeed) '$tombsDir/$id.json']);
+      final tgot = await _t.readMany([
+        for (final id in tombNeed) '$tombsDir/$id.json',
+      ]);
       for (final r in tgot.values) {
         if (!r.ok) continue;
         final id = r.body!['id'];
@@ -969,7 +983,8 @@ class ICloudSync {
       // 도는 자리이기 때문이다 — 규칙 동기화(늦은 쪽이 이긴다)에 실으면
       // 결제를 모르는 기기가 켜지는 순간 산 것을 덮어 버린다.
       final en = s.ent.merge(
-          Entitlement.fromJson(remote['ent'] as Map<String, dynamic>?));
+        Entitlement.fromJson(remote['ent'] as Map<String, dynamic>?),
+      );
       final lg = s.legacyFree || remote['legacy'] == true;
       if (d != s.trialDays ||
           t != s.trialTidyTotal ||
@@ -1097,9 +1112,13 @@ class ICloudSync {
     }
 
     s.bodyFontSize = pickNum('bodyFontSize', s.bodyFontSize).clamp(
-        MonoTextController.minBodyFontSize, MonoTextController.maxBodyFontSize);
-    s.bodyLineHeight = pickNum('bodyLineHeight', s.bodyLineHeight).clamp(
-        MonoTextController.minBodyHeight, MonoTextController.maxBodyHeight);
+      MonoTextController.minBodyFontSize,
+      MonoTextController.maxBodyFontSize,
+    );
+    s.bodyLineHeight = pickNum(
+      'bodyLineHeight',
+      s.bodyLineHeight,
+    ).clamp(MonoTextController.minBodyHeight, MonoTextController.maxBodyHeight);
     s.themeMode = pick('themeMode', s.themeMode);
     s.paperMode = pick('paperMode', s.paperMode);
     s.monoEditor = pick('monoEditor', s.monoEditor);
@@ -1277,7 +1296,10 @@ class ICloudSync {
     s.aiKeySync = pick('aiKeySync', s.aiKeySync);
     final fd = j['folders'];
     if (fd is List) {
-      s.folders = fd.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+      s.folders = fd
+          .map((e) => e.toString())
+          .where((e) => e.isNotEmpty)
+          .toList();
     }
     final fp = j['favPrompts'];
     if (fp is List) s.favPrompts = fp.map((e) => e.toString()).toList();
@@ -1287,11 +1309,13 @@ class ICloudSync {
     if (cr is List) {
       s.customRules = cr
           .whereType<Map>()
-          .map((m) => CustomRule(
-                find: (m['find'] ?? '').toString(),
-                replace: (m['replace'] ?? '').toString(),
-                regex: m['regex'] == true,
-              ))
+          .map(
+            (m) => CustomRule(
+              find: (m['find'] ?? '').toString(),
+              replace: (m['replace'] ?? '').toString(),
+              regex: m['regex'] == true,
+            ),
+          )
           .toList();
     }
   }
@@ -1305,5 +1329,4 @@ class ICloudSync {
     }
     return '${s.length}:$h';
   }
-
 }

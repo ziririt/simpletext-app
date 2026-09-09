@@ -83,7 +83,7 @@ class _Timed extends http.BaseClient {
 
 class GDriveTransport extends SyncTransport {
   GDriveTransport(this._token, {http.Client? client})
-      : _http = _Timed(client ?? http.Client(), _wait);
+    : _http = _Timed(client ?? http.Client(), _wait);
 
   /// 왕복 하나에 허락하는 시간.
   ///
@@ -151,7 +151,8 @@ class GDriveTransport extends SyncTransport {
   }
 
   /// 드라이브 검색말의 따옴표를 막는다.
-  static String _q(String s) => s.replaceAll('\\', r'\\').replaceAll("'", r"\'");
+  static String _q(String s) =>
+      s.replaceAll('\\', r'\\').replaceAll("'", r"\'");
 
   /// 이 길에 해당하는 파일의 아이디. 없으면 null.
   Future<String?> _find(String path) async {
@@ -160,11 +161,14 @@ class GDriveTransport extends SyncTransport {
     final h = await _head();
     if (h == null) return null;
     final (dir, name) = _split(path);
-    final q = "name = '${_q(name)}' and trashed = false and "
+    final q =
+        "name = '${_q(name)}' and trashed = false and "
         "appProperties has { key = 'dir' and value = '${_q(dir)}' }";
-    final u = Uri.parse('$_api?spaces=appDataFolder'
-        '&q=${Uri.encodeQueryComponent(q)}'
-        '&fields=files(id,name)&pageSize=10');
+    final u = Uri.parse(
+      '$_api?spaces=appDataFolder'
+      '&q=${Uri.encodeQueryComponent(q)}'
+      '&fields=files(id,name)&pageSize=10',
+    );
     try {
       final r = await _http.get(u, headers: h);
       if (r.statusCode != 200) return null;
@@ -195,8 +199,9 @@ class GDriveTransport extends SyncTransport {
         // spaces 를 안 붙인다. 표를 내주는 쪽은 그 낱말을 모른다(400).
         // 거르는 것은 아래 목록 쪽 일이다.
         final r = await _http.get(
-            Uri.parse('$_changes/startPageToken'),
-            headers: h);
+          Uri.parse('$_changes/startPageToken'),
+          headers: h,
+        );
         if (r.statusCode != 200) return null;
         final j = jsonDecode(r.body);
         if (j is! Map) return null;
@@ -212,10 +217,12 @@ class GDriveTransport extends SyncTransport {
       // 짧게 묻자고 만든 물음이 길어지면 뜻이 없다. 못 넘긴 쪽은 다음
       // 물음이 이어서 본다.
       for (var page = 0; page < 5; page++) {
-        final u = Uri.parse('$_changes'
-            '?pageToken=${Uri.encodeQueryComponent(token)}'
-            '&spaces=appDataFolder&pageSize=100'
-            '&fields=newStartPageToken,nextPageToken,changes(fileId)');
+        final u = Uri.parse(
+          '$_changes'
+          '?pageToken=${Uri.encodeQueryComponent(token)}'
+          '&spaces=appDataFolder&pageSize=100'
+          '&fields=newStartPageToken,nextPageToken,changes(fileId)',
+        );
         final r = await _http.get(u, headers: h);
         if (r.statusCode != 200) return null;
         final j = jsonDecode(r.body);
@@ -249,7 +256,10 @@ class GDriveTransport extends SyncTransport {
 
   /// 파일 하나를 받아 온다. 실패는 null 이다 — 하나가 안 와도 나머지는 와야 한다.
   Future<Map<String, dynamic>?> _fetch(
-      String fid, String? at, Map<String, String> h) async {
+    String fid,
+    String? at,
+    Map<String, String> h,
+  ) async {
     try {
       final r = await _http.get(Uri.parse('$_api/$fid?alt=media'), headers: h);
       if (r.statusCode != 200) return null;
@@ -286,11 +296,14 @@ class GDriveTransport extends SyncTransport {
   Future<List<RemoteMeta>?> listMeta(String dir) async {
     final h = await _head();
     if (h == null) return null;
-    final q = "trashed = false and "
+    final q =
+        "trashed = false and "
         "appProperties has { key = 'dir' and value = '${_q(dir)}' }";
-    final u = Uri.parse('$_api?spaces=appDataFolder'
-        '&q=${Uri.encodeQueryComponent(q)}'
-        '&fields=files(id,name,modifiedTime,appProperties)&pageSize=1000');
+    final u = Uri.parse(
+      '$_api?spaces=appDataFolder'
+      '&q=${Uri.encodeQueryComponent(q)}'
+      '&fields=files(id,name,modifiedTime,appProperties)&pageSize=1000',
+    );
     try {
       final r = await _http.get(u, headers: h);
       if (r.statusCode != 200) return null;
@@ -324,7 +337,7 @@ class GDriveTransport extends SyncTransport {
   void _forgetDeadIn(String dir, Set<String> alive) {
     final dead = [
       for (final e in _dirOf.entries)
-        if (e.value == dir && !alive.contains(e.key)) e.key
+        if (e.value == dir && !alive.contains(e.key)) e.key,
     ];
     for (final fid in dead) {
       _at.remove(fid);
@@ -342,10 +355,12 @@ class GDriveTransport extends SyncTransport {
     const int lanes = 8;
     for (var i = 0; i < paths.length; i += lanes) {
       final slice = paths.skip(i).take(lanes).toList();
-      await Future.wait(slice.map((p) async {
-        final r = await _readOne(p, h);
-        if (r != null) out[p] = r;
-      }));
+      await Future.wait(
+        slice.map((p) async {
+          final r = await _readOne(p, h);
+          if (r != null) out[p] = r;
+        }),
+      );
     }
     return out;
   }
@@ -391,14 +406,18 @@ class GDriveTransport extends SyncTransport {
   /// 내용보다 새것이 되면 남이 새 내용인 줄 알고 옛 내용을 받아 간다.
   /// 반대쪽(딱지가 옛것)은 안전하다: 한 번 더 열어 볼 뿐이다.
   Future<void> _tag(
-      String fid, String path, int stamp, Map<String, String> h) async {
+    String fid,
+    String path,
+    int stamp,
+    Map<String, String> h,
+  ) async {
     final (dir, _) = _split(path);
     try {
       final r = await _http.patch(
         Uri.parse('$_api/$fid'),
         headers: {...h, 'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
-          'appProperties': {'dir': dir, 'up': '$stamp'}
+          'appProperties': {'dir': dir, 'up': '$stamp'},
         }),
       );
       if (r.statusCode == 200) _upSeen[fid] = stamp;
@@ -410,11 +429,14 @@ class GDriveTransport extends SyncTransport {
     final out = <Map<String, dynamic>>[];
     final h = await _head();
     if (h == null) return out;
-    final q = "trashed = false and "
+    final q =
+        "trashed = false and "
         "appProperties has { key = 'dir' and value = '${_q(path)}' }";
-    final u = Uri.parse('$_api?spaces=appDataFolder'
-        '&q=${Uri.encodeQueryComponent(q)}'
-        '&fields=files(id,name,modifiedTime)&pageSize=1000');
+    final u = Uri.parse(
+      '$_api?spaces=appDataFolder'
+      '&q=${Uri.encodeQueryComponent(q)}'
+      '&fields=files(id,name,modifiedTime)&pageSize=1000',
+    );
     List<dynamic> files;
     try {
       final r = await _http.get(u, headers: h);
@@ -463,8 +485,9 @@ class GDriveTransport extends SyncTransport {
     const int lanes = 8;
     for (var i = 0; i < need.length; i += lanes) {
       final slice = need.skip(i).take(lanes).toList();
-      final got =
-          await Future.wait(slice.map((n) => _fetch(n.key, n.value, h)));
+      final got = await Future.wait(
+        slice.map((n) => _fetch(n.key, n.value, h)),
+      );
       for (final g in got) {
         if (g != null) out.add(g);
       }

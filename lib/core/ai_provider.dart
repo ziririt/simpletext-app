@@ -62,9 +62,17 @@ String providerLabel(String provider) {
 List<String> defaultLadder(String provider) {
   switch (provider) {
     case 'google':
-      return const ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro'];
+      return const [
+        'gemini-2.5-flash-lite',
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+      ];
     case 'anthropic':
-      return const ['claude-haiku-4-5-20251001', 'claude-haiku-4-5', 'claude-sonnet-5'];
+      return const [
+        'claude-haiku-4-5-20251001',
+        'claude-haiku-4-5',
+        'claude-sonnet-5',
+      ];
     case 'openai':
       // 2026-08-17 — nano에서 mini로 올렸다. 아래 tierRank의 주석 참고.
       return const ['gpt-5-mini', 'gpt-5-nano', 'gpt-5'];
@@ -84,9 +92,23 @@ bool modelMatchesProvider(String model, String provider) =>
 /// 회사 목록에는 임베딩·이미지·음성 모델이 잔뜩 섞여 온다.
 List<String> filterChatModels(String provider, List<String> ids) {
   const drop = [
-    'embedding', 'embed', 'image', 'imagen', 'veo', 'tts', 'audio',
-    'realtime', 'transcribe', 'moderation', 'live', 'aqa', 'learnlm',
-    'robotics', 'instruct', 'search', 'vision',
+    'embedding',
+    'embed',
+    'image',
+    'imagen',
+    'veo',
+    'tts',
+    'audio',
+    'realtime',
+    'transcribe',
+    'moderation',
+    'live',
+    'aqa',
+    'learnlm',
+    'robotics',
+    'instruct',
+    'search',
+    'vision',
   ];
   bool ok(String id) {
     final lo = id.toLowerCase();
@@ -104,7 +126,10 @@ List<String> filterChatModels(String provider, List<String> ids) {
     return false;
   }
 
-  return [for (final id in ids) if (ok(id)) id];
+  return [
+    for (final id in ids)
+      if (ok(id)) id,
+  ];
 }
 
 /// 등급 서열. 숫자가 작을수록 먼저 고른다. 등급 이름은 해가 바뀌어도
@@ -172,8 +197,9 @@ bool isPreviewModel(String id) {
       lo.contains('-rc');
 }
 
-List<int> _nums(String id) =>
-    [for (final m in RegExp(r'\d+').allMatches(id)) int.parse(m.group(0)!)];
+List<int> _nums(String id) => [
+  for (final m in RegExp(r'\d+').allMatches(id)) int.parse(m.group(0)!),
+];
 
 int _cmpNums(List<int> a, List<int> b) {
   for (var i = 0; i < (a.length > b.length ? a.length : b.length); i++) {

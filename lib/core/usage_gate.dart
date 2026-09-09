@@ -47,8 +47,7 @@ int usedToday({
   required DateTime now,
   required String savedDate,
   required int savedCount,
-}) =>
-    savedDate == usageDateKey(now) ? savedCount : 0;
+}) => savedDate == usageDateKey(now) ? savedCount : 0;
 
 /// 한 번 더 쓸 수 있는가 — **한도만** 본다(체험·프리미엄은 canUseNow가 본다).
 bool canUse({
@@ -59,7 +58,8 @@ bool canUse({
   required bool premium,
 }) {
   if (premium) return true;
-  return usedToday(now: now, savedDate: savedDate, savedCount: savedCount) < limit;
+  return usedToday(now: now, savedDate: savedDate, savedCount: savedCount) <
+      limit;
 }
 
 /// 쓰고 난 뒤의 새 횟수. 날짜가 바뀌었으면 1부터 다시 센다.
@@ -67,8 +67,7 @@ int nextCount({
   required DateTime now,
   required String savedDate,
   required int savedCount,
-}) =>
-    usedToday(now: now, savedDate: savedDate, savedCount: savedCount) + 1;
+}) => usedToday(now: now, savedDate: savedDate, savedCount: savedCount) + 1;
 
 /// 남은 횟수(안내 문구용). 프리미엄이면 -1(무제한).
 int remaining({
@@ -79,7 +78,8 @@ int remaining({
   required bool premium,
 }) {
   if (premium) return -1;
-  final r = limit - usedToday(now: now, savedDate: savedDate, savedCount: savedCount);
+  final r =
+      limit - usedToday(now: now, savedDate: savedDate, savedCount: savedCount);
   return r < 0 ? 0 : r;
 }
 

@@ -83,11 +83,7 @@ const Map<String, List<String>> _domains = {
     'utm_source=chatgpt.com',
     'utm_source=openai',
   ],
-  kClaude: [
-    'claude.ai',
-    'anthropic.com/share',
-    'utm_source=claude',
-  ],
+  kClaude: ['claude.ai', 'anthropic.com/share', 'utm_source=claude'],
   kGemini: [
     'gemini.google.com',
     'bard.google.com',
@@ -95,11 +91,7 @@ const Map<String, List<String>> _domains = {
     'aistudio.google.com',
     'utm_source=gemini',
   ],
-  kPerplexity: [
-    'perplexity.ai',
-    'pplx.ai',
-    'utm_source=perplexity',
-  ],
+  kPerplexity: ['perplexity.ai', 'pplx.ai', 'utm_source=perplexity'],
   kGrok: [
     'grok.com',
     'x.com/i/grok',
@@ -153,14 +145,8 @@ const Map<String, List<String>> _htmlMarks = {
     'data-path-to-node',
     'data-index-in-node',
   ],
-  kPerplexity: [
-    'pplx-',
-    'perplexity',
-  ],
-  kGrok: [
-    'grok-response',
-    'data-grok',
-  ],
+  kPerplexity: ['pplx-', 'perplexity'],
+  kGrok: ['grok-response', 'data-grok'],
 };
 
 /// 딸려 온 증거(주소 또는 HTML 조각)에서 출처를 찾는다.
@@ -263,18 +249,23 @@ String insertedChunk(String before, String after) {
 final RegExp _citeBracket = RegExp(r'\[\d{1,3}\]');
 final RegExp _citeFootnote = RegExp(r'\[\^\d{1,3}\]');
 final RegExp _citeSuper = RegExp(r'[¹²³⁰⁴-⁹]');
-final RegExp _citeTagged =
-    RegExp(r'\[(?:web|post|x|news|video):\s*\d{1,3}\]', caseSensitive: false);
+final RegExp _citeTagged = RegExp(
+  r'\[(?:web|post|x|news|video):\s*\d{1,3}\]',
+  caseSensitive: false,
+);
 
 /// 글 끝에 붙는 '출처' 뭉치의 줄 수. `1. https://…` 또는 `[1] https://…`.
-final RegExp _srcLine =
-    RegExp(r'^\s*(?:\[\d{1,3}\]|\d{1,3}[.)])\s*https?://', multiLine: true);
+final RegExp _srcLine = RegExp(
+  r'^\s*(?:\[\d{1,3}\]|\d{1,3}[.)])\s*https?://',
+  multiLine: true,
+);
 
 /// 출처 목록의 머리말 줄.
 final RegExp _srcHeading = RegExp(
-    r'^\s*(출처|참고|참고자료|인용|sources?|references?|citations?)\s*[:：]?\s*$',
-    multiLine: true,
-    caseSensitive: false);
+  r'^\s*(출처|참고|참고자료|인용|sources?|references?|citations?)\s*[:：]?\s*$',
+  multiLine: true,
+  caseSensitive: false,
+);
 
 /// 이 글에 각주가 몇 개나 있는가. 모양을 가리지 않는다.
 int citationCount(String text) =>
@@ -289,8 +280,10 @@ int citationCount(String text) =>
 
 /// ChatGPT가 인용 링크에 붙여 보내는 표식. 우리가 만든 규칙이 아니라
 /// OpenAI가 스스로 찍는 것이라, 이건 추측이 아니라 사실이다.
-final RegExp _utmChatGpt =
-    RegExp(r'utm_source=chatgpt\.com', caseSensitive: false);
+final RegExp _utmChatGpt = RegExp(
+  r'utm_source=chatgpt\.com',
+  caseSensitive: false,
+);
 
 final RegExp _mdLink = RegExp(r'\[[^\]\n]{1,80}\]\(https?://');
 final RegExp _nestedBullet = RegExp(r'^[ \t]{2,}[*\-•] ', multiLine: true);
@@ -371,12 +364,14 @@ SourceGuess guessSource(String text) {
   final prose = text
       .split(_blankLine)
       .map((p) => p.trim())
-      .where((p) =>
-          p.length >= 40 &&
-          !p.startsWith('#') &&
-          !p.startsWith('*') &&
-          !p.startsWith('-') &&
-          !p.startsWith('•'))
+      .where(
+        (p) =>
+            p.length >= 40 &&
+            !p.startsWith('#') &&
+            !p.startsWith('*') &&
+            !p.startsWith('-') &&
+            !p.startsWith('•'),
+      )
       .toList();
   final proseAvg = prose.isEmpty
       ? 0
@@ -390,7 +385,8 @@ SourceGuess guessSource(String text) {
   // 이유만으로 이름을 붙인 것이다 — 사람이 쓴 글이 원래 그렇다.
   //
   // 놓치는 쪽이 틀리는 쪽보다 낫다.
-  final looksFormatted = headings > 0 ||
+  final looksFormatted =
+      headings > 0 ||
       bolds > 0 ||
       bulletLines >= 2 ||
       hr > 0 ||
@@ -423,7 +419,8 @@ SourceGuess guessSource(String text) {
   if (mdLinks >= 10) add(kChatGpt, 2);
 
   // --- 제미나이는 꾸밈이 전부 들어 있다. 소제목·구분선·표·코드·굵게.
-  final ornament = (hr >= 2 ? 1 : 0) +
+  final ornament =
+      (hr >= 2 ? 1 : 0) +
       (tableRows >= 3 ? 1 : 0) +
       (code >= 2 ? 1 : 0) +
       (bolds >= 10 ? 1 : 0);
@@ -471,14 +468,17 @@ SourceGuess guessSource(String text) {
 
   // --- 번호 목록의 굵은 머리말: `1. **항목** — 설명`. 예전 ChatGPT의 모양이다.
   //     다만 제미나이도 쓰므로, 소제목이 많으면 세지 않는다.
-  final boldLead =
-      RegExp(r'^\s*\d+\.\s+\*\*', multiLine: true).allMatches(text).length;
+  final boldLead = RegExp(
+    r'^\s*\d+\.\s+\*\*',
+    multiLine: true,
+  ).allMatches(text).length;
   if (boldLead >= 2 && headings < 3) add(kChatGpt, 2);
 
   // --- 맺음말: "원하시면 ~해 드릴까요?" 류는 ChatGPT가 즐겨 붙인다.
-  if (RegExp(r'(원하시면|필요하시면|would you like me to|shall i|want me to)',
-          caseSensitive: false)
-      .hasMatch(text)) {
+  if (RegExp(
+    r'(원하시면|필요하시면|would you like me to|shall i|want me to)',
+    caseSensitive: false,
+  ).hasMatch(text)) {
     add(kChatGpt, 1);
   }
 

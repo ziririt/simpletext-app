@@ -19,8 +19,7 @@ const String kListNumber = 'number';
 ///
 /// 종류를 넓게 잡는다. 붙여넣은 글에는 별표·엔대시·엠대시·번호가 섞여
 /// 들어오고, 그걸 안 떼면 '- · 항목'처럼 두 겹이 된다.
-final RegExp _mark =
-    RegExp(r'^([ \t]*)(?:[•·*+\-–—]|\d+[.)])[ \t]+');
+final RegExp _mark = RegExp(r'^([ \t]*)(?:[•·*+\-–—]|\d+[.)])[ \t]+');
 
 final RegExp _indent = RegExp(r'^[ \t]*');
 final RegExp _numHead = RegExp(r'^\d+[.)]$');
@@ -44,8 +43,12 @@ final RegExp _numHead = RegExp(r'^\d+[.)]$');
 ///                     더한다 — 점에서 번호로 바꿨다고 더 깊어지면 안 된다.
 ///   뗄 때는 도로 걷는다  같은 단추를 다시 누르면 정확히 원래대로 온다.
 ///   [pad] 가 0이면 아무 일도 안 한다  — 셈 자체를 시험하는 자리에서는 0이다.
-String listify(String block,
-    {required String kind, String bullet = '·', int pad = 0}) {
+String listify(
+  String block, {
+  required String kind,
+  String bullet = '·',
+  int pad = 0,
+}) {
   final b = bullet.trim().isEmpty ? '·' : bullet.trim();
   final lines = block.split('\n');
 
@@ -74,10 +77,12 @@ String listify(String block,
       continue;
     }
     final m = _mark.firstMatch(line);
-    final indent =
-        m != null ? m.group(1)! : _indent.firstMatch(line)!.group(0)!;
-    final rest =
-        m != null ? line.substring(m.end) : line.substring(indent.length);
+    final indent = m != null
+        ? m.group(1)!
+        : _indent.firstMatch(line)!.group(0)!;
+    final rest = m != null
+        ? line.substring(m.end)
+        : line.substring(indent.length);
     if (off) {
       // 넣을 때 더한 만큼만 도로 걷는다.
       var back = indent;

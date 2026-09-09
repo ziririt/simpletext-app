@@ -10,8 +10,7 @@ void main() {
     bool active = true,
     bool paused = false,
     String why = 'no-account',
-  }) =>
-      showAuthBar(gdrive: gdrive, active: active, paused: paused, why: why);
+  }) => showAuthBar(gdrive: gdrive, active: active, paused: paused, why: why);
 
   group('로그인 때문에 멈췄다는 한 줄', () {
     test('계정이 떨어졌으면 말한다', () {

@@ -54,44 +54,43 @@ class L10nKo extends L10n {
   @override
   String get rateAppTitle => '평가해 주세요';
   @override
-  String get shareAppMsg =>
-      '스카이블루 노트 — 가볍고 빠른 노트, 모든 기기에서 동기화됩니다.';
+  String get shareAppMsg => '스카이블루 노트 — 가볍고 빠른 노트, 모든 기기에서 동기화됩니다.';
   @override
   String get seedBody => [
-        '안녕하세요! 😊 요청하신 내용을 아래와 같이 정리해 드렸습니다[1][2].',
-        '',
-        '# Skyblue Note',
-        '',
-        '표가 어긋나 있죠. 왼쪽 아래 **마법봉**을 눌러 보세요. 🎉',
-        '',
-        '| 종목 | 티커 | 수익률 | 비중',
-        '|------|------|--------|',
-        '| 애플 | AAPL | +14.2% | 12% |',
-        '|엔비디아|NVDA|+48.9%|22%|',
-        '| 마이크로소프트 | MSFT | +21.5% | 18% |',
-        '|테슬라|TSLA|-8.3%|8%|',
-        '',
-        '> 정리하면 줄이 맞습니다. 메뉴의 \'표\'를 누르면 엑셀에 그대로 붙습니다.',
-        '',
-        '## 걷히는 것',
-        '',
-        '- [ ] 군더더기 인사말과 이모지 🙂',
-        '- [ ] 문장 끝에 붙은 각주[3][4]',
-        '- [ ] 줄 끝에 홀로 남은 별표**',
-        '- [x] 어긋난 표는 다시 세웁니다',
-        '',
-        '## 남는 것',
-        '',
-        '제목과 **굵게**와 인용은 그대로 둡니다. 화면에서는 뜻으로 보이고, 복사해서 메모장이나 게시판에 붙이면 표시는 빠집니다.',
-        '',
-        '---',
-        '',
-        '\t•\t탭으로 감싼 글머리표 — 그록·챗지피티가 이렇게 냅니다',
-        '\t•\t겹친   공백과 탭',
-        '\t•\t흩어진 이 줄들도 제자리를 찾습니다',
-        '',
-        '> 마음에 안 들면 메뉴의 [원본 복귀](https://ezlong.com/skybluenote) 한 번으로 되돌립니다.',
-      ].join('\n');
+    '안녕하세요! 😊 요청하신 내용을 아래와 같이 정리해 드렸습니다[1][2].',
+    '',
+    '# Skyblue Note',
+    '',
+    '표가 어긋나 있죠. 왼쪽 아래 **마법봉**을 눌러 보세요. 🎉',
+    '',
+    '| 종목 | 티커 | 수익률 | 비중',
+    '|------|------|--------|',
+    '| 애플 | AAPL | +14.2% | 12% |',
+    '|엔비디아|NVDA|+48.9%|22%|',
+    '| 마이크로소프트 | MSFT | +21.5% | 18% |',
+    '|테슬라|TSLA|-8.3%|8%|',
+    '',
+    '> 정리하면 줄이 맞습니다. 메뉴의 \'표\'를 누르면 엑셀에 그대로 붙습니다.',
+    '',
+    '## 걷히는 것',
+    '',
+    '- [ ] 군더더기 인사말과 이모지 🙂',
+    '- [ ] 문장 끝에 붙은 각주[3][4]',
+    '- [ ] 줄 끝에 홀로 남은 별표**',
+    '- [x] 어긋난 표는 다시 세웁니다',
+    '',
+    '## 남는 것',
+    '',
+    '제목과 **굵게**와 인용은 그대로 둡니다. 화면에서는 뜻으로 보이고, 복사해서 메모장이나 게시판에 붙이면 표시는 빠집니다.',
+    '',
+    '---',
+    '',
+    '\t•\t탭으로 감싼 글머리표 — 그록·챗지피티가 이렇게 냅니다',
+    '\t•\t겹친   공백과 탭',
+    '\t•\t흩어진 이 줄들도 제자리를 찾습니다',
+    '',
+    '> 마음에 안 들면 메뉴의 [원본 복귀](https://ezlong.com/skybluenote) 한 번으로 되돌립니다.',
+  ].join('\n');
 
   @override
   String get done => '완료';
@@ -131,8 +130,7 @@ class L10nKo extends L10n {
   String get unpinConfirmTitle => '상단 고정을 해제할까요?';
 
   @override
-  String get unpinConfirmBody =>
-      '목록에서 노트를 길게 누르면 다시 고정할 수 있습니다.';
+  String get unpinConfirmBody => '목록에서 노트를 길게 누르면 다시 고정할 수 있습니다.';
   @override
   String get deleteTooltip => '삭제';
   @override
@@ -182,12 +180,10 @@ class L10nKo extends L10n {
   String get revertConfirmOk => '원본으로';
 
   @override
-  String get okAction =>
-      '확인';
+  String get okAction => '확인';
 
   @override
-  String get revertDoneTitle =>
-      '원본으로 되돌렸습니다';
+  String get revertDoneTitle => '원본으로 되돌렸습니다';
 
   @override
   String get revertDoneBody =>
@@ -294,8 +290,7 @@ class L10nKo extends L10n {
   String get paperSky => '하늘';
 
   @override
-  String get themeSystemNote =>
-      '기기 설정을 따르면, 기기가 어두운 모드로 바뀌는 시간에 앱도 같이 바뀝니다.';
+  String get themeSystemNote => '기기 설정을 따르면, 기기가 어두운 모드로 바뀌는 시간에 앱도 같이 바뀝니다.';
 
   @override
   String folderMoved(String name) => '폴더로 옮겼습니다 · $name';
@@ -351,7 +346,8 @@ class L10nKo extends L10n {
   @override
   String get wizardTitle => 'AI 편집';
   @override
-  String get wizardHint => '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘';
+  String get wizardHint =>
+      '말로 지시하세요. 예:\n소제목 위 공백은 2줄, 아래는 1줄로 해줘\n마소를 마이크로소프트로 바꿔줘';
   @override
   String get favSaveButton => '자주 쓰는 지시문으로 등록';
   @override
@@ -375,13 +371,15 @@ class L10nKo extends L10n {
   @override
   String get aiKeyInviteTitle => '내 AI 키를 넣으면 더 강해집니다';
   @override
-  String get aiKeyInviteBody => '지금은 정해진 규칙만 알아듣습니다. 내 AI 키를 넣으면 "더 간결하게 써줘", "존댓말로 바꿔줘" 같은 자유로운 지시까지 그대로 처리하고, 태그도 AI가 뽑아 줍니다.';
+  String get aiKeyInviteBody =>
+      '지금은 정해진 규칙만 알아듣습니다. 내 AI 키를 넣으면 "더 간결하게 써줘", "존댓말로 바꿔줘" 같은 자유로운 지시까지 그대로 처리하고, 태그도 AI가 뽑아 줍니다.';
   @override
   String get aiKeyCta => 'AI 키 넣기';
   @override
   String get aiKeyPasteBtn => '붙여넣기';
   @override
-  String get aiKeyCost => '회원님이 쓰시는 AI 서비스를 이 앱에서 그대로 불러 씁니다. 제미나이·챗지피티·클로드·그록 가운데 이미 쓰시는 것의 키를 넣으면 됩니다.';
+  String get aiKeyCost =>
+      '회원님이 쓰시는 AI 서비스를 이 앱에서 그대로 불러 씁니다. 제미나이·챗지피티·클로드·그록 가운데 이미 쓰시는 것의 키를 넣으면 됩니다.';
   @override
   String get aiKeySafe => '키는 이 기기 안에만 둡니다. 이 앱의 서버로 보내지 않습니다.';
   @override
@@ -456,15 +454,13 @@ class L10nKo extends L10n {
   String get copyAll => '전체 복사';
 
   @override
-  String get copyPlainSub =>
-      '#, ** 같은 표시를 빼고 맨 글자로';
+  String get copyPlainSub => '#, ** 같은 표시를 빼고 맨 글자로';
 
   @override
   String get copyRaw => '마크다운 그대로 복사';
 
   @override
-  String get copyRawSub =>
-      '노션·슬랙·깃허브처럼 마크다운을 아는 곳에';
+  String get copyRawSub => '노션·슬랙·깃허브처럼 마크다운을 아는 곳에';
   @override
   String get copiedAll => '전체 텍스트를 복사했습니다';
   @override
@@ -490,53 +486,43 @@ class L10nKo extends L10n {
   String get apply => '정리 바로적용';
 
   @override
-  String get presetAiName =>
-      '기본 정리';
+  String get presetAiName => '기본 정리';
   @override
-  String get presetAiDesc =>
-      '붙여넣은 AI 답변을 그대로 읽을 수 있게. 대부분 이걸로 충분합니다';
+  String get presetAiDesc => '붙여넣은 AI 답변을 그대로 읽을 수 있게. 대부분 이걸로 충분합니다';
   @override
-  String get presetStripName =>
-      '기호 싹 지우기';
+  String get presetStripName => '기호 싹 지우기';
   @override
-  String get presetStripDesc =>
-      '카톡·문자에 보낼 때. 기호도 이모지도 다 걷고 표는 줄 맞춘 글자표로';
+  String get presetStripDesc => '카톡·문자에 보낼 때. 기호도 이모지도 다 걷고 표는 줄 맞춘 글자표로';
   @override
-  String get presetMinimalName =>
-      '잡티만 털기';
+  String get presetMinimalName => '잡티만 털기';
   @override
-  String get presetMinimalDesc =>
-      '구조는 그대로 두고 눈에 안 보이는 찌꺼기만';
+  String get presetMinimalDesc => '구조는 그대로 두고 눈에 안 보이는 찌꺼기만';
   @override
-  String get presetTablesName =>
-      '표만 꺼내기';
+  String get presetTablesName => '표만 꺼내기';
   @override
-  String get presetTablesDesc =>
-      '엑셀·구글시트에 바로 붙이려고';
+  String get presetTablesDesc => '엑셀·구글시트에 바로 붙이려고';
   @override
-  String get presetBlogName =>
-      '블로그·카페용';
+  String get presetBlogName => '블로그·카페용';
   @override
-  String get presetBlogDesc =>
-      '링크는 살리고 기호만 없앨 때';
+  String get presetBlogDesc => '링크는 살리고 기호만 없앨 때';
 
   @override
   String get tidySample => [
-        '## 오늘 정리 😊',
-        '',
-        '**핵심**은 세 가지입니다[1][2].',
-        '',
-        '- 첫째 항목',
-        '- 둘째 항목',
-        '',
-        '> 인용 한 줄',
-        '',
-        '[블로그](https://ezlong.com)에 자세히',
-        '',
-        '| 항목 | 값 |',
-        '|---|---|',
-        '|매출|120|',
-      ].join('\n');
+    '## 오늘 정리 😊',
+    '',
+    '**핵심**은 세 가지입니다[1][2].',
+    '',
+    '- 첫째 항목',
+    '- 둘째 항목',
+    '',
+    '> 인용 한 줄',
+    '',
+    '[블로그](https://ezlong.com)에 자세히',
+    '',
+    '| 항목 | 값 |',
+    '|---|---|',
+    '|매출|120|',
+  ].join('\n');
 
   @override
   String get settingsTitle => '설정';
@@ -553,8 +539,7 @@ class L10nKo extends L10n {
   String get syncAppleOnly => '애플 기기만';
 
   @override
-  String get syncScopeTitle =>
-      '동기화 범위';
+  String get syncScopeTitle => '동기화 범위';
 
   @override
   String get syncScopeShared =>
@@ -563,15 +548,15 @@ class L10nKo extends L10n {
   @override
   String get syncStateOffGdrive => '구글 계정에 다시 로그인해 주세요';
   @override
-  String get syncStateExpiredGdrive => '계정은 연결돼 있는데 드라이브 사용 허락이 만료됐습니다. 한 번 눌러 다시 켜 주세요';
+  String get syncStateExpiredGdrive =>
+      '계정은 연결돼 있는데 드라이브 사용 허락이 만료됐습니다. 한 번 눌러 다시 켜 주세요';
 
   @override
   String get syncScopePlatformGdrive =>
       '구글 드라이브 창고는 이 앱을 쓰는 기기가 함께 씁니다. 이 앱을 깔고 같은 구글 계정으로 들어가면 됩니다';
 
   @override
-  String get syncScopeDevice =>
-      '기기마다 따로 : 글자 크기, 줄 간격, 배경, 화면 모드, 정렬 기준';
+  String get syncScopeDevice => '기기마다 따로 : 글자 크기, 줄 간격, 배경, 화면 모드, 정렬 기준';
 
   @override
   String get syncScopePlatform =>
@@ -581,32 +566,23 @@ class L10nKo extends L10n {
   String get typographyTitle => '글자와 줄 간격';
 
   @override
-  String get syncScopeNever =>
-      'AI API KEY는 어느 창고에도 올라가지 않으니, 기기마다 입력해야 합니다';
+  String get syncScopeNever => 'AI API KEY는 어느 창고에도 올라가지 않으니, 기기마다 입력해야 합니다';
   @override
-  String get syncWhereTitle =>
-      '어디에 둘까';
+  String get syncWhereTitle => '어디에 둘까';
   @override
-  String get syncBackendNone =>
-      '동기화 안 함';
+  String get syncBackendNone => '동기화 안 함';
   @override
-  String get syncBackendNoneSub =>
-      '이 기기에만 둡니다';
+  String get syncBackendNoneSub => '이 기기에만 둡니다';
   @override
-  String get syncBackendIcloud =>
-      'iCloud';
+  String get syncBackendIcloud => 'iCloud';
   @override
-  String get syncBackendIcloudSub =>
-      '아이폰·아이패드·맥끼리 오갑니다';
+  String get syncBackendIcloudSub => '아이폰·아이패드·맥끼리 오갑니다';
   @override
-  String get syncBackendGdrive =>
-      'Google Drive';
+  String get syncBackendGdrive => 'Google Drive';
   @override
-  String get syncBackendGdriveSub =>
-      '다른 기기와 웹까지 함께';
+  String get syncBackendGdriveSub => '다른 기기와 웹까지 함께';
   @override
-  String get syncSoon =>
-      '준비 중';
+  String get syncSoon => '준비 중';
 
   @override
   String get driveSignInFailed => '구글 계정에 연결하지 못했습니다';
@@ -617,17 +593,14 @@ class L10nKo extends L10n {
   @override
   String get driveSignedInAs => '연결됨';
   @override
-  String get syncSectionState =>
-      '지금 상태';
+  String get syncSectionState => '지금 상태';
   @override
-  String get syncNowAction =>
-      '지금 동기화';
+  String get syncNowAction => '지금 동기화';
   @override
   String get syncNowBusy => '동기화 중…';
 
   @override
-  String get syncLastNever =>
-      '아직 한 번도 동기화하지 못했습니다';
+  String get syncLastNever => '아직 한 번도 동기화하지 못했습니다';
   @override
   String get headingTip => '제목';
   @override
@@ -678,7 +651,8 @@ class L10nKo extends L10n {
   @override
   String skyCounts(int stars, int links) => '별 $stars개 · 실 $links가닥';
   @override
-  String skyEmpty(int more) => '글이 $more편 더 쌓이면 여기에 별자리가 그려집니다. 닮은 글끼리 실로 이어집니다.';
+  String skyEmpty(int more) =>
+      '글이 $more편 더 쌓이면 여기에 별자리가 그려집니다. 닮은 글끼리 실로 이어집니다.';
   @override
   String get travelTitle => '시간 여행';
   @override
@@ -762,8 +736,7 @@ class L10nKo extends L10n {
   @override
   String syncLogLastDown(String when) => '마지막으로 받은 때 · ' + when;
   @override
-  String get syncTroubleTitle =>
-      '문제가 생기면';
+  String get syncTroubleTitle => '문제가 생기면';
   @override
   String get syncTroubleNote =>
       '동기화는 백업이 아닙니다. 한쪽에서 지우면 모든 곳에서 지워집니다. 중요한 노트는 가끔 파일로 뽑아 두십시오.';
@@ -780,11 +753,13 @@ class L10nKo extends L10n {
   String syncStateSyncing(String where) => '$where와 동기화 중… 몇 초에서 몇십 초 걸립니다';
 
   @override
-  String get aiKeyNotSynced => '노트는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
+  String get aiKeyNotSynced =>
+      '노트는 고른 창고로 모든 기기에 동기화됩니다. 하지만 API 키는 동기화되지 않습니다 — 기기마다 직접 넣어 주세요.';
   @override
   String get aiKeySyncTitle => 'API키도 동기화';
   @override
-  String get aiKeySyncSubApple => 'iCloud 키체인으로 옮깁니다. 노트가 가는 길과 다른 길이고, 열쇠를 내 기기만 가지므로 애플도 그 값을 읽지 못합니다.';
+  String get aiKeySyncSubApple =>
+      'iCloud 키체인으로 옮깁니다. 노트가 가는 길과 다른 길이고, 열쇠를 내 기기만 가지므로 애플도 그 값을 읽지 못합니다.';
   @override
   String get aiKeySyncSubGdrive => '구글 드라이브에 있는 API키 보안은 이용자의 몫입니다.';
 
@@ -858,16 +833,19 @@ class L10nKo extends L10n {
   String get aiDetecting => '어느 회사 키인지 확인하고 있습니다…';
 
   @override
-  String get aiErrNoCredits => '키는 멀쩡한데 그 회사 계정에 잔액이 없습니다. 회사 홈페이지에서 결제 수단을 등록하거나 크레딧을 충전해야 합니다. 돈을 안 쓰고 싶으시면 구글 제미나이(AIza…로 시작하는 키)를 넣어 보세요 — 무료 한도가 있습니다.';
+  String get aiErrNoCredits =>
+      '키는 멀쩡한데 그 회사 계정에 잔액이 없습니다. 회사 홈페이지에서 결제 수단을 등록하거나 크레딧을 충전해야 합니다. 돈을 안 쓰고 싶으시면 구글 제미나이(AIza…로 시작하는 키)를 넣어 보세요 — 무료 한도가 있습니다.';
 
   @override
-  String get aiErrBadKey => '키가 거절당했습니다. 앞뒤에 공백이나 따옴표가 붙지 않았는지 보시고, 그래도 안 되면 회사 홈페이지에서 새로 발급받으세요.';
+  String get aiErrBadKey =>
+      '키가 거절당했습니다. 앞뒤에 공백이나 따옴표가 붙지 않았는지 보시고, 그래도 안 되면 회사 홈페이지에서 새로 발급받으세요.';
 
   @override
   String get aiErrRateLimit => '지금 요청이 몰려 있습니다. 앱 잘못이 아니니 잠시 뒤에 다시 눌러 주세요.';
 
   @override
-  String get aiErrNoModel => '이 계정에서 그 모델을 쓸 수 없습니다. 아래 \'고급 — 모델 직접 선택\'에서 다른 모델을 골라 보세요.';
+  String get aiErrNoModel =>
+      '이 계정에서 그 모델을 쓸 수 없습니다. 아래 \'고급 — 모델 직접 선택\'에서 다른 모델을 골라 보세요.';
 
   @override
   String get aiErrNetwork => '인터넷에 닿지 못했습니다. 연결을 확인하고 다시 해 주세요.';
@@ -918,71 +896,56 @@ class L10nKo extends L10n {
   String trashDaysLeftLabel(int days) => '$days일 뒤 완전히 지워집니다';
 
   @override
-  String get exportSectionTitle =>
-      '가져오기·내보내기';
+  String get exportSectionTitle => '가져오기·내보내기';
 
   @override
   String get exportSubtitle =>
       '노트는 언제든 꺼낼 수 있습니다. 마크다운으로 나가면 애플 메모·옵시디언·노션 어디로든 들어갑니다.';
 
   @override
-  String get exportNote =>
-      '이 노트 내보내기';
+  String get exportNote => '이 노트 내보내기';
 
   @override
-  String get exportAllMd =>
-      '노트 전체 내보내기';
+  String get exportAllMd => '노트 전체 내보내기';
 
   @override
-  String get exportAllMdSub =>
-      '마크다운 여러 장을 압축 파일 하나로';
+  String get exportAllMdSub => '마크다운 여러 장을 압축 파일 하나로';
 
   @override
-  String get exportBackup =>
-      '백업 파일 저장';
+  String get exportBackup => '백업 파일 저장';
 
   @override
-  String get exportBackupSub =>
-      '이 앱으로 그대로 되돌릴 수 있는 한 장 (AI 키는 빼고 저장합니다)';
+  String get exportBackupSub => '이 앱으로 그대로 되돌릴 수 있는 한 장 (AI 키는 빼고 저장합니다)';
 
   @override
-  String get exportFailed =>
-      '내보내기에 실패했습니다';
+  String get exportFailed => '내보내기에 실패했습니다';
 
   @override
-  String get printAction =>
-      '인쇄';
+  String get printAction => '인쇄';
 
   @override
-  String get exportPdf =>
-      'PDF로 내보내기';
+  String get exportPdf => 'PDF로 내보내기';
 
   @override
-  String get pdfFailed =>
-      'PDF를 만들지 못했습니다';
+  String get pdfFailed => 'PDF를 만들지 못했습니다';
 
   @override
-  String get exportEmpty =>
-      '내보낼 노트가 없습니다';
+  String get exportEmpty => '내보낼 노트가 없습니다';
 
   @override
   String get choosePreset => '정리 방식 고르기';
 
   @override
-  String get importFiles =>
-      '파일에서 가져오기';
+  String get importFiles => '파일에서 가져오기';
 
   @override
-  String get importFilesSub =>
-      '마크다운·텍스트 파일을 노트로. 백업 파일도 여기서 되돌립니다';
+  String get importFilesSub => '마크다운·텍스트 파일을 노트로. 백업 파일도 여기서 되돌립니다';
 
   @override
-  String get importAppend =>
-      '파일 불러와 본문 이어 붙이기';
+  String get importAppend => '파일 불러와 본문 이어 붙이기';
 
   @override
-  String get importNone =>
-      '가져온 파일이 없습니다';
+  String get importNone => '가져온 파일이 없습니다';
 
   @override
   String importDone(int n) => '노트 $n개를 가져왔습니다';
@@ -994,24 +957,19 @@ class L10nKo extends L10n {
   String get splitEmpty => '왼쪽에서 노트를 고르세요';
 
   @override
-  String get historyTitle =>
-      '버전 기록';
+  String get historyTitle => '버전 기록';
 
   @override
-  String get historySub =>
-      '정리하거나 바꾸기 전의 글로 돌아갈 수 있습니다';
+  String get historySub => '정리하거나 바꾸기 전의 글로 돌아갈 수 있습니다';
 
   @override
-  String get historyEmpty =>
-      '아직 되돌릴 버전이 없습니다';
+  String get historyEmpty => '아직 되돌릴 버전이 없습니다';
 
   @override
-  String get historyRestore =>
-      '되돌리기';
+  String get historyRestore => '되돌리기';
 
   @override
-  String get historyOriginal =>
-      '붙여넣은 원본';
+  String get historyOriginal => '붙여넣은 원본';
 
   @override
   String get historyWhyTidy => '정리 직전';
@@ -1056,7 +1014,8 @@ class L10nKo extends L10n {
   String attachAndMore(int n) => '외 ${n}개';
 
   @override
-  String attachOther(String device, String what) => '첨부파일 : ${device} 노트에 ${what} 가 첨부되어 있음 (해당 기기에서만 확인)';
+  String attachOther(String device, String what) =>
+      '첨부파일 : ${device} 노트에 ${what} 가 첨부되어 있음 (해당 기기에서만 확인)';
 
   @override
   String deviceName(String kind) {
@@ -1139,11 +1098,12 @@ class L10nKo extends L10n {
   String lockSub(String vendor) => vendor == 'android'
       ? '지문·얼굴 인식이나 화면 잠금으로 앱을 엽니다.'
       : vendor == 'windows'
-          ? 'Windows Hello나 기기 암호로 앱을 엽니다.'
-          : 'Face ID·Touch ID나 기기 암호로 앱을 엽니다.';
+      ? 'Windows Hello나 기기 암호로 앱을 엽니다.'
+      : 'Face ID·Touch ID나 기기 암호로 앱을 엽니다.';
 
   @override
-  String get lockNote => '이 잠금은 남이 내 기기를 집었을 때 화면을 못 열게 하는 것입니다. 기기 안의 파일 자체를 암호로 잠그는 것은 아닙니다.';
+  String get lockNote =>
+      '이 잠금은 남이 내 기기를 집었을 때 화면을 못 열게 하는 것입니다. 기기 안의 파일 자체를 암호로 잠그는 것은 아닙니다.';
 
   @override
   String get lockDelayTitle => '잠기는 시점';
@@ -1167,8 +1127,8 @@ class L10nKo extends L10n {
   String lockUnavailable(String vendor) => vendor == 'android'
       ? '이 기기에서는 지문·얼굴 인식이나 화면 잠금을 쓸 수 없습니다.'
       : vendor == 'windows'
-          ? '이 기기에서는 Windows Hello나 기기 암호를 쓸 수 없습니다.'
-          : '이 기기에서는 Face ID·Touch ID나 기기 암호를 쓸 수 없습니다.';
+      ? '이 기기에서는 Windows Hello나 기기 암호를 쓸 수 없습니다.'
+      : '이 기기에서는 Face ID·Touch ID나 기기 암호를 쓸 수 없습니다.';
 
   @override
   String get lockReasonOpen => '노트를 열려면 확인이 필요합니다';
@@ -1201,7 +1161,8 @@ class L10nKo extends L10n {
   String get syncDiagSignedOut => '이 기기가 iCloud에 로그인되어 있지 않습니다. 먼저 로그인해 주십시오.';
 
   @override
-  String get syncDiagNoContainer => '로그인은 되어 있는데, 이 앱에 iCloud 자리가 아직 없습니다. 아래 절차대로 켜 주십시오.';
+  String get syncDiagNoContainer =>
+      '로그인은 되어 있는데, 이 앱에 iCloud 자리가 아직 없습니다. 아래 절차대로 켜 주십시오.';
 
   @override
   String get syncDiagPreparing => '자리는 받았습니다. 준비가 끝나기를 기다리는 중입니다.';
@@ -1213,13 +1174,15 @@ class L10nKo extends L10n {
   String get syncRecheckOk => 'iCloud가 켜졌습니다';
 
   @override
-  String get syncRecheckStill => '아직 켜지지 않았습니다. 설정에서 켠 뒤 다시 눌러 주십시오. 방금 켰다면 1~2분 뒤에 한 번 더 눌러 보십시오.';
+  String get syncRecheckStill =>
+      '아직 켜지지 않았습니다. 설정에서 켠 뒤 다시 눌러 주십시오. 방금 켰다면 1~2분 뒤에 한 번 더 눌러 보십시오.';
 
   @override
   String get syncOpenFailed => '설정 앱을 열지 못했습니다. 홈 화면에서 직접 열어 주십시오.';
 
   @override
-  String get syncOpenManual => '설정 앱을 직접 열어 주십시오. 홈 화면 > 설정 > 맨 위 내 이름 > iCloud 입니다.';
+  String get syncOpenManual =>
+      '설정 앱을 직접 열어 주십시오. 홈 화면 > 설정 > 맨 위 내 이름 > iCloud 입니다.';
 
   @override
   String get menuFile => '파일';
@@ -1251,7 +1214,8 @@ class L10nKo extends L10n {
   @override
   String get syncHelpTitleGdrive => '구글 드라이브 다시 연결하기';
   @override
-  String get syncHelpStepsGdrive => '1. 아래 단추를 눌러 구글 계정을 고릅니다\n2. 드라이브 접근을 허용합니다\n3. 곧바로 동기화가 시작됩니다';
+  String get syncHelpStepsGdrive =>
+      '1. 아래 단추를 눌러 구글 계정을 고릅니다\n2. 드라이브 접근을 허용합니다\n3. 곧바로 동기화가 시작됩니다';
   @override
   String get syncHelpNoteGdrive => '노트는 드라이브에 그대로 있습니다. 다시 로그인하면 돌아옵니다.';
   @override
@@ -1264,18 +1228,17 @@ class L10nKo extends L10n {
   String get syncDiagPreparingGdrive =>
       "로그인은 되었습니다. 드라이브에서 노트를 받아오는 중입니다. 화면을 계속 보고 있을 필요는 없습니다 — 다른 앱에 다녀와도, 받아오기는 잠시 쉬었다가 돌아오면 이어집니다.";
   @override
-  String get syncRecheckStillGdrive => '아직 다 못 받았습니다. 노트가 많으면 첫 동기화는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
+  String get syncRecheckStillGdrive =>
+      '아직 다 못 받았습니다. 노트가 많으면 첫 동기화는 조금 걸립니다 \u2014 창을 닫고 계셔도 계속 받습니다.';
 
   @override
-  String pastedFrom(String src, String date) =>
-      '$src에서 $date에 가져옴';
+  String pastedFrom(String src, String date) => '$src에서 $date에 가져옴';
 
   @override
   String pastedOn(String date) => '$date에 붙여넣음';
 
   @override
-  String staleWarn(int days) =>
-      '받은 지 $days일 된 답입니다. 그 사이 모델이 바뀌었을 수 있습니다.';
+  String staleWarn(int days) => '받은 지 $days일 된 답입니다. 그 사이 모델이 바뀌었을 수 있습니다.';
   @override
   String get settingsSecView => '보기';
   @override
@@ -1375,6 +1338,24 @@ class L10nKo extends L10n {
   String get pasteTipLater => '나중에';
   @override
   String get adClose => '광고 닫기';
+
+  @override
+  String get bookmarkAdd => '여기에 책갈피';
+
+  @override
+  String get bookmarkRemove => '책갈피 빼기';
+
+  @override
+  String get bookmarkTooShort => '한 화면짜리 글이라 끼울 자리가 없습니다';
+
+  @override
+  String bookmarkGoAt(int pct) => '책갈피 $pct%로';
+
+  @override
+  String bookmarkResume(int pct) => '책갈피 $pct%에서 이어 읽기';
+
+  @override
+  String bookmarkSaved(int pct) => '$pct% 자리에 책갈피를 끼웠습니다';
   @override
   String get noteDuplicate => '복제';
   @override
@@ -1409,9 +1390,11 @@ class L10nKo extends L10n {
   @override
   String get premiumScopeBase => '결제하신 스토어의 기기에서 열립니다. 어느 쪽으로 사셔도 웹앱은 함께 열립니다.';
   @override
-  String get premiumScopeAll => '휴대폰과 컴퓨터를 함께 쓰셔도 한 번의 결제로 모두 열립니다. 앞으로 늘어나는 기기도 이 등급에 들어옵니다.';
+  String get premiumScopeAll =>
+      '휴대폰과 컴퓨터를 함께 쓰셔도 한 번의 결제로 모두 열립니다. 앞으로 늘어나는 기기도 이 등급에 들어옵니다.';
   @override
-  String get premiumAutoRenew => '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
+  String get premiumAutoRenew =>
+      '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 자동으로 갱신되고 같은 금액이 청구됩니다. 해지는 기기 설정의 계정 화면에서 언제든 하실 수 있습니다.';
   @override
   String get premiumRestore => '구매 복원';
   @override
@@ -1421,9 +1404,11 @@ class L10nKo extends L10n {
   @override
   String get premiumThanks => '고맙습니다. 프리미엄이 켜졌습니다.';
   @override
-  String get premiumNoStore => '이 기기에서는 결제를 진행할 수 없습니다. 결제하신 뒤 같은 계정으로 로그인하시면 이곳에도 바로 적용됩니다.';
+  String get premiumNoStore =>
+      '이 기기에서는 결제를 진행할 수 없습니다. 결제하신 뒤 같은 계정으로 로그인하시면 이곳에도 바로 적용됩니다.';
   @override
-  String get premiumUpgradeHere => '이 기기에서도 쓰시려면 ‘모든 기기’로 올리세요. 남은 기간은 스토어가 정산해 드립니다.';
+  String get premiumUpgradeHere =>
+      '이 기기에서도 쓰시려면 ‘모든 기기’로 올리세요. 남은 기간은 스토어가 정산해 드립니다.';
   @override
   String get premiumHave => '지금 등급';
   @override
@@ -1454,13 +1439,15 @@ class L10nKo extends L10n {
   String get onbTitle3 => '모든 기기에서 같은 노트';
 
   @override
-  String get onbBody3 => '아이폰·아이패드·맥, 그리고 브라우저에서 여는 웹앱까지 같은 노트를 봅니다. 함께 쓰시는 다른 기기도 이어집니다. 한쪽에서 고치면 나머지도 따라옵니다.';
+  String get onbBody3 =>
+      '아이폰·아이패드·맥, 그리고 브라우저에서 여는 웹앱까지 같은 노트를 봅니다. 함께 쓰시는 다른 기기도 이어집니다. 한쪽에서 고치면 나머지도 따라옵니다.';
 
   @override
   String get onbTitle4 => '전부 열어 두었습니다';
 
   @override
-  String onbBody4(int days) => '$days일 동안 한도 없이 써 보시고, 계속 쓸 만하면 그때 정하시면 됩니다. 지금 결제하실 필요는 없습니다.';
+  String onbBody4(int days) =>
+      '$days일 동안 한도 없이 써 보시고, 계속 쓸 만하면 그때 정하시면 됩니다. 지금 결제하실 필요는 없습니다.';
 
   @override
   String get onbNext => '다음';
@@ -1508,7 +1495,8 @@ class L10nKo extends L10n {
   String premiumCta(String period, String price) => '$period $price에 이용하기';
 
   @override
-  String premiumChargeNote(String period, String price) => '$period 요금 $price이 청구됩니다.';
+  String premiumChargeNote(String period, String price) =>
+      '$period 요금 $price이 청구됩니다.';
 
   @override
   String premiumTrialThen(int days) => '$days일 무료 체험, 그 후';
@@ -1517,26 +1505,17 @@ class L10nKo extends L10n {
   String premiumSave(int pct) => '$pct% 절약';
 
   @override
-  String premiumTrustBody(String version) => '지금 $version 버전입니다. 들어온 요청은 대개 그 주에 반영하고, 무엇이 바뀌었는지 앱 안에서 바로 보실 수 있습니다.';
-
-
-
+  String premiumTrustBody(String version) =>
+      '지금 $version 버전입니다. 들어온 요청은 대개 그 주에 반영하고, 무엇이 바뀌었는지 앱 안에서 바로 보실 수 있습니다.';
 
   @override
   String get premiumPerkWeb => '웹앱까지 — 브라우저에서도 광고 없이';
-
-
-
-
-
 
   @override
   String premiumPerkTidy(int n) => '정리 무제한 — 하루 $n번 한도 없이';
 
   @override
   String premiumPerkWizard(int n) => 'AI 편집 무제한 — 하루 $n번 한도 없이';
-
-
 
   @override
   String get sponsorPremiumNote => '한 번 결제하시면 배너도, 이 창도 다시 보이지 않습니다.';
@@ -1551,7 +1530,8 @@ class L10nKo extends L10n {
   @override
   String get limitTitle => '오늘 무료 사용을 다 쓰셨습니다';
   @override
-  String limitTidyBody(int n) => '무료로는 하루에 $n번까지 정리할 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
+  String limitTidyBody(int n) =>
+      '무료로는 하루에 $n번까지 정리할 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
   @override
   String limitWizardBody(int n) =>
       '무료로는 하루에 $n번까지 AI 편집을 쓸 수 있습니다. 내일 다시 열리고, 프리미엄이면 제한 없이 쓰실 수 있습니다.';
@@ -1590,23 +1570,27 @@ class L10nKo extends L10n {
   @override
   String get aiKeyChecking => '확인 중…';
   @override
-  String get aiKeyUnknownFormat => '어느 회사의 키인지 알아내지 못했습니다. 네 회사 모두에 물어봤지만 받아 주지 않았습니다. 키를 다시 복사해 붙여 주세요.';
+  String get aiKeyUnknownFormat =>
+      '어느 회사의 키인지 알아내지 못했습니다. 네 회사 모두에 물어봤지만 받아 주지 않았습니다. 키를 다시 복사해 붙여 주세요.';
   @override
   String get aiAdvancedLabel => '고급 — 모델 직접 선택';
   @override
   String get aiManualModelHint => '모델 이름 직접 입력 (예: gemini-2.5-flash-lite)';
   @override
-  String aiAutoLabel(String provider, String model) => '자동 선택: $provider · $model';
+  String aiAutoLabel(String provider, String model) =>
+      '자동 선택: $provider · $model';
   @override
   String aiModelsFound(int n) => '사용 가능한 모델 $n개를 확인했습니다.';
   @override
-  String aiListFailed(String error) => '모델 목록을 받지 못했습니다($error). 내장 예비 목록으로 동작합니다.';
+  String aiListFailed(String error) =>
+      '모델 목록을 받지 못했습니다($error). 내장 예비 목록으로 동작합니다.';
   @override
   String aiModelSwitched(String model) => '쓰던 모델이 응답하지 않아 $model(으)로 바꿨습니다.';
   @override
   String get rulesSectionTitle => '나만의 자동 바꾸기 규칙';
   @override
-  String get rulesSectionDesc => '위에서부터 순서대로 적용. 바꾸기에 \\n을 쓰면 줄바꿈. 코드블록 안은 건드리지 않습니다.';
+  String get rulesSectionDesc =>
+      '위에서부터 순서대로 적용. 바꾸기에 \\n을 쓰면 줄바꿈. 코드블록 안은 건드리지 않습니다.';
   @override
   String get addRule => '규칙 추가';
   @override

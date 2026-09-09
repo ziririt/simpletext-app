@@ -34,13 +34,41 @@ void main() {
   test('매개변수 있는 문구는 매개변수를 실제로 포함한다', () {
     for (final t in translations) {
       final tag = t.localeTag;
-      expect(t.appliedDone('XSUMX'), contains('XSUMX'), reason: '$tag.appliedDone');
-      expect(t.tidyCopied('XSUMX'), contains('XSUMX'), reason: '$tag.tidyCopied');
-      expect(t.aiCallFailed('XERRX'), contains('XERRX'), reason: '$tag.aiCallFailed');
-      expect(t.previewTitle('XPREX'), contains('XPREX'), reason: '$tag.previewTitle');
-      expect(t.appliedPrefix('XAX'), contains('XAX'), reason: '$tag.appliedPrefix');
-      expect(t.unknownPrefix('XUX'), contains('XUX'), reason: '$tag.unknownPrefix');
-      expect(t.warningPrefix('XWX'), contains('XWX'), reason: '$tag.warningPrefix');
+      expect(
+        t.appliedDone('XSUMX'),
+        contains('XSUMX'),
+        reason: '$tag.appliedDone',
+      );
+      expect(
+        t.tidyCopied('XSUMX'),
+        contains('XSUMX'),
+        reason: '$tag.tidyCopied',
+      );
+      expect(
+        t.aiCallFailed('XERRX'),
+        contains('XERRX'),
+        reason: '$tag.aiCallFailed',
+      );
+      expect(
+        t.previewTitle('XPREX'),
+        contains('XPREX'),
+        reason: '$tag.previewTitle',
+      );
+      expect(
+        t.appliedPrefix('XAX'),
+        contains('XAX'),
+        reason: '$tag.appliedPrefix',
+      );
+      expect(
+        t.unknownPrefix('XUX'),
+        contains('XUX'),
+        reason: '$tag.unknownPrefix',
+      );
+      expect(
+        t.warningPrefix('XWX'),
+        contains('XWX'),
+        reason: '$tag.warningPrefix',
+      );
       final ti = t.tableInfo(7, 3, 5);
       expect(ti, contains('7'), reason: '$tag.tableInfo n');
       expect(ti, contains('3'), reason: '$tag.tableInfo cols');
@@ -57,22 +85,48 @@ void main() {
       final tag = t.localeTag;
       // 티커·수치는 번역 불변이어야 한다 (엔진 데모가 언어와 무관하게 동작하도록)
       expect(t.seedBody, contains('AAPL'), reason: '$tag.seedBody AAPL');
-      expect(t.seedBody, contains('TSLA|-8.3%|8%|'), reason: '$tag.seedBody 깨진 마지막 행');
-      expect(t.seedBody, contains('| MSFT | +21.5%'), reason: '$tag.seedBody 셀 부족 행');
-      expect(t.seedBody, contains('|------|------|--------|'), reason: '$tag.seedBody 구분 행');
+      expect(
+        t.seedBody,
+        contains('TSLA|-8.3%|8%|'),
+        reason: '$tag.seedBody 깨진 마지막 행',
+      );
+      expect(
+        t.seedBody,
+        contains('| MSFT | +21.5%'),
+        reason: '$tag.seedBody 셀 부족 행',
+      );
+      expect(
+        t.seedBody,
+        contains('|------|------|--------|'),
+        reason: '$tag.seedBody 구분 행',
+      );
     }
   });
 
   test('로케일 해석: 중국어 스크립트/지역, 미지원 언어 폴백', () {
     expect(L10n.forLocale(const Locale('ko')).localeTag, 'ko');
-    expect(L10n.forLocale(const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans')).localeTag, 'zh-Hans');
-    expect(L10n.forLocale(const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')).localeTag, 'zh-Hant');
+    expect(
+      L10n.forLocale(
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+      ).localeTag,
+      'zh-Hans',
+    );
+    expect(
+      L10n.forLocale(
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+      ).localeTag,
+      'zh-Hant',
+    );
     expect(L10n.forLocale(const Locale('zh', 'TW')).localeTag, 'zh-Hant');
     expect(L10n.forLocale(const Locale('zh', 'HK')).localeTag, 'zh-Hant');
     expect(L10n.forLocale(const Locale('zh', 'CN')).localeTag, 'zh-Hans');
     expect(L10n.forLocale(const Locale('zh')).localeTag, 'zh-Hans');
     expect(L10n.forLocale(const Locale('pt', 'BR')).localeTag, 'pt');
-    expect(L10n.forLocale(const Locale('it')).localeTag, 'en', reason: '미지원 언어는 영어 폴백');
+    expect(
+      L10n.forLocale(const Locale('it')).localeTag,
+      'en',
+      reason: '미지원 언어는 영어 폴백',
+    );
     expect(L10n.forLocale(null).localeTag, 'en');
   });
 
@@ -89,7 +143,11 @@ void main() {
       'fr': 'Remplacer',
     };
     for (final t in translations) {
-      expect(t.replaceAction, expected[t.localeTag], reason: '${t.localeTag}.replaceAction');
+      expect(
+        t.replaceAction,
+        expected[t.localeTag],
+        reason: '${t.localeTag}.replaceAction',
+      );
     }
   });
 }

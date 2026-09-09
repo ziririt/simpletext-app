@@ -9,23 +9,41 @@ import 'package:simpletext/core/ai_provider.dart';
 
 void main() {
   group('키 앞글자로 회사 판정', () {
-    test('sk-ant- 는 Claude', () => expect(providerOfKey('sk-ant-api03-xx'), 'anthropic'));
-    test('sk- 는 ChatGPT (sk-ant- 를 먼저 봐야 한다)',
-        () => expect(providerOfKey('sk-proj-xxxx'), 'openai'));
+    test(
+      'sk-ant- 는 Claude',
+      () => expect(providerOfKey('sk-ant-api03-xx'), 'anthropic'),
+    );
+    test(
+      'sk- 는 ChatGPT (sk-ant- 를 먼저 봐야 한다)',
+      () => expect(providerOfKey('sk-proj-xxxx'), 'openai'),
+    );
     test('AIza 는 Gemini', () => expect(providerOfKey('AIzaSyXXXX'), 'google'));
     test('xai- 는 Grok', () => expect(providerOfKey('xai-xxxx'), 'xai'));
-    test('모르는 형식은 null — 화면이 직접 지정을 안내한다',
-        () => expect(providerOfKey('hello-world'), isNull));
+    test(
+      '모르는 형식은 null — 화면이 직접 지정을 안내한다',
+      () => expect(providerOfKey('hello-world'), isNull),
+    );
     test('빈 키는 null', () => expect(providerOfKey('  '), isNull));
   });
 
   group('옛 설정 이관 — 모델 이름으로 회사 역산', () {
-    test('gemini → google', () => expect(providerOfModel('gemini-2.5-flash-lite'), 'google'));
-    test('claude → anthropic', () => expect(providerOfModel('claude-sonnet-5'), 'anthropic'));
+    test(
+      'gemini → google',
+      () => expect(providerOfModel('gemini-2.5-flash-lite'), 'google'),
+    );
+    test(
+      'claude → anthropic',
+      () => expect(providerOfModel('claude-sonnet-5'), 'anthropic'),
+    );
     test('gpt → openai', () => expect(providerOfModel('gpt-5-mini'), 'openai'));
     test('grok → xai', () => expect(providerOfModel('grok-4.1-fast'), 'xai'));
-    test('어긋난 조합을 걸러 낸다 — OpenAI 회사에 gemini 모델은 아니다',
-        () => expect(modelMatchesProvider('gemini-2.5-flash-lite', 'openai'), isFalse));
+    test(
+      '어긋난 조합을 걸러 낸다 — OpenAI 회사에 gemini 모델은 아니다',
+      () => expect(
+        modelMatchesProvider('gemini-2.5-flash-lite', 'openai'),
+        isFalse,
+      ),
+    );
   });
 
   group('예비 사다리', () {
@@ -56,7 +74,10 @@ void main() {
     });
 
     test('구글 — flash-lite가 전부 폐지되면 flash로 내려간다 (자가 회복)', () {
-      final pick = pickCheapest('google', ['gemini-3.0-flash', 'gemini-3.0-pro']);
+      final pick = pickCheapest('google', [
+        'gemini-3.0-flash',
+        'gemini-3.0-pro',
+      ]);
       expect(pick, 'gemini-3.0-flash');
     });
 
@@ -105,11 +126,12 @@ void main() {
 
     test('정식판이 없으면 시험판이라도 고른다', () {
       expect(
-          pickCheapest('google', [
-            'gemini-3.0-flash-lite-preview-11-2026',
-            'gemini-3.0-pro',
-          ]),
-          'gemini-3.0-flash-lite-preview-11-2026');
+        pickCheapest('google', [
+          'gemini-3.0-flash-lite-preview-11-2026',
+          'gemini-3.0-pro',
+        ]),
+        'gemini-3.0-flash-lite-preview-11-2026',
+      );
     });
 
     test('시험판 판별', () {
@@ -125,7 +147,10 @@ void main() {
     });
 
     test('쓸 만한 게 하나도 없으면 null', () {
-      expect(pickCheapest('google', ['text-embedding-004', 'imagen-4.0']), isNull);
+      expect(
+        pickCheapest('google', ['text-embedding-004', 'imagen-4.0']),
+        isNull,
+      );
     });
   });
 }

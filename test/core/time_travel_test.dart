@@ -11,13 +11,13 @@ void main() {
     List<String> why = const [],
     String body = '지금',
     int updated = 1000,
-  }) =>
-      travelStops(
-          history: h,
-          historyAt: at,
-          historyWhy: why,
-          body: body,
-          updatedAt: updated);
+  }) => travelStops(
+    history: h,
+    historyAt: at,
+    historyWhy: why,
+    body: body,
+    updatedAt: updated,
+  );
 
   group('정거장 세우기', () {
     test('기록이 없으면 정거장은 하나 — 지금뿐이다', () {
@@ -111,13 +111,14 @@ void main() {
   group('원본을 첫 정거장으로 (2026-08-29 — 메뉴의 원본 복귀를 없앤 대신)', () {
     test('원본이 맨 앞에 선다', () {
       final s = travelStops(
-          history: const ['가'],
-          historyAt: const [],
-          historyWhy: const [],
-          body: '나',
-          updatedAt: 1,
-          original: '원본',
-          originalAt: 7);
+        history: const ['가'],
+        historyAt: const [],
+        historyWhy: const [],
+        body: '나',
+        updatedAt: 1,
+        original: '원본',
+        originalAt: 7,
+      );
       expect(s.first.text, '원본');
       expect(s.first.why, 'original');
       expect(s.first.at, 7);
@@ -126,34 +127,37 @@ void main() {
 
     test('기록에 이미 같은 글이 있으면 안 겹쳐 넣는다', () {
       final s = travelStops(
-          history: const ['원본'],
-          historyAt: const [],
-          historyWhy: const [],
-          body: '나',
-          updatedAt: 1,
-          original: '원본');
+        history: const ['원본'],
+        historyAt: const [],
+        historyWhy: const [],
+        body: '나',
+        updatedAt: 1,
+        original: '원본',
+      );
       expect(s.length, 2);
     });
 
     test('지금 글과 같으면 안 넣는다 — 되돌릴 데가 없다', () {
       final s = travelStops(
-          history: const [],
-          historyAt: const [],
-          historyWhy: const [],
-          body: '원본',
-          updatedAt: 1,
-          original: '원본');
+        history: const [],
+        historyAt: const [],
+        historyWhy: const [],
+        body: '원본',
+        updatedAt: 1,
+        original: '원본',
+      );
       expect(s.length, 1);
       expect(s.first.now, true);
     });
 
     test('원본이 비었으면 예전 그대로다', () {
       final s = travelStops(
-          history: const ['가'],
-          historyAt: const [],
-          historyWhy: const [],
-          body: '나',
-          updatedAt: 1);
+        history: const ['가'],
+        historyAt: const [],
+        historyWhy: const [],
+        body: '나',
+        updatedAt: 1,
+      );
       expect(s.length, 2);
     });
   });

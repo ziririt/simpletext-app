@@ -43,10 +43,40 @@ import 'dart:math' as math;
 /// 짧게 유지한다. 목록으로 막는 것보다 '너무 흔한 말은 자동으로 죽인다'는
 /// 규칙(문서빈도 상한)이 더 정직하고 언어를 안 가린다.
 const Set<String> kStopWords = {
-  '그리고', '그러나', '하지만', '있다', '없다', '위해', '통해', '대한',
-  '이런', '저런', '것은', '것이', '수도', '있는', '있습니다', '합니다',
-  '대비', '이후', '지난', '오늘', '관련', '경우', '때문', '가장', '다시',
-  'the', 'and', 'for', 'that', 'this', 'with', 'from', 'are', 'was',
+  '그리고',
+  '그러나',
+  '하지만',
+  '있다',
+  '없다',
+  '위해',
+  '통해',
+  '대한',
+  '이런',
+  '저런',
+  '것은',
+  '것이',
+  '수도',
+  '있는',
+  '있습니다',
+  '합니다',
+  '대비',
+  '이후',
+  '지난',
+  '오늘',
+  '관련',
+  '경우',
+  '때문',
+  '가장',
+  '다시',
+  'the',
+  'and',
+  'for',
+  'that',
+  'this',
+  'with',
+  'from',
+  'are',
+  'was',
 };
 
 final RegExp _word = RegExp(r'[가-힣]{2,}|[A-Za-z]{3,}');
@@ -227,7 +257,9 @@ List<Pt> layout(
   if (n <= 0) return [];
   final rnd = math.Random(seed);
   final pts = List.generate(
-      n, (_) => Pt(rnd.nextDouble() * width, rnd.nextDouble() * height));
+    n,
+    (_) => Pt(rnd.nextDouble() * width, rnd.nextDouble() * height),
+  );
   if (n == 1) {
     pts[0] = Pt(width / 2, height / 2);
     return pts;
@@ -305,7 +337,7 @@ List<Pt> normalize(List<Pt> pts) {
   final w = hix - lox, h = hiy - loy;
   return [
     for (final p in pts)
-      Pt(w < 0.001 ? 0.5 : (p.x - lox) / w, h < 0.001 ? 0.5 : (p.y - loy) / h)
+      Pt(w < 0.001 ? 0.5 : (p.x - lox) / w, h < 0.001 ? 0.5 : (p.y - loy) / h),
   ];
 }
 

@@ -17,7 +17,11 @@ void main() {
       // 구름을 덮어썼고, 그래서 다시 깔 때마다 설정이 사라졌다.
       expect(
         rulesMove(
-            firstRun: true, hasRemote: true, remoteStamp: 100, localStamp: 0),
+          firstRun: true,
+          hasRemote: true,
+          remoteStamp: 100,
+          localStamp: 0,
+        ),
         RulesMove.takeRemote,
       );
     });
@@ -25,7 +29,11 @@ void main() {
     test('구름에도 없으면 이 기기가 기준이 된다', () {
       expect(
         rulesMove(
-            firstRun: true, hasRemote: false, remoteStamp: -1, localStamp: 0),
+          firstRun: true,
+          hasRemote: false,
+          remoteStamp: -1,
+          localStamp: 0,
+        ),
         RulesMove.pushLocal,
       );
     });
@@ -33,7 +41,11 @@ void main() {
     test('구름이 더 새것이면 받는다', () {
       expect(
         rulesMove(
-            firstRun: false, hasRemote: true, remoteStamp: 200, localStamp: 100),
+          firstRun: false,
+          hasRemote: true,
+          remoteStamp: 200,
+          localStamp: 100,
+        ),
         RulesMove.takeRemote,
       );
     });
@@ -41,7 +53,11 @@ void main() {
     test('이 기기가 더 새것이면 올린다', () {
       expect(
         rulesMove(
-            firstRun: false, hasRemote: true, remoteStamp: 100, localStamp: 200),
+          firstRun: false,
+          hasRemote: true,
+          remoteStamp: 100,
+          localStamp: 200,
+        ),
         RulesMove.pushLocal,
       );
     });
@@ -49,7 +65,11 @@ void main() {
     test('같은 시각이면 아무것도 안 한다', () {
       expect(
         rulesMove(
-            firstRun: false, hasRemote: true, remoteStamp: 100, localStamp: 100),
+          firstRun: false,
+          hasRemote: true,
+          remoteStamp: 100,
+          localStamp: 100,
+        ),
         RulesMove.nothing,
       );
     });
@@ -57,7 +77,11 @@ void main() {
     test('쓰던 기기인데 구름이 비었으면 올린다', () {
       expect(
         rulesMove(
-            firstRun: false, hasRemote: false, remoteStamp: -1, localStamp: 100),
+          firstRun: false,
+          hasRemote: false,
+          remoteStamp: -1,
+          localStamp: 100,
+        ),
         RulesMove.pushLocal,
       );
     });

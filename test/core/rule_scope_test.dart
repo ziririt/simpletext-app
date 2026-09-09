@@ -17,7 +17,9 @@ void main() {
 
   test('빈 찾기는 쓰다 만 규칙 — 거른다', () {
     final m = mergeRules(
-        [const CustomRule(find: '')], [const CustomRule(find: 'b')]);
+      [const CustomRule(find: '')],
+      [const CustomRule(find: 'b')],
+    );
     expect(m.map((r) => r.find).toList(), ['b']);
   });
 }

@@ -94,7 +94,7 @@ void main() {
 
     test('읽을 때도 kMax 를 넘기지 않는다', () {
       final many = [
-        for (var i = 0; i < SyncLog.kMax + 20; i++) '{"at":$i,"up":1}'
+        for (var i = 0; i < SyncLog.kMax + 20; i++) '{"at":$i,"up":1}',
       ].join(',');
       expect(SyncLog.decode('[$many]').events.length, SyncLog.kMax);
     });

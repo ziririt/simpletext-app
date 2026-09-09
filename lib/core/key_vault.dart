@@ -117,9 +117,10 @@ class KeyVault {
       final got = await _s.read(key: _kDevice);
       if (got != null && got.isNotEmpty) return got;
       final r = Random.secure();
-      final made = List.generate(16, (_) => r.nextInt(256))
-          .map((b) => b.toRadixString(16).padLeft(2, '0'))
-          .join();
+      final made = List.generate(
+        16,
+        (_) => r.nextInt(256),
+      ).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
       await _s.write(key: _kDevice, value: made);
       return made;
     } catch (_) {

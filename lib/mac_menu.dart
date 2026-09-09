@@ -41,8 +41,10 @@ class MacMenu {
 
   /// [titles]의 열쇠는 스위프트가 아는 이름과 같아야 한다.
   ///   file · new · import · exportMd · backup · close
-  static Future<void> install(Map<String, String> titles,
-      {required MenuAction onPick}) async {
+  static Future<void> install(
+    Map<String, String> titles, {
+    required MenuAction onPick,
+  }) async {
     if (!supported) return;
     _onPick = onPick;
     _ch.setMethodCallHandler((call) async {

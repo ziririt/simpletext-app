@@ -3,19 +3,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simpletext/core/widget_feed.dart';
 
-FeedNote n(String id,
-        {String title = '',
-        String body = '',
-        int at = 0,
-        bool pin = false,
-        bool lock = false}) =>
-    FeedNote(
-        id: id,
-        title: title,
-        body: body,
-        updatedAt: at,
-        pinned: pin,
-        locked: lock);
+FeedNote n(
+  String id, {
+  String title = '',
+  String body = '',
+  int at = 0,
+  bool pin = false,
+  bool lock = false,
+}) => FeedNote(
+  id: id,
+  title: title,
+  body: body,
+  updatedAt: at,
+  pinned: pin,
+  locked: lock,
+);
 
 void main() {
   group('무엇을 빼는가', () {
@@ -28,8 +30,9 @@ void main() {
     });
 
     test('제목만 내보내는 길도 안 간다 — 잠긴 것은 이름조차 없다', () {
-      final f = widgetFeed([n('b', title: '잠근 것', at: 1, lock: true)],
-          untitled: '제목 없음');
+      final f = widgetFeed([
+        n('b', title: '잠근 것', at: 1, lock: true),
+      ], untitled: '제목 없음');
       expect(f, isEmpty);
     });
   });
@@ -53,15 +56,17 @@ void main() {
 
   group('한 줄의 모양', () {
     test('제목이 없으면 본문 첫 줄이 제목, 미리보기는 그 다음부터', () {
-      final f = widgetFeed([n('a', body: '첫 줄이다\n둘째 줄\n셋째 줄', at: 1)],
-          untitled: '제목 없음');
+      final f = widgetFeed([
+        n('a', body: '첫 줄이다\n둘째 줄\n셋째 줄', at: 1),
+      ], untitled: '제목 없음');
       expect(f.first.title, '첫 줄이다');
       expect(f.first.preview, '둘째 줄 셋째 줄');
     });
 
     test('제목이 있으면 미리보기는 본문 전부', () {
-      final f = widgetFeed([n('a', title: '제목', body: '첫 줄\n둘째 줄', at: 1)],
-          untitled: '제목 없음');
+      final f = widgetFeed([
+        n('a', title: '제목', body: '첫 줄\n둘째 줄', at: 1),
+      ], untitled: '제목 없음');
       expect(f.first.title, '제목');
       expect(f.first.preview, '첫 줄 둘째 줄');
     });
@@ -74,8 +79,9 @@ void main() {
 
     test('미리보기는 여든 글자에서 자른다', () {
       final long = List.filled(200, '가').join();
-      final f = widgetFeed([n('a', title: '제목', body: long, at: 1)],
-          untitled: '-');
+      final f = widgetFeed([
+        n('a', title: '제목', body: long, at: 1),
+      ], untitled: '-');
       expect(f.first.preview.length, kWidgetPreviewLen + 1); // 말줄임표 한 자
       expect(f.first.preview.endsWith('…'), isTrue);
     });
@@ -83,7 +89,9 @@ void main() {
 
   test('네이티브로 건네는 글에는 판 번호가 있다', () {
     final p = widgetPayload(
-        widgetFeed([n('a', title: '제목', at: 5)], untitled: '-'), 12345);
+      widgetFeed([n('a', title: '제목', at: 5)], untitled: '-'),
+      12345,
+    );
     expect(p['v'], 1);
     expect(p['at'], 12345);
     expect((p['items'] as List).length, 1);

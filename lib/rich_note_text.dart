@@ -32,36 +32,42 @@ class RichNoteText extends StatelessWidget {
   final String? fontFamily;
 
   TextStyle get _base => TextStyle(
-        fontSize: fontSize,
-        height: lineHeight,
-        letterSpacing: 0,
-        fontFamily: fontFamily,
-      );
+    fontSize: fontSize,
+    height: lineHeight,
+    letterSpacing: 0,
+    fontFamily: fontFamily,
+  );
 
   TextStyle _styleOf(RichKind k) {
     switch (k) {
       case RichKind.marker:
         // 자리를 아예 안 차지하게 한다. 색만 지우면 빈칸이 남는다.
         return _base.copyWith(
-            fontSize: 0.01, color: const Color(0x00000000), height: 0.01);
+          fontSize: 0.01,
+          color: const Color(0x00000000),
+          height: 0.01,
+        );
       case RichKind.h1:
         return _base.copyWith(
-            fontSize: fontSize * 1.30,
-            height: lineHeight / 1.30,
-            fontWeight: FontWeight.w800,
-            color: ink);
+          fontSize: fontSize * 1.30,
+          height: lineHeight / 1.30,
+          fontWeight: FontWeight.w800,
+          color: ink,
+        );
       case RichKind.h2:
         return _base.copyWith(
-            fontSize: fontSize * 1.18,
-            height: lineHeight / 1.18,
-            fontWeight: FontWeight.w700,
-            color: ink);
+          fontSize: fontSize * 1.18,
+          height: lineHeight / 1.18,
+          fontWeight: FontWeight.w700,
+          color: ink,
+        );
       case RichKind.h3:
         return _base.copyWith(
-            fontSize: fontSize * 1.08,
-            height: lineHeight / 1.08,
-            fontWeight: FontWeight.w700,
-            color: ink);
+          fontSize: fontSize * 1.08,
+          height: lineHeight / 1.08,
+          fontWeight: FontWeight.w700,
+          color: ink,
+        );
       case RichKind.bold:
         return _base.copyWith(fontWeight: FontWeight.w700, color: ink);
       case RichKind.quote:
@@ -70,7 +76,9 @@ class RichNoteText extends StatelessWidget {
         return _base.copyWith(color: mark);
       case RichKind.done:
         return _base.copyWith(
-            color: mark, decoration: TextDecoration.lineThrough);
+          color: mark,
+          decoration: TextDecoration.lineThrough,
+        );
     }
   }
 
@@ -81,15 +89,25 @@ class RichNoteText extends StatelessWidget {
     var at = 0;
     for (final s in spans) {
       if (s.start > at) {
-        out.add(TextSpan(
-            text: text.substring(at, s.start), style: _base.copyWith(color: ink)));
+        out.add(
+          TextSpan(
+            text: text.substring(at, s.start),
+            style: _base.copyWith(color: ink),
+          ),
+        );
       }
-      out.add(TextSpan(
-          text: text.substring(s.start, s.end), style: _styleOf(s.kind)));
+      out.add(
+        TextSpan(text: text.substring(s.start, s.end), style: _styleOf(s.kind)),
+      );
       at = s.end;
     }
     if (at < text.length) {
-      out.add(TextSpan(text: text.substring(at), style: _base.copyWith(color: ink)));
+      out.add(
+        TextSpan(
+          text: text.substring(at),
+          style: _base.copyWith(color: ink),
+        ),
+      );
     }
     return Text.rich(TextSpan(children: out));
   }

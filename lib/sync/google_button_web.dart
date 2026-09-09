@@ -9,10 +9,10 @@ import 'package:flutter/widgets.dart';
 import 'package:google_sign_in_web/web_only.dart' as web;
 
 Widget googleSignInButton() => web.renderButton(
-      configuration: web.GSIButtonConfiguration(
-        theme: web.GSIButtonTheme.filledBlue,
-        size: web.GSIButtonSize.large,
-        shape: web.GSIButtonShape.pill,
-        text: web.GSIButtonText.signinWith,
-      ),
-    );
+  configuration: web.GSIButtonConfiguration(
+    theme: web.GSIButtonTheme.filledBlue,
+    size: web.GSIButtonSize.large,
+    shape: web.GSIButtonShape.pill,
+    text: web.GSIButtonText.signinWith,
+  ),
+);

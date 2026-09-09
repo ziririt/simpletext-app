@@ -26,14 +26,21 @@ void main() {
   });
 
   test('전면 광고는 사용 5분(300초)을 채워야 나온다', () {
-    expect(interstitialDue(now: today, adFreeDate: '', usedSeconds: 299), isFalse);
-    expect(interstitialDue(now: today, adFreeDate: '', usedSeconds: 300), isTrue);
+    expect(
+      interstitialDue(now: today, adFreeDate: '', usedSeconds: 299),
+      isFalse,
+    );
+    expect(
+      interstitialDue(now: today, adFreeDate: '', usedSeconds: 300),
+      isTrue,
+    );
   });
 
   test('오늘 이미 봤으면 5분이 지나도 다시 나오지 않는다 (하루 한 번)', () {
     expect(
-        interstitialDue(now: today, adFreeDate: '2026-08-16', usedSeconds: 9999),
-        isFalse);
+      interstitialDue(now: today, adFreeDate: '2026-08-16', usedSeconds: 9999),
+      isFalse,
+    );
   });
 }
 
@@ -46,39 +53,51 @@ void _trialAds() {
 
     test('체험 첫날 — 광고 없음', () {
       expect(
-          adsOn(now: now, adFreeDate: '', trialDays: 1, premium: false), isFalse);
+        adsOn(now: now, adFreeDate: '', trialDays: 1, premium: false),
+        isFalse,
+      );
     });
 
     test('체험 마지막 날(14일째) — 아직 광고 없음', () {
-      expect(adsOn(now: now, adFreeDate: '', trialDays: 14, premium: false),
-          isFalse);
+      expect(
+        adsOn(now: now, adFreeDate: '', trialDays: 14, premium: false),
+        isFalse,
+      );
     });
 
     test('15일째 — 이제 광고가 나온다', () {
       expect(
-          adsOn(now: now, adFreeDate: '', trialDays: 15, premium: false), isTrue);
+        adsOn(now: now, adFreeDate: '', trialDays: 15, premium: false),
+        isTrue,
+      );
     });
 
     test('프리미엄은 체험이 끝나도 광고 없음', () {
       expect(
-          adsOn(now: now, adFreeDate: '', trialDays: 99, premium: true), isFalse);
+        adsOn(now: now, adFreeDate: '', trialDays: 99, premium: true),
+        isFalse,
+      );
     });
 
     test('전면 광고를 본 날은 그날 하루 광고 없음', () {
       expect(
-          adsOn(
-              now: now,
-              adFreeDate: dateKey(now),
-              trialDays: 99,
-              premium: false),
-          isFalse);
+        adsOn(
+          now: now,
+          adFreeDate: dateKey(now),
+          trialDays: 99,
+          premium: false,
+        ),
+        isFalse,
+      );
     });
 
     // 아직 한 번도 안 연 상태(0)는 체험이 아니다. load()가 켤 때 1로
     // 올리므로 실제로는 화면에 닿기 전에 1이 된다.
     test('0일째는 체험이 아니다 — 화면에 닿기 전 값이다', () {
       expect(
-          adsOn(now: now, adFreeDate: '', trialDays: 0, premium: false), isTrue);
+        adsOn(now: now, adFreeDate: '', trialDays: 0, premium: false),
+        isTrue,
+      );
     });
   });
 }

@@ -44,8 +44,9 @@ final RegExp _oddBreaks = RegExp('[\u2028\u2029\u0085]');
 final RegExp _oddSpaces = RegExp('[\u00a0\u3000]');
 
 /// 탭으로 감싼 글머리표. 그록·챗GPT가 목록을 낼 때 쓰는 모양이다.
-final RegExp _tabBullet =
-    RegExp('^[ \\t]*([\u2022\u00b7\u25aa\u2023\u25e6*+-]|\\d{1,3}[.)])\\t+');
+final RegExp _tabBullet = RegExp(
+  '^[ \\t]*([\u2022\u00b7\u25aa\u2023\u25e6*+-]|\\d{1,3}[.)])\\t+',
+);
 
 /// 글머리표 없이 탭으로만 들여쓴 줄.
 final RegExp _leadTabs = RegExp(r'^\t+');

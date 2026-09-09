@@ -54,7 +54,8 @@ String _line(String raw) {
       body[4] == ']') {
     final c = body[3];
     if (c == ' ' || c == 'x' || c == 'X') {
-      t = '${t.substring(0, indent)}${c == ' ' ? '☐' : '☑'}'
+      t =
+          '${t.substring(0, indent)}${c == ' ' ? '☐' : '☑'}'
           '${body.substring(5)}';
     }
   }

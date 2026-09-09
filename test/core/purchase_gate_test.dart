@@ -32,8 +32,11 @@ void main() {
   });
 
   group('기본 등급 — 산 스토어의 기기군 + 웹', () {
-    final apple = const Entitlement()
-        .seen(productId: kProductMonthly, family: kFamilyApple, at: now);
+    final apple = const Entitlement().seen(
+      productId: kProductMonthly,
+      family: kFamilyApple,
+      at: now,
+    );
 
     test('애플에서 샀으면 애플 기기에서 열린다', () {
       expect(premiumHere(e: apple, family: kFamilyApple, now: now), isTrue);
@@ -52,8 +55,11 @@ void main() {
     });
 
     test('구글에서 산 경우는 반대로 맞물린다', () {
-      final g = const Entitlement()
-          .seen(productId: kProductYearly, family: kFamilyGoogle, at: now);
+      final g = const Entitlement().seen(
+        productId: kProductYearly,
+        family: kFamilyGoogle,
+        at: now,
+      );
       expect(premiumHere(e: g, family: kFamilyGoogle, now: now), isTrue);
       expect(premiumHere(e: g, family: kFamilyWeb, now: now), isTrue);
       expect(premiumHere(e: g, family: kFamilyApple, now: now), isFalse);
@@ -72,19 +78,29 @@ void main() {
   });
 
   group('모든 기기 등급', () {
-    final all = const Entitlement()
-        .seen(productId: kProductAllMonthly, family: kFamilyApple, at: now);
+    final all = const Entitlement().seen(
+      productId: kProductAllMonthly,
+      family: kFamilyApple,
+      at: now,
+    );
 
     test('어느 기기에서든 열린다', () {
       for (final f in [kFamilyApple, kFamilyGoogle, kFamilyWeb, kFamilyOther]) {
-        expect(premiumHere(e: all, family: f, now: now), isTrue, reason: f);
+        expect(
+          premiumHere(e: all, family: f, now: now),
+          isTrue,
+          reason: f,
+        );
       }
       expect(tierOf(e: all, now: now), 2);
     });
 
     test('평생권도 마찬가지이고 날짜를 보지 않는다', () {
-      final life = const Entitlement()
-          .seen(productId: kProductLifetime, family: kFamilyApple, at: now);
+      final life = const Entitlement().seen(
+        productId: kProductLifetime,
+        family: kFamilyApple,
+        at: now,
+      );
       expect(life.lifetime, isTrue);
       expect(premiumHere(e: life, family: kFamilyOther, now: now), isTrue);
       expect(tierOf(e: life, now: now), 2);
@@ -107,28 +123,43 @@ void main() {
 
   group('등급 올리기 권하기', () {
     test('기본 등급 산 사람이 다른 OS 기기를 켠 자리에서만 권한다', () {
-      final apple = const Entitlement()
-          .seen(productId: kProductMonthly, family: kFamilyApple, at: now);
-      expect(shouldOfferUpgrade(e: apple, family: kFamilyGoogle, now: now),
-          isTrue);
-      // 자기 기기군에서는 권하지 않는다 — 이미 쓰고 있다.
-      expect(shouldOfferUpgrade(e: apple, family: kFamilyApple, now: now),
-          isFalse);
+      final apple = const Entitlement().seen(
+        productId: kProductMonthly,
+        family: kFamilyApple,
+        at: now,
+      );
       expect(
-          shouldOfferUpgrade(e: apple, family: kFamilyWeb, now: now), isFalse);
+        shouldOfferUpgrade(e: apple, family: kFamilyGoogle, now: now),
+        isTrue,
+      );
+      // 자기 기기군에서는 권하지 않는다 — 이미 쓰고 있다.
+      expect(
+        shouldOfferUpgrade(e: apple, family: kFamilyApple, now: now),
+        isFalse,
+      );
+      expect(
+        shouldOfferUpgrade(e: apple, family: kFamilyWeb, now: now),
+        isFalse,
+      );
     });
 
     test('아무것도 안 산 사람에게는 등급 올리기가 아니라 결제를 권한다', () {
       expect(
-          shouldOfferUpgrade(
-              e: const Entitlement(), family: kFamilyGoogle, now: now),
-          isFalse);
+        shouldOfferUpgrade(
+          e: const Entitlement(),
+          family: kFamilyGoogle,
+          now: now,
+        ),
+        isFalse,
+      );
     });
 
     test('이미 모든 기기면 권할 것이 없다', () {
       final all = Entitlement(allUntilMs: after(30));
       expect(
-          shouldOfferUpgrade(e: all, family: kFamilyOther, now: now), isFalse);
+        shouldOfferUpgrade(e: all, family: kFamilyOther, now: now),
+        isFalse,
+      );
     });
   });
 
@@ -150,7 +181,11 @@ void main() {
 
     test('오간 뒤에도 값이 그대로다', () {
       final e = Entitlement(
-          lifetime: true, allUntilMs: 7, appleUntilMs: 8, googleUntilMs: 9);
+        lifetime: true,
+        allUntilMs: 7,
+        appleUntilMs: 8,
+        googleUntilMs: 9,
+      );
       expect(Entitlement.fromJson(e.toJson()), e);
     });
 
@@ -162,23 +197,31 @@ void main() {
 
   group('한도 적용', () {
     test('유료 체계가 꺼져 있으면 아무에게도 안 들이댄다', () {
-      expect(limitsApply(paidTierLive: false, legacyFree: false, premium: false),
-          isFalse);
+      expect(
+        limitsApply(paidTierLive: false, legacyFree: false, premium: false),
+        isFalse,
+      );
     });
 
     test('예전부터 쓰던 사람은 유예된다', () {
-      expect(limitsApply(paidTierLive: true, legacyFree: true, premium: false),
-          isFalse);
+      expect(
+        limitsApply(paidTierLive: true, legacyFree: true, premium: false),
+        isFalse,
+      );
     });
 
     test('산 사람에게는 안 들이댄다', () {
-      expect(limitsApply(paidTierLive: true, legacyFree: false, premium: true),
-          isFalse);
+      expect(
+        limitsApply(paidTierLive: true, legacyFree: false, premium: true),
+        isFalse,
+      );
     });
 
     test('새로 깐 무료 사용자에게만 들이댄다', () {
-      expect(limitsApply(paidTierLive: true, legacyFree: false, premium: false),
-          isTrue);
+      expect(
+        limitsApply(paidTierLive: true, legacyFree: false, premium: false),
+        isTrue,
+      );
     });
   });
 }
