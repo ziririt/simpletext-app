@@ -1411,7 +1411,10 @@ class L10nPt extends L10n {
   String bookmarkGoAt(int pct) => 'Ir para o marcador · $pct%';
 
   @override
-  String bookmarkResume(int pct) => 'Continuar em $pct%';
+  String bookmarkResume(int pct) => 'Continuando em $pct%';
+
+  @override
+  String get bookmarkToTop => 'Topo';
 
   @override
   String bookmarkSaved(int pct) => 'Marcador posto em $pct%';

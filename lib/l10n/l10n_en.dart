@@ -1403,7 +1403,10 @@ class L10nEn extends L10n {
   String bookmarkGoAt(int pct) => 'Go to bookmark · $pct%';
 
   @override
-  String bookmarkResume(int pct) => 'Resume at $pct%';
+  String bookmarkResume(int pct) => 'Resumed at $pct%';
+
+  @override
+  String get bookmarkToTop => 'Top';
 
   @override
   String bookmarkSaved(int pct) => 'Bookmarked at $pct%';

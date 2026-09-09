@@ -1414,7 +1414,10 @@ class L10nDe extends L10n {
   String bookmarkGoAt(int pct) => 'Zum Lesezeichen · $pct%';
 
   @override
-  String bookmarkResume(int pct) => 'Bei $pct% weiterlesen';
+  String bookmarkResume(int pct) => 'Weiter bei $pct%';
+
+  @override
+  String get bookmarkToTop => 'Nach oben';
 
   @override
   String bookmarkSaved(int pct) => 'Lesezeichen bei $pct% gesetzt';

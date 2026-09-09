@@ -1352,7 +1352,10 @@ class L10nKo extends L10n {
   String bookmarkGoAt(int pct) => '책갈피 $pct%로';
 
   @override
-  String bookmarkResume(int pct) => '책갈피 $pct%에서 이어 읽기';
+  String bookmarkResume(int pct) => '책갈피 $pct%에서 이어 읽습니다';
+
+  @override
+  String get bookmarkToTop => '맨 위로';
 
   @override
   String bookmarkSaved(int pct) => '$pct% 자리에 책갈피를 끼웠습니다';

@@ -1337,7 +1337,10 @@ class L10nZhHans extends L10n {
   String bookmarkGoAt(int pct) => '前往书签 · $pct%';
 
   @override
-  String bookmarkResume(int pct) => '从 $pct% 继续阅读';
+  String bookmarkResume(int pct) => '已从 $pct% 继续';
+
+  @override
+  String get bookmarkToTop => '回到顶部';
 
   @override
   String bookmarkSaved(int pct) => '已在 $pct% 处加书签';

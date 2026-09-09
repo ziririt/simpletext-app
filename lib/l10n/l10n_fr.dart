@@ -1417,7 +1417,10 @@ class L10nFr extends L10n {
   String bookmarkGoAt(int pct) => 'Aller au marque-page · $pct%';
 
   @override
-  String bookmarkResume(int pct) => 'Reprendre à $pct%';
+  String bookmarkResume(int pct) => 'Reprise à $pct%';
+
+  @override
+  String get bookmarkToTop => 'Haut';
 
   @override
   String bookmarkSaved(int pct) => 'Marque-page posé à $pct%';

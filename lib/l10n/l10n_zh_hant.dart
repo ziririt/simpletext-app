@@ -1337,7 +1337,10 @@ class L10nZhHant extends L10n {
   String bookmarkGoAt(int pct) => '前往書籤 · $pct%';
 
   @override
-  String bookmarkResume(int pct) => '從 $pct% 繼續閱讀';
+  String bookmarkResume(int pct) => '已從 $pct% 繼續';
+
+  @override
+  String get bookmarkToTop => '回到頂端';
 
   @override
   String bookmarkSaved(int pct) => '已在 $pct% 處加書籤';

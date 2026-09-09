@@ -1412,7 +1412,10 @@ class L10nEs extends L10n {
   String bookmarkGoAt(int pct) => 'Ir al marcador · $pct%';
 
   @override
-  String bookmarkResume(int pct) => 'Seguir desde el $pct%';
+  String bookmarkResume(int pct) => 'Continúa desde el $pct%';
+
+  @override
+  String get bookmarkToTop => 'Arriba';
 
   @override
   String bookmarkSaved(int pct) => 'Marcador puesto en el $pct%';

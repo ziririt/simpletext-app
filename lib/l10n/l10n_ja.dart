@@ -1349,7 +1349,10 @@ class L10nJa extends L10n {
   String bookmarkGoAt(int pct) => 'しおり $pct% へ';
 
   @override
-  String bookmarkResume(int pct) => '$pct% から続きを読む';
+  String bookmarkResume(int pct) => '$pct% から続きです';
+
+  @override
+  String get bookmarkToTop => '先頭へ';
 
   @override
   String bookmarkSaved(int pct) => '$pct% にしおりを挟みました';

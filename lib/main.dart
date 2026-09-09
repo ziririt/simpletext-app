@@ -6631,14 +6631,25 @@ class _EditorScreenState extends State<EditorScreen>
   final GlobalKey<ReadingRailState> _railKey = GlobalKey<ReadingRailState>();
   ReadMark? _mark;
 
-  /// '이어 읽기' 알림을 지금 띄우고 있는가.
+  /// 열자마자 책갈피 자리로 **바로 데려간다.**
   ///
-  /// 열자마자 책갈피 자리로 **자동으로 데려가지 않는다.** 사람이 이 메모를
-  /// 다시 여는 까닭은 이어 읽기일 때가 많지만 늘 그렇지는 않고, 묻지도 않고
-  /// 화면을 3천 픽셀 아래로 던지면 그건 되찾아 주는 것이 아니라 뺏는 것이다.
-  /// 그래서 권하기만 한다. 몇 초 뒤 스스로 물러난다.
+  /// 처음에는 권하기만 했다(알림을 띄우고 누르면 가기). 묻지도 않고 화면을
+  /// 3천 픽셀 아래로 던지는 것이 뺏는 일로 보일까 봐서였다. 소유자 판정은
+  /// 반대였다 — "이 스크롤 책갈피 해두면 다음에 앱 열면 이 노트에서 바로
+  /// 여기로 스크롤 맞춰줘."
+  ///
+  /// 맞는 말이다. 책갈피를 **손수 끼운 사람**은 이미 "다음에 여기서
+  /// 시작하겠다"고 말한 것이다. 그 뜻을 받아 놓고 다시 한 번 눌러 달라고
+  /// 하는 것은 공손이 아니라 되묻는 것이다.
+  ///
+  /// 대신 되돌아갈 문을 남긴다 — 데려간 뒤 '맨 위로'를 잠깐 띄운다.
+  /// 자동으로 하는 일에는 언제나 무를 자리가 있어야 한다.
   bool _resumeOn = false;
   Timer? _resumeTimer;
+
+  /// 이번에 실제로 데려갔는가. 이미 그 자리였으면 알릴 것도 없다.
+  bool _didRestore = false;
+  bool _restoreTried = false;
 
   /// 날짜 줄의 높이.
   ///
@@ -7542,17 +7553,25 @@ class _EditorScreenState extends State<EditorScreen>
       _loadAttachFiles();
       ICloudSync.instance.scheduleUp();
       if (widget.autoTidy) _runTidyWithPreset(buildPresets().first);
-      _offerResume();
+      _tellResumed();
     });
+    _restoreToMark();
   }
 
-  /// 책갈피가 있으면 '이어 읽기'를 권한다.
+  /// 책갈피 자리로 데려간다.
   ///
-  /// 전환이 다 끝난 뒤에 부른다. 미는 도중에 알림이 뜨면 그것도 같이
-  /// 밀려 들어와 어수선하다.
-  void _offerResume() {
+  /// **전환을 기다리지 않는다.** 첫 배치가 끝난 다음 프레임에 곧바로 옮긴다.
+  /// 그래야 화면이 밀려 들어올 때 **이미 그 자리에 가 있다.** 다 밀려 들어온
+  /// 뒤에 옮기면 사람은 맨 위를 한 번 보고 나서 화면이 튀는 것을 본다 —
+  /// 같은 결과인데 하나는 '되찾았다'이고 하나는 '뭔가 잘못됐다'이다.
+  ///
+  /// 부드럽게 미끄러뜨리지 않고 한 번에 옮기는 까닭도 같다. 3천 픽셀을
+  /// 훑고 지나가는 것은 멋이 아니라 멀미다.
+  void _restoreToMark() {
+    if (_restoreTried) return;
+    _restoreTried = true;
     final m = _mark;
-    if (m == null || !mounted) return;
+    if (m == null) return;
     // 스크롤이 붙는 것은 첫 배치 다음이다. 그 전에 물으면 max 가 0이라
     // '이미 그 자리'로 잘못 판정한다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -7560,14 +7579,35 @@ class _EditorScreenState extends State<EditorScreen>
       final pos = _bodyScroll.position;
       if (pos.maxScrollExtent <= 0) return;
       if (m.isAt(pos.pixels, pos.maxScrollExtent)) return;
-      setState(() => _resumeOn = true);
-      _resumeTimer?.cancel();
-      // 여섯 초. 읽으려고 연 사람이 한 번 볼 만한 시간이고, 안 볼 사람에게는
-      // 글을 가리는 시간이다. 그 사이 어디쯤이다.
-      _resumeTimer = Timer(const Duration(seconds: 6), () {
-        if (mounted) setState(() => _resumeOn = false);
-      });
+      _bodyScroll.jumpTo(m.offsetIn(pos.maxScrollExtent));
+      _didRestore = true;
     });
+  }
+
+  /// 데려왔다고 알리고, 무를 문을 잠깐 열어 둔다.
+  ///
+  /// 전환이 다 끝난 뒤에 부른다. 미는 도중에 알림이 뜨면 그것도 같이
+  /// 밀려 들어와 어수선하다.
+  void _tellResumed() {
+    if (!mounted || !_didRestore || _mark == null) return;
+    setState(() => _resumeOn = true);
+    _resumeTimer?.cancel();
+    // 여섯 초. 무르려는 사람이 손을 뻗을 만한 시간이고, 그럴 생각이 없는
+    // 사람에게는 글을 가리는 시간이다. 그 사이 어디쯤이다.
+    _resumeTimer = Timer(const Duration(seconds: 6), () {
+      if (mounted) setState(() => _resumeOn = false);
+    });
+  }
+
+  /// 무르기 — 맨 위로 되돌아간다.
+  void _backToTop() {
+    _hideResume();
+    if (!_bodyScroll.hasClients) return;
+    _bodyScroll.animateTo(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _hideResume() {
@@ -7615,50 +7655,67 @@ class _EditorScreenState extends State<EditorScreen>
     _railKey.currentState?.goToMark();
   }
 
-  /// 머리 밑에 잠깐 뜨는 '이어 읽기' 알림.
+  /// 머리 밑에 잠깐 뜨는 알림. '책갈피 62%에서 이어 읽습니다 · 맨 위로'.
+  ///
+  /// 알림 자체는 못 누른다 — 누를 수 있는 것은 오른쪽의 '맨 위로' 하나뿐이다.
+  /// 판 전체가 눌리면 무르려다 잘못 눌러도 알 수가 없다.
   Widget? _resumeBanner(L10n l) {
     final m = _mark;
     if (!_resumeOn || m == null) return null;
     final c = context.c;
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: _goMark,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 8, 12, 8),
-          decoration: BoxDecoration(
-            color: c.panel,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: c.line),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+        decoration: BoxDecoration(
+          color: c.panel,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: c.line),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bookmark, size: 16, color: c.accent),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                l.bookmarkResume(m.percent),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: c.guideInk,
+                ),
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.bookmark, size: 16, color: c.accent),
-              const SizedBox(width: 8),
-              Flexible(
+            ),
+            const SizedBox(width: 6),
+            // 자동으로 한 일에는 언제나 무를 자리가 있어야 한다.
+            InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: _backToTop,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 child: Text(
-                  l.bookmarkResume(m.percent),
-                  overflow: TextOverflow.ellipsis,
+                  l.bookmarkToTop,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: c.guideInk,
+                    color: c.accent,
                   ),
                 ),
               ),
-              const SizedBox(width: 2),
-              Icon(Icons.chevron_right, size: 18, color: c.sub),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
