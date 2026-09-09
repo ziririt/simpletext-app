@@ -13,9 +13,20 @@
 ///      뜻을 갖는다. 눈금이 없는 손잡이는 좌표 없는 점이다.
 ///   2. **손잡이(thumb)** — 지금 보고 있는 창. **길이가 곧 분량이다.**
 ///      짧으면 긴 글이고 길면 짧은 글이다. 숫자를 안 읽어도 손이 안다.
-///   3. **숫자 딱지** — 굴리는 동안만 뜬다. 62% 처럼.
-///
 /// 그리고 **책갈피 표시**. core/read_mark.dart 참고.
+///
+/// **숫자(62%)는 여기 없다. 일부러 뺐다.**
+///
+/// 처음에는 굴리는 동안 딱지로 띄웠다. 판을 없애고, 회색으로 내리고, 눈금에
+/// 바짝 붙여도 소용없었다 — 소유자 판정: "시선이 그쪽으로 가는 걸 못 막을 것
+/// 같다. 가독성을 해치는 것은 용납할 수 없다."
+///
+/// 옳다. 화면에 숫자가 있으면 사람은 읽는다. 그것이 글자의 일이다. 크기나
+/// 색으로 달랠 수 있는 문제가 아니었다. **위치는 눈금이 말하고, 숫자는
+/// 책갈피가 말한다** — '62%에서 이어 읽습니다', '62% 자리에 책갈피를
+/// 끼웠습니다'처럼 사람이 부른 순간에만.
+///
+/// 되돌리고 싶어지면 이 문단을 먼저 읽을 것.
 ///
 /// 눈금은 잡아서 끌 수 있다(스크러빙). 애플 지침의 직접 조작 원칙대로,
 /// 잡은 자리를 그대로 물고 간다 — 손잡이 가운데로 홱 당겨 붙이지 않는다.
@@ -28,7 +39,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'core/read_mark.dart';
-import 'main.dart' show AppC, AppColorsX;
+import 'main.dart' show AppColorsX;
 
 class ReadingRail extends StatefulWidget {
   const ReadingRail({
@@ -126,16 +137,13 @@ class ReadingRailState extends State<ReadingRail> {
 
   double get _frac => _max <= 0 ? 0 : (_px / _max).clamp(0.0, 1.0);
 
-  int get _percent =>
-      ReadMark(pixels: _px, extent: _max <= 0 ? 1 : _max, at: 0).percent;
-
-  /// 숫자를 붙일 만큼 긴 글인가 — 대략 **네 화면 이상**.
+  /// 눈금을 붙일 만큼 긴 글인가 — 대략 **네 화면 이상**.
   ///
   /// 2026-09-09 소유자 지시 — "짧은 글의 기준을 2~3페이지 정도로 보고,
-  /// 4페이지 이상 많은 텍스트양의 경우에만 스크롤 몇 %인지 나오게 해줘."
+  /// 4페이지 이상 많은 텍스트양의 경우에만."
   ///
   /// 처음엔 한 화면 반으로 잡았는데 너무 헐거웠다. 두세 화면짜리 글은
-  /// 엄지로 두어 번 밀면 끝이라, 거기 숫자를 띄우는 것은 길잡이가 아니라
+  /// 엄지로 두어 번 밀면 끝이라, 거기 길잡이를 세우는 것은 도움이 아니라
   /// 참견이다. `_max > _view * 3` 이 곧 '내용이 네 화면'이다
   /// (굴릴 거리 = 전체 - 한 화면).
   bool get _long => _view > 0 && _max > _view * 3;
@@ -310,49 +318,12 @@ class ReadingRailState extends State<ReadingRail> {
                   ),
                 ),
               ),
-              // 숫자. 손잡이 가운데에 맞춰, 눈금에 바짝 붙인다.
-              //
-              // 2026-09-09 소유자 지적 — "스크롤 위치 숫자가 너무 눈에 튄다.
-              // 너무 신경이 그쪽으로 가서 글 읽는 데 집중하기가 어렵다."
-              //
-              // 옳은 지적이고, 이건 취향 문제가 아니다. **길잡이가 읽기를
-              // 방해하면 그건 길잡이가 아니다.** 처음에 판을 깔고 테두리를
-              // 두르고 그림자까지 준 것은 '잘 보이게' 하려던 것인데, 잘
-              // 보이는 것과 눈에 띄는 것은 다르다. 이건 찾을 때만 보면
-              // 되는 값이라, 찾지 않을 때는 배경으로 물러나 있어야 한다.
-              // 판을 없애고, 한 눈금 줄이고, 회색으로 내리고, 본문에서
-              // 최대한 비켜 눈금 쪽으로 붙였다.
-              if (_long)
-                Positioned(
-                  top: (thumbTop + thumbH / 2 - 8).clamp(0.0, h - 16),
-                  right: 16,
-                  child: IgnorePointer(
-                    child: AnimatedOpacity(
-                      duration: quiet
-                          ? Duration.zero
-                          : const Duration(milliseconds: 160),
-                      opacity: _hot ? 1 : 0,
-                      child: _chip(c),
-                    ),
-                  ),
-                ),
             ],
           ),
         );
       },
     );
   }
-
-  Widget _chip(AppC c) => Text(
-    '$_percent%',
-    style: TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: c.sub,
-      // 숫자가 8 에서 9 로 갈 때 폭이 흔들리면 눈에 거슬린다.
-      fontFeatures: const [FontFeature.tabularFigures()],
-    ),
-  );
 
   /// 책갈피 자리로 간다. 밖에서도 부를 수 있게 열어 둔다.
   void goToMark() => _goToMark();
