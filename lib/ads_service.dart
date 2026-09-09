@@ -81,6 +81,14 @@ const double kNativeMediumH = 360;
 /// 네이티브 small 판(목록 한가운데용). 가로로 눕는 모양이라 낮다.
 const double kNativeSmallH = 110;
 
+/// 맨 위 띠에서 네이티브를 먼저 부를지.
+///
+/// 2026-09-09 저녁 — 네이티브로 바꾼 판에서 광고가 아예 안 떴다. 시계를
+/// 달아 배너로 내려가게 고쳤지만(_natTimer), **네이티브 자체가 끝내 안
+/// 채워지는 상황**도 있을 수 있다. 그때는 이 줄만 false 로 바꾸면 예전처럼
+/// 배너만 쓴다. 되돌리는 길을 한 줄로 남겨 두는 것이 실험의 예의다.
+const bool kTopNative = true;
+
 String get interstitialUnitId => Platform.isIOS
     ? (kRealAds
           ? 'ca-app-pub-2336764115275414/3636679980'
@@ -216,6 +224,18 @@ class _TopBannerBarState extends State<TopBannerBar> {
   NativeAd? _native;
   bool _nativeOn = false;
   bool _nativeTried = false;
+
+  /// 네이티브를 기다리는 시계.
+  ///
+  /// 2026-09-09 저녁 소유자 신고 — "지금은 아예 아무런 배너 광고가 안
+  /// 나온다." 내가 낸 구멍이었다. 네이티브를 먼저 부르고 **실패했을 때만**
+  /// 배너로 내려가게 만들었는데, 광고판은 성공도 실패도 안 돌려줄 수 있다.
+  /// 그러면 영영 빈칸이다.
+  ///
+  /// > **답을 기다리는 코드에는 반드시 시계를 달아라.** '실패하면 B로
+  /// > 간다'는 'A가 실패한다'를 전제로 하는데, 남의 서버는 실패조차 안
+  /// > 해 줄 수 있다.
+  Timer? _natTimer;
 
   BannerAd? _ad;
   bool _loaded = false;
@@ -361,7 +381,7 @@ class _TopBannerBarState extends State<TopBannerBar> {
   void _createNative() {
     if (_nativeTried || _native != null) return;
     _nativeTried = true;
-    final unit = nativeUnitId;
+    final unit = kTopNative ? nativeUnitId : null;
     if (unit == null) {
       _create(MediaQuery.of(context).size.width);
       return;
@@ -389,10 +409,12 @@ class _TopBannerBarState extends State<TopBannerBar> {
       ),
       listener: NativeAdListener(
         onAdLoaded: (_) {
+          _natTimer?.cancel();
           if (!mounted) return;
           setState(() => _nativeOn = true);
         },
         onAdFailedToLoad: (ad, err) {
+          _natTimer?.cancel();
           ad.dispose();
           if (!mounted) return;
           setState(() {
@@ -405,6 +427,16 @@ class _TopBannerBarState extends State<TopBannerBar> {
       ),
     );
     _native = ad;
+    // 2.5초. 채워질 광고는 대개 1초 안에 온다. 그보다 오래 걸리는 것은
+    // 기다려 봐야 안 오는 것이고, 그동안 사람은 빈 띠를 본다. 짧게 잡는
+    // 편이 낫다 — 늦게 뜨는 좋은 광고보다 제때 뜨는 보통 광고가 낫다.
+    _natTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (!mounted || _nativeOn) return;
+      final gone = _native;
+      _native = null;
+      gone?.dispose();
+      _create(MediaQuery.of(context).size.width);
+    });
     ad.load();
   }
 
@@ -434,6 +466,7 @@ class _TopBannerBarState extends State<TopBannerBar> {
   @override
   void dispose() {
     _retry?.cancel();
+    _natTimer?.cancel();
     _native?.dispose();
     _native = null;
     Store.instance.removeListener(_refresh);
