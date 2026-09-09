@@ -32,6 +32,7 @@ import 'core/store_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
+import 'core/handle_hit.dart';
 import 'core/read_mark.dart';
 import 'core/view_prefs.dart';
 import 'reading_rail.dart';
@@ -6799,19 +6800,19 @@ class _EditorScreenState extends State<EditorScreen>
   bool _selHandleDrag = false;
 
   /// 손가락(전역 좌표)이 선택 끝점 핸들 근처인가. 블록이 잡혀 있을 때만.
+  ///
+  /// 2026-09-10 — 상자가 좁아서 **왼손에서만 안 걸렸다.** 까닭과 넓힌 값은
+  /// core/handle_hit.dart 머리말에 있다. 한 줄로 줄이면: 손가락은 점이
+  /// 아니고, 받는 좌표는 손이 뻗어 온 쪽으로 치우친다.
   bool _nearSelectionHandle(Offset global) {
     final sel = bodyCtl.selection;
     if (!sel.isValid || sel.isCollapsed) return false;
     final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
     if (ed == null) return false;
-    for (final p in ed.getEndpointsForSelection(sel)) {
-      final g = ed.localToGlobal(p.point);
-      // 핸들은 줄 위(시작)/아래(끝)로 튀어나와 있어 세로로 넉넉히 본다.
-      if ((g.dx - global.dx).abs() <= 36 && (g.dy - global.dy).abs() <= 64) {
-        return true;
-      }
-    }
-    return false;
+    return nearAnyHandle(
+      global,
+      ed.getEndpointsForSelection(sel).map((p) => ed.localToGlobal(p.point)),
+    );
   }
 
   static RenderEditable? _findEditable(RenderObject? r) {
