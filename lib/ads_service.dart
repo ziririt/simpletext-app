@@ -195,6 +195,28 @@ class TopBannerBar extends StatefulWidget {
 }
 
 class _TopBannerBarState extends State<TopBannerBar> {
+  /// 네이티브 광고를 **먼저** 물어본다. 이것이 뜨면 배너는 안 묻는다.
+  ///
+  /// 2026-09-09 소유자 신고 — 글자가 한 자도 없는 사진 한 장짜리 광고가
+  /// 맨 위에 떴다. "광고 배너 카피도 없고 무슨 내용인지도 모르는데.
+  /// 이건 클릭도 못 받고 내 앱의 퀄리티도 떨어뜨린다."
+  ///
+  /// **까닭은 우리가 이상한 크기를 주문했기 때문이다.** 광고주가 만들어
+  /// 두는 글자 있는 소재(제목·설명·단추)는 표준 칸(320x50, 320x100,
+  /// 300x250)에 맞춰 그려져 있다. 우리가 100pt 짜리 인라인 어댑티브 같은
+  /// 낯선 칸을 부르면, 그 칸에 맞는 글자 소재가 없어서 **그림 한 장을
+  /// 늘려 채운** 것이 온다. 칸을 키울수록 더 그렇다.
+  ///
+  /// 네이티브는 이 문제를 비켜 간다. 구글이 완성된 그림을 주는 것이 아니라
+  /// **조각(제목·설명·아이콘·단추 글자)** 을 주고, 그리는 것은 우리다.
+  /// 그래서 카피가 늘 있고, 색과 모서리도 우리 것이다.
+  ///
+  /// 대신 채워지는 비율은 배너보다 낮다. 그래서 실패하면 배너 사다리로
+  /// 되돌아간다 — 다만 그때는 **표준 크기부터** 부른다(아래 _sizeFor).
+  NativeAd? _native;
+  bool _nativeOn = false;
+  bool _nativeTried = false;
+
   BannerAd? _ad;
   bool _loaded = false;
   bool _creating = false;
@@ -251,13 +273,15 @@ class _TopBannerBarState extends State<TopBannerBar> {
   /// 그다음은 다시 0으로 돈다. 한 번 실패했다고 작은 자리에 영영 갇히면
   /// 큰 자리가 다시 생겨도 못 받는다.
   Future<AdSize?> _sizeFor(int step, int w) async {
-    if (step == 1) {
+    // 2026-09-09 — 차례를 뒤집었다. 예전엔 큰 칸부터 불렀는데, 낯선 칸에는
+    // 글자 있는 소재가 없어서 **그림 한 장짜리 광고**가 왔다(위 _native
+    // 주석). 글자 없는 큰 광고보다 글자 있는 작은 광고가 낫다.
+    if (step == 0) {
       return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
     }
-    if (step == 2) return AdSize.banner;
-    // 2026-09-06 소유자 지시 — 배너를 키운다. 높이가 고정된 앵커드 대신
-    // 인라인 어댑티브를 쓰면 최대 높이를 우리가 정할 수 있어, 소재가 그만큼
-    // 큰 것으로 온다. 실제 높이는 로드 뒤 getPlatformAdSize로 받는다.
+    if (step == 1) return AdSize.banner;
+    // 마지막 자리. 2026-09-06 소유자 지시로 만든 큰 칸인데, 여기까지
+    // 내려왔다는 것은 표준 칸 둘이 다 비었다는 뜻이다. 빈칸보다는 낫다.
     // 이건 **최대치**이지 실제 높이가 아니다.
     const double kMaxBannerHeight = 100;
     final anchored =
@@ -326,6 +350,74 @@ class _TopBannerBarState extends State<TopBannerBar> {
     await ad.load();
   }
 
+  /// 네이티브 광고를 한 번 물어본다.
+  ///
+  /// 구글이 완성된 그림을 주는 것이 아니라 조각(제목·설명·아이콘·단추
+  /// 글자)을 주고, 그리는 것은 우리다. 그래서 **카피가 늘 있다.** 색을
+  /// 우리 팔레트로 넘기는 까닭도 같다 — 기성 템플릿은 기본이 흰 바탕이라
+  /// 다크 모드에서 그 자리만 눈이 부시다. 광고라도 앱의 밤에는 밤이어야 한다.
+  ///
+  /// 실패하면 다시 묻지 않고 배너로 내려간다.
+  void _createNative() {
+    if (_nativeTried || _native != null) return;
+    _nativeTried = true;
+    final unit = nativeUnitId;
+    if (unit == null) {
+      _create(MediaQuery.of(context).size.width);
+      return;
+    }
+    final c = context.c;
+    final ink = Theme.of(context).colorScheme.onSurface;
+    final ad = NativeAd(
+      adUnitId: unit,
+      request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        // small 은 아이콘 + 제목 + 광고주 + 단추다. 맨 위 띠에 딱 맞는다.
+        templateType: TemplateType.small,
+        mainBackgroundColor: c.panel,
+        // 맨 위 띠는 화면 가장자리에 붙어 있다. 모서리를 둥글리면 그 틈에
+        // 다른 색이 비쳐 '떠 있는 카드'가 된다 — 여기서는 0 이 맞다.
+        cornerRadius: 0,
+        primaryTextStyle: NativeTemplateTextStyle(textColor: ink, size: 14),
+        secondaryTextStyle: NativeTemplateTextStyle(textColor: c.sub, size: 12),
+        tertiaryTextStyle: NativeTemplateTextStyle(textColor: c.sub, size: 11),
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: c.accent,
+          size: 14,
+        ),
+      ),
+      listener: NativeAdListener(
+        onAdLoaded: (_) {
+          if (!mounted) return;
+          setState(() => _nativeOn = true);
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+          if (!mounted) return;
+          setState(() {
+            _native = null;
+            _nativeOn = false;
+          });
+          // 되돌아갈 자리를 연다 — 표준 크기 배너부터 부른다.
+          _create(MediaQuery.of(context).size.width);
+        },
+      ),
+    );
+    _native = ad;
+    ad.load();
+  }
+
+  /// 무엇을 부를지 고른다. 네이티브가 먼저다.
+  void _ensure() {
+    if (_nativeOn) return;
+    if (!_nativeTried) {
+      _createNative();
+      return;
+    }
+    _create(MediaQuery.of(context).size.width);
+  }
+
   void _openSponsorSheet() {
     // 배너는 네비게이터보다 위에 산다. 그래서 자기 context에는 Navigator가
     // 없다 — 뿌리 네비게이터를 이름표로 빌려 온다(main.dart의 rootNavKey).
@@ -342,6 +434,8 @@ class _TopBannerBarState extends State<TopBannerBar> {
   @override
   void dispose() {
     _retry?.cancel();
+    _native?.dispose();
+    _native = null;
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
     AdsService.instance.adFree.removeListener(_refresh);
@@ -370,8 +464,9 @@ class _TopBannerBarState extends State<TopBannerBar> {
     // 결제 화면·첫인사 화면 위에는 광고를 얹지 않는다(AdFreeScope).
     if (AdsService.instance.adFree.value > 0) return _gone();
     if (!AdsService.instance.ready.value) return _gone();
-    _create(MediaQuery.of(context).size.width);
-    if (_ad == null || !_loaded) return _gone();
+    _ensure();
+    final native = _nativeOn ? _native : null;
+    if (native == null && (_ad == null || !_loaded)) return _gone();
     _tell(true);
     final l = L10n.of(context);
     // 2026-08-16 소유자 신고 — 아이패드에서 배너가 검은 띠에 얹혀 흉했다.
@@ -397,14 +492,18 @@ class _TopBannerBarState extends State<TopBannerBar> {
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          width: (_shownSize ?? _ad!.size).width.toDouble(),
-          height: (_shownSize ?? _ad!.size).height.toDouble(),
+          width: native != null
+              ? double.infinity
+              : (_shownSize ?? _ad!.size).width.toDouble(),
+          height: native != null
+              ? kNativeSmallH
+              : (_shownSize ?? _ad!.size).height.toDouble(),
           child: Stack(
             children: [
               // Long Time 실측 사고(2026-07-31): 크리에이티브가 프레임 밖까지
               // 그려진 적이 있다 — 반드시 잘라낸다.
               Positioned.fill(
-                child: ClipRect(child: AdWidget(ad: _ad!)),
+                child: ClipRect(child: AdWidget(ad: native ?? _ad!)),
               ),
               Positioned(
                 top: 2,
