@@ -867,7 +867,52 @@ WAITING_FOR_REVIEW 로 넘어간 뒤라 다시 넘길 수 없다는 뜻이었다
 > `python3 tool/review_status.py skyblue` 가 "냈다. 줄 서 있다"라고
 > 말하면 끝난 것이다.
 
-### 4.1-3 아이폰 직접 설치가 막혀 있다
+### 4.1-3 아이폰 직접 설치가 막혀 있다 — 맥 빌드도 같이 막혔다
+
+**2026-09-09 저녁에 맥까지 번졌다.** `tool/deploy.sh mac` 이 이렇게 죽는다.
+
+```
+Provisioning profile "Mac Team Provisioning Profile: com.ziririt.simpletext"
+doesn't include signing certificate "Apple Development: Seongdong Gim (8QKCJMYR4S)".
+```
+
+`security find-identity -v -p codesigning` 로 보면 까닭이 한눈에 보인다.
+
+```
+1) ... "Apple Development: ziriritgmail.com (8QKCJMYR4S)" (CSSMERR_TP_CERT_REVOKED)
+2) ... "Apple Distribution: Seongdong Gim (ZK846VZN92)"
+3) ... "Apple Development: Seongdong Gim (8QKCJMYR4S)"
+```
+
+**개발 인증서가 갈렸다.** 1번(옛것)이 폐기됐고 3번(새것)이 살아 있는데,
+맥 프로비저닝 프로파일은 아직 1번으로 발급된 옛 프로파일이다.
+
+애드혹 서명(`CODE_SIGN_IDENTITY="-"`)으로 우회해 보았지만 안 된다 —
+맥 타깃에 자격(entitlements)이 붙어 있어 프로파일 자체를 요구한다.
+
+```
+"Runner" requires a provisioning profile.
+```
+
+> **여기서 더 파지 마라.** CLI 로 프로파일을 재발급하는 길은 없다
+> (`-allowProvisioningUpdates` 는 "No Accounts" 로 죽는다 — deploy.sh 꼬리
+> 주석에 그 사고가 적혀 있다). **소유자가 Xcode 를 GUI 로 열고 한 번
+> 빌드하면(Cmd+B) 프로파일이 새 인증서로 다시 발급된다.** 아이폰 직접
+> 설치가 막힌 것과 뿌리가 같고, 한 번에 둘 다 풀린다.
+
+그동안 아이폰은 TestFlight 로 간다(아래). **맥은 우회로가 없다** — 스토어
+맥 앱이 없으므로, 이 문이 열릴 때까지 맥은 옛 판이다.
+
+### 4.1-3-1 웹은 막힌 데가 없다
+
+`bash tool/deploy.sh web` 으로 짓고, `~/Developer/ezlong` 에 커밋·푸시하면
+파이어베이스가 알아서 올린다. 2026-09-09 저녁에 3.17.16(238)을 그렇게
+내보냈다(https://ezlong.com/skybluenote/web/).
+
+**푸시가 거절되면 당황하지 말 것.** ezlong 저장소에는 감시견이 스스로
+커밋을 쌓는다. `git pull --rebase origin main` 뒤 다시 밀면 된다.
+
+### 4.1-3-2 아이폰 직접 설치가 막혀 있다
 
 `tool/deploy.sh iphone`은 개발용 인증서가 만료돼 실패한다. 되살리려면
 소유자가 Xcode에서 Apple ID로 로그인해야 한다(비밀번호는 담당자가 대신
