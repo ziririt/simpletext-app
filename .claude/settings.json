@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/key.properties)",
+      "Read(**/*.p8)",
+      "Read(**/*.p12)",
+      "Read(**/*.pem)",
+      "Read(**/*.cer)",
+      "Read(**/*.mobileprovision)",
+      "Read(**/*.jks)",
+      "Read(**/*.keystore)",
+      "Read(**/GoogleService-Info.plist)",
+      "Read(**/google-services.json)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Edit(**/key.properties)",
+      "Edit(**/*.p8)",
+      "Edit(**/*.p12)",
+      "Edit(**/*.pem)",
+      "Edit(**/*.cer)",
+      "Edit(**/*.mobileprovision)",
+      "Edit(**/*.jks)",
+      "Edit(**/*.keystore)",
+      "Edit(**/GoogleService-Info.plist)",
+      "Edit(**/google-services.json)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Write(**/key.properties)",
+      "Write(**/*.jks)",
+      "Write(**/*.keystore)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git add -A:*)",
+      "Bash(git clean -fd:*)"
+    ]
+  }
+}
