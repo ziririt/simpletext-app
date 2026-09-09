@@ -775,6 +775,21 @@ abstract class L10n {
   String get bookmarkToTop;
   String get bookmarkOrTop;
 
+  /// 보기 설정 (2026-09-09). 전자책 뷰어처럼 편집 화면에서 바로 연다.
+  String get viewSettingsTitle;
+  String get viewOnlyThisNote;
+  String get viewOnlyThisNoteSub;
+  String get viewBoldTitle;
+  String get viewBoldOff;
+  String get viewBoldOn;
+  String get viewMarginTitle;
+  String get viewAlignTitle;
+  String get viewAlignStart;
+  String get viewAlignJustify;
+  String get viewParaGapTitle;
+  String get viewParaGapLocked;
+  String get viewReset;
+
   /// 값이 드는 것들은 all 지도에 넣지 않는다(l10n_check 규칙).
   String bookmarkGoAt(int pct);
   String bookmarkResume(int pct);
@@ -1335,6 +1350,19 @@ abstract class L10n {
     'bookmarkTooShort': bookmarkTooShort,
     'bookmarkToTop': bookmarkToTop,
     'bookmarkOrTop': bookmarkOrTop,
+    'viewSettingsTitle': viewSettingsTitle,
+    'viewOnlyThisNote': viewOnlyThisNote,
+    'viewOnlyThisNoteSub': viewOnlyThisNoteSub,
+    'viewBoldTitle': viewBoldTitle,
+    'viewBoldOff': viewBoldOff,
+    'viewBoldOn': viewBoldOn,
+    'viewMarginTitle': viewMarginTitle,
+    'viewAlignTitle': viewAlignTitle,
+    'viewAlignStart': viewAlignStart,
+    'viewAlignJustify': viewAlignJustify,
+    'viewParaGapTitle': viewParaGapTitle,
+    'viewParaGapLocked': viewParaGapLocked,
+    'viewReset': viewReset,
     'noteDuplicate': noteDuplicate,
     'noteDuplicated': noteDuplicated,
     'adSponsored': adSponsored,

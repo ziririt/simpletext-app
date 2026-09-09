@@ -1421,6 +1421,46 @@ class L10nEs extends L10n {
   String get bookmarkOrTop => 'o ir arriba';
 
   @override
+  String get viewSettingsTitle => 'Visualización';
+
+  @override
+  String get viewOnlyThisNote => 'Solo esta nota';
+
+  @override
+  String get viewOnlyThisNoteSub => 'Desactivado: se aplica a todas las notas';
+
+  @override
+  String get viewBoldTitle => 'Grosor';
+
+  @override
+  String get viewBoldOff => 'Normal';
+
+  @override
+  String get viewBoldOn => 'Negrita';
+
+  @override
+  String get viewMarginTitle => 'Margen lateral';
+
+  @override
+  String get viewAlignTitle => 'Alineación';
+
+  @override
+  String get viewAlignStart => 'Izquierda';
+
+  @override
+  String get viewAlignJustify => 'Justificado';
+
+  @override
+  String get viewParaGapTitle => 'Espacio entre párrafos';
+
+  @override
+  String get viewParaGapLocked =>
+      'En papel rayado el espacio entre párrafos no cambia: el texto se saldría de las líneas.';
+
+  @override
+  String get viewReset => 'Restablecer';
+
+  @override
   String bookmarkSaved(int pct) => 'Marcador puesto en el $pct%';
   @override
   String get noteDuplicate => 'Duplicar';

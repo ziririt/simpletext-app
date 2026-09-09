@@ -33,7 +33,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
 import 'core/read_mark.dart';
+import 'core/view_prefs.dart';
 import 'reading_rail.dart';
+import 'view_settings.dart';
 import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'attach_store.dart';
@@ -1689,6 +1691,21 @@ class AppSettings {
   List<String> recentPrompts = [];
   List<CustomRule> customRules = [];
 
+  /// 보기 설정 — 전체값. 칸의 뜻과 범위는 core/view_prefs.dart 에 있다.
+  ///
+  /// 2026-09-09 소유자 지시로 늘었다. 글꼴·크기·줄 간격·종이는 원래 있었고
+  /// 굵기·여백·정렬·문단 간격이 새로 붙었다.
+  bool bodyBold = false;
+  double bodyMargin = kMarginDefault;
+  String bodyAlign = kAlignStart;
+  double paraGap = kParaGapMin;
+
+  /// 보기 설정 — 노트마다의 덮어쓰기. 메모 아이디 → ViewPrefs 의 json.
+  ///
+  /// '이 노트에만 적용'을 켜면 여기 쌓인다. 노트 안에 안 넣는 까닭은
+  /// core/view_prefs.dart 머리말에 있다(읽는 일이 쓰는 일로 둔갑한다).
+  Map<String, dynamic> noteViews = {};
+
   /// 스크롤 책갈피. 메모 아이디 → ReadMark 의 json.
   ///
   /// 2026-09-09 소유자 요청. **메모 안에 넣지 않는 까닭**이 중요하다 —
@@ -1700,6 +1717,11 @@ class AppSettings {
   Map<String, dynamic> toJson() => {
     'rev': settingsRev,
     'readMarks': readMarks,
+    'noteViews': noteViews,
+    'bodyBold': bodyBold,
+    'bodyMargin': bodyMargin,
+    'bodyAlign': bodyAlign,
+    'paraGap': paraGap,
     'emphStyle': emphStyle,
     'hrMode': hrMode,
     'headingMode': headingMode,
@@ -1772,6 +1794,16 @@ class AppSettings {
     if (rm is Map) {
       s.readMarks = Map<String, dynamic>.from(rm);
     }
+    final nv = j['noteViews'];
+    if (nv is Map) {
+      s.noteViews = Map<String, dynamic>.from(nv);
+    }
+    s.bodyBold = (j['bodyBold'] ?? s.bodyBold) as bool;
+    s.bodyMargin = clampMargin(
+      ((j['bodyMargin'] ?? s.bodyMargin) as num).toDouble(),
+    );
+    s.bodyAlign = safeAlign(j['bodyAlign'] as String?);
+    s.paraGap = clampParaGap(((j['paraGap'] ?? s.paraGap) as num).toDouble());
     s.emphStyle = (j['emphStyle'] ?? s.emphStyle) as String;
     // 2026-08-14 — 기본값만 바꾸면 이미 쓰던 기기는 아무것도 안 바뀐다.
     // 저장된 'quoteSingle'을 그대로 읽어 오기 때문이다. 소유자 기기가
@@ -2173,6 +2205,42 @@ class Store extends ChangeNotifier {
     ICloudSync.instance.scheduleUp();
   }
 
+  /// 보기 값이 바뀌었다고 알린다.
+  ///
+  /// 설정을 저장하는 것만으로는 열려 있는 편집 화면이 다시 안 그려진다.
+  /// 시트에서 글자 크기를 눌렀는데 뒤의 글이 그대로면 사람은 안 먹혔다고
+  /// 여기고 한 번 더 누른다.
+  void notifyView() => notifyListeners();
+
+  /// 보기 설정 — 앱 전체값. 빈 칸이 없다.
+  ViewSpec get globalView => ViewSpec(
+    font: safeBodyFont(settings.bodyFont),
+    fontSize: settings.bodyFontSize,
+    lineHeight: settings.bodyLineHeight,
+    bold: settings.bodyBold,
+    margin: clampMargin(settings.bodyMargin),
+    align: safeAlign(settings.bodyAlign),
+    paraGap: clampParaGap(settings.paraGap),
+    paper: settings.paperMode,
+  );
+
+  /// 이 노트에만 걸린 덮어쓰기. 없으면 빈 값.
+  ViewPrefs noteView(String? id) =>
+      id == null ? ViewPrefs.none : ViewPrefs.fromJson(settings.noteViews[id]);
+
+  /// 이 노트를 그릴 때 실제로 쓸 값. **화면은 이것만 본다.**
+  ViewSpec viewFor(String? id) => noteView(id).applyTo(globalView);
+
+  /// '이 노트에만 적용'의 저장. 빈 값이면 지운다.
+  Future<void> setNoteView(String id, ViewPrefs p) async {
+    if (p.isEmpty) {
+      if (settings.noteViews.remove(id) == null) return;
+    } else {
+      settings.noteViews[id] = p.toJson();
+    }
+    await persistSettings();
+  }
+
   /// 이 메모에 끼워 둔 스크롤 책갈피. 없으면 null.
   ReadMark? readMark(String id) => ReadMark.fromJson(settings.readMarks[id]);
 
@@ -2206,6 +2274,7 @@ class Store extends ChangeNotifier {
     // 메모가 없어지면 책갈피도 갈 곳이 없다. 안 치우면 설정에 죽은
     // 아이디가 영원히 쌓인다.
     settings.readMarks.remove(id);
+    settings.noteViews.remove(id);
     persist();
   }
 
@@ -9844,14 +9913,18 @@ class _EditorScreenState extends State<EditorScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) => _measureHead());
     // 설정을 바꾸면 다음 build에서 바로 반영된다(컨트롤러가 매번 이 값을 본다).
     bodyCtl.monoEnabled = store.settings.monoEditor;
-    bodyCtl.bodyFontSize = store.settings.bodyFontSize;
-    bodyCtl.lineHeight = store.settings.bodyLineHeight;
+    // 보기 값은 한 자리에서 받는다 — 전체 설정 위에 '이 노트에만'이 얹힌
+    // 결과다(core/view_prefs.dart). 화면 어디서도 두 층을 직접 섞지 않는다.
+    final view = store.viewFor(note.id);
+    bodyCtl.bodyFontSize = view.fontSize;
+    bodyCtl.lineHeight = view.lineHeight;
+    bodyCtl.paraGap = view.paraGap;
     // 마크다운을 눈에 보이게 그릴 때 쓸 색(2026-08-18).
     bodyCtl.subColor = context.c.sub;
     bodyCtl.accentColor = context.c.accent;
 
     // 종이. 고르지 않았으면 paper.id == kPaperNone이고 아래 색은 안 쓴다.
-    final paper = paperById(store.settings.paperMode);
+    final paper = paperById(view.paper);
     final onPaper = paper.id != kPaperNone;
     final darkNow = Theme.of(context).brightness == Brightness.dark;
     final paperBg = onPaper ? Color(paper.bgOf(darkNow)) : context.c.panel;
@@ -10139,6 +10212,11 @@ class _EditorScreenState extends State<EditorScreen>
                             if (mounted) setState(() {});
                             return;
                           }
+                          if (v == 'view') {
+                            await showViewSettings(context, noteId: note.id);
+                            if (mounted) setState(() {});
+                            return;
+                          }
                           if (v == 'markset') {
                             await _setMark();
                             return;
@@ -10404,6 +10482,13 @@ class _EditorScreenState extends State<EditorScreen>
                               note.locked ? Icons.lock : Icons.lock_outline,
                               note.locked ? lm.noteUnlock : lm.noteLock,
                               tint: note.locked ? ctx.c.accent : null,
+                            ),
+                            // 보기 설정 (2026-09-09 소유자 요청) — 전자책
+                            // 뷰어처럼 편집 화면에서 바로 연다.
+                            act(
+                              'view',
+                              Icons.text_format,
+                              lm.viewSettingsTitle,
                             ),
                             // 스크롤 책갈피 (2026-09-09 소유자 요청).
                             //
@@ -10813,10 +10898,13 @@ class _EditorScreenState extends State<EditorScreen>
                             // 넓은 화면에서 더 주는 이유: 글 칸의 폭은 이미 묶어 뒀지만
                             // (SplitShell.readWidth), 그 안에서도 글이 상자에 꽉 차
                             // 있으면 갇혀 보인다.
+                            // 2026-09-09 — 보기 설정에서 사람이 정한다.
+                            // 넓은 화면에서는 그 위에 10 을 더 준다(글 칸 폭이
+                            // 이미 묶여 있어 같은 값이 좁아 보인다).
                             padding: EdgeInsets.symmetric(
                               horizontal: (_isDesktop || widget.embedded)
-                                  ? 32
-                                  : 22,
+                                  ? view.margin + 10
+                                  : view.margin,
                             ),
                             // fit: expand 인 이유 — 본문 칸은 expands: true 라서 높이를
                             // 꽉 채워 받아야 한다. Stack 기본값(loose)이면 최소 0이 되어
@@ -10833,18 +10921,15 @@ class _EditorScreenState extends State<EditorScreen>
                                       child: AnimatedBuilder(
                                         animation: _bodyScroll,
                                         builder: (_, __) => CustomPaint(
-                                          painter: _PaperPainter(
+                                          painter: PaperPainter(
                                             ruling: paper.ruling,
                                             color: Color(paper.ruleOf(darkNow)),
                                             // 줄 간격을 사람이 바꾸면 종이의 줄도 같이
                                             // 움직여야 한다. 이 둘이 어긋나면 화면 아래로
                                             // 갈수록 글자가 줄에서 떠오른다.
                                             lineHeight:
-                                                store.settings.bodyFontSize *
-                                                store.settings.bodyLineHeight,
-                                            colWidth: _colWidth(
-                                              store.settings.bodyFontSize,
-                                            ),
+                                                view.fontSize * view.lineHeight,
+                                            colWidth: _colWidth(view.fontSize),
                                             // 스크롤이 붙기 전 첫 프레임에는 offset을 물으면
                                             // 죽는다. 그때는 0이 맞다.
                                             scroll: _bodyScroll.hasClients
@@ -10892,8 +10977,7 @@ class _EditorScreenState extends State<EditorScreen>
                                     // 광고가 없는 날·맥·윈도우에서는 예전 그대로 절반이다.
                                     // 그때는 아래에 아무것도 없어서 빈칸이 유일한 자리다.
                                     final lineH =
-                                        store.settings.bodyFontSize *
-                                        store.settings.bodyLineHeight;
+                                        view.fontSize * view.lineHeight;
                                     final blank = inlineAdLikely()
                                         ? lineH * 2
                                         : box.maxHeight * 0.5;
@@ -11012,17 +11096,21 @@ class _EditorScreenState extends State<EditorScreen>
                                                   // core/mono_controller.dart가 한다.
                                                   // 표에 등폭이 필요한 이유: 공백으로 맞춘 칸은 글자 폭이 일정해야
                                                   // 줄이 맞는다. 비례 글꼴에서는 원리적으로 맞출 수 없다.
+                                                  textAlign:
+                                                      view.align ==
+                                                          kAlignJustify
+                                                      ? TextAlign.justify
+                                                      : TextAlign.start,
                                                   style: TextStyle(
-                                                    fontSize: store
-                                                        .settings
-                                                        .bodyFontSize,
-                                                    height: store
-                                                        .settings
-                                                        .bodyLineHeight,
+                                                    fontSize: view.fontSize,
+                                                    height: view.lineHeight,
+                                                    fontWeight: view.bold
+                                                        ? FontWeight.w600
+                                                        : null,
                                                     // 고른 본문 글꼴. '기본'이면 여기 null 이 들어가고
                                                     // 테마가 정한 글꼴이 그대로 쓰인다(core/body_font.dart).
                                                     fontFamily: bodyFontFamily(
-                                                      store.settings.bodyFont,
+                                                      view.font,
                                                       webDefault: kIsWeb
                                                           ? kWebFontFamily
                                                           : null,
@@ -12576,7 +12664,7 @@ class _SortFilterSheetState extends State<SortFilterSheet> {
 /// 간격을 눈으로 정하지 않는다 — 글줄 높이를 그대로 받아 쓴다. 조금이라도
 /// 어긋나면 화면 아래로 갈수록 글자가 줄에서 떠오르거나 잠긴다. 좌표를 내는
 /// 셈은 core/paper.dart에 있고 테스트로 고정돼 있다.
-class _PaperPainter extends CustomPainter {
+class PaperPainter extends CustomPainter {
   final String ruling;
   final Color color;
   final double lineHeight;
@@ -12591,7 +12679,7 @@ class _PaperPainter extends CustomPainter {
   /// 글자 한가운데를 가로지른다.
   final double headPad;
 
-  const _PaperPainter({
+  const PaperPainter({
     required this.ruling,
     required this.color,
     required this.lineHeight,
@@ -12641,7 +12729,7 @@ class _PaperPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PaperPainter old) =>
+  bool shouldRepaint(PaperPainter old) =>
       old.ruling != ruling ||
       old.color != color ||
       old.lineHeight != lineHeight ||
@@ -15347,128 +15435,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
     await store.persistSettings();
   }
 
-  Widget _paperBlock(L10n l, AppSettings s) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    String nameOf(String id) => switch (id) {
-      'moleskine' => l.paperMoleskine,
-      'sepia' => l.paperSepia,
-      'manuscript' => l.paperManuscript,
-      'frost' => l.paperFrost,
-      'plain' => l.paperPlain,
-      'kraft' => l.paperKraft,
-      'walnut' => l.paperWalnut,
-      'sky' => l.paperSky,
-      _ => l.paperNone,
-    };
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l.paperTitle,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            l.paperSub,
-            style: TextStyle(fontSize: 15, color: context.c.guideInk),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 104,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: kPapers.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (_, i) {
-                final p = kPapers[i];
-                final on = s.paperMode == p.id;
-                final isNone = p.id == kPaperNone;
-                return GestureDetector(
-                  onTap: () {
-                    // 뭔가가 '딸깍' 하고 자리를 잡는 순간이다.
-                    HapticFeedback.selectionClick();
-                    setState(() => s.paperMode = p.id);
-                    store.persistSettings();
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 62,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          color: isNone ? context.c.panel : Color(p.bgOf(dark)),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: on ? context.c.accent : context.c.line,
-                            width: on ? 2 : 1,
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: isNone
-                            ? Icon(Icons.block, size: 20, color: context.c.sub)
-                            : Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: CustomPaint(
-                                      painter: _PaperPainter(
-                                        ruling: p.ruling,
-                                        color: Color(p.ruleOf(dark)),
-                                        // 견본은 실제 글자 크기와 상관없이
-                                        // 좁게 그린다 — 62×76 안에 결이
-                                        // 보여야 한다.
-                                        lineHeight: 11,
-                                        colWidth: 11,
-                                        scroll: 0,
-                                        headPad: 0,
-                                      ),
-                                    ),
-                                  ),
-                                  // 글자는 딱 하나만 그린다.
-                                  //
-                                  // 2026-08-17 소유자 신고로 고친 자리다. 여기에
-                                  // Text가 둘 있었다 — CustomPaint의 child로 '가',
-                                  // 그 위에 '가 T'. 둘 다 Center라 같은 자리에
-                                  // 정확히 포개져 글자가 뭉갰다.
-                                  //
-                                  // 영어 한 낱말로 정한 것도 소유자 지시다. 어느
-                                  // 언어로 쓰든 이 칩이 보여 줄 것은 '이 바탕에
-                                  // 이 글자색'이지 글자 그 자체가 아니다.
-                                  Center(
-                                    child: Text(
-                                      'sample',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        height: 1,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(p.inkOf(dark)),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        nameOf(p.id),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: on ? FontWeight.w700 : FontWeight.w400,
-                          color: on ? context.c.accent : context.c.sub,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
@@ -15711,45 +15677,81 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
                     // 뎁스를 하나 더 두면서 잃는 것을 되갚는 유일한 방법이다.
                     KeyedSubtree(
                       key: _anchors['fontsize'],
-                      child: ListTile(
-                        leading: Icon(Icons.text_fields, color: context.c.sub),
-                        title: Text(
-                          l.typographyTitle,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
+                      // 2026-09-09 소유자 지시 — 글꼴 설정과 '편집 화면 배경'을
+                      // 따로 두지 말고 '보기 설정' 하나로 합친다. 편집 화면에서
+                      // 여는 시트와 **같은 판**이다(lib/view_settings.dart).
+                      child: KeyedSubtree(
+                        key: _anchors['paper'],
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.text_format,
+                            color: context.c.sub,
                           ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${s.bodyFontSize.round()}pt · '
-                              '${s.bodyLineHeight.toStringAsFixed(1)}',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: context.c.sub,
+                          title: Text(
+                            l.viewSettingsTitle,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${s.bodyFontSize.round()}pt · '
+                                '${s.bodyLineHeight.toStringAsFixed(1)}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: context.c.sub,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.chevron_right, color: context.c.sub),
-                          ],
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right, color: context.c.sub),
+                            ],
+                          ),
+                          onTap: () async {
+                            await Navigator.push<void>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ViewSettingsScreen(),
+                              ),
+                            );
+                            if (mounted) setState(() {});
+                          },
                         ),
-                        onTap: () async {
-                          await Navigator.push<void>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const TypographyScreen(),
-                            ),
-                          );
-                          if (mounted) setState(() {});
-                        },
                       ),
                     ),
                     _sep(),
+                    // 표를 등폭으로 그리는 것은 '보기'가 아니라 '무엇으로
+                    // 그리나'라서 시트에 안 넣었다. 시트는 읽는 사람이 여는
+                    // 자리이고, 이건 한 번 정해 두는 값이다.
                     KeyedSubtree(
-                      key: _anchors['paper'],
-                      child: _paperBlock(l, s),
+                      key: _anchors['mono'],
+                      child: SwitchListTile.adaptive(
+                        title: Text(
+                          l.monoEditorTitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 17,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            l.monoEditorSub,
+                            style: TextStyle(
+                              fontSize: 15,
+                              height: 1.35,
+                              color: context.c.guideInk,
+                            ),
+                          ),
+                        ),
+                        value: s.monoEditor,
+                        onChanged: (v) {
+                          setState(() => s.monoEditor = v);
+                          store.persistSettings();
+                        },
+                      ),
                     ),
                   ]),
                   if (lockVisible)
@@ -16418,221 +16420,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
 /// **글자를 어떻게 그릴 것인가**에 대한 답이라, 글자 크기·줄 간격과
 /// 한 방에 있는 것이 맞다. 설정 첫 화면에서 저 셋이 따로 앉아 있었던
 /// 것은 그냥 만든 차례대로 쌓인 것이었다.
-class TypographyScreen extends StatefulWidget {
-  const TypographyScreen({super.key});
-
-  @override
-  State<TypographyScreen> createState() => _TypographyScreenState();
-}
-
-class _TypographyScreenState extends State<TypographyScreen> {
-  final store = Store.instance;
-
-  Widget _block(L10n l, AppSettings s) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── 본문 글꼴 ──
-        //
-        // 2026-08-27 밤 소유자 지시. 크기와 줄 간격은 있었는데 글꼴이
-        // 없었다. 왜 셋뿐인지는 core/body_font.dart 머리말에 있다.
-        Text(
-          l.bodyFontTitle,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: SegmentedButton<String>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: kBodyFontSystem,
-                label: Text(
-                  l.bodyFontSystem,
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ),
-              ButtonSegment(
-                value: kBodyFontNoto,
-                label: Text(
-                  l.bodyFontNoto,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontFamily: 'NotoSansKR',
-                  ),
-                ),
-              ),
-              ButtonSegment(
-                value: kBodyFontMono,
-                label: Text(
-                  l.bodyFontMono,
-                  style: const TextStyle(fontSize: 13, fontFamily: 'D2Coding'),
-                ),
-              ),
-            ],
-            selected: {s.bodyFont},
-            onSelectionChanged: (v) {
-              setState(() => s.bodyFont = v.first);
-              store.persistSettings();
-            },
-          ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l.bodyFontSizeTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-            Text(
-              '${s.bodyFontSize.round()}',
-              style: TextStyle(fontSize: 15, color: context.c.guideInk),
-            ),
-          ],
-        ),
-        Slider.adaptive(
-          value: s.bodyFontSize,
-          min: MonoTextController.minBodyFontSize,
-          max: MonoTextController.maxBodyFontSize,
-          divisions:
-              (MonoTextController.maxBodyFontSize -
-                      MonoTextController.minBodyFontSize)
-                  .round(),
-          onChanged: (v) => setState(() => s.bodyFontSize = v),
-          onChangeEnd: (_) => store.persistSettings(),
-        ),
-        // 2026-08-18 소유자 지시 — "'본문 글자 크기'와 더불어서 '본문
-        // 줄 간격(행 간격)' 설정도 될까?"
-        //
-        // 견본은 아래 하나를 같이 쓴다. 둘을 따로 두면 사람이 두 군데를
-        // 번갈아 보며 맞춰야 하는데, 글자 크기와 줄 간격은 원래 **같이
-        // 보고 정하는 것**이다. 하나를 키우면 다른 하나가 좁아 보인다.
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l.bodyLineHeightTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-            Text(
-              s.bodyLineHeight.toStringAsFixed(1),
-              style: TextStyle(fontSize: 15, color: context.c.guideInk),
-            ),
-          ],
-        ),
-        Slider.adaptive(
-          value: s.bodyLineHeight,
-          min: MonoTextController.minBodyHeight,
-          max: MonoTextController.maxBodyHeight,
-          // 0.1씩. 그보다 잘게 나누면 손가락으로는 같은 자리이고,
-          // 숫자만 흔들려서 고른 값을 다시 못 찾는다.
-          divisions:
-              ((MonoTextController.maxBodyHeight -
-                          MonoTextController.minBodyHeight) *
-                      10)
-                  .round(),
-          onChanged: (v) => setState(() => s.bodyLineHeight = v),
-          onChangeEnd: (_) => store.persistSettings(),
-        ),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: context.c.codeBg,
-            border: Border.all(color: context.c.codeLine),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            l.bodyFontSizeSample,
-            style: TextStyle(
-              fontSize: s.bodyFontSize,
-              height: s.bodyLineHeight,
-              // 견본은 고른 글꼴 그대로 보여 준다. 견본이 다른
-              // 글꼴이면 견본이 아니다.
-              fontFamily: bodyFontFamily(
-                s.bodyFont,
-                webDefault: kIsWeb ? kWebFontFamily : null,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget _card(List<Widget> children) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Material(
-        color: context.c.panel,
-        child: Column(children: children),
-      ),
-    ),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    final l = L10n.of(context);
-    final s = store.settings;
-    return Scaffold(
-      appBar: AppBar(title: Text(l.typographyTitle)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: SplitShell.readWidth(context)),
-          child: ListView(
-            padding: scrollPad(context, top: 14),
-            children: [
-              _card([_block(l, s)]),
-              const SizedBox(height: 14),
-              _card([
-                SwitchListTile.adaptive(
-                  title: Text(
-                    l.monoEditorTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 17,
-                    ),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      l.monoEditorSub,
-                      style: TextStyle(
-                        fontSize: 15,
-                        height: 1.35,
-                        color: context.c.guideInk,
-                      ),
-                    ),
-                  ),
-                  value: s.monoEditor,
-                  onChanged: (v) {
-                    s.monoEditor = v;
-                    store.persistSettings();
-                    setState(() {});
-                  },
-                ),
-              ]),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// 자동 바꾸기 규칙 — 설정에서 한 뎁스 들어온 곳.
 ///
 /// 2026-08-18. 이 화면이 따로 있는 까닭은 위(설정 화면)에 적어 뒀다.

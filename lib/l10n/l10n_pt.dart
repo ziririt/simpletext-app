@@ -1420,6 +1420,46 @@ class L10nPt extends L10n {
   String get bookmarkOrTop => 'ou ir ao topo';
 
   @override
+  String get viewSettingsTitle => 'Exibição';
+
+  @override
+  String get viewOnlyThisNote => 'Só esta nota';
+
+  @override
+  String get viewOnlyThisNoteSub => 'Desligado: vale para todas as notas';
+
+  @override
+  String get viewBoldTitle => 'Espessura';
+
+  @override
+  String get viewBoldOff => 'Normal';
+
+  @override
+  String get viewBoldOn => 'Negrito';
+
+  @override
+  String get viewMarginTitle => 'Margem lateral';
+
+  @override
+  String get viewAlignTitle => 'Alinhamento';
+
+  @override
+  String get viewAlignStart => 'Esquerda';
+
+  @override
+  String get viewAlignJustify => 'Justificado';
+
+  @override
+  String get viewParaGapTitle => 'Espaço entre parágrafos';
+
+  @override
+  String get viewParaGapLocked =>
+      'Em papel pautado o espaço entre parágrafos não muda: o texto sairia das linhas.';
+
+  @override
+  String get viewReset => 'Redefinir';
+
+  @override
   String bookmarkSaved(int pct) => 'Marcador posto em $pct%';
   @override
   String get noteDuplicate => 'Duplicar';

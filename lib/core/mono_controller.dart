@@ -12,6 +12,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'mono_spans.dart';
+import 'view_prefs.dart';
 import 'rich_spans.dart';
 
 class MonoTextController extends TextEditingController {
@@ -79,6 +80,16 @@ class MonoTextController extends TextEditingController {
   /// 화면 build에서 설정값을 넣어 준다. 안 넣으면 기본값 그대로다.
   double lineHeight = bodyHeight;
 
+  /// 문단 간격 — 빈 줄의 높이를 몇 배로 할지(2026-09-09 보기 설정).
+  ///
+  /// 글자 크기도 줄 간격도 안 건드리고 문단 사이만 벌리는 길은 이것뿐이다.
+  /// 1.0 이면 아무 일도 안 한다 — 그때는 아래 빠른 길로 그대로 빠진다.
+  ///
+  /// **줄 쳐진 종이와는 같이 못 쓴다.** 빈 줄만 높아지면 그 아래로 글과
+  /// 종이의 줄이 통째로 어긋난다. 그래서 보기 설정 화면에서 줄 있는 종이를
+  /// 고르면 이 값을 잠근다(lib/view_settings.dart).
+  double paraGap = kParaGapMin;
+
   /// 크기가 달라도 **줄 높이는 본문과 같아야** 표 근처에서 줄 간격이 튀지 않는다.
   double get monoHeight => bodyFontSize * lineHeight / monoFontSize;
 
@@ -100,7 +111,11 @@ class MonoTextController extends TextEditingController {
     final composing = (withComposing && value.isComposingRangeValid)
         ? value.composing
         : null;
-    if (spans.isEmpty && rich.isEmpty && composing == null) {
+    // 빈 줄을 끝내는 줄바꿈들. 문단 간격이 1.0 이면 아예 안 찾는다.
+    final gaps = paraGap > kParaGapMin
+        ? blankLineBreaks(text).toSet()
+        : const <int>{};
+    if (spans.isEmpty && rich.isEmpty && composing == null && gaps.isEmpty) {
       return TextSpan(text: text, style: style);
     }
 
@@ -140,6 +155,10 @@ class MonoTextController extends TextEditingController {
       cuts.add(composing.start.clamp(0, text.length));
       cuts.add(composing.end.clamp(0, text.length));
     }
+    for (final g in gaps) {
+      cuts.add(g);
+      cuts.add(g + 1);
+    }
     final points = cuts.toList()..sort();
 
     final children = <TextSpan>[];
@@ -164,6 +183,13 @@ class MonoTextController extends TextEditingController {
       if (isComposing) {
         segStyle = segStyle.merge(
           const TextStyle(decoration: TextDecoration.underline),
+        );
+      }
+      // 빈 줄 하나짜리 구간이면 그 줄만 키운다. 글자가 없는 줄이라
+      // 높이를 키워도 글자는 하나도 안 움직인다 — 사이만 벌어진다.
+      if (b == a + 1 && gaps.contains(a)) {
+        segStyle = segStyle.copyWith(
+          height: (segStyle.height ?? lineHeight) * paraGap,
         );
       }
       children.add(TextSpan(text: text.substring(a, b), style: segStyle));

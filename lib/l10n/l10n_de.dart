@@ -1423,6 +1423,46 @@ class L10nDe extends L10n {
   String get bookmarkOrTop => 'oder nach oben';
 
   @override
+  String get viewSettingsTitle => 'Darstellung';
+
+  @override
+  String get viewOnlyThisNote => 'Nur diese Notiz';
+
+  @override
+  String get viewOnlyThisNoteSub => 'Aus: gilt für alle Notizen';
+
+  @override
+  String get viewBoldTitle => 'Schriftstärke';
+
+  @override
+  String get viewBoldOff => 'Normal';
+
+  @override
+  String get viewBoldOn => 'Fett';
+
+  @override
+  String get viewMarginTitle => 'Seitenrand';
+
+  @override
+  String get viewAlignTitle => 'Ausrichtung';
+
+  @override
+  String get viewAlignStart => 'Links';
+
+  @override
+  String get viewAlignJustify => 'Blocksatz';
+
+  @override
+  String get viewParaGapTitle => 'Absatzabstand';
+
+  @override
+  String get viewParaGapLocked =>
+      'Auf liniertem Papier bleibt der Absatzabstand unverändert — sonst läuft der Text aus den Linien.';
+
+  @override
+  String get viewReset => 'Zurücksetzen';
+
+  @override
   String bookmarkSaved(int pct) => 'Lesezeichen bei $pct% gesetzt';
   @override
   String get noteDuplicate => 'Duplizieren';

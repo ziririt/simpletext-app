@@ -1346,6 +1346,45 @@ class L10nZhHant extends L10n {
   String get bookmarkOrTop => '或回到頂端';
 
   @override
+  String get viewSettingsTitle => '顯示設定';
+
+  @override
+  String get viewOnlyThisNote => '僅此筆記';
+
+  @override
+  String get viewOnlyThisNoteSub => '關閉後會套用到所有筆記';
+
+  @override
+  String get viewBoldTitle => '字重';
+
+  @override
+  String get viewBoldOff => '標準';
+
+  @override
+  String get viewBoldOn => '粗體';
+
+  @override
+  String get viewMarginTitle => '左右邊界';
+
+  @override
+  String get viewAlignTitle => '段落對齊';
+
+  @override
+  String get viewAlignStart => '預設';
+
+  @override
+  String get viewAlignJustify => '左右對齊';
+
+  @override
+  String get viewParaGapTitle => '段落間距';
+
+  @override
+  String get viewParaGapLocked => '有橫線的紙張不改變段落間距，否則文字會與橫線錯位。';
+
+  @override
+  String get viewReset => '恢復預設';
+
+  @override
   String bookmarkSaved(int pct) => '已在 $pct% 處加書籤';
   @override
   String get noteDuplicate => '複製';

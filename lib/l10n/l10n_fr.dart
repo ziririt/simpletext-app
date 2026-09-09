@@ -1426,6 +1426,46 @@ class L10nFr extends L10n {
   String get bookmarkOrTop => 'ou revenir en haut';
 
   @override
+  String get viewSettingsTitle => 'Affichage';
+
+  @override
+  String get viewOnlyThisNote => 'Cette note seulement';
+
+  @override
+  String get viewOnlyThisNoteSub => "Désactivé : s'applique à toutes les notes";
+
+  @override
+  String get viewBoldTitle => 'Graisse';
+
+  @override
+  String get viewBoldOff => 'Normal';
+
+  @override
+  String get viewBoldOn => 'Gras';
+
+  @override
+  String get viewMarginTitle => 'Marge latérale';
+
+  @override
+  String get viewAlignTitle => 'Alignement';
+
+  @override
+  String get viewAlignStart => 'Gauche';
+
+  @override
+  String get viewAlignJustify => 'Justifié';
+
+  @override
+  String get viewParaGapTitle => 'Espacement des paragraphes';
+
+  @override
+  String get viewParaGapLocked =>
+      "Sur papier ligné, l'espacement des paragraphes ne change pas : le texte quitterait les lignes.";
+
+  @override
+  String get viewReset => 'Réinitialiser';
+
+  @override
   String bookmarkSaved(int pct) => 'Marque-page posé à $pct%';
   @override
   String get noteDuplicate => 'Dupliquer';

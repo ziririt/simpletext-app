@@ -1412,6 +1412,46 @@ class L10nEn extends L10n {
   String get bookmarkOrTop => 'or go to Top';
 
   @override
+  String get viewSettingsTitle => 'View settings';
+
+  @override
+  String get viewOnlyThisNote => 'This note only';
+
+  @override
+  String get viewOnlyThisNoteSub => 'Off means it applies to every note';
+
+  @override
+  String get viewBoldTitle => 'Weight';
+
+  @override
+  String get viewBoldOff => 'Regular';
+
+  @override
+  String get viewBoldOn => 'Bold';
+
+  @override
+  String get viewMarginTitle => 'Side margin';
+
+  @override
+  String get viewAlignTitle => 'Alignment';
+
+  @override
+  String get viewAlignStart => 'Left';
+
+  @override
+  String get viewAlignJustify => 'Justified';
+
+  @override
+  String get viewParaGapTitle => 'Paragraph spacing';
+
+  @override
+  String get viewParaGapLocked =>
+      'Paragraph spacing stays off on ruled paper — the text would drift off the lines.';
+
+  @override
+  String get viewReset => 'Reset';
+
+  @override
   String bookmarkSaved(int pct) => 'Bookmarked at $pct%';
   @override
   String get noteDuplicate => 'Duplicate';

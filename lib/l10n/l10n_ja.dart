@@ -1358,6 +1358,45 @@ class L10nJa extends L10n {
   String get bookmarkOrTop => 'または「先頭へ」';
 
   @override
+  String get viewSettingsTitle => '表示設定';
+
+  @override
+  String get viewOnlyThisNote => 'このノートだけ';
+
+  @override
+  String get viewOnlyThisNoteSub => 'オフにすると、すべてのノートに適用されます';
+
+  @override
+  String get viewBoldTitle => '文字の太さ';
+
+  @override
+  String get viewBoldOff => '標準';
+
+  @override
+  String get viewBoldOn => '太字';
+
+  @override
+  String get viewMarginTitle => '左右の余白';
+
+  @override
+  String get viewAlignTitle => '段落の揃え';
+
+  @override
+  String get viewAlignStart => '標準';
+
+  @override
+  String get viewAlignJustify => '両端揃え';
+
+  @override
+  String get viewParaGapTitle => '段落の間隔';
+
+  @override
+  String get viewParaGapLocked => '罫線のある用紙では段落の間隔を変えません。文字と罫線がずれます。';
+
+  @override
+  String get viewReset => '初期化';
+
+  @override
   String bookmarkSaved(int pct) => '$pct% にしおりを挟みました';
   @override
   String get noteDuplicate => '複製';

@@ -1346,6 +1346,45 @@ class L10nZhHans extends L10n {
   String get bookmarkOrTop => '或回到顶部';
 
   @override
+  String get viewSettingsTitle => '显示设置';
+
+  @override
+  String get viewOnlyThisNote => '仅此笔记';
+
+  @override
+  String get viewOnlyThisNoteSub => '关闭后将应用到所有笔记';
+
+  @override
+  String get viewBoldTitle => '字重';
+
+  @override
+  String get viewBoldOff => '常规';
+
+  @override
+  String get viewBoldOn => '加粗';
+
+  @override
+  String get viewMarginTitle => '左右边距';
+
+  @override
+  String get viewAlignTitle => '段落对齐';
+
+  @override
+  String get viewAlignStart => '默认';
+
+  @override
+  String get viewAlignJustify => '两端对齐';
+
+  @override
+  String get viewParaGapTitle => '段落间距';
+
+  @override
+  String get viewParaGapLocked => '有横线的纸张不改变段落间距，否则文字会和横线错位。';
+
+  @override
+  String get viewReset => '恢复默认';
+
+  @override
   String bookmarkSaved(int pct) => '已在 $pct% 处加书签';
   @override
   String get noteDuplicate => '复制';

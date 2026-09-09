@@ -1361,6 +1361,46 @@ class L10nKo extends L10n {
   String get bookmarkOrTop => "또는 '맨 위로'";
 
   @override
+  String get viewSettingsTitle => '보기 설정';
+
+  @override
+  String get viewOnlyThisNote => '이 노트에만 적용';
+
+  @override
+  String get viewOnlyThisNoteSub => '끄면 모든 노트에 함께 적용됩니다';
+
+  @override
+  String get viewBoldTitle => '글자 굵기';
+
+  @override
+  String get viewBoldOff => '원본';
+
+  @override
+  String get viewBoldOn => '굵게';
+
+  @override
+  String get viewMarginTitle => '좌우 여백';
+
+  @override
+  String get viewAlignTitle => '문단 정렬';
+
+  @override
+  String get viewAlignStart => '원본';
+
+  @override
+  String get viewAlignJustify => '양쪽';
+
+  @override
+  String get viewParaGapTitle => '문단 간격';
+
+  @override
+  String get viewParaGapLocked =>
+      '줄이 쳐진 종이에서는 문단 간격을 바꾸지 않습니다. 글과 종이의 줄이 어긋납니다.';
+
+  @override
+  String get viewReset => '설정 초기화';
+
+  @override
   String bookmarkSaved(int pct) => '$pct% 자리에 책갈피를 끼웠습니다';
   @override
   String get noteDuplicate => '복제';
