@@ -883,6 +883,19 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
   bool _nativeLoaded = false;
   bool _nativeTried = false;
 
+  /// 네이티브를 기다리는 시계.
+  ///
+  /// 2026-09-09 저녁 소유자 신고 — "본문 하단 광고는 오늘 아침에만 해도
+  /// 잘 나왔다." 맨 위 띠에 낸 것과 **똑같은 구멍**이 여기에도 있었다.
+  /// 네이티브를 물어보는 동안 `_native != null` 이라 배너를 안 켜는데,
+  /// 광고판이 성공도 실패도 안 돌려주면 영영 빈칸이다.
+  ///
+  /// 오늘 아침까지 멀쩡했던 까닭은 그때는 이 자리 하나만 네이티브를
+  /// 불렀기 때문이다. 오늘 맨 위 띠까지 같은 단위를 부르기 시작하면서
+  /// 답이 늦는 일이 잦아졌다. **한 자리에서 안 드러나던 구멍은, 그 코드를
+  /// 두 번째로 쓰는 순간 드러난다.**
+  Timer? _natTimer;
+
   BannerAd? _ad;
   double _adH = 250;
   double _adW = 300;
@@ -955,6 +968,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       ),
       listener: NativeAdListener(
         onAdLoaded: (_) {
+          _natTimer?.cancel();
           if (!mounted) return;
           setState(() {
             _nativeLoaded = true;
@@ -962,6 +976,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
           });
         },
         onAdFailedToLoad: (ad, err) {
+          _natTimer?.cancel();
           ad.dispose();
           if (!mounted) return;
           // 되돌아갈 자리를 연다. _native 를 비우면 build 가 배너를 묻는다.
@@ -973,6 +988,16 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
       ),
     );
     _native = ad;
+    // 2.5초. 답이 없으면 배너로 내려간다(위 _natTimer 주석).
+    _natTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (!mounted || _nativeLoaded) return;
+      final gone = _native;
+      setState(() {
+        _native = null;
+        _nativeLoaded = false;
+      });
+      gone?.dispose();
+    });
     ad.load();
   }
 
@@ -1085,6 +1110,7 @@ class _InlineAdBlockState extends State<InlineAdBlock> {
 
   @override
   void dispose() {
+    _natTimer?.cancel();
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
     _ad?.dispose();

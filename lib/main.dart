@@ -10483,13 +10483,6 @@ class _EditorScreenState extends State<EditorScreen>
                               note.locked ? lm.noteUnlock : lm.noteLock,
                               tint: note.locked ? ctx.c.accent : null,
                             ),
-                            // 보기 설정 (2026-09-09 소유자 요청) — 전자책
-                            // 뷰어처럼 편집 화면에서 바로 연다.
-                            act(
-                              'view',
-                              Icons.text_format,
-                              lm.viewSettingsTitle,
-                            ),
                             // 스크롤 책갈피 (2026-09-09 소유자 요청).
                             //
                             // 줄이 늘어나면 작은 아이폰에서 메뉴가 잘린다 —
@@ -10597,19 +10590,36 @@ class _EditorScreenState extends State<EditorScreen>
                               ('print', CupertinoIcons.printer, lm.printShort),
                             ]),
                             const PopupMenuDivider(height: 6),
+                            // 2026-09-09 소유자 지시 — 차례를 이렇게 못 박았다.
+                            //   보기 설정 → 앱 설정 → 삭제
+                            //
+                            // 까닭이 보인다. 앞의 둘은 **정하는 일**이고 마지막
+                            // 하나는 **되돌릴 수 없는 일**이다. 되돌릴 수 없는
+                            // 것은 서랍의 맨 끝에 있어야 한다 — 손가락이 미끄러져
+                            // 닿는 자리가 아니어야 하고, 다른 것을 찾다가 눈에
+                            // 먼저 들어오는 자리도 아니어야 한다.
+                            //
+                            // 그리고 보기 설정과 앱 설정은 붙어 있어야 한다.
+                            // 하나는 이 노트를 어떻게 보여 줄지, 하나는 앱 전체를
+                            // 어떻게 할지 — 같은 결의 일이라 나란히 둔다.
                             act(
-                              'delete',
-                              CupertinoIcons.trash,
-                              lm.delete,
-                              tint: ctx.c.danger,
+                              'view',
+                              Icons.text_format,
+                              lm.viewSettingsTitle,
                             ),
-                            const PopupMenuDivider(height: 6),
                             act(
                               'set:',
                               CupertinoIcons.gear_alt,
                               lm.menuAppSettings,
                               tint: ctx.c.accent,
                               bold: true,
+                            ),
+                            const PopupMenuDivider(height: 6),
+                            act(
+                              'delete',
+                              CupertinoIcons.trash,
+                              lm.delete,
+                              tint: ctx.c.danger,
                             ),
                           ];
                           return [

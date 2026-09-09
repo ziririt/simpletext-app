@@ -33,25 +33,43 @@ import 'core/body_font.dart';
 import 'core/mono_controller.dart';
 import 'core/paper.dart';
 import 'core/view_prefs.dart';
+import 'ads_service.dart' show AdFreeScope;
 import 'l10n/l10n.dart';
 import 'main.dart'
     show AppColorsX, AppSettings, PaperPainter, SplitShell, Store, scrollPad;
 import 'web_font.dart' show kWebFontFamily;
 
 /// 편집 화면에서 여는 시트.
+///
+/// **화면의 아래 절반만 쓴다. 위 절반은 글에게 남긴다.**
+///
+/// 2026-09-09 소유자 지시 — "폰트 설정할 때에는 밑에 있는 실제 폰트가 있는
+/// 텍스트를 봐야 바로바로 적용되는 걸 확인할 수 있다. (…) 옵션창은 하단
+/// 50%까지만 써라. 옵션을 밑으로 스크롤하더라도 내부 스크롤만 되게 해서,
+/// 위 50%는 본문 텍스트가 보이게 하라."
+///
+/// 옳다. 글자 크기를 고르는 사람이 보고 있어야 하는 것은 숫자가 아니라
+/// **자기 글**이다. 처음에는 끌어 늘릴 수 있게(DraggableScrollableSheet)
+/// 만들었는데, 늘어나면 글을 덮는다. 늘어나는 것이 친절인 줄 알았지만
+/// 여기서는 **안 늘어나는 것이 친절**이다.
+///
+/// 그래서 셋을 손봤다.
+///   1. 높이를 화면의 절반으로 못 박는다(constraints). 안이 길어도 안쪽만
+///      구른다.
+///   2. 뒤를 거의 안 어둡게 한다. 어둡히는 것은 '저기 말고 여기를 보라'는
+///      뜻인데, 이 화면은 저기(글)를 보라는 화면이다.
+///   3. 맨 위 광고 띠를 걷는다(AdFreeScope). 안 그러면 남은 절반의 위쪽을
+///      광고가 또 먹는다.
 Future<void> showViewSettings(BuildContext context, {String? noteId}) {
+  final h = MediaQuery.of(context).size.height;
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (ctx) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.72,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      builder: (_, controller) =>
-          ViewSettingsPanel(noteId: noteId, scrollController: controller),
-    ),
+    constraints: BoxConstraints(maxHeight: h * 0.5),
+    barrierColor: Colors.black.withValues(alpha: 0.04),
+    builder: (ctx) =>
+        AdFreeScope(child: ViewSettingsPanel(noteId: noteId, inSheet: true)),
   );
 }
 
@@ -72,11 +90,13 @@ class ViewSettingsScreen extends StatelessWidget {
 }
 
 class ViewSettingsPanel extends StatefulWidget {
-  const ViewSettingsPanel({super.key, this.noteId, this.scrollController});
+  const ViewSettingsPanel({super.key, this.noteId, this.inSheet = false});
 
   /// 어느 노트에서 열었나. null 이면 앱 전체 설정이다.
   final String? noteId;
-  final ScrollController? scrollController;
+
+  /// 시트 안인가(편집 화면), 화면인가(앱 설정). 여백만 달라진다.
+  final bool inSheet;
 
   @override
   State<ViewSettingsPanel> createState() => _ViewSettingsPanelState();
@@ -380,8 +400,8 @@ class _ViewSettingsPanelState extends State<ViewSettingsPanel> {
     final l = L10n.of(context);
     final c = context.c;
     return ListView(
-      controller: widget.scrollController,
-      padding: widget.scrollController != null
+      // 시트 안에서도 여기 안쪽만 구른다. 시트 자체는 안 늘어난다(머리말).
+      padding: widget.inSheet
           ? const EdgeInsets.fromLTRB(18, 0, 18, 28)
           : scrollPad(
               context,
