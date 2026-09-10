@@ -230,7 +230,7 @@ def prepare():
     print('\n준비 끝. 낼 때는 tool/submit_next.py --submit')
 
 
-def cancel():
+def cancel(force=False):
     """심사 줄에 서 있는 판을 뺀다 — 새 빌드를 붙이려면 먼저 이걸 한다.
 
     2026-09-07 소유자 지시. 1.5 가 줄 서 있는 동안 급한 고침이 나왔다.
@@ -259,6 +259,19 @@ def cancel():
 
     **그러니 상품이 걸린 판을 취소하기 전에 각오할 것:** 되돌리는 마지막
     조립은 사람이 웹 화면에서 해야 한다. 판만 있는 앱이면 상관없다.
+
+    ── IN_REVIEW 는 값이 다르다 (2026-09-10 에 배웠다) ──────────────────
+
+    WAITING_FOR_REVIEW 는 줄만 서 있는 것이다. 빼도 잃는 것은 줄 뒤로
+    가는 몇 시간뿐이다. 그러나 IN_REVIEW 는 **심사원이 이미 열어 본 것**
+    이다. 몇 시간을 기다려 얻은 자리이고, 결과가 곧 날 수도 있다.
+
+    2026-09-10, 소유자의 "바로 해줘"만 믿고 IN_REVIEW 를 뺐다. 소유자는
+    그것이 줄 서 있는 상태인 줄 알고 말한 것이었고, 직후에 "이미 리뷰
+    중이면 기다리자"고 했다. 되돌릴 수 없었다.
+
+    **IN_REVIEW 를 빼려면 --force 를 함께 친다.** 그 한 글자가 '소유자에게
+    이 상태를 알리고 답을 받았다'는 뜻이다. 손이 미끄러져 쳐지지 않도록.
     """
     aid = app_id()
     st, r = api('GET', '/v1/apps/%s/reviewSubmissions?limit=20' % aid)
@@ -269,6 +282,11 @@ def cancel():
             ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES')]
     if not live:
         die('심사 줄에 서 있는 제출함이 없다. 뺄 것이 없다.')
+    watched = [d for d in live if d['attributes'].get('state') == 'IN_REVIEW']
+    if watched and not force:
+        die('심사원이 이미 열어 본 판이다(IN_REVIEW). 줄만 서 있는 것과\n'
+            '값이 다르다 — 빼면 그 자리가 사라지고, 결과가 곧 날 수도 있다.\n'
+            '소유자에게 이 상태를 알리고 답을 받았으면 --cancel --force 로 친다.')
     for d in live:
         sid = d['id']
         was = d['attributes'].get('state')
@@ -591,6 +609,9 @@ if __name__ == '__main__':
     ap.add_argument('--why', action='store_true')
     ap.add_argument('--tidy', action='store_true')
     ap.add_argument('--cancel', action='store_true')
+    ap.add_argument('--force', action='store_true',
+                    help='IN_REVIEW(심사원이 보고 있는) 판까지 뺀다 — '
+                         '소유자에게 물어보고 답을 받았을 때만')
     ap.add_argument('--prepare', action='store_true')
     ap.add_argument('--submit', action='store_true')
     a = ap.parse_args()
@@ -603,7 +624,7 @@ if __name__ == '__main__':
     elif a.tidy:
         tidy()
     elif a.cancel:
-        cancel()
+        cancel(force=a.force)
     elif a.prepare:
         prepare()
     elif a.submit:
