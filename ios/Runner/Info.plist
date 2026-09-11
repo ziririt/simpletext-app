@@ -108,6 +108,22 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-2336764115275414~3251918630</string>
+	<!-- 네이티브 광고 검사기(Native Validator)를 끈다. 2026-09-11.
+
+	     소유자 신고 — "개발자 버전 앱을 써야 테스트가 가능한데 그때마다
+	     저게 계속 뜬다. 한 번 dismiss 하면 안 떠야 하는데 눌러도 계속
+	     뜬다. 테스트가 어려울 정도다."
+
+	     이 검사기는 **테스트 광고에만** 뜬다. 스토어로 나간 판은 실제
+	     광고를 받으므로 애초에 뜨지 않는다. 그러니 이 줄은 사용자가 보는
+	     화면에 아무 영향이 없다 — 담당자의 시험판에서만 조용해진다.
+
+	     끄는 것과 고치는 것은 다르다. 검사기는 '문제 1건'이라고 말했고
+	     그 1건은 아직 안 고쳤다. CONFIRM.md 와 HANDOFF 3.14 에 빚으로
+	     적어 뒀다. **다시 보려면 아래 값을 true 로 바꾸고 한 번 굽는다.**
+	     스토어에 내기 전에는 반드시 한 번 켜서 확인한다. -->
+	<key>GADNativeAdValidatorEnabled</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSUserTrackingUsageDescription</key>
