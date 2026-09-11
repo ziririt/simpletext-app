@@ -4,21 +4,20 @@
 소유자 요청(2026-08-12): "항상 버전 업데이트를 해라. 그래야 제대로 업데이트가
 반영되었는지 정확히 알 수 있다."
 
-2026-09-12 개편 — 소유자 지시 "앱스토어 기준으로 바꿔라". 이제 두 값은
-같은 값이 아니라 **한 값에서 나온 두 값**이다.
+2026-09-12 개편 — 소유자 지시 "앱스토어 기준으로 바꿔라", 그리고 같은 날
+오후 "완전히 다 일치시키는 것이지". 이제 값은 **하나**다.
 
-  - lib/version.dart 의 appVersion   앱스토어에 보이는 이름(1.7). 사람이 정한다
-  - lib/version.dart 의 appBuild     빌드 번호(245). 사람이 올린다
-  - pubspec.yaml 의 version          3.<빌드>.0+<빌드>. **기계가 정한 꼴이다**
+  - lib/version.dart 의 appVersion   앱스토어 이름이자 꾸러미 값(3.18)
+  - lib/version.dart 의 appBuild     빌드 번호(246)
+  - pubspec.yaml 의 version          3.18.0+246 — 위 둘을 그대로 옮겨 적은 것
 
-세 번째는 애플이 꾸러미 안의 마케팅 버전을 절대 못 내리게 하기 때문에
-(ITMS-90062) 따로 두는 값이다. 빌드 번호에서 자동으로 만들어지니 사람이
-정할 것이 없고, 이 검사기는 그 꼴이 맞는지만 본다.
+애플은 세 자리를 원하므로 pubspec 에서만 끝에 .0 을 붙인다. 그 말고는
+다른 값이 없다. 이 검사기는 셋이 한 값인지 본다.
 
-이 둘이 어긋나면 최악이다. 화면에는 새 버전이 뜨는데 실제로는 옛 코드가
-돌고 있어도 아무도 모른다. 버전 표시를 믿을 수 없게 되는 순간
-"업데이트가 반영됐는지 확인하는 장치"라는 목적 자체가 사라진다.
-그래서 경고가 아니라 실패로 떨어뜨린다.
+한 가지 함정: 애플은 꾸러미 값을 못 내리게 하고(ITMS-90062) 자리마다
+숫자로 견준다. 3.3 은 3.17.22 보다 **작다**(둘째 자리 3 < 17). 그래서
+새 이름을 정할 때는 반드시 지금까지 올린 것보다 커야 한다 —
+tool/appstore_ios.sh 가 굽기 전에 애플에게 물어 확인한다.
 """
 import re
 import sys
@@ -45,23 +44,23 @@ def main() -> int:
 
     errors = []
 
-    # 스토어 이름은 1.7 꼴이어야 한다. 3.17.22 같은 옛 계통이 남아 있으면
-    # 개편이 덜 끝난 것이다 — 그대로 두면 '최신 버전 확인'이 거짓말한다.
+    # 3.18 또는 3.18.0 꼴. 사람이 읽고 말하는 그 이름이다.
     if not re.fullmatch(r'[0-9]+\.[0-9]+(\.[0-9]+)?', store_ver):
         errors.append(
-            f"appVersion '{store_ver}' 이 앱스토어 이름 꼴이 아닙니다 (1.7 꼴)")
+            f"appVersion '{store_ver}' 이 버전 꼴이 아닙니다 (3.18 꼴)")
 
     if pub_build != dart_build:
         errors.append(
             f'빌드 번호 불일치 — pubspec.yaml +{pub_build} '
             f'vs lib/version.dart {dart_build}')
 
-    want = f'3.{dart_build}.0'
+    want = store_ver if store_ver.count('.') >= 2 else f'{store_ver}.0'
     if pub_ver != want:
         errors.append(
             f'pubspec.yaml 의 version 이 {pub_ver} 인데 {want} 여야 합니다.\n'
-            f'         이 값은 사람이 정하는 것이 아니라 빌드 번호에서 나옵니다 '
-            f'(lib/version.dart 머리말).')
+            f'         버전은 lib/version.dart 의 appVersion 하나입니다 — '
+            f'pubspec 은 그것을 옮겨 적을 뿐입니다(애플이 세 자리를 원해서 '
+            f'끝에 .0 만 붙습니다).')
 
     if errors:
         for e in errors:
@@ -70,8 +69,7 @@ def main() -> int:
               '아무도 확인할 수 없습니다. 그래서 여기서 막습니다.', file=sys.stderr)
         return 1
 
-    print(f'버전 검사 통과 — 스토어 {store_ver} · 빌드 {dart_build} '
-          f'· 꾸러미 {pub_ver}')
+    print(f'버전 검사 통과 — {store_ver} (빌드 {dart_build})')
     return 0
 
 

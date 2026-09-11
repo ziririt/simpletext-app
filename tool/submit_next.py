@@ -43,7 +43,7 @@ BUNDLE = 'com.ziririt.simpletext'
 
 
 def store_version_in_repo():
-    """lib/version.dart 의 appVersion(= 스토어에 보이는 이름). 못 읽으면 None."""
+    """lib/version.dart 의 appVersion(= 이 앱의 유일한 버전). 못 읽으면 None."""
     import re
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
@@ -189,6 +189,74 @@ def editable(aid, states=None):
     return None
 
 
+def check_name():
+    """굽기 전에 부른다 — 이 버전으로 올려도 애플이 받아 주는가.
+
+    2026-09-12. 버전을 하나로 합치면서 다시 썼다. 애플은 꾸러미 값을
+    **못 내리게** 하고(ITMS-90062) 자리마다 숫자로 견준다. 3.3 은
+    3.17.22 보다 작다(둘째 자리 3 < 17). 사람 눈에는 커 보여서 틀리기 쉽다.
+
+    그래서 굽기 전에 여기서 한 번 잰다. 올린 뒤에 알면 다시 구워야 한다.
+
+    나가는 값
+      0  괜찮다
+      2  버전이 지금까지 올린 것보다 크지 않다 — 멈춰야 한다
+      3  애플에 못 물어봤다 — 막지 않는다(빌드를 네트워크에 매달지 않는다)
+    """
+    mine = store_version_in_repo()
+    if not mine:
+        print('lib/version.dart 의 appVersion 을 못 읽었다')
+        return 3
+    try:
+        aid = app_id()
+        vs = versions(aid)
+    except SystemExit:
+        raise
+    except Exception as e:  # noqa: BLE001
+        print('애플에 못 물어봤다: %s' % e)
+        return 3
+    names = [v['attributes'].get('versionString', '') for v in vs]
+
+    # **여기가 진짜 문턱이다.** 스토어에 보이는 이름(1.7)보다 큰 것만으로는
+    # 모자란다. 애플이 견주는 것은 **지금까지 올린 꾸러미의 마케팅 버전**
+    # 이고, 이 저장소에는 3.17.22 까지 올라가 있다(옛날에 이름이 둘이던
+    # 시절의 잔재다). 그것보다 크지 않으면 업로드 자체가 거부된다.
+    try:
+        st, pr = api('GET', '/v1/apps/%s/preReleaseVersions?limit=200' % aid)
+        if st < 300:
+            names += [d['attributes'].get('version', '')
+                      for d in pr.get('data', [])]
+    except Exception:  # noqa: BLE001
+        pass
+
+    names = [x for x in names if x]
+    if not names:
+        print('애플에 올라간 것이 없다 — %s 로 간다' % mine)
+        return 0
+
+    def seg(x):
+        out = []
+        for p in x.split('.'):
+            try:
+                out.append(int(p))
+            except ValueError:
+                out.append(0)
+        return tuple(out + [0, 0, 0])[:3]
+
+    top = max(names, key=seg)
+    if seg(mine) <= seg(top):
+        print('멈춘다. lib/version.dart 의 appVersion 이 %s 인데,' % mine)
+        print('애플에 이미 %s 가 올라가 있다(스토어 이름 또는 올린 꾸러미).' % top)
+        print('')
+        print('애플은 버전을 못 내리게 한다(ITMS-90062). 그리고 자리마다')
+        print('숫자로 견준다 — 3.3 은 3.17.22 보다 **작다**(3 < 17).')
+        print('')
+        print('  appVersion 을 %s 보다 큰 값으로 올리고 다시 친다.' % top)
+        return 2
+    print('appVersion %s — 애플에 올라간 가장 큰 값 %s 보다 크다' % (mine, top))
+    return 0
+
+
 def next_name_only():
     """이번에 스토어에 붙을 판 이름 한 줄만 찍는다 (2026-09-11 신설).
 
@@ -214,7 +282,9 @@ def prepare():
         'PREPARE_FOR_SUBMISSION', 'REJECTED', 'METADATA_REJECTED',
         'DEVELOPER_REJECTED'))
     if v is None:
-        name = next_name(vs)
+        # 판 이름은 저장소가 정한다(2026-09-12). 버전이 하나가 된 뒤로
+        # '다음 이름을 계산'할 이유가 없다 — lib/version.dart 에 적혀 있다.
+        name = store_version_in_repo() or next_name(vs)
         body = {'data': {'type': 'appStoreVersions',
                          'attributes': {'platform': 'IOS',
                                         'versionString': name,
@@ -652,13 +722,17 @@ if __name__ == '__main__':
     ap.add_argument('--cancel', action='store_true')
     ap.add_argument('--nextname', action='store_true',
                     help='이번에 붙을 판 이름만 한 줄로 찍는다')
+    ap.add_argument('--checkname', action='store_true',
+                    help='굽기 전 검사 — 이 버전으로 올려도 애플이 받는가')
     ap.add_argument('--force', action='store_true',
                     help='IN_REVIEW(심사원이 보고 있는) 판까지 뺀다 — '
                          '소유자에게 물어보고 답을 받았을 때만')
     ap.add_argument('--prepare', action='store_true')
     ap.add_argument('--submit', action='store_true')
     a = ap.parse_args()
-    if a.nextname:
+    if a.checkname:
+        raise SystemExit(check_name())
+    elif a.nextname:
         next_name_only()
     elif a.iaps:
         iaps_report()

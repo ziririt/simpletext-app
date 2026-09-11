@@ -39,20 +39,14 @@ android {
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
-        // **여기는 아직 손대지 않았다. 플레이에 내기 전에 고칠 것.**
+        // flutter.versionName 은 pubspec 의 version 이고, 2026-09-12 오후에
+        // 버전을 **하나로 합치면서** 그 값이 곧 앱스토어에 보이는 이름이
+        // 됐다(3.18.0). 그래서 여기는 손댈 것이 없다 — 플레이에도 애플과
+        // 같은 이름이 찍힌다.
         //
-        // flutter.versionName 은 pubspec 의 version 인데, 2026-09-12 개편으로
-        // 그 값은 사람이 정한 이름이 아니라 **빌드 번호에서 자동으로 만든
-        // 기계용 값**이 됐다(3.245.0). 애플이 꾸러미 버전을 못 내리게 해서
-        // 생긴 값이라(ITMS-90062, lib/version.dart 머리말) 사람에게 보일
-        // 이름이 아니다. 지금 이대로 플레이에 내면 스토어에 '3.245.0' 이
-        // 찍힌다. 애플은 '1.7' 인데.
-        //
-        // 구글은 versionName 에 그런 제약이 없으니, lib/version.dart 의
-        // appVersion('1.7')을 읽어서 넣으면 된다. 한 줄이면 되는 일인데
-        // **이 맥에는 자바가 없어 그래들을 돌려 볼 수가 없어서** 확인 못 한
-        // 코드를 빌드 파일에 두지 않는다(2026-09-12). 안드로이드를 실제로
-        // 굽는 자리가 생기면 그때 고치고 거기서 확인한다.
+        // (그날 오전까지는 pubspec 이 3.245.0 같은 기계용 값이라 이 자리를
+        //  따로 고쳐야 했다. 이름을 하나로 줄이니 고칠 자리도 같이 사라졌다.
+        //  HANDOFF 3.16)
         versionName = flutter.versionName
     }
 
