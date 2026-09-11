@@ -294,6 +294,58 @@ const Color kOnAccentFill = _onAccentDark;
 /// kAccentFill 과 마찬가지로 라이트·다크가 같은 값이다. 떠 있는 단추는
 /// 배경 위가 아니라 그림자 위에 있어서, 모드를 따라갈 이유가 없다.
 const Color kAccentSoft = Color(0xFFBFE6FA);
+
+/// 떠 있는 단추 — 존재감은 있되 글을 가리지 않게 (2026-09-11).
+///
+/// 소유자가 받은 사용자 피드백 — "페이지 하단의 이 2개의 주요 버튼이 너무
+/// 가독성을 해치고 본문을 가린다. 투명도를 좀 줘서 하단의 노트 텍스트가
+/// 살짝 보여서 덜 답답하게. 버튼 사이즈를 30% 정도 줄여줘. **존재감이 있되,
+/// 너무 신경 쓰이지 않게.**"
+///
+/// 그 한 문장이 이 값들의 기준이다. 셋을 같이 움직여야 한다 — 하나만
+/// 건드리면 '안 보이는 단추'(2026-08-18에 한 번 겪었다)나 '여전히 답답한
+/// 단추' 중 하나가 된다.
+///
+///   · 작게: 56 → 40 (FloatingActionButton.small). 딱 28.6% 작다
+///   · 옅게: 알파 0.8. 글자가 비쳐 보이되 단추 색은 남는다
+///   · 낮게: 화면 맨 아래로. 글의 가운데를 비운다
+///
+/// 40pt 는 애플 권장 44 보다 작다. 그래서 눈에 보이는 원은 40 으로 두되
+/// **손이 닿는 자리는 48 로 넓힌다**(materialTapTargetSize.padded).
+/// 눈에 보이는 크기와 손이 닿는 크기는 같을 필요가 없다 — 이 저장소가
+/// 2026-09-10 에 배운 것과 같은 이야기다(core/handle_hit.dart).
+const double kFabAlpha = 0.8;
+
+/// 작아진 단추에 맞춘 아이콘 크기. 25·24 를 같은 비율로 줄였다.
+const double kFabIcon = 18;
+
+/// 떠 있는 단추를 화면 **맨 아래**에 붙인다.
+///
+/// 기본 centerFloat 은 아래에서 16pt 를 띄운다. 그 16pt 때문에 단추가
+/// 본문 한가운데로 올라와 글줄을 가로막는다. 홈 인디케이터 바로 위까지
+/// 내린다 — 거기서는 가릴 글이 애초에 없다.
+class BottomEdgeFabLocation extends FloatingActionButtonLocation {
+  const BottomEdgeFabLocation({this.gap = 4});
+
+  /// 안전 영역 아래 끝과 단추 사이의 틈.
+  final double gap;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry g) {
+    // 단추 묶음은 Row 라 화면 너비를 다 쓴다. 가로는 0 이 맞다.
+    final x = (g.scaffoldSize.width - g.floatingActionButtonSize.width) / 2;
+    final y =
+        g.scaffoldSize.height -
+        g.minViewPadding.bottom -
+        g.floatingActionButtonSize.height -
+        gap;
+    return Offset(x < 0 ? 0 : x, y);
+  }
+
+  @override
+  String toString() => 'BottomEdgeFabLocation';
+}
+
 const Color kOnAccentSoft = Color(0xFF0B3B63);
 // 밝은 하늘색은 큰 글자엔 흐려서 시드(파생 색 뿌리)로만 쓴다.
 const _sky = Color(0xFF3FB2F0);
@@ -4078,10 +4130,13 @@ class SplitShellState extends State<SplitShell> {
                                 Positioned(
                                   right: 16,
                                   bottom: 16,
-                                  child: FloatingActionButton(
+                                  child: FloatingActionButton.small(
                                     heroTag: 'split-new',
                                     tooltip: L10n.of(context).newNoteTooltip,
-                                    backgroundColor: kAccentSoft,
+                                    elevation: 1,
+                                    backgroundColor: kAccentSoft.withValues(
+                                      alpha: kFabAlpha,
+                                    ),
                                     foregroundColor: kOnAccentSoft,
                                     onPressed: () async {
                                       final note = Note.fresh();
@@ -4092,7 +4147,7 @@ class SplitShellState extends State<SplitShell> {
                                     },
                                     child: const Icon(
                                       CupertinoIcons.square_pencil,
-                                      size: 24,
+                                      size: kFabIcon,
                                     ),
                                   ),
                                 ),
@@ -4956,26 +5011,31 @@ class _HomeScreenState extends State<HomeScreen>
       //
       // 색으로 서열을 매긴다 — 정리는 채운 하늘, 글쓰기는 연한 하늘.
       // 종이색으로 낮추려던 앞의 시도는 단추를 아예 안 보이게 만들었다.
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: const BottomEdgeFabLocation(),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            FloatingActionButton(
+            FloatingActionButton.small(
               heroTag: 'paste',
               tooltip: l.pasteAndTidy,
+              elevation: 1,
+              backgroundColor: kAccentFill.withValues(alpha: kFabAlpha),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
               onPressed: _pasteAndTidy,
-              child: const Icon(Icons.content_paste_go, size: 25),
+              child: const Icon(Icons.content_paste_go, size: kFabIcon),
             ),
             // 두 칸 화면(맥·윈도·아이패드 가로)에서는 안 그린다.
             // 오른쪽 편집 칸에 이미 같은 단추가 있다(2026-08-18 소유자 신고).
             if (!widget.embedded)
-              FloatingActionButton(
+              FloatingActionButton.small(
                 heroTag: 'new',
                 tooltip: l.newNoteTooltip,
-                backgroundColor: kAccentSoft,
+                elevation: 1,
+                backgroundColor: kAccentSoft.withValues(alpha: kFabAlpha),
                 foregroundColor: kOnAccentSoft,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
                 onPressed: () async {
                   final note = Note.fresh();
                   store.notes.insert(0, note);
@@ -4983,7 +5043,7 @@ class _HomeScreenState extends State<HomeScreen>
                   if (!mounted) return;
                   openNote(context, note.id);
                 },
-                child: const Icon(CupertinoIcons.square_pencil, size: 24),
+                child: const Icon(CupertinoIcons.square_pencil, size: kFabIcon),
               ),
           ],
         ),
@@ -11396,12 +11456,11 @@ class _EditorScreenState extends State<EditorScreen>
                   //
                   // 글자를 치는 동안에는 감춘다. 키보드 위에 보조 막대가 뜨는데
                   // 그 위에 단추가 또 겹치면 손가락 갈 곳이 없다.
-                  floatingActionButtonLocation:
-                      FloatingActionButtonLocation.centerFloat,
+                  floatingActionButtonLocation: const BottomEdgeFabLocation(),
                   floatingActionButton: (_bodyFocus.hasFocus && !_isDesktop)
                       ? null
                       : Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -11409,23 +11468,34 @@ class _EditorScreenState extends State<EditorScreen>
                               // 고를 수 있다(2026-08-16에 문을 하나로 합치면서 만든 길).
                               GestureDetector(
                                 onLongPress: _showPresetSheet,
-                                child: FloatingActionButton(
+                                child: FloatingActionButton.small(
                                   heroTag: 'ed-tidy',
                                   tooltip: l.tidyAction,
+                                  elevation: 1,
+                                  backgroundColor: kAccentFill.withValues(
+                                    alpha: kFabAlpha,
+                                  ),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.padded,
                                   onPressed: () =>
                                       _runTidyWithPreset(buildPresets().first),
                                   child: const Icon(
                                     CupertinoIcons.wand_stars,
-                                    size: 25,
+                                    size: kFabIcon,
                                   ),
                                 ),
                               ),
                               // 새 노트 — 이 메모와 무관한 일이라 한 계단 옅다.
-                              FloatingActionButton(
+                              FloatingActionButton.small(
                                 heroTag: 'ed-new',
                                 tooltip: l.newNoteTooltip,
-                                backgroundColor: kAccentSoft,
+                                elevation: 1,
+                                backgroundColor: kAccentSoft.withValues(
+                                  alpha: kFabAlpha,
+                                ),
                                 foregroundColor: kOnAccentSoft,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.padded,
                                 onPressed: () async {
                                   await _save();
                                   final fresh = Note.fresh(body: '');
@@ -11436,7 +11506,7 @@ class _EditorScreenState extends State<EditorScreen>
                                 },
                                 child: const Icon(
                                   CupertinoIcons.square_pencil,
-                                  size: 24,
+                                  size: kFabIcon,
                                 ),
                               ),
                             ],
