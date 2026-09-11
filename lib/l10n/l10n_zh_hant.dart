@@ -53,6 +53,24 @@ class L10nZhHant extends L10n {
   String get shareAppTitle => '分享應用程式';
   @override
   String get rateAppTitle => '為我們評分';
+
+  // 최신 버전 확인 (2026-09-11)
+  @override
+  String get updCheckTitle => '檢查最新版本';
+  @override
+  String get updChecking => '正在檢查…';
+  @override
+  String get updLatest => '已是最新版本';
+  @override
+  String updLatestSub(String v) => 'App Store 上的最新版本是 $v';
+  @override
+  String get updFound => '有新版本';
+  @override
+  String updFoundSub(String v) => 'App Store 上是 $v，點一下即可更新';
+  @override
+  String get updFailed => '暫時無法檢查';
+  @override
+  String get updFailedSub => '請檢查連線後再點一次';
   @override
   String get shareAppMsg => 'Skyblue Note — 輕快的筆記應用程式，在所有裝置間同步。';
   @override

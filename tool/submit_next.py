@@ -41,6 +41,18 @@ except Exception as e:  # noqa: BLE001
 
 BUNDLE = 'com.ziririt.simpletext'
 
+
+def store_version_in_repo():
+    """lib/version.dart 의 kStoreVersion. 못 읽으면 None."""
+    import re
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        with open(os.path.join(here, 'lib', 'version.dart'), encoding='utf-8') as f:
+            m = re.search(r"kStoreVersion\s*=\s*'([^']+)'", f.read())
+        return m.group(1) if m else None
+    except Exception:  # noqa: BLE001
+        return None
+
 _raw_api = api
 
 
@@ -177,6 +189,23 @@ def editable(aid, states=None):
     return None
 
 
+def next_name_only():
+    """이번에 스토어에 붙을 판 이름 한 줄만 찍는다 (2026-09-11 신설).
+
+    tool/appstore_ios.sh 가 **굽기 전에** 이것을 물어, lib/version.dart 의
+    kStoreVersion 과 맞는지 본다. 설정의 '최신 버전 확인'이 그 상수를 쓰기
+    때문에, 틀린 값이 구워지면 이미 최신인 사람에게 "새 판이 있다"고
+    말하는 앱이 나간다. 그걸 사람의 기억으로 막지 않는다.
+
+    손에 잡히는 판(아직 안 낸 판)이 있으면 그 이름이 답이고, 없으면
+    다음에 만들어질 이름이 답이다.
+    """
+    aid = app_id()
+    vs = versions(aid)
+    v = editable(aid)
+    print(v['attributes']['versionString'] if v else next_name(vs))
+
+
 def prepare():
     aid = app_id()
     vs = versions(aid)
@@ -199,6 +228,18 @@ def prepare():
         print('판 %s 를 만들었다' % name)
     vid = v['id']
     print('고치는 판: %s (%s)' % (v['attributes']['versionString'], vid))
+
+    # 굽기 전 그물(appstore_ios.sh)이 뚫렸을 때를 위한 두 번째 그물.
+    # 여기서는 이미 빌드가 올라간 뒤라 멈춰도 소용이 없다. 대신 크게 말한다.
+    want = v['attributes']['versionString']
+    got = store_version_in_repo()
+    if got and got != want:
+        print('\n' + '!' * 60)
+        print('lib/version.dart 의 kStoreVersion 이 %s 인데 이 판은 %s 다.' % (got, want))
+        print("설정의 '최신 버전 확인'이 이 값을 쓴다. 이대로 나가면 이미")
+        print('최신인 사람에게 새 판이 있다고 말하게 된다.')
+        print('빌드를 다시 구워 올리는 것이 옳다.')
+        print('!' * 60 + '\n')
 
     # 1) 열한 언어의 '새로운 기능'
     # 필드를 locale 하나로 줄인다. 설명 글까지 다 받으면 응답이 커서
@@ -609,13 +650,17 @@ if __name__ == '__main__':
     ap.add_argument('--why', action='store_true')
     ap.add_argument('--tidy', action='store_true')
     ap.add_argument('--cancel', action='store_true')
+    ap.add_argument('--nextname', action='store_true',
+                    help='이번에 붙을 판 이름만 한 줄로 찍는다')
     ap.add_argument('--force', action='store_true',
                     help='IN_REVIEW(심사원이 보고 있는) 판까지 뺀다 — '
                          '소유자에게 물어보고 답을 받았을 때만')
     ap.add_argument('--prepare', action='store_true')
     ap.add_argument('--submit', action='store_true')
     a = ap.parse_args()
-    if a.iaps:
+    if a.nextname:
+        next_name_only()
+    elif a.iaps:
         iaps_report()
     elif a.iapprobe:
         iap_probe()

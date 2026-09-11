@@ -29,6 +29,7 @@ import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
 import 'core/after_route.dart';
 import 'core/money.dart';
 import 'core/store_links.dart';
+import 'core/update_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
@@ -16421,6 +16422,17 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
                       ),
                       _sep(),
                     ],
+                    // 2026-09-11 소유자 지시 — "설정에 추가. 최신 버전
+                    // 체크해서 바로 업데이트되게."
+                    //
+                    // 스토어 등록 페이지가 있는 iOS·iPadOS 에서만 보인다.
+                    // 맥 직배포판과 안드로이드 테스트판은 물어볼 창구가
+                    // 없다 — '평가해 주세요'와 같은 이유다.
+                    if (!kIsWeb &&
+                        defaultTargetPlatform == TargetPlatform.iOS) ...[
+                      const _UpdateCheckRow(),
+                      _sep(),
+                    ],
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
                       child: Text(
@@ -16454,6 +16466,143 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
   void dispose() {
     _settingsScroll.dispose();
     super.dispose();
+  }
+}
+
+/// 설정의 '최신 버전 확인' 한 줄 (2026-09-11).
+///
+/// 소유자가 옛 판을 쓰면서 최신인 줄 알고 "아직도 안 고쳐졌다"고 신고한
+/// 일이 있었다(2026-09-10). 앱스토어 화면의 단추가 '업데이트'가 아니라
+/// '열기'였기 때문이다. 그 물음에 앱이 스스로 답하게 한다.
+///
+/// 세 가지를 지킨다.
+///
+///  1. **묻지 않아도 한 번은 물어본다.** 화면에 들어오면 조용히 확인한다.
+///     사람이 기억해서 눌러야 하는 확인은 아무도 안 누른다.
+///  2. **조용한 확인이 실패해도 시끄럽게 굴지 않는다.** 지하철에서 설정을
+///     열었다고 붉은 글씨가 뜨면 그게 더 나쁘다. 사람이 직접 눌렀을 때만
+///     실패를 말한다.
+///  3. **앞선 판을 낡았다고 하지 않는다.** 소유자는 늘 테스트플라이트로
+///     스토어보다 앞선 판을 쓴다(update_check.dart 의 verdictFor).
+class _UpdateCheckRow extends StatefulWidget {
+  const _UpdateCheckRow();
+
+  @override
+  State<_UpdateCheckRow> createState() => _UpdateCheckRowState();
+}
+
+class _UpdateCheckRowState extends State<_UpdateCheckRow> {
+  // 한 번 받은 답은 앱이 살아 있는 동안 들고 있는다. 설정 화면을 드나들
+  // 때마다 애플에게 묻는 것은 예의가 아니고, 답도 그리 자주 안 바뀐다.
+  static StoreRelease? _seen;
+  static DateTime? _seenAt;
+  static const Duration _fresh = Duration(hours: 6);
+
+  bool _busy = false;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final at = _seenAt;
+    if (at == null || DateTime.now().difference(at) > _fresh) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_ask(quiet: true));
+      });
+    }
+  }
+
+  Future<void> _ask({bool quiet = false}) async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _failed = false;
+    });
+    final r = await fetchStoreRelease(kAppStoreId);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      if (r == null) {
+        _failed = !quiet;
+      } else {
+        _seen = r;
+        _seenAt = DateTime.now();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final r = _seen;
+    final v = r == null
+        ? UpdateVerdict.unknown
+        : verdictFor(kStoreVersion, r.version);
+    final old = v == UpdateVerdict.outdated;
+
+    String title;
+    String? sub;
+    IconData icon;
+    if (_busy) {
+      title = l.updChecking;
+      icon = Icons.refresh;
+    } else if (_failed) {
+      title = l.updFailed;
+      sub = l.updFailedSub;
+      icon = Icons.refresh;
+    } else if (old) {
+      title = l.updFound;
+      sub = l.updFoundSub(r!.version);
+      icon = Icons.system_update_alt;
+    } else if (v == UpdateVerdict.current) {
+      title = l.updLatest;
+      sub = l.updLatestSub(r!.version);
+      icon = Icons.check_circle_outline;
+    } else {
+      title = l.updCheckTitle;
+      icon = Icons.refresh;
+    }
+
+    return ListTile(
+      leading: Icon(icon, color: old ? context.c.accent : context.c.sub),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: old ? context.c.accent : null,
+        ),
+      ),
+      subtitle: sub == null
+          ? null
+          : Text(
+              sub,
+              style: TextStyle(fontSize: 14, color: context.c.guideInk),
+            ),
+      trailing: _busy
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : (old ? const Icon(Icons.chevron_right, size: 20) : null),
+      // 낡았으면 스토어로 보낸다. 아니면 다시 물어본다 — 누를 것이 없는
+      // 줄은 눌러도 아무 일이 없어 고장으로 읽힌다.
+      onTap: _busy
+          ? null
+          : () {
+              if (old) {
+                unawaited(
+                  launchUrl(
+                    Uri.parse(r!.url ?? appStoreUrl()),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                );
+              } else {
+                unawaited(_ask());
+              }
+            },
+    );
   }
 }
 

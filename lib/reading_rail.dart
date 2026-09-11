@@ -8,12 +8,26 @@
 /// 나타났다 사라지고, 뒤에 아무 눈금도 없어서 '어디쯤'을 말해 주지 못한다.
 /// 손잡이 하나만 떠 있으면 사람은 그것이 위쪽인지 아래쪽인지밖에 못 읽는다.
 ///
-/// 그래서 셋을 둔다.
-///   1. **눈금(track)** — 글 전체. 늘 보인다. 이것이 있어야 손잡이의 자리가
-///      뜻을 갖는다. 눈금이 없는 손잡이는 좌표 없는 점이다.
-///   2. **손잡이(thumb)** — 지금 보고 있는 창. **길이가 곧 분량이다.**
+/// 그래서 둘을 둔다.
+///   1. **손잡이(thumb)** — 지금 보고 있는 창. **길이가 곧 분량이다.**
 ///      짧으면 긴 글이고 길면 짧은 글이다. 숫자를 안 읽어도 손이 안다.
-/// 그리고 **책갈피 표시**. core/read_mark.dart 참고.
+///   2. **책갈피 표시** — 사람이 직접 꽂은 표식. core/read_mark.dart 참고.
+///
+/// **길(track)은 안 그린다. 2026-09-11 에 지웠다.**
+///
+/// 처음에는 글 전체를 나타내는 길을 옅게 깔았다. "눈금이 없는 손잡이는
+/// 좌표 없는 점"이라고 여기 적어 두기까지 했다. 틀렸다.
+///
+/// 소유자 판정 — "우측 스크롤바 부분에서 현재 부분만 연회색으로, 위 아래
+/// 지나온 부분, 앞으로 갈 부분은 컬러 없애줘. 애플 메모앱 참고해."
+///
+/// 애플 메모를 열어 보면 길이 없다. 손잡이 하나뿐이다. 그런데도 어디쯤인지
+/// 읽힌다 — **화면의 위아래 모서리가 이미 길 노릇을 하기 때문이다.** 우리가
+/// 그린 길은 그 위에 한 겹 더 그은 선이었고, 글을 읽는 내내 오른쪽에 세로줄
+/// 하나가 서 있는 꼴이었다. 숫자를 뺐던 것과 같은 이유로 이것도 걸린다.
+///
+/// 남길 문장: **화면이 이미 말하고 있는 것을 한 번 더 그리지 마라.**
+/// 그것은 정보가 아니라 소음이다.
 ///
 /// **숫자(62%)는 여기 없다. 일부러 뺐다.**
 ///
@@ -79,7 +93,6 @@ class ReadingRailState extends State<ReadingRail> {
   /// 누르라고 하면 아무도 못 잡는다(애플 권장 44 의 절반 남짓까지 줄인 것은
   /// 이것이 화면 맨 가장자리라 바깥쪽으로 빗나갈 일이 없어서다).
   static const double railW = 26;
-  static const double trackW = 3;
   static const double thumbW = 3;
   static const double thumbWDrag = 5;
   static const double minThumb = 40;
@@ -267,19 +280,8 @@ class ReadingRailState extends State<ReadingRail> {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // 눈금. 늘 있다 — 이것이 '글 전체'다.
-              Positioned(
-                top: pad,
-                height: trackH,
-                right: (railW - trackW) / 2,
-                width: trackW,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: c.sub.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(trackW / 2),
-                  ),
-                ),
-              ),
+              // 길은 안 그린다(2026-09-11, 머리말 참고). trackH 는 손잡이의
+              // 자리를 셈하는 데만 쓴다 — 눈에 보이는 것은 손잡이와 책갈피뿐.
               // 책갈피. 눈금 위에 얹힌 작은 표.
               if (markCenter != null)
                 Positioned(

@@ -66,6 +66,21 @@ abstract class L10n {
   String get seedTag;
   String get shareAppTitle;
   String get rateAppTitle;
+
+  // ---------------- 최신 버전 확인 (2026-09-11) ----------------
+  // 앱이 제 나이를 모르면 사람이 대신 헷갈린다. lib/core/update_check.dart
+  String get updCheckTitle;
+  String get updChecking;
+  String get updLatest;
+
+  /// [v] 는 스토어에 나가 있는 이름(1.6 꼴). 앱 안 버전과 다른 줄기다.
+  String updLatestSub(String v);
+  String get updFound;
+
+  /// [v] 는 받으러 갈 새 판의 이름.
+  String updFoundSub(String v);
+  String get updFailed;
+  String get updFailedSub;
   String get shareAppMsg;
   String get seedBody;
 
@@ -917,6 +932,12 @@ abstract class L10n {
     'seedTag': seedTag,
     'shareAppTitle': shareAppTitle,
     'rateAppTitle': rateAppTitle,
+    'updCheckTitle': updCheckTitle,
+    'updChecking': updChecking,
+    'updLatest': updLatest,
+    'updFound': updFound,
+    'updFailed': updFailed,
+    'updFailedSub': updFailedSub,
     'shareAppMsg': shareAppMsg,
     'seedBody': seedBody,
     'done': done,

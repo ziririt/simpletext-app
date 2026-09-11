@@ -39,6 +39,37 @@ NUM="${2:-$(sed -n 's/^const int appBuild = \([0-9]*\);/\1/p' lib/version.dart)}
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 log "스토어 빌드 $NAME ($NUM)"
 
+# ── 굽기 전 그물: kStoreVersion 이 이번에 붙을 판 이름과 맞는가 ────────
+#
+# 2026-09-11 신설. 설정의 '최신 버전 확인'은 lib/version.dart 의
+# kStoreVersion 을 애플이 알려 주는 스토어 이름과 견준다. 그 상수가
+# 틀린 채 구워지면 **이미 최신인 사람에게 "새 판이 있다"고 말하는 앱**이
+# 나간다. 앱이 거짓말을 하는 것이라 값이 싸지 않다.
+#
+# 굽기 전이 유일하게 값싸게 고칠 수 있는 자리다. 올린 뒤에는 다시 구워
+# 올리는 수밖에 없다. 그래서 여기서 멈춘다.
+#
+# 애플에 못 물어보면(열쇠 없음·네트워크 없음) 막지 않는다 — 빌드를
+# 네트워크에 매다는 쪽이 더 나쁘다. 대신 못 봤다고 말한다.
+STOREV="$(sed -n "s/^const String kStoreVersion = '\(.*\)';/\1/p" lib/version.dart)"
+WANT="$(/usr/bin/python3 tool/submit_next.py --nextname 2>/dev/null | tail -1 | tr -d '[:space:]')"
+if [ -z "$WANT" ]; then
+  log "판 이름을 애플에 못 물어봤다 — kStoreVersion($STOREV) 검사는 건너뛴다"
+elif [ "$STOREV" != "$WANT" ]; then
+  echo "" >&2
+  echo "멈춘다. lib/version.dart 의 kStoreVersion 이 '$STOREV' 인데," >&2
+  echo "이번에 스토어에 붙을 판 이름은 '$WANT' 다." >&2
+  echo "" >&2
+  echo "설정의 '최신 버전 확인'이 이 값을 쓴다. 이대로 구우면 이미 최신인" >&2
+  echo "사람에게 새 판이 있다고 말하는 앱이 된다." >&2
+  echo "" >&2
+  echo "  lib/version.dart 의 kStoreVersion 을 '$WANT' 로 고치고 다시 친다." >&2
+  echo "" >&2
+  exit 1
+else
+  log "kStoreVersion $STOREV — 이번에 붙을 판 이름과 맞다"
+fi
+
 DEFINES="--dart-define=REAL_ADS=true"
 # 열쇠가 다른 계정 홈에 있을 때(예: aladin 이 돌리고 열쇠는 ziririt) 덮어쓸 수 있게.
 SECHOME="${SKY_SECRETS_HOME:-$HOME}"

@@ -53,6 +53,24 @@ class L10nJa extends L10n {
   String get shareAppTitle => 'アプリを共有';
   @override
   String get rateAppTitle => '評価してください';
+
+  // 최신 버전 확인 (2026-09-11)
+  @override
+  String get updCheckTitle => '最新バージョンを確認';
+  @override
+  String get updChecking => '確認中…';
+  @override
+  String get updLatest => '最新バージョンです';
+  @override
+  String updLatestSub(String v) => 'App Store の最新は $v です';
+  @override
+  String get updFound => '新しいバージョンがあります';
+  @override
+  String updFoundSub(String v) => 'App Store に $v があります。タップして更新';
+  @override
+  String get updFailed => '今は確認できません';
+  @override
+  String get updFailedSub => '接続を確認して、もう一度タップしてください';
   @override
   String get shareAppMsg => 'Skyblue Note — 軽くて速いメモアプリ。すべての端末で同期します。';
   @override

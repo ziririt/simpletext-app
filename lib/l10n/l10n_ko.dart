@@ -53,6 +53,24 @@ class L10nKo extends L10n {
   String get shareAppTitle => '앱 공유';
   @override
   String get rateAppTitle => '평가해 주세요';
+
+  // 최신 버전 확인 (2026-09-11)
+  @override
+  String get updCheckTitle => '최신 버전 확인';
+  @override
+  String get updChecking => '확인하는 중…';
+  @override
+  String get updLatest => '최신 버전입니다';
+  @override
+  String updLatestSub(String v) => '스토어 최신은 $v 입니다';
+  @override
+  String get updFound => '새 버전이 나왔습니다';
+  @override
+  String updFoundSub(String v) => '스토어 최신은 $v 입니다. 눌러서 업데이트하세요';
+  @override
+  String get updFailed => '지금은 확인할 수 없습니다';
+  @override
+  String get updFailedSub => '연결을 확인하고 다시 눌러 주세요';
   @override
   String get shareAppMsg => '스카이블루 노트 — 가볍고 빠른 노트, 모든 기기에서 동기화됩니다.';
   @override

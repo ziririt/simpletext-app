@@ -54,6 +54,25 @@ class L10nEs extends L10n {
   String get shareAppTitle => 'Compartir la app';
   @override
   String get rateAppTitle => 'Valóranos';
+
+  // 최신 버전 확인 (2026-09-11)
+  @override
+  String get updCheckTitle => 'Buscar actualizaciones';
+  @override
+  String get updChecking => 'Comprobando…';
+  @override
+  String get updLatest => 'Ya tienes la última versión';
+  @override
+  String updLatestSub(String v) => 'El App Store tiene la $v';
+  @override
+  String get updFound => 'Hay una nueva versión';
+  @override
+  String updFoundSub(String v) =>
+      'La versión $v está en el App Store. Toca para actualizar';
+  @override
+  String get updFailed => 'Ahora no se puede comprobar';
+  @override
+  String get updFailedSub => 'Revisa la conexión y vuelve a tocar';
   @override
   String get shareAppMsg =>
       'Skyblue Note — una app de notas ligera y rápida que se sincroniza en todos tus dispositivos.';
