@@ -143,6 +143,12 @@ install_try() { # $1=udid $2=이름 $3=시한(초)
   wait "$pid"
 }
 
+# 사람이 보는 이름과 빌드 번호. 둘 다 lib/version.dart 한 곳에서 나온다
+# (2026-09-12 개편 — HANDOFF 3.16). pubspec 의 version 은 기계용 값이라
+# 여기서 안 쓴다.
+store_name() { sed -n "s/^const String appVersion = '\(.*\)';/\1/p" lib/version.dart; }
+build_no()   { sed -n 's/^const int appBuild = \([0-9]*\);/\1/p' lib/version.dart; }
+
 # 기기에 깔린 판을 묻는다. 안 깔려 있으면 빈 글자.
 installed_version() { # $1=udid
   xcrun devicectl device info apps --device "$1" \
@@ -197,7 +203,10 @@ install_to() { # $1=udid $2=이름
   local V
   V=$(installed_version "$1")
   if [ -n "$V" ]; then
-    log "$2 확인: 기기가 $V 라고 답했다"
+    # 기기가 답하는 것은 **꾸러미 안의 값**(3.245.0.245)이지 사람이 보는
+    # 이름(1.7)이 아니다. 둘 다 찍어 준다 — 이 로그를 읽는 사람이 다시
+    # 헷갈리면 2026-09-12 에 이름을 하나로 줄인 뜻이 없다(HANDOFF 3.16).
+    log "$2 확인: 기기가 $V 라고 답했다 (= 스토어 이름 $(store_name) · 빌드 $(build_no))"
     return 0
   fi
   # 앱이 없다. 있다가 없어진 것이면 사고다 — 조용히 넘어가면 안 된다.
@@ -288,7 +297,7 @@ if [ "$WHAT" = "web" ]; then
   fi
 fi
 
-log "끝. 버전: $(grep -m1 appVersion lib/version.dart)"
+log "끝. 버전 $(store_name) (빌드 $(build_no)) — 앱 화면에 ver.$(store_name) ($(build_no)) 로 찍힌다"
 
 # ── 새 기기를 처음 붙일 때 (2026-08-16 아이패드에서 겪은 순서) ──────
 # 세 단계에서 연달아 막혔다. 다음에 새 기기를 붙이면 그대로 밟으면 된다.
