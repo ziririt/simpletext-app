@@ -16630,7 +16630,7 @@ class _UpdateCheckRowState extends State<_UpdateCheckRow> {
     final r = _seen;
     final v = r == null
         ? UpdateVerdict.unknown
-        : verdictFor(kStoreVersion, r.version);
+        : verdictFor(appVersion, r.version);
     final old = v == UpdateVerdict.outdated;
 
     String title;

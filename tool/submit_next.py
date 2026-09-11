@@ -43,12 +43,12 @@ BUNDLE = 'com.ziririt.simpletext'
 
 
 def store_version_in_repo():
-    """lib/version.dart 의 kStoreVersion. 못 읽으면 None."""
+    """lib/version.dart 의 appVersion(= 스토어에 보이는 이름). 못 읽으면 None."""
     import re
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
         with open(os.path.join(here, 'lib', 'version.dart'), encoding='utf-8') as f:
-            m = re.search(r"kStoreVersion\s*=\s*'([^']+)'", f.read())
+            m = re.search(r"appVersion\s*=\s*'([^']+)'", f.read())
         return m.group(1) if m else None
     except Exception:  # noqa: BLE001
         return None
@@ -193,7 +193,7 @@ def next_name_only():
     """이번에 스토어에 붙을 판 이름 한 줄만 찍는다 (2026-09-11 신설).
 
     tool/appstore_ios.sh 가 **굽기 전에** 이것을 물어, lib/version.dart 의
-    kStoreVersion 과 맞는지 본다. 설정의 '최신 버전 확인'이 그 상수를 쓰기
+    appVersion 과 맞는지 본다. 설정의 '최신 버전 확인'이 그 값을 쓰기
     때문에, 틀린 값이 구워지면 이미 최신인 사람에게 "새 판이 있다"고
     말하는 앱이 나간다. 그걸 사람의 기억으로 막지 않는다.
 
@@ -235,7 +235,7 @@ def prepare():
     got = store_version_in_repo()
     if got and got != want:
         print('\n' + '!' * 60)
-        print('lib/version.dart 의 kStoreVersion 이 %s 인데 이 판은 %s 다.' % (got, want))
+        print('lib/version.dart 의 appVersion 이 %s 인데 이 판은 %s 다.' % (got, want))
         print("설정의 '최신 버전 확인'이 이 값을 쓴다. 이대로 나가면 이미")
         print('최신인 사람에게 새 판이 있다고 말하게 된다.')
         print('빌드를 다시 구워 올리는 것이 옳다.')
