@@ -496,6 +496,19 @@ class _TopBannerBarState extends State<TopBannerBar> {
     }
     // 결제 화면·첫인사 화면 위에는 광고를 얹지 않는다(AdFreeScope).
     if (AdsService.instance.adFree.value > 0) return _gone();
+    // 키보드가 올라와 있으면 비킨다(2026-09-11 소유자 지시).
+    //
+    // 글을 쓰는 동안에는 위에 배너, 아래에 자판이라 남는 세로 공간이 몇 줄밖에
+    // 안 됐다. 소유자 말 — "편집 공간이 너무 좁아서 답답했다."
+    //
+    // 이 한 줄이 그 문제를 고친다. _gone() 은 그리기를 멈출 뿐 광고를 부수지
+    // 않는다(위의 AdFreeScope 와 같은 길). 그래서 자판을 올렸다 내려도 새
+    // 광고를 청하지 않는다 — 청했다면 그것이 요청 낭비이자, 내릴 때마다 빈
+    // 자리가 몇 초씩 생기는 원인이 된다.
+    //
+    // 이 위젯은 네비게이터보다 위에 있어서 Scaffold 가 걷어 내기 전의 날것
+    // 그대로의 viewInsets 를 본다. 화면마다 따로 물을 필요가 없다.
+    if (MediaQuery.viewInsetsOf(context).bottom > 0) return _gone();
     if (!AdsService.instance.ready.value) return _gone();
     _ensure();
     final native = _nativeOn ? _native : null;

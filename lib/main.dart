@@ -928,9 +928,32 @@ class SimpleTextApp extends StatelessWidget {
             // 상태표시줄 여백의 임자: 배너가 떠 있으면 배너가 가진다(배너 안에서
             // SafeArea를 쓴다). 그때 아래 화면들의 위쪽 여백은 걷어 준다 —
             // 안 걷으면 여백이 두 겹으로 붙어 화면이 아래로 밀린다.
+            //
+            // 키보드가 올라오면 배너는 위로 비켜 준다(2026-09-11 소유자 지시 —
+            // "편집할 때 헤더 위에는 배너가 뜨고, 본문 하단엔 키보드도 아래에
+            // 뜨니까 편집 공간이 너무 좁아서 답답했다"). 글을 쓰는 동안 세로
+            // 공간은 가장 비싼 자원이다. 배너는 그때 가장 안 읽히는 것이기도
+            // 하다 — 손가락도 눈도 자판과 커서에 가 있다.
+            //
+            // 비키는 것은 **그리기를 멈추는 것**이지 광고를 부수는 것이 아니다.
+            // 부수면 키보드를 올렸다 내릴 때마다 새 광고를 청하게 되고, 그것이
+            // 화면마다 배너를 달았다가 겪은 그 사고(위 문단)의 되풀이다.
+            // 광고 덩어리는 _TopBannerBarState 안에 그대로 살아 있다.
+            //
+            // AnimatedSize 의 기준을 bottomCenter 로 둔다 — 높이가 줄 때 띠가
+            // 위로 밀려 올라가고, 돌아올 때 아래로 내려온다. topCenter 로 두면
+            // 제자리에서 잘려 나가는 것처럼 보여 '비켰다'가 아니라 '사라졌다'로
+            // 읽힌다.
             w = Column(
               children: [
-                const TopBannerBar(),
+                ClipRect(
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.bottomCenter,
+                    child: const TopBannerBar(),
+                  ),
+                ),
                 Expanded(
                   child: ValueListenableBuilder<bool>(
                     valueListenable: AdsService.instance.bannerVisible,
