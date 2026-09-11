@@ -51,3 +51,8 @@ if [ "$fail" -ne 0 ]; then
 fi
 echo "전부 통과. 푸시해도 됩니다."
 echo "(단, 푸시가 끝이 아니라 CI 통과가 끝입니다 — Actions에서 결과를 확인하세요)"
+
+# 맨 마지막에 둔다. 이것이 화면에 남는 마지막 글자여야 눈에 들어온다.
+# 막지 않는다(confirm_check.py 머리말 참고) — 막아야 할 것은 담당자의
+# 망각이지 소유자의 침묵이 아니다.
+python3 tool/confirm_check.py || true
