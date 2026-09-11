@@ -1,4 +1,4 @@
-Setzen Sie in einer langen Notiz ein Scroll-Lesezeichen. Beim nächsten Öffnen geht es dort weiter.
-Eine schmale Leiste rechts zeigt still, wo Sie sind und wie viel noch kommt.
-Größe, Stärke, Zeilenabstand, Ränder, Ausrichtung und Papier — direkt beim Lesen. Auf Wunsch nur für diese Notiz.
-Der Wechsel zwischen Liste und Notiz gleitet flüssig.
+Wenn die Tastatur erscheint, weicht das Werbeband oben zur Seite. Der Platz gehört wieder dem Schreiben.
+Die beiden schwebenden Tasten sind kleiner und heller geworden und sitzen ganz unten, außerhalb des Textes.
+Die Lesespur rechts ist ruhiger geworden: Nur deine Position bleibt, die Linie dahinter ist weg.
+In den Einstellungen kannst du jetzt nach der neuesten Version suchen und direkt aktualisieren.

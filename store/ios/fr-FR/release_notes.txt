@@ -1,4 +1,4 @@
-Posez un marque-page de défilement dans une note longue. À la prochaine ouverture, vous reprenez là où vous étiez.
-Une fine règle à droite indique discrètement où vous en êtes et ce qu'il reste.
-Taille, graisse, interligne, marges, alignement et papier — réglables pendant la lecture, et pour cette note seule si vous voulez.
-Le passage entre la liste et une note glisse sans à-coups.
+Quand le clavier apparaît, le bandeau publicitaire du haut s'efface. Cette place revient à votre texte.
+Les deux boutons flottants sont plus petits et plus discrets, et descendent tout en bas, hors du texte.
+Le repère de lecture à droite s'est fait plus discret : seule votre position reste, le trait a disparu.
+Les Réglages peuvent maintenant vérifier la dernière version et vous mener droit à la mise à jour.

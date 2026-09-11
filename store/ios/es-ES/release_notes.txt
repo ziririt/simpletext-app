@@ -1,4 +1,4 @@
-Pon un marcador de desplazamiento en una nota larga. La próxima vez empiezas donde lo dejaste.
-Una regla fina a la derecha indica sin ruido dónde estás y cuánto queda.
-Tamaño, grosor, interlineado, márgenes, alineación y papel: se ajustan mientras lees, y solo para esta nota si quieres.
-El paso entre la lista y una nota se desliza con suavidad.
+Cuando aparece el teclado, la barra de anuncios de arriba se aparta. Ese espacio vuelve a tu escritura.
+Los dos botones flotantes son más pequeños y tenues, y bajan al borde inferior para no tapar el texto.
+La guía de lectura de la derecha es más discreta: solo queda tu posición; la línea ha desaparecido.
+Desde Ajustes puedes comprobar la última versión e ir directo a la actualización.

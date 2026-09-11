@@ -1,4 +1,4 @@
-Coloque um marcador de rolagem numa nota longa. Da próxima vez você começa de onde parou.
-Uma régua fina à direita mostra, sem barulho, onde você está e quanto falta.
-Tamanho, espessura, entrelinha, margens, alinhamento e papel: dá para ajustar enquanto lê, e só nesta nota se quiser.
-A troca entre a lista e uma nota desliza com suavidade.
+Quando o teclado sobe, a faixa de anúncio do topo sai da frente. Esse espaço volta para a sua escrita.
+Os dois botões flutuantes ficaram menores e mais suaves, e desceram para a base da tela, longe do texto.
+A régua de leitura à direita ficou mais silenciosa: só a sua posição permanece, a linha saiu.
+Nos Ajustes dá para verificar a versão mais recente e ir direto para a atualização.
