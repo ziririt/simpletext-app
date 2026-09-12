@@ -58,3 +58,11 @@ store/screenshots/
 # 저장소에 안 넣는다 — 비밀이 아닌 것과 남에게 줘도 되는 것은 다르다.
 /ios/Flutter/Skyblue.xcconfig
 /macos/Runner/Configs/Skyblue.xcconfig
+
+# 서비스 계정 열쇠 (2026-09-12). 열쇠의 제자리는 ~/.appstoreconnect/ 이고
+# 저장소 안에는 애초에 두지 않는다. 이 줄들은 그래도 실수로 끌어다 놓았을 때를
+# 위한 두 번째 그물이다 — 한 번 공개 저장소에 올라가면 지워도 이력에 남는다.
+*service-account*.json
+play-service-account*.json
+*.p8
+*.p12
