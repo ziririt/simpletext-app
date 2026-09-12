@@ -531,6 +531,47 @@ w = Column(children: [
 **시험** — `test/core/view_prefs_test.dart` 12개. 두 층 섞기, 다른 칸만
 남기기, 저장·되살리기, 망가진 저장본, 빈 줄 찾기.
 
+### 3.18 안드로이드는 맥에서 구울 수 있다 — 자바는 있다 (2026-09-12)
+
+**아침에 내가 "이 맥에 자바가 없다"고 말했다. 틀렸다.**
+
+`/usr/libexec/java_home` 과 `java -version` 이 "Unable to locate a Java
+Runtime" 을 돌려주기에 없는 줄 알았다. 그건 macOS 의 **안내용 껍데기**가
+내는 말이다. 실제 자바는 안드로이드 스튜디오 안에 들어 있었다.
+
+```
+/Applications/Android Studio.app/Contents/jbr/Contents/Home   (Java 21)
+```
+
+그 한 번의 오판 때문에 오전에 `build.gradle.kts` 를 고치려다 되돌렸다.
+**시스템이 "없다"고 말할 때, 그것이 "설치된 적이 없다"인지 "기본 자리에
+없다"인지는 다른 말이다.** 앱 번들 안까지 찾아보고 나서 없다고 말한다.
+
+**AAB 굽는 길** (2026-09-12 13:31~13:34 실측, 149초)
+
+```bash
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+. ~/development/_patch/skyblue_keys.env      # 구글 로그인 아이디
+flutter build appbundle --release \
+  --dart-define=REAL_ADS=true \
+  --dart-define=GOOGLE_WEB_CLIENT_ID=… --dart-define=GOOGLE_IOS_CLIENT_ID=…
+```
+
+- 결과: `build/app/outputs/bundle/release/app-release.aab` (77MB)
+- 서명: `android/key.properties` + `~/.appstoreconnect/skyblue-upload.jks`.
+  `jarsigner -verify` 로 서명 확인까지 했다 — **jar verified**
+- 판: pubspec 에서 그대로 온다. 3.18.0 / versionCode 247
+- 지난번 로컬 AAB 는 2026-08-26, 그때 빌드 번호가 173 이었다. 247 이 그보다
+  크니 구글이 받는다(구글은 versionCode 만 본다 — 이름은 안 본다)
+
+**아직 못 하는 것: 플레이 업로드.** 서비스 계정 열쇠가 없어 사람이 플레이
+콘솔에서 올려야 한다. 열쇠를 붙이면 자동이 된다 — 그 일은 따로 예약해 뒀다.
+
+> 남길 문장: **"없다"는 말은 두 가지다.** 설치된 적이 없는 것과, 내가 본
+> 자리에 없는 것. 둘을 가르지 않고 "없다"고 보고하면 다음 사람이 그 오판을
+> 그대로 물려받는다.
+
 ### 3.17 손에 든 것이 어느 판인지 화면이 말해야 한다 (2026-09-12)
 
 **같은 원인으로 이틀 동안 두 번 겪었다.**
