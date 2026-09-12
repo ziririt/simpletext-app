@@ -1,6 +1,6 @@
 # HANDOFF — Skyblue Note (simpletext_app)
 
-최종 갱신: 2026-09-09 (KST, 두 번째)
+최종 갱신: **2026-09-12 15:35 KST** (맥 `TZ=Asia/Seoul date` 실측)
 이 문서는 누적 기록이 아니라 **현재 상태 한 장**이다. 다음 담당자는 이 문서 하나만 읽고 바로 이어서 작업할 수 있어야 한다.
 갱신할 때는 밑에 덧붙이지 말고 **통째로 덮어쓴다.**
 
@@ -86,8 +86,59 @@
 커밋·푸시·CI)과 맥이 필요한 일(빌드·설치·스토어)을 갈라서, 못 한 것은
 못 했다고 적어라.
 
-읽는 차례: 이 문서 → `PENDING.md`(소유자가 아직 답 안 한 것) →
-`CLAUDE.md`(변하지 않는 규칙).
+읽는 차례: **`_ops/STATUS.md`**(맥이 잰 오늘의 현황) → 이 문서 →
+`PENDING.md`(소유자가 아직 답 안 한 것) → `CLAUDE.md`(변하지 않는 규칙).
+
+---
+
+## 0-3. 처음 이 저장소를 여는 사람의 첫 30분 (2026-09-12 신설)
+
+**이 절의 합격 기준은 하나다 — 이걸 따라 하면 30분 안에 일을 시작할 수 있는가.**
+아래를 순서대로 하면 된다. 도중에 막히면 그 자리에 **왜 막혔는지 한 줄 적고** 다음으로 간다.
+
+**1) 손이 닿는지 본다 (2분)**
+
+```
+ls ~/development/simpletext_app        # 이 저장소
+ls ~/Developer/_ops                    # 네 프로젝트 공용 바닥
+TZ=Asia/Seoul date                     # 지금 몇 시인지. 컨테이너 시계는 UTC 다
+```
+
+안 보이면 **연결된 폴더가 다른 것**이다. 유닉스 권한 문제가 아닐 수 있다(§2.1).
+`_ops` 가 안 보이면 그것 없이 진행해도 된다 — 이 문서가 이긴다.
+
+**2) 오늘의 현황을 3분에 읽는다**
+
+```
+cat ~/Developer/_ops/STATUS.md         # 맥이 하루 두 번 스스로 잰 값. [어긋남] 이 있으면 그게 오늘 볼 일
+git -C ~/development/simpletext_app log --oneline -10
+git -C ~/development/simpletext_app status
+```
+
+**문서와 실제가 어긋나면 실제를 믿고 문서를 고친다.**
+
+**3) 이 문서를 처음부터 끝까지 읽는다 (15분)**
+
+길다. 그래도 읽어야 한다. 여기 적힌 것은 대부분 **누군가 한 번 데인 것**이다.
+급하면 §1(한 장 요약) → §4(하다 만 것) → §6(조심할 점) 순으로 읽고 나머지는 필요할 때 찾는다.
+
+**4) `PENDING.md` 를 읽고 첫 답변에 내민다 (3분)**
+
+소유자가 아직 답하지 않은 확인이다. **첫 답변에서 내밀지 않으면 영영 안 내민다.**
+
+**5) 검사가 도는지 본다 (5분)**
+
+```
+cd ~/development/simpletext_app && bash tool/verify.sh
+```
+
+**"전부 통과. 푸시해도 됩니다."** 가 나오면 준비 끝이다.
+`flutter` 가 없는 환경이면 analyze·test 를 건너뛴다 — 정상이다. CI 가 대신 본다.
+
+**6) 일을 시작하기 전에 한 줄 적는다**
+
+`_ops/BOARD.md` 0절에 **시작 시각과 무엇을 만지는지** 한 줄. 끝나면 지운다.
+같은 계정에서 두 세션이 동시에 도는 것이 일상이라, 그 한 줄이 유일한 신호다.
 
 ---
 
@@ -102,18 +153,24 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.18+247** (= pubspec `3.18.0+247`. 앱스토어 이름과 같은 값) (`pubspec.yaml`, `lib/version.dart`)
-- App Store 마케팅 버전: **1.7 — 2026-09-11 승인·출시됨(READY_FOR_SALE), 붙은 빌드 244.**
+- 현재 버전: **3.18 (빌드 247)**. `lib/version.dart` 의 `appVersion` 하나가 유일한 원본이고
+  `pubspec.yaml` 은 거기서 옮겨 적는다(`3.18.0+247`). 어긋나면 `tool/version_check.py` 가 막는다.
+  **이름은 하나다** — 앱스토어 화면·설정 화면·꾸러미 안이 전부 같은 값이다(§3.16, §3.16-1).
+  · `kStoreVersion` 은 **2026-09-12 에 지웠다.** 옛 문서가 "1.8 로 올려 둬라"라고 말하면 그건 낡은 것이다.
+  · 시험판에는 화면에 `· DEV` 가 붙는다. 스토어로 갈 판에만 안 붙는다(§3.17).
+- App Store: **1.7 — 2026-09-11 승인·출시됨(READY_FOR_SALE), 붙은 빌드 244.**
   **낸 지 네 시간 만에 나갔다. 빌드 교체 없이 한 번에 통과한 첫 판이다.**
   내용: 자판 올라오면 배너 비킴 + 떠 있는 단추 작고 옅게 맨 아래로
   + 읽기 눈금에서 길 제거 + 설정의 '최신 버전 확인'
   앞 판 1.6(빌드 240)은 2026-09-10 출시 — 스크롤 책갈피·보기 설정·광고 구조.
   225 → 230 → 234 → 237 → 240 으로 네 번 갈아 끼운 판이었다(§4.1-4, §4.1-5).
-  (스토어 이름 1.7 과 앱 버전 3.17.22 는 **다른 계통**이다. 헷갈리지 말 것)
+  **다음에 낼 판의 이름은 `3.18` 이다** — 1.8 이 아니다. 이름을 합쳤기 때문이다.
   출시 방식은 `releaseType = AFTER_APPROVAL` — 승인되면 사람 손 없이 바로 나간다.
-  **`lib/version.dart` 의 `kStoreVersion` 은 다음 스토어 판 이름으로 올려 둔다**(§3.12).
-  지금 1.7 이 나갔으니 다음 스토어 빌드를 굽기 전에 **1.8** 로 올려야 한다.
-  안 올리면 `tool/appstore_ios.sh` 가 굽기 전에 멈춘다 — 그러라고 만든 문이다.
+- Google Play: **`247 (3.18.0)` 을 2026-09-12 15:00 KST 에 비공개 테스트 트랙으로 검토 제출했다.**
+  직전 출시판은 `42 (0.3.80)`(2026-08-17). 신규 설치 25.8MB. 검토는 보통 7일 안.
+  · 개발자 id `5848399056166882431` · 앱 id `4972832869699354657`
+  · 프로덕션 승격 조건이 남아 있다 — **테스터 12명 × 연속 14일**
+  · 아직 손으로 올린다. 플레이 서비스 계정 열쇠가 생기면 자동이 된다(§4 참조)
 - 소개 페이지: https://ezlong.com/skybluenote/
 
 자매 프로젝트(별도 저장소, 자주 같이 건드린다)
@@ -122,6 +179,14 @@
   `ziririt/flipzen-weather-source`, App Store `id6793780938`, Play `com.ezlong.flipzenweather`.
   소개 페이지 https://ezlong.com/longtime/
 - **ezlong** — 호스팅 저장소. `~/Developer/ezlong`, `ziririt/ezlong`. push하면 Firebase Hosting 자동 배포.
+- **심플텍스트 웹 프로토타입** — `~/development/simpletext`, `ziririt/simpletext` **PUBLIC**.
+  **이 앱과 짝이다.** 정리 규칙은 두 곳에 같은 내용으로 있다 — 여기 `lib/core/tidy_engine.dart`,
+  거기 `index.html` 안의 JS 엔진. **한쪽만 고치면 같은 글을 넣었는데 결과가 달라진다.**
+  실제로 2026-08-14 작업분이 거기서 한 달 동안 커밋되지 않아 대칭이 깨져 있었다(2026-09-12 발견·수습).
+  규칙은 그 저장소 `CLAUDE.md` 에 있다. **판 번호는 대칭이 아니다** — 거기는 `0.2.x.1` 계보다.
+- **`~/Developer/_ops`** — 네 프로젝트 공용 바닥. `ziririt/_ops` **PRIVATE**.
+  세션을 시작하면 `_ops/STATUS.md`(맥이 하루 두 번 스스로 재는 현황)와 `_ops/RULES.md` 를 읽는다.
+  **충돌하면 이 저장소의 문서가 이긴다.** `_ops` 는 바닥이지 천장이 아니다.
 
 소유자는 개발자가 아니다. 26년차 웹 기획자이며 코드를 직접 쓰지 않는다.
 담당자가 코드·빌드·스토어 제출까지 전부 대행한다. 보고는 한국어, 완료 보고는 짧게, 원인 분석은 깊게.
@@ -932,14 +997,22 @@ if (MediaQuery.viewInsetsOf(context).bottom > 0) return _gone();
 가 **영원히** 참이 된다. 고장 났는데 고장 난 티가 안 나는 종류다.
 
 > **비교하려면 같은 자를 들어야 한다.** 그래서 `lib/version.dart` 에
-> `kStoreVersion` 을 새로 두고, 그것과 견준다.
+> `kStoreVersion` 을 새로 두고, 그것과 견줬다.
+
+> **[2026-09-12 정정 — 이 아래는 이제 옛날 이야기다]**
+> 같은 날 오후에 **이름을 아예 하나로 합쳤다**(§3.16, §3.16-1). 스토어 이름과
+> 앱 이름이 같은 값이 됐으니 **견줄 쪽지가 필요 없어졌고, `kStoreVersion` 은 지웠다.**
+> 지금은 `appVersion` 을 그대로 애플 응답과 견준다.
+> 아래 문단은 **왜 그런 장치가 필요했는지**를 남겨 둔 기록으로 읽어라.
+> 다만 `--checkname` 으로 굽기 전에 막는 장치는 **지금도 살아 있다** — 대상이
+> `kStoreVersion` 이 아니라 `appVersion` 으로 바뀌었을 뿐이다.
 
 **사람의 기억에 맡기지 않는다.** 그 상수는 스토어 판이 바뀔 때마다
 같이 올려야 하는데, 그런 것은 반드시 잊는다. 그래서 굽기 전에 막는다.
 
 - `tool/submit_next.py --nextname` — 이번에 붙을 판 이름을 한 줄로 찍는다
-- `tool/appstore_ios.sh` 가 굽기 **전에** 이것을 물어 `kStoreVersion` 과
-  견주고, 어긋나면 거기서 멈춘다. 올린 뒤에는 다시 굽는 수밖에 없으니
+- `tool/appstore_ios.sh` 가 굽기 **전에** 이것을 물어 저장소의 이름과
+  견주고(`--checkname`. 2026-09-12 이후로는 `appVersion`), 어긋나면 거기서 멈춘다. 올린 뒤에는 다시 굽는 수밖에 없으니
   값싸게 고칠 수 있는 자리는 거기뿐이다
 - 애플에 못 물어보면(네트워크·열쇠 없음) 막지 않고 건너뛴다고 말한다.
   빌드를 네트워크에 매다는 쪽이 더 나쁘다
@@ -1535,13 +1608,17 @@ open -a Xcode ~/development/simpletext_app/macos/Runner.xcworkspace
 1. **환경 확인.** 연결 폴더가 `/Users/ziririt/development`, `/Users/ziririt/Developer` 둘인지 본다.
    파일이 안 읽히면 §2.1의 소유권 문제다. `ls -l`로 소유자부터 본다
 2. **저장소 상태 확인.** `git status`, `git log --oneline -10`
-3. **애플 심사 결과 확인** — `python3 tool/review_status.py`
-   - 승인되면 출시 후 상태 확인, HANDOFF.md 갱신
+3. **`PENDING.md` 의 열린 항목을 첫 답변에 내민다.** 침묵은 동의가 아니다(§0-1)
+4. **애플 심사 결과 확인** — `/usr/bin/python3 tool/review_status.py`
+   - 승인되면 출시 후 상태 확인, 이 문서 갱신
    - 다시 거절되면 사유를 그대로 읽고 §4.1-1을 먼저 읽은 뒤 움직인다.
      **취소 버튼에 손대기 전에 상품이 걸려 있는지부터 본다**
-4. **Play 비공개 테스터 추가** — 소유자에게 클릭을 요청하거나 Play Developer API 경로 확보
-5. **테스터 12명 모집 지원** — 홍보글의 남은 인원 숫자 채우기, Play 옵트인 URL 전환 제안
-6. 승인 나면 §4.4의 옵션 항목을 소유자에게 물어보고 진행
+   - **이미 `IN_REVIEW` 인 것은 취소하지 않는다**(§4.1-5). 되돌릴 수 없다
+5. **구글 플레이 검토 결과 확인** — 2026-09-12 15:00 에 낸 `247 (3.18.0)` 이 어떻게 됐는지.
+   조회 도구가 아직 없어서 **콘솔을 눈으로 봐야 한다**(게시 개요). 열쇠가 생기면 `tool/play_status.py` 를 만든다
+6. **테스터 12명 모집 지원** — 홍보글의 남은 인원 숫자 채우기, Play 옵트인 URL 전환 제안.
+   프로덕션 승격은 **12명 × 연속 14일**이라 사람이 모여야 시계가 돈다
+7. 승인 나면 §4.4의 옵션 항목을 소유자에게 물어보고 진행
 
 ## 6. 조심할 점 / 건드리면 안 되는 것
 
@@ -1564,6 +1641,25 @@ open -a Xcode ~/development/simpletext_app/macos/Runner.xcworkspace
 - 소유자의 금융·계좌·세금 데이터를 대신 입력하지 않는다
 - App Store 리뷰를 대신 써 주지 않는다
 - iPhone 배포는 "물어보지 말고 넣어도 된다"로 지침이 바뀌어 있다. 매번 확인 요청하지 말 것
+
+### 열쇠와 비밀이 어디에 있나 — **자리만 적는다. 값은 어디에도 적지 않는다**
+
+다음 사람이 "그게 어디 있지"로 시간을 버리지 않게 자리만 적어 둔다.
+**아래 파일들의 내용을 채팅·문서·커밋 어디에도 옮기지 않는다.** 저장소로 복사하지도 않는다.
+
+- `~/.appstoreconnect/` — 애플 API 개인 열쇠(`AuthKey_*.p8`)와 헬퍼(`asc.py`), 안드로이드 업로드 키스토어(`skyblue-upload.jks`).
+  **폴더 700 / `.p8` 600** 으로 잠겨 있다(2026-09-12. 그 전에는 644 라 같은 맥의 다른 계정이 읽을 수 있었다).
+  · **이 폴더는 플립시계 앱과 공유한다.** 심사 상태를 조회하면 두 앱이 같이 나온다 —
+    앱 id 로 거른다(플립시계 `6793780938`, 스카이블루 `6802185169`)
+  · 잠근 뒤 다른 macOS 계정(`aladin`)의 조회 하나가 깨졌다. **되돌리지 않는다.**
+    그쪽에 필요한 것은 열쇠가 아니라 답이고, 답은 `_ops/STATUS.md` 에 하루 두 번 적힌다
+- `android/key.properties` — 안드로이드 서명 열쇠의 자리와 비밀번호. **`.gitignore` 에 있다.** 출력하지 않는다
+- `~/development/_patch/skyblue_keys.env` — 구글 클라이언트 id 두 개.
+  `tool/appstore_ios.sh` 와 안드로이드 빌드가 여기서 읽어 `--dart-define` 으로 붙인다
+- AI 열쇠(제미나이·클로드·챗GPT·그록)는 **앱에 없다.** 이용자가 자기 기기에 넣는다(BYOK).
+  담당자가 요청·출력·입력하지 않는다
+- **없는 것** — 플레이 개발자 API 서비스 계정 열쇠. 그래서 안드로이드는 아직 손으로 올린다.
+  만드는 것은 **소유자 몫**이다(구글 클라우드 로그인이 필요하다)
 
 ### 공개 저장소 위생
 
@@ -1594,11 +1690,15 @@ open -a Xcode ~/development/simpletext_app/macos/Runner.xcworkspace
 
 - **l10n**: 로케일 파일 9개(ko, en, ja, zh_hans, zh_hant, es, fr, de, pt).
   추상 `String get X;`를 추가하면 **`all` 맵과 9개 파일 전부**에 넣어야 한다.
-  **파라미터가 있는 메서드는 `all` 맵 제외.** 현재 키 522개
+  **파라미터가 있는 메서드는 `all` 맵 제외.**
+  **키 개수는 여기 적지 않는다** — 늘어나는 값이라 적는 순간 낡는다. `tool/l10n_check.py` 가 센다
 - Dart 소스에 이스케이프된 `\n` 문자열을 그대로 쓰지 않는다
-- 버전은 **두 군데**를 같이 올린다: `pubspec.yaml`의 `version:`, `lib/version.dart`의 `appVersion`·`appBuild`.
-  어긋나면 `tool/version_check.py`가 CI에서 잡는다.
+- 버전은 **한 군데에서 정하고 한 군데로 옮겨 적는다.** 정하는 곳은 `lib/version.dart` 의
+  `appVersion`·`appBuild` 하나뿐이고, `pubspec.yaml` 의 `version:` 은 그 값을 옮긴 것이다
+  (`3.18` → `3.18.0+247`). 어긋나면 `tool/version_check.py` 가 CI에서 잡는다.
   **`appBuild`는 절대 내리지 않는다** — iOS는 빌드 번호가 오를 때만 `NSUbiquitousContainers`를 다시 읽는다
+  · **애플은 이름을 자리마다 정수로 견준다.** `3.3` 은 `3.17.22` 보다 **작다**. 자릿수를 줄이면 `ERROR ITMS-90062`
+  · 구글 플레이는 반대다. `versionName` 에 순서 제약이 없고 `versionCode` 만 오르면 된다
 - ATT 순서 (§3.2). 건드리면 반려된다
 - `tidy_engine` 테스트의 `stripHeadings` 함정 (§3.3)
 - `asc.api()`는 json이 아니라 **튜플 `(status, json)`**을 반환한다. `.get()` 부르면 죽는다
@@ -1622,6 +1722,13 @@ tool/appstore_ios.sh      # App Store용 iOS 빌드
 tool/screenshots.sh       # 스토어 스크린샷 촬영
 tool/android_target.sh    # 안드로이드 타깃 확인
 
+# 안드로이드 스토어용 꾸러미(AAB) — 자바 자리를 손으로 일러 줘야 한다
+export JAVA_HOME=/Applications/Android\ Studio.app/Contents/jbr/Contents/Home
+flutter build appbundle --release --dart-define=REAL_ADS=true \
+  --dart-define=GOOGLE_WEB_CLIENT_ID=… --dart-define=GOOGLE_IOS_CLIENT_ID=…
+# → build/app/outputs/bundle/release/app-release.aab (2분 반, 서명까지 붙는다)
+# id 두 개는 ~/development/_patch/skyblue_keys.env 에 있다
+
 /usr/bin/python3 tool/review_status.py          # 심사 상태 확인 (두 앱 다 나온다)
 
 /usr/bin/python3 tool/submit_next.py            # 지금 상태만 본다
@@ -1644,6 +1751,16 @@ tool/android_target.sh    # 안드로이드 타깃 확인
 
 스토어 스크립트는 반드시 `/usr/bin/python3`. 홈브루 파이썬에는 `jwt` 모듈이 없다.
 
+**자바가 "없다"는 보고를 믿지 마라.** `/usr/libexec/java_home` 은 안드로이드 스튜디오가 들고 있는
+자바를 못 본다 — 없다고 답하는 껍데기다. 실제 자바는 위 경로에 있다(Java 21). 2026-09-12 에
+"이 맥에는 자바가 없다"고 잘못 보고해 설정을 되돌리는 헛일을 했다.
+
+**플레이 콘솔에 올리는 것은 스크립트가 없다. 손으로 한다.** 그 절차의 함정은
+`_ops/RULES.md` 10절에 일곱 가지로 적어 두었다. **처음 올리는 사람은 그것부터 읽어라.**
+제일 비싼 것 하나만 여기 옮긴다 — **플레이는 저장하는 자리와 보내는 자리가 다르다.**
+출시 화면의 '저장'은 게시 개요에 얹을 뿐이고, 거기서 '검토를 위해 변경사항 제출'을
+또 눌러야 나간다. 저장만 하고 끝내면 **제출한 줄 알았는데 제출조차 안 된 상태**로 며칠이 간다.
+
 ---
 
 ## 8. 테스트 방법
@@ -1652,22 +1769,43 @@ tool/android_target.sh    # 안드로이드 타깃 확인
 tool/verify.sh
 ```
 
-`l10n_check` → `version_check` → `store_check` → `analyze` → `test` 순으로 돈다.
-**"전부 통과. 푸시해도 됩니다."** 가 나와야 푸시한다.
+`l10n_check` → `version_check` → `store_check` → `handoff_check` → `analyze` → `test`
+→ **`pending_check`** 순으로 돈다. **"전부 통과. 푸시해도 됩니다."** 가 나와야 푸시한다.
+
+맨 끝의 `pending_check` 는 **막지 않는다.** 소유자가 아직 답하지 않은 확인을 눈앞에 찍어 줄 뿐이다.
+막아야 할 것은 담당자의 게으름이지 소유자의 침묵이 아니다.
 
 - `warning •` 하나만 있어도 analyze 단계에서 실패한다. `info •`는 통과
-- 현재 테스트 920개
+- **테스트 개수는 여기 적지 않는다.** 늘어나는 값이라 적는 순간 낡는다 — `verify.sh` 가 찍는다
+- `flutter` 가 없는 환경(클라우드 컨테이너, `device_bash`)에서는 analyze·test 를 건너뛴다.
+  그 경우는 **CI 가 대신 본다.** 푸시가 끝이 아니라 CI 통과가 끝이다
 - `flutter analyze`·`flutter test`만으로는 부족하다. 이 저장소에는 언어 표준 도구가 보지 않는
   자기만의 검사기가 `tool/` 안에 따로 있고 CI도 그걸 본다.
   **처음 이 저장소에 손대는 세션은 `ls tool/`부터 볼 것.** 푸시가 끝이 아니라 CI 통과가 끝이다
 
-| 검사기 | 무엇을 잡나 |
-|---|---|
-| `tool/l10n_check.py` | 추상 getter ↔ all 맵 ↔ 9개 언어 파일 불일치, 빈 값 |
-| `tool/version_check.py` | pubspec.yaml ↔ lib/version.dart 버전 어긋남 |
-| `tool/store_check.py` | 스토어 문구 누락·글자 수 초과·미번역 |
-| `tool/screenshot_check.py` | 촬영 후 빠진 언어 (맥에서 촬영 뒤 수동 실행) |
-| `tool/handoff_check.py` | HANDOFF.md가 코드보다 늙었는지 (§0) |
+**`tool/` 에 무엇이 있고 각각 무엇을 막나** (표로 두지 않는다 — 복사해 붙이면 깨진다)
+
+검사기 — `verify.sh` 가 이 순서로 부른다
+
+- `l10n_check.py` — 추상 getter ↔ `all` 맵 ↔ 9개 언어 파일 불일치, 빈 값, 미번역 의심. **막는다**
+- `version_check.py` — `lib/version.dart` 의 `appVersion`·`appBuild` 와 `pubspec.yaml` 이 어긋났는지,
+  이름이 `3.18` 꼴인지. **막는다**
+- `store_check.py` — 스토어 문구 누락·글자 수 초과·미번역(애플 11개 언어 × 6칸, 플레이 33칸). **막는다**
+- `handoff_check.py` — 이 문서가 코드보다 늙었는지(§0). 10커밋 또는 5일 넘으면 **막는다**
+- `pending_check.py` — `PENDING.md` 의 열린 확인을 찍는다. **절대 막지 않는다**
+- `screenshot_check.py` — 촬영 후 빠진 언어. `verify.sh` 밖이다. 맥에서 촬영한 뒤 손으로 부른다
+
+일하는 도구 — 검사기가 아니다
+
+- `verify.sh` — 위를 한 줄로 묶은 것. **푸시 전에 이것 하나만 돌린다**
+- `deploy.sh <iphone|mac|web|android>` — 기기·웹에 바로 넣는 판. **스토어 판이 아니다**(광고가 테스트 광고다)
+- `appstore_ios.sh` — 애플 스토어용 굽기. `REAL_ADS=true` 와 구글 클라이언트 id 를 자동으로 붙인다.
+  굽기 전에 이름이 스토어에 이미 있는지 `submit_next.py --checkname` 으로 확인하고, 겹치면 멈춘다
+- `submit_next.py` — 애플 제출 창구. 아래 7절의 옵션들. `--cancel` 은 `IN_REVIEW` 를 **`--force` 없이는 못 지운다**
+- `review_status.py` — 심사 상태 조회. **두 앱이 같이 나온다**(플립시계와 열쇠 폴더를 공유한다)
+- `screenshots.sh` — 시뮬레이터로 스토어 스크린샷 촬영
+- `android_target.sh` — 안드로이드 타깃 SDK 확인
+- `web_icons.py` — 웹 아이콘 생성
 
 - 새 기능에는 순수 함수를 분리해 단위 테스트를 붙이는 방식을 쓴다.
   예: `lib/core/money.dart` ↔ `test/core/money_test.dart`(9개),
