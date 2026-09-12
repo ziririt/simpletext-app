@@ -24,12 +24,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DOC = ROOT / 'CONFIRM.md'
+DOC = ROOT / 'PENDING.md'
 
 
 def main() -> int:
     if not DOC.exists():
-        print('[확인 대기] CONFIRM.md 가 없다. 확인 청한 것을 여기에 적는다.')
+        print('[확인 대기] PENDING.md 가 없다. 확인 청한 것을 여기에 적는다.')
         return 0
 
     text = DOC.read_text(encoding='utf-8')
@@ -38,7 +38,7 @@ def main() -> int:
     m = re.search(r'^##\s*열린 것\s*$(.*?)^##\s*지난 것\s*$',
                   text, re.M | re.S)
     if not m:
-        print('[확인 대기] CONFIRM.md 에 "## 열린 것" / "## 지난 것" 두 칸이 '
+        print('[확인 대기] PENDING.md 에 "## 열린 것" / "## 지난 것" 두 칸이 '
               '있어야 한다. 모양을 지킨다.', file=sys.stderr)
         return 1
 
