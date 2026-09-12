@@ -56,6 +56,35 @@ String listPreview({required bool locked, required String body}) {
 String peekBody({required bool locked, required String body}) =>
     locked ? '' : body.trim();
 
+/// 길게 눌러 뜨는 미리보기 카드의 **본문**. 제목 줄을 뺀 나머지다.
+///
+/// 2026-09-13 소유자 신고 — "미리보기가 미리보기 같은 느낌이 애플 메모앱은
+/// 확 드는데 내 앱은 왠지 모르게 어설프다."
+///
+/// 화면을 나란히 놓고 보니 첫째 까닭이 이것이었다. 카드 맨 위에 굵은 제목이
+/// 있고 **본문 첫 줄이 같은 문장**이었다. 읽는 사람은 "방금 읽은 거 아닌가"
+/// 하게 된다. 애플 메모는 제목을 따로 얹지 않고 **메모를 그대로** 보여 준다.
+///
+/// 두 갈래가 다 이 구멍으로 들어온다.
+///   · 제목을 안 적은 메모 — `listTitle` 이 본문 첫 줄을 제목 자리에 올린다
+///   · 제목을 적었는데 본문도 같은 문장으로 시작하는 메모 (위 신고가 이 경우)
+/// 그래서 '제목이 어디서 왔는가'를 따지지 않고 **첫 줄이 제목과 같으면 뺀다.**
+///
+/// 뺀 뒤에 남는 것이 없으면 빈 문자열이다 — 부르는 쪽이 안내 문구를 쓴다.
+String peekBodyBelowTitle({
+  required bool locked,
+  required String title,
+  required String body,
+}) {
+  if (locked) return '';
+  final b = body.trim();
+  final t = title.trim();
+  if (t.isEmpty || b.isEmpty) return b;
+  final lines = b.split('\n');
+  if (lines.first.trim() != t) return b;
+  return lines.skip(1).join('\n').trim();
+}
+
 /// 제목이 비었을 때 목록에 무엇을 쓸 것인가.
 ///
 /// 여태 본문 첫 줄을 제목 자리에 올려 왔다. 잠긴 메모에서 그러면 **제목

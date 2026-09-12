@@ -5426,8 +5426,13 @@ class _HomeScreenState extends State<HomeScreen>
     final c = context.c;
     // 길게 누르기는 '열지 않고 살짝 보는' 자리다. 잠근 메모를 여기서
     // 보여 주면 자물쇠를 옆문으로 지나가는 셈이 된다.
-    final preview = peekBody(locked: n.locked, body: n.body);
     final head = listTitle(locked: n.locked, title: n.title, body: n.body);
+    // 제목 줄을 본문에서 뺀다. 안 빼면 같은 문장이 두 번 보인다(2026-09-13).
+    final preview = peekBodyBelowTitle(
+      locked: n.locked,
+      title: head.isNotEmpty ? head.split('\n').first : '',
+      body: n.body,
+    );
     final title = head.isNotEmpty ? head.split('\n').first : l.untitled;
 
     // 아이콘은 앱의 하늘색을 쓴다. 소유자: "내 컬러 정체성이 스카이블루이니
@@ -5469,7 +5474,11 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       barrierDismissible: true,
       barrierLabel: l.cancel,
-      barrierColor: Colors.black.withValues(alpha: 0.28),
+      // 2026-09-13 — 0.28 은 너무 옅었다. 뒤 목록의 글자와 날짜가 그대로
+      // 읽혔고, 무엇보다 **위쪽 광고 띠가 제 밝기 그대로 남아** 있었다.
+      // 미리보기는 '이것 하나만 보라'는 자리인데 옆에서 광고가 같이 밝으면
+      // 카드가 떠 보이지 않는다. 어둡게 깔고 흐리게 지운다(아래 BackdropFilter).
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       transitionDuration: const Duration(milliseconds: 220),
       pageBuilder: (ctx, __, ___) {
         final media = MediaQuery.of(ctx);
@@ -5486,7 +5495,11 @@ class _HomeScreenState extends State<HomeScreen>
         // showGeneralDialog는 showDialog와 달리 Material을 **안 씌워 준다.**
         // 그 차이를 모르고 썼다. 화면을 눈으로 보지 않고 코드만 보고 넘긴
         // 자국이 또 하나 나왔다.
-        return Material(
+        // 뒤를 흐린다. 어둡게만 깔면 글자 모양이 그대로 남아 눈이 자꾸
+        // 뒤를 읽는다. 애플 메모의 같은 화면은 뒤가 **읽히지 않는다.**
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: Material(
           type: MaterialType.transparency,
           child: SafeArea(
             child: Center(
@@ -5509,6 +5522,14 @@ class _HomeScreenState extends State<HomeScreen>
                         decoration: BoxDecoration(
                           color: c.panel,
                           borderRadius: BorderRadius.circular(16),
+                          // 그림자가 없으면 카드가 배경에 붙어 보인다.
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              blurRadius: 28,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
                         padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                         child: SingleChildScrollView(
@@ -5533,10 +5554,12 @@ class _HomeScreenState extends State<HomeScreen>
                                     : (preview.isEmpty ? l.bodyHint : preview),
                                 maxLines: 14,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                // 회색으로 두면 '메모에 대한 요약'처럼
+                                // 보인다. 애플은 **메모 그 자체**를 띄운다.
+                                // 그래서 본문 잉크를 그대로 쓴다(2026-09-13).
+                                style: const TextStyle(
                                   fontSize: 15,
                                   height: 1.45,
-                                  color: c.sub,
                                 ),
                               ),
                             ],
@@ -5544,11 +5567,21 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    // 카드와 메뉴가 같은 폭·같은 색·좁은 틈이면 한 덩어리로
+                    // 보인다. 애플은 메뉴를 **좁게, 멀찍이** 떼어 놓는다.
+                    const SizedBox(height: 18),
                     Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 22),
                       decoration: BoxDecoration(
                         color: c.panel,
                         borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: Column(
@@ -5603,6 +5636,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
+          ),
           ),
         );
       },
