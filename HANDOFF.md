@@ -102,7 +102,7 @@
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.18+247** (= pubspec `3.18.0+246`. 앱스토어 이름과 같은 값) (`pubspec.yaml`, `lib/version.dart`)
+- 현재 버전: **3.18+247** (= pubspec `3.18.0+247`. 앱스토어 이름과 같은 값) (`pubspec.yaml`, `lib/version.dart`)
 - App Store 마케팅 버전: **1.7 — 2026-09-11 승인·출시됨(READY_FOR_SALE), 붙은 빌드 244.**
   **낸 지 네 시간 만에 나갔다. 빌드 교체 없이 한 번에 통과한 첫 판이다.**
   내용: 자판 올라오면 배너 비킴 + 떠 있는 단추 작고 옅게 맨 아래로
@@ -669,7 +669,7 @@ ITMS-90062 로 튕긴다.
 
 - `lib/version.dart` 의 `appVersion` = `'3.18'` — 앱스토어 이름이자 꾸러미 값
 - `lib/version.dart` 의 `appBuild` = `246`
-- `pubspec.yaml` 의 `version` = `3.18.0+246` — 위를 옮겨 적은 것.
+- `pubspec.yaml` 의 `version` = `3.18.0+247` — 위를 옮겨 적은 것.
   애플·구글이 세 자리를 원해 끝에 `.0` 만 붙는다
 
 `pubspecVersionName` 하나 말고는 파생값이 없다. 아침에 만든
