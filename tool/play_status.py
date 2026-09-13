@@ -34,6 +34,7 @@
 열어 "검토를 위해 변경사항 제출"이 남아 있는지 보라.
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -55,11 +56,22 @@ STATUS = {
 }
 
 
+# 2026-09-13 — 맥의 1층 점검(_ops/bin/ops-check.py)이 이 도구를 부른다.
+# 그래서 두 가지를 더 받는다.
+#   --package  다른 앱도 본다. 서비스 계정 하나가 이 개발자 계정의 두 앱을 다 본다
+#              (플립시계 com.ezlong.flipzenweather / 스카이블루 com.ziririt.simpletext)
+#   --brief    현황판에 붙일 한 줄짜리로 찍는다. 사람이 읽는 긴 안내는 뺀다
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--package', default=PACKAGE)
+    ap.add_argument('--brief', action='store_true')
+    a = ap.parse_args()
+    pkg = a.package
+    brief = a.brief
     try:
         # 조회에도 '편집'을 하나 열어야 한다. 플레이 API 의 생김새다.
         # 아무것도 안 고치고 마지막에 버린다 — 커밋하지 않으면 아무 일도 안 일어난다.
-        code, edit = api('POST', '/applications/%s/edits' % PACKAGE)
+        code, edit = api('POST', '/applications/%s/edits' % pkg)
         if code >= 400:
             print('편집을 열지 못했습니다 (HTTP %s)' % code)
             print('  ' + err_text(edit))
@@ -68,12 +80,13 @@ def main():
             return 1
         eid = edit['id']
 
-        print('구글 플레이 — %s' % PACKAGE)
-        print('=' * 56)
+        if not brief:
+            print('구글 플레이 — %s' % pkg)
+            print('=' * 56)
 
         try:
             for t in TRACKS:
-                c, tr = api('GET', '/applications/%s/edits/%s/tracks/%s' % (PACKAGE, eid, t))
+                c, tr = api('GET', '/applications/%s/edits/%s/tracks/%s' % (pkg, eid, t))
                 name = KOR.get(t, t)
                 if c == 404:
                     print('\n· %s (%s) — 쓰지 않는 트랙' % (name, t))
@@ -83,6 +96,15 @@ def main():
                     continue
 
                 releases = tr.get('releases') or []
+                if brief:
+                    for r in releases:
+                        codes = ', '.join(str(v) for v in (r.get('versionCodes') or []))
+                        st = r.get('status', '?')
+                        flag = '[정상]' if st == 'completed' else '[어긋남]'
+                        print('%s %s %s — %s (%s)' % (
+                            flag, pkg.split('.')[-1], r.get('name', '?'),
+                            STATUS.get(st, st), name))
+                    continue
                 if not releases:
                     print('\n· %s (%s) — 올라간 판이 없다' % (name, t))
                     continue
@@ -106,8 +128,10 @@ def main():
         finally:
             # 연 편집은 반드시 버린다. 안 버리면 다음에 '새 버전 만들기'가
             # 회색으로 죽어 있는 것처럼 보인다 — 트랙당 초안은 하나뿐이다.
-            api('DELETE', '/applications/%s/edits/%s' % (PACKAGE, eid))
+            api('DELETE', '/applications/%s/edits/%s' % (pkg, eid))
 
+        if brief:
+            return 0
         print('\n' + '=' * 56)
         print('낸 버전 코드가 위에 안 보이면 아직 안 나간 것입니다.')
         print('플레이 콘솔 게시 개요에서 "검토를 위해 변경사항 제출"이 남아 있는지 보십시오.')
