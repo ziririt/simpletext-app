@@ -76,6 +76,11 @@
 	<string>NSApplication</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- 2026-09-13 맥 앱스토어. 맥 판은 이 갈래가 Info.plist 에 있어야 올라간다
+	     (아이폰은 스토어 화면에서 고르지만 맥은 파일에 적어야 한다).
+	     스토어의 아이폰 갈래와 같다 — 생산성. -->
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
 	<!-- 구글 로그인이 끝나고 앱으로 되돌아오는 문. 맥도 아이폰과 같은
 	     길을 쓴다 — 사파리로 나갔다가 이 주소로 돌아온다.
 	     값은 저장소에 안 넣는다(macos/Runner/Configs/*.xcconfig 머리말). -->

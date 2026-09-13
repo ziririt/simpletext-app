@@ -46,7 +46,7 @@ for dev in "${DEVICES[@]}"; do
   xcrun simctl status_bar "$udid" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 2>/dev/null
 
   SHOT_DEVICE="$(echo "$dev" | tr ' ()' '_' | tr -s '_')" \
-    flutter drive \
+    flutter drive --dart-define=SHOT_MODE=true \
       --driver=test_driver/integration_test.dart \
       --target=integration_test/screenshots_test.dart \
       -d "$udid"

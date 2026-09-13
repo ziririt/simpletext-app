@@ -59,7 +59,7 @@ const String appVersion = '3.18';
 /// 처음 깔 때 한 번 읽고, 그 뒤로는 **빌드 번호가 올라갈 때만** 다시 읽는다.
 /// 앞자리를 올릴 때 이 번호를 1로 되돌리는 습관이 원인이었다. 그 습관을
 /// 버린다. 판이 바뀌든 안 바뀌든 여기는 늘 오른다.
-const int appBuild = 251;
+const int appBuild = 252;
 
 /// 스토어로 나갈 판인가. 아니면 담당자가 손으로 넣은 시험판이다.
 ///
@@ -67,6 +67,17 @@ const int appBuild = 251;
 /// `tool/deploy.sh` 로 기기에 바로 넣는 판에는 이 값이 없다 —
 /// 그런 판은 구글 공식 **테스트 광고**를 띄운다(ads_service.dart 머리말).
 const bool _storeBuild = bool.fromEnvironment('REAL_ADS');
+
+/// 스토어 스크린샷을 찍는 판인가 (`--dart-define=SHOT_MODE=true`).
+///
+/// 2026-09-13 사고. 맥에서 스크린샷 시험을 돌렸더니 **소유자의 진짜 노트가
+/// 시연 목록에 섞여 찍혔고, 시연 노트 셋이 거꾸로 아이클라우드에 올라갔다.**
+/// 시험은 설정을 '동기화 안 함'으로 넣었는데, 저장소가 그 값을 열쇠고리에
+/// 둔 진짜 값으로 덮어써서(KeyVault.readBackend) 아이클라우드가 켜졌다.
+///
+/// 그래서 스위치를 하나 둔다. 이 값이 참이면 열쇠고리를 읽지 않고, 창고를
+/// 어디로도 잇지 않는다. 스토어 판에서는 언제나 거짓이다(컴파일 상수).
+const bool kShotMode = bool.fromEnvironment('SHOT_MODE');
 
 /// 화면에 그대로 찍히는 문자열.
 ///

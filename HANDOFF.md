@@ -1947,6 +1947,12 @@ tool/verify.sh
 - `play_api.py` — 플레이 개발자 API 로 가는 문. **열쇠를 읽는 유일한 파일**(§3.19)
 - `play_status.py` — 트랙마다 지금 무엇이 올라가 있나. **낸 것이 진짜 나갔는지 묻는 도구**
 - `play_upload.py` — AAB 올리기. `--go` 없으면 아무것도 안 하고, `--commit` 없으면 버린다
+- `appstore_mac.sh` — 맥 앱스토어용 굽기·올리기(.pkg). `UPLOAD_ONLY=1` 이면 굽지 않고 다시 올린다.
+  올리다 죽은 빌드 번호는 죽었어도 쓴 번호다 — 번호를 올려 다시 굽는다(2026-09-13)
+- `mac_store.py` — 맥 판 만들기·글·그림·빌드 붙이기·제출. 아이폰의 `submit_next.py` 짝.
+  `--submit` 은 소유자가 말했을 때만
+- `screenshots_mac.sh` — 맥 스크린샷 33장. 앱이 화면을 차리고 이 스크립트가 찍는다(맥에는
+  `takeScreenshot` 다리가 없다). 시연 메모는 `integration_test/shot_demo.dart` 한 벌
 
 - 새 기능에는 순수 함수를 분리해 단위 테스트를 붙이는 방식을 쓴다.
   예: `lib/core/money.dart` ↔ `test/core/money_test.dart`(9개),

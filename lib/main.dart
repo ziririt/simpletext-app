@@ -2156,14 +2156,17 @@ class Store extends ChangeNotifier {
     // 그런 물건은 반드시 어긋난 뒤에야 발견된다.
     // 창고 고르기는 **키체인이 참이다.** 자료 그릇이 새로 파여도 여기만은
     // 남는다. 그릇이 멀쩡하면 두 값이 같으므로 덮어써도 달라지는 것이 없다.
-    final keptBackend = (await KeyVault.readBackend()).trim();
+    // 스크린샷 판은 열쇠고리를 안 본다 — 진짜 창고가 시연 화면에 섞인다
+    // (version.dart 의 kShotMode 주석).
+    final keptBackend =
+        kShotMode ? '' : (await KeyVault.readBackend()).trim();
     if (keptBackend.isNotEmpty) settings.syncBackend = keptBackend;
     // 창고 이름을 이 기기에서 말이 되게 고친다. 한 곳에서만 한다 —
     // 화면마다 고치면 다음에 만드는 화면에서 또 빠진다.
     settings.syncBackend = fitBackend(settings.syncBackend);
 
     final fromPrefs = settings.aiKey.trim();
-    final fromVault = (await KeyVault.read()).trim();
+    final fromVault = kShotMode ? '' : (await KeyVault.read()).trim();
     if (fromVault.isNotEmpty) {
       settings.aiKey = fromVault;
     } else if (fromPrefs.isNotEmpty) {
@@ -2248,10 +2251,15 @@ class Store extends ChangeNotifier {
     await prefs.setString(_settingsKey, jsonEncode(m));
     // 어느 칸에 둘지는 여기 한 곳에서만 정한다. 설정을 저장하는 길이
     // 여럿이어도 이 줄을 지나므로 빠뜨릴 자리가 없다.
-    await KeyVault.write(settings.aiKey, roam: settings.aiKeySync);
-    // 창고 고르기도 같이 남긴다. 여기 한 자리에서 쓰므로, 설정을 저장하는
-    // 길이 여럿이어도 빠뜨릴 자리가 없다.
-    await KeyVault.writeBackend(settings.syncBackend);
+    // 스크린샷 판은 열쇠고리에 아무것도 안 쓴다. 시연용 빈 값으로 진짜
+    // 열쇠와 창고 고르기를 덮어쓰면 소유자의 기기가 하루아침에 '동기화
+    // 안 함'이 된다(version.dart 의 kShotMode).
+    if (!kShotMode) {
+      await KeyVault.write(settings.aiKey, roam: settings.aiKeySync);
+      // 창고 고르기도 같이 남긴다. 여기 한 자리에서 쓰므로, 설정을 저장하는
+      // 길이 여럿이어도 빠뜨릴 자리가 없다.
+      await KeyVault.writeBackend(settings.syncBackend);
+    }
     notifyListeners();
   }
 
@@ -8015,7 +8023,19 @@ class _EditorScreenState extends State<EditorScreen>
   /// 것은 화면의 목숨을 따라가지 않는다.
   @override
   void deactivate() {
-    final st = _editableState();
+    // 2026-09-13. 이 화면이 **빌드 도중에** 헐릴 때(나란히 선 오른쪽 칸이
+    // 다른 메모로 바뀔 때, 언어가 바뀌어 앱이 통째로 다시 그려질 때)는
+    // 위젯 나무를 걸을 수 없다 — 디버그 판에서 "visitChildElements() called
+    // during build" 로 터지고, 그 뒤 빌드가 줄줄이 무너진다. 스토어 판은
+    // 단정이 없어 조용히 지나가서 여태 몰랐다. 맥 스크린샷 시험이 잡았다.
+    // 못 걸으면 그냥 헐린다 — 돋보기는 화면과 같이 사라지지 않는 오버레이라
+    // 남을 수 있지만, 빌드 중 헐리는 경우는 손가락이 없는 순간이다.
+    EditableTextState? st;
+    try {
+      st = _editableState();
+    } catch (_) {
+      st = null;
+    }
     st?.hideMagnifier();
     st?.hideToolbar();
     super.deactivate();
@@ -11981,9 +12001,10 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
 /// ---------------- 프리미엄 안내 ----------------
 /// 2026-08-16 소유자 요청 — 유료 결제·구독 유도 페이지.
-/// 실제 결제(StoreKit/Play 결제)는 스토어 제출 작업에서 붙는다. 지금은
-/// 안내와 버튼 자리를 만들고, 누르면 준비 중임을 알린다. 후원 시트와
-/// 설정 상단 배너가 여기로 이끈다.
+/// 결제는 붙어 있다 — 스토어와 오가는 다리는 purchase_service.dart, 판정은
+/// core/purchase_gate.dart. (2026-09-13 고침. 여기 "지금은 준비 중임을
+/// 알린다"고 적혀 있던 옛 주석이 남아 있어서, 결제가 안 붙은 줄 알고
+/// 읽는 사람이 있었다. 주석이 코드보다 오래 살면 거짓말이 된다.)
 /// 휴지통 — 지운 메모를 30일 동안 되돌릴 수 있는 곳.
 /// 넓은 화면에서 내용을 가운데 한정 폭으로 묶는다.
 ///
