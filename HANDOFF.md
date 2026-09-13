@@ -201,8 +201,8 @@ export OPS_RUNNER="1번-스카이블루"
 - 로컬 경로: `/Users/ziririt/development/simpletext_app`
 - 번들 ID: `com.ziririt.simpletext`
 - App Store ID: `6802185169`
-- 현재 버전: **3.18 (빌드 247)**. `lib/version.dart` 의 `appVersion` 하나가 유일한 원본이고
-  `pubspec.yaml` 은 거기서 옮겨 적는다(`3.18.0+247`). 어긋나면 `tool/version_check.py` 가 막는다.
+- 현재 버전: **3.18 (빌드 252)**(2026-09-14 08:10 자동 점검 실측). `lib/version.dart` 의 `appVersion` 하나가 유일한 원본이고
+  `pubspec.yaml` 은 거기서 옮겨 적는다(`3.18.0+252`). 어긋나면 `tool/version_check.py` 가 막는다.
   **이름은 하나다** — 앱스토어 화면·설정 화면·꾸러미 안이 전부 같은 값이다(§3.16, §3.16-1).
   · `kStoreVersion` 은 **2026-09-12 에 지웠다.** 옛 문서가 "1.8 로 올려 둬라"라고 말하면 그건 낡은 것이다.
   · 시험판에는 화면에 `· DEV` 가 붙는다. 스토어로 갈 판에만 안 붙는다(§3.17).
