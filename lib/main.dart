@@ -1023,9 +1023,25 @@ class SimpleTextApp extends StatelessWidget {
                 // 띠를 Stack 으로 띄워 놓고 그림만 미끄러뜨리면 양쪽 다 부드럽게 할 수
                 // 있다(자리는 한 번에, 그림은 천천히). 다만 띠 높이를 밖에서 알아야 해서
                 // 손이 더 간다. 지금은 필요 없다 — 필요해지면 그때 한다.
+                //
+                // ── 빌드 251 · 250 이 왜 안 먹었나 (2026-09-13) ──────────────
+                // 250 에서 소유자가 "손잡이가 다시 안 된다"고 하셨다. 고친 줄 알았는데
+                // **아무 일도 안 일어나고 있었다.**
+                //
+                // 까닭은 한 글자였다. 여기서 `context` 를 썼는데, 이 자리에서 `context`
+                // 는 **MaterialApp 바깥** 것이다(910행 builder 의 것). 바깥에는 자판이
+                // 올라온 높이가 안 잡힌다 — **늘 0 이었다.** 그래서 조건은 언제나 거짓,
+                // 애니메이션은 언제나 200ms. 250 은 249 이전과 똑같은 판이었다.
+                //
+                // 자판 높이를 아는 것은 **`ctx`** 다(932행 `builder: (ctx, child)`).
+                // 같은 이름의 문이 둘 있으면 반드시 하나를 잘못 연다.
+                //
+                // **남길 문장: 조건을 넣었으면 그 조건이 참이 되는 것을 눈으로 봐라.**
+                // 코드가 읽히는 것과 값이 오는 것은 다른 일이다. 250 은 컴파일도 됐고
+                // 검사도 다 통과했다. 다만 조건이 한 번도 참이 안 됐을 뿐이다.
                 ClipRect(
                   child: AnimatedSize(
-                    duration: MediaQuery.viewInsetsOf(context).bottom > 0
+                    duration: MediaQuery.viewInsetsOf(ctx).bottom > 0
                         ? Duration.zero
                         : const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
