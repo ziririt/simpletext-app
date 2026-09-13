@@ -89,9 +89,14 @@
 
 **17:45 — 다 붙었다. 제출만 남았다.** 2(실리콘 맥 스위치)는 **이미 켜져 있었다** — 오전
 판독이 틀렸고, 맥 앱스토어에서는 'iPhone 및 iPad 앱' 탭에 서 있어서 못 찾은 것이다.
-제출 여부는 C-16 에서 묻는다.
+C-16 에서 물었고 냈다(18:05). 심사 결과가 오면 여기서 닫는다.
 
-### C-16 · 2026-09-13 · **맥 앱 3.18 을 심사에 낼까**
+### C-16 · 2026-09-13 · 맥 앱 3.18 심사 — **냈다. 확인 완료**
+
+소유자 답 — "내라." TestFlight 로 252 를 열어 본 뒤였다. `tool/mac_store.py --submit`
+으로 냈고 판이 `WAITING_FOR_REVIEW` 로 섰다. 통과하면 자동 출시. 확인은
+`python3 tool/review_status.py skyblue` 또는 `tool/mac_store.py`.
+
 
 App Store Connect 의 macOS 판 3.18 에 열한 언어 글, 맥 스크린샷 33장, 빌드 252, 심사
 연락처가 붙었고 "심사에 추가" 단추가 켜져 있다. `python3 tool/mac_store.py --submit`
