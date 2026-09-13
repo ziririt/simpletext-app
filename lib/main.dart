@@ -998,9 +998,27 @@ class SimpleTextApp extends StatelessWidget {
             // 읽힌다.
             w = Column(
               children: [
+                // ── 2026-09-13 시험 중 (빌드 249) ─────────────────────────
+                // 소유자 신고 — "어제 고친 본문 편집화면에서 텍스트에 블럭 씌우는 것,
+                // 핸들링이 잘 되게 했는데 지금 하니 또 다시 잘 안된다. 왼손이든
+                // 오른손이든 다 잘 안되고, **위로 한번 올렸다가 내리면 그나마 된다.**"
+                //
+                // 짚이는 데가 여기다. 앱 전체가 이 Column 안에 들어 있고, 자판이
+                // 올라오면 이 띠가 **200ms 동안 줄어든다.** 그동안 아래 본문이 통째로
+                // 위로 밀려 올라간다. 글자 선택 손잡이는 화면 좌표로 자리를 잡는데,
+                // 그 좌표가 움직이는 중이면 **손잡이는 보이는데 만져지는 자리는 딴 데**
+                // 있게 된다. "위로 올렸다 내리면 된다"가 그 증거다 — 스크롤이 한 번
+                // 일어나면 손잡이 자리가 다시 잡힌다.
+                //
+                // 그래서 **되는지 안 되는지만 보려고** 애니메이션을 0 으로 둔다.
+                //   · 손잡이가 멀쩡해지면 → 원인은 '움직이는 동안'이다. 띠를 다른
+                //     방식으로(겹쳐 놓고 미끄러뜨리기) 비키게 고친다
+                //   · 그래도 안 되면 → 원인은 움직임이 아니라 **줄어든다는 것 자체**다.
+                //     그때는 다른 데를 판다
+                // **어느 쪽이든 이 0 은 임시다.** 답이 나오면 되돌리거나 제대로 고친다.
                 ClipRect(
                   child: AnimatedSize(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Duration.zero,
                     curve: Curves.easeOutCubic,
                     alignment: Alignment.bottomCenter,
                     child: const TopBannerBar(),
@@ -5501,7 +5519,25 @@ class _HomeScreenState extends State<HomeScreen>
           filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
           child: Material(
           type: MaterialType.transparency,
-          child: SafeArea(
+          // 2026-09-13 소유자 신고 — "미리보기를 보다가 안 보고 싶을 때 여백이나,
+          // 미리보기를 밑으로 내리면 없어져야 하는데 안 없어진다."
+          //
+          // `barrierDismissible: true` 를 줬는데도 안 닫혔다. 까닭은 이 Material 이
+          // **화면을 가득 채우고 있어서** 빈 곳을 눌러도 그 탭이 장막까지 못 간다는
+          // 것이다. 장막은 이 판 뒤에 있다. 눈에 빈 곳이라고 다 빈 곳이 아니다.
+          //
+          // 그래서 여기서 직접 받는다. 빈 곳을 누르면 닫고, 아래로 끌어내려도 닫는다.
+          // 애플 메모도 둘 다 된다 — 손가락이 하는 말이 둘이니 문도 둘이어야 한다.
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(ctx).maybePop(),
+            // 아래로 충분히 빠르게, 또는 충분히 멀리 끌면 닫는다.
+            // 속도만 보면 살짝 스친 것에도 닫히고, 거리만 보면 휙 내린 것이 안 닫힌다.
+            onVerticalDragEnd: (d) {
+              final v = d.primaryVelocity ?? 0;
+              if (v > 250) Navigator.of(ctx).maybePop();
+            },
+            child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -5514,7 +5550,11 @@ class _HomeScreenState extends State<HomeScreen>
                   children: [
                     // 미리보기 카드. 화면의 45%를 넘지 않는다 — 이건 '읽는
                     // 자리'가 아니라 '어느 메모인지 알아보는 자리'다.
-                    ConstrainedBox(
+                    // 카드 위를 누른 것은 '닫아 달라'가 아니다. 여기서 막는다.
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {},
+                      child: ConstrainedBox(
                       constraints: BoxConstraints(
                         maxHeight: media.size.height * 0.45,
                       ),
@@ -5566,6 +5606,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ),
                       ),
+                    ),
                     ),
                     // 카드와 메뉴가 같은 폭·같은 색·좁은 틈이면 한 덩어리로
                     // 보인다. 애플은 메뉴를 **좁게, 멀찍이** 떼어 놓는다.
@@ -5636,6 +5677,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
+          ),
           ),
           ),
         );
