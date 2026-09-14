@@ -96,14 +96,22 @@ def app_id():
     return r['data'][0]['id']
 
 
+# 2026-09-13 부터 같은 앱 기록에 macOS 판이 붙어 있다(tool/mac_store.py).
+# 여기는 **아이폰 판만** 본다. 필터를 빠뜨리면 맥 판이 심사 중일 때 아이폰 판을
+# 못 만든다고 잘못 말한다(09-14 아침에 실제로 그랬다 — "다음 판 이름 4.0").
+PLATFORM = 'IOS'
+
+
 def versions(aid):
-    st, r = api('GET', '/v1/apps/%s/appStoreVersions?limit=5' % aid)
+    st, r = api('GET', '/v1/apps/%s/appStoreVersions?filter[platform]=%s&limit=5'
+                % (aid, PLATFORM))
     ok(st, r, '판 목록')
     return r['data']
 
 
 def newest_build(aid):
-    st, r = api('GET', '/v1/builds?filter[app]=%s&limit=10' % aid)
+    st, r = api('GET', '/v1/builds?filter[app]=%s&filter[preReleaseVersion.platform]=%s'
+                       '&limit=10' % (aid, PLATFORM))
     ok(st, r, '빌드 목록')
     live = [b for b in r['data']
             if b['attributes'].get('processingState') == 'VALID'
@@ -222,7 +230,8 @@ def check_name():
     # 이고, 이 저장소에는 3.17.22 까지 올라가 있다(옛날에 이름이 둘이던
     # 시절의 잔재다). 그것보다 크지 않으면 업로드 자체가 거부된다.
     try:
-        st, pr = api('GET', '/v1/apps/%s/preReleaseVersions?limit=200' % aid)
+        st, pr = api('GET', '/v1/apps/%s/preReleaseVersions?filter[platform]=%s&limit=200'
+                     % (aid, PLATFORM))
         if st < 300:
             names += [d['attributes'].get('version', '')
                       for d in pr.get('data', [])]

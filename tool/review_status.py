@@ -67,11 +67,15 @@ for d in res.get('data', []):
         continue
     print('%s  (%s)' % (name, bid))
 
-    s2, r2 = api('GET', '/v1/apps/%s/appStoreVersions?limit=4' % d['id'])
+    s2, r2 = api('GET', '/v1/apps/%s/appStoreVersions?limit=6' % d['id'])
     for v in (r2.get('data') or []):
         va = v.get('attributes', {})
         state = va.get('appStoreState') or ''
-        print('  %-8s %s' % (va.get('versionString'), SAY.get(state, state)))
+        # 한 앱 기록에 아이폰 판과 맥 판이 같이 선다(2026-09-13 부터). 어느 쪽인지
+        # 안 적으면 "3.18 심사 중"이 두 뜻이 된다.
+        plat = {'IOS': '아이폰', 'MAC_OS': '맥', 'TV_OS': 'TV', 'VISION_OS': '비전'}.get(
+            va.get('platform') or '', va.get('platform') or '')
+        print('  %-8s %-4s %s' % (va.get('versionString'), plat, SAY.get(state, state)))
 
         s3, r3 = api('GET', '/v1/appStoreVersions/%s/build' % v['id'])
         b = (r3 or {}).get('data')
