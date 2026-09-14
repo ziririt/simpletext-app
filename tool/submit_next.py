@@ -398,7 +398,11 @@ def cancel(force=False):
     ok(st, r, '제출함 목록')
     # 초안(READY_FOR_REVIEW)은 건드리지 않는다. 조립 중인 제출함을 여기서
     # 지워 버리면 방금 넣은 상품이 통째로 날아간다.
-    live = [d for d in r['data'] if d['attributes'].get('state') in
+    # 맥 판의 제출함은 건드리지 않는다(2026-09-14). 같은 앱 기록에 아이폰·맥
+    # 제출함이 나란히 서므로, 플랫폼을 안 보면 **맥 심사를 함께 취소한다.**
+    live = [d for d in r['data']
+            if d['attributes'].get('platform') == PLATFORM
+            and d['attributes'].get('state') in
             ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES')]
     if not live:
         die('심사 줄에 서 있는 제출함이 없다. 뺄 것이 없다.')
@@ -640,6 +644,8 @@ def submit():
         for d in rs.get('data', []):
             if d['attributes'].get('state') != 'READY_FOR_REVIEW':
                 continue
+            if d['attributes'].get('platform') not in (None, PLATFORM):
+                continue  # 맥 제출함은 남의 것이다
             st2, it = api('GET', '/v1/reviewSubmissions/%s/items?limit=10' % d['id'])
             opens.append((d['id'], len(it.get('data', [])) if st2 < 300 else 0))
     filled = [x for x in opens if x[1] > 0]
