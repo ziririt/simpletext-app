@@ -43,12 +43,15 @@
 /// 다음은 3.19, 3.20 … 이다. 자릿수가 아니라 숫자로 오른다.
 library;
 
+import 'package:flutter/foundation.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
+
 /// 이 앱의 버전. **딱 하나다.**
 ///
 /// 앱스토어 화면, 설정 화면, 꾸러미 안 — 전부 이 값이다.
 /// 새 판을 스토어에 낼 때 이것만 올린다. `pubspec.yaml` 의 version 도
 /// 같은 값이어야 하고, 어긋나면 `tool/version_check.py` 가 잡는다.
-const String appVersion = '3.18';
+const String appVersion = '3.19';
 
 /// 빌드 번호. 같은 이름으로 여러 번 올릴 때 구분한다.
 ///
@@ -59,7 +62,7 @@ const String appVersion = '3.18';
 /// 처음 깔 때 한 번 읽고, 그 뒤로는 **빌드 번호가 올라갈 때만** 다시 읽는다.
 /// 앞자리를 올릴 때 이 번호를 1로 되돌리는 습관이 원인이었다. 그 습관을
 /// 버린다. 판이 바뀌든 안 바뀌든 여기는 늘 오른다.
-const int appBuild = 253;
+const int appBuild = 254;
 
 /// 스토어로 나갈 판인가. 아니면 담당자가 손으로 넣은 시험판이다.
 ///
@@ -104,7 +107,29 @@ const bool kShotMode = bool.fromEnvironment('SHOT_MODE');
 ///
 /// 사람이 겪은 헷갈림을 문서로 막으려 하지 말 것. 화면에 적어야 한다.
 String get appVersionLabel =>
-    'ver.$appVersion ($appBuild)${_storeBuild ? '' : ' · DEV'}';
+    'ver.$appVersion ($appBuild)'
+    '${patchNumber.value == null ? '' : ' · p${patchNumber.value}'}'
+    '${_storeBuild ? '' : ' · DEV'}';
+
+/// 지금 돌고 있는 덧판(Shorebird patch) 번호. 덧판이 없으면 null.
+///
+/// 2026-09-14 — 스토어 심사 없이 다트 고침을 내려보내기 시작하면서, 화면이
+/// "몇 번째 덧판인가"까지 말해야 한다. 빌드 번호는 같은데 동작이 다른
+/// 두 앱이 생기기 때문이다. `ver.3.19 (254) · p2` 의 p2 가 이것이다.
+/// 소유자가 "고쳐졌다"를 확인할 때 보는 값이다.
+final ValueNotifier<int?> patchNumber = ValueNotifier<int?>(null);
+
+/// 앱을 켤 때 한 번 부른다. Shorebird 가 없는 판(개발용·웹)에서는 조용히 null.
+Future<void> readPatchNumber() async {
+  try {
+    final u = ShorebirdUpdater();
+    if (!u.isAvailable) return;
+    final p = await u.readCurrentPatch();
+    patchNumber.value = p?.number;
+  } catch (_) {
+    // 덧판 번호는 표시일 뿐이다. 못 읽어도 앱은 그대로 간다.
+  }
+}
 
 /// `pubspec.yaml` 의 version 에 적을 값. 애플·구글은 세 자리를 원한다.
 /// 3.18 → 3.18.0

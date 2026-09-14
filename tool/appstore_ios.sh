@@ -96,11 +96,29 @@ log "flutter build ipa…"
 #     No Accounts: Add a new account in Accounts settings.
 #   그런데 우리는 그 서명이 필요 없다. 스토어로 갈 서명은 바로 아래에서
 #   App Store Connect API 키로 한다. 그래서 여기서는 아예 서명하지 않는다.
-# shellcheck disable=SC2086
-flutter build ipa --release --no-codesign \
-  --build-name="$NAME" --build-number="$NUM" $DEFINES \
-  > ${WORK}appstore_ios_build.log 2>&1
-RC=$?
+# ── Shorebird (2026-09-14 소유자 결정) ─────────────────────────────────
+# shorebird.yaml 이 있으면 flutter 대신 shorebird 로 굽는다. 결과물(아카이브)은
+# 같은 자리에 같은 모양으로 나오고, 다만 그 안에 '덧판을 받는 엔진'이 실린다.
+# 이 판이 스토어에 나간 뒤부터는 다트 고침을 tool/patch.sh 로 심사 없이 내보낸다.
+# 굽는 플러터 판은 저장소의 것과 같은 번호로 못 박는다(엔진이 다르면 덧판이 안 맞는다).
+# 자세한 것은 docs/셔버드.md.
+export PATH="$HOME/.shorebird/bin:$PATH"
+if [ -f shorebird.yaml ] && command -v shorebird >/dev/null 2>&1; then
+  FV=$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([0-9.]*\).*/\1/p')
+  log "shorebird release ios (flutter $FV)…"
+  # shellcheck disable=SC2086
+  # 묻는 말("계속할까요?")에는 y 로 답해 둔다 — 터미널이 아니면 안 묻지만, 물어도 간다.
+  printf 'y\ny\n' | shorebird release ios --no-codesign --flutter-version "$FV" \
+    --build-name="$NAME" --build-number="$NUM" $DEFINES \
+    > ${WORK}appstore_ios_build.log 2>&1
+  RC=${PIPESTATUS[1]}
+else
+  # shellcheck disable=SC2086
+  flutter build ipa --release --no-codesign \
+    --build-name="$NAME" --build-number="$NUM" $DEFINES \
+    > ${WORK}appstore_ios_build.log 2>&1
+  RC=$?
+fi
 log "빌드 끝 rc=$RC"
 if [ ! -d build/ios/archive/Runner.xcarchive ]; then
   echo "아카이브가 없다. ${WORK}appstore_ios_build.log 를 볼 것." >&2

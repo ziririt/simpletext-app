@@ -100,6 +100,8 @@ import 'version.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 몇 번째 덧판인지 읽어 둔다(version.dart 의 patchNumber). 기다리지 않는다.
+  unawaited(readPatchNumber());
 
   // 앱이 뒤로 갈 때 모아 둔 저장을 즉시 비운다.
   //

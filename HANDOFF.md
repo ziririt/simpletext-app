@@ -1951,6 +1951,9 @@ tool/verify.sh
   올리다 죽은 빌드 번호는 죽었어도 쓴 번호다 — 번호를 올려 다시 굽는다(2026-09-13)
 - `mac_store.py` — 맥 판 만들기·글·그림·빌드 붙이기·제출. 아이폰의 `submit_next.py` 짝.
   `--submit` 은 소유자가 말했을 때만
+- `appstore_android.sh` — 플레이용 AAB 굽기·올리기(alpha). 인수인계서의 손 명령 두 줄이 이것이 됐다
+- `patch.sh <ios|android|both>` — **심사 없이** 다트 고침 내보내기(Shorebird 덧판). `docs/셔버드.md`.
+  판 번호를 올리지 않는다. 원어·자산이 바뀌었으면 거절된다 — 그때는 판을 굽는다
 - `screenshots_mac.sh` — 맥 스크린샷 33장. 앱이 화면을 차리고 이 스크립트가 찍는다(맥에는
   `takeScreenshot` 다리가 없다). 시연 메모는 `integration_test/shot_demo.dart` 한 벌
 
