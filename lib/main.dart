@@ -33,6 +33,7 @@ import 'core/update_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
+import 'core/edge_scroll.dart';
 import 'core/handle_hit.dart';
 import 'core/read_mark.dart';
 import 'core/view_prefs.dart';
@@ -7021,6 +7022,104 @@ class _EditorScreenState extends State<EditorScreen>
   void _setSelHandleDrag(bool v) {
     if (_selHandleDrag == v || !mounted) return;
     setState(() => _selHandleDrag = v);
+    if (v) {
+      _edgeTimer ??= Timer.periodic(const Duration(milliseconds: 16), (_) {
+        _edgeTick();
+      });
+    } else {
+      _edgeTimer?.cancel();
+      _edgeTimer = null;
+      _edgeSince = null;
+      _edgeLast = null;
+      _dragPointer = null;
+    }
+  }
+
+  // ── 블록을 끌다 화면 끝에 닿으면 — 우리가 굴린다 (2026-09-14) ─────────
+  //
+  // 소유자 신고 — "블록을 씌운 채 위·아래로 더 끌 때 스크롤이 빨라서 딱
+  // 멈추기 어렵다. 천천히 시작했다가 계속 끌 뜻이 보이면 서서히 빨라지게."
+  //
+  // 예전엔 우리가 굴린 게 아니었다. 손가락이 끝에 닿아 선택이 다음 줄로
+  // 넘어가면 플러터가 캐럿을 보이려고 한 줄씩 **뛰었고**(ensureVisible),
+  // 손가락이 조금만 떨려도 또 뛰었다. 뛰는 것은 속도가 없어서 늦출 수 없다.
+  //
+  // 이제 핸들을 끄는 동안(_selHandleDrag) 손가락이 창의 위·아래 띠 안에
+  // 있으면 매 틱 조금씩 굴리고, 굴린 만큼 손가락 밑 글자까지 선택을 늘린다.
+  // 속도의 셈은 core/edge_scroll.dart — 머문 시간과 깊이로 정한다.
+  //
+  // 플러터의 뛰기와 싸우지 않으려고, 선택 끝을 손가락 자리가 아니라 **창
+  // 안쪽으로 조금 물린 자리**의 글자로 잡는다(scrollPadding 12 보다 안쪽).
+  // 캐럿이 늘 여백 안에 있으면 플러터는 뛸 이유가 없다.
+  Timer? _edgeTimer;
+  DateTime? _edgeSince;
+  DateTime? _edgeLast;
+  Offset? _dragPointer;
+
+  /// 끌고 있는 것이 블록의 앞쪽 끝인가(아니면 뒤쪽 끝).
+  bool _dragsStart = false;
+
+  /// 굴리는 창(SingleChildScrollView)을 찾기 위한 열쇠.
+  final GlobalKey _scrollKey = GlobalKey();
+
+  /// 핸들을 잡는 순간, 두 끝 중 손가락에 가까운 쪽을 '끄는 끝'으로 적어 둔다.
+  void _noteDraggedEnd(Offset global) {
+    final sel = bodyCtl.selection;
+    final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
+    if (ed == null || !sel.isValid || sel.isCollapsed) return;
+    final pts = ed
+        .getEndpointsForSelection(sel)
+        .map((p) => ed.localToGlobal(p.point))
+        .toList();
+    if (pts.length < 2) return;
+    _dragsStart = (pts[0] - global).distance <= (pts[1] - global).distance;
+  }
+
+  void _edgeTick() {
+    if (!mounted || !_selHandleDrag || !_bodyScroll.hasClients) return;
+    final p = _dragPointer;
+    final box = _scrollKey.currentContext?.findRenderObject();
+    if (p == null || box is! RenderBox || !box.hasSize) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    final bottom = top + box.size.height;
+    final plan = edgePlan(y: p.dy, top: top, bottom: bottom);
+    final now = DateTime.now();
+    if (plan == null) {
+      // 띠를 벗어나면 시계를 되돌린다. 다시 들어오면 다시 느리게 시작한다.
+      _edgeSince = null;
+      _edgeLast = null;
+      return;
+    }
+    _edgeSince ??= now;
+    final dt = _edgeLast == null
+        ? 0.016
+        : now.difference(_edgeLast!).inMicroseconds / 1e6;
+    _edgeLast = now;
+    final speed = edgeSpeed(held: now.difference(_edgeSince!), depth: plan.depth);
+    final pos = _bodyScroll.position;
+    final want = (pos.pixels + plan.dir * speed * dt).clamp(
+      pos.minScrollExtent,
+      pos.maxScrollExtent,
+    );
+    if (want != pos.pixels) _bodyScroll.jumpTo(want);
+
+    // 굴린 만큼 선택을 늘린다 — 손가락 밑, 다만 창 안쪽으로 물린 자리.
+    final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
+    if (ed == null) return;
+    const inset = 18.0;
+    final y = p.dy.clamp(top + inset, bottom - inset);
+    final tp = ed.getPositionForPoint(Offset(p.dx, y));
+    final sel = bodyCtl.selection;
+    if (!sel.isValid) return;
+    var start = _dragsStart ? tp.offset : sel.start;
+    var end = _dragsStart ? sel.end : tp.offset;
+    if (start > end) {
+      final s = start;
+      start = end;
+      end = s;
+    }
+    if (start == sel.start && end == sel.end) return;
+    bodyCtl.selection = TextSelection(baseOffset: start, extentOffset: end);
   }
 
   /// 직전 선택 범위. '방금 무엇이 바뀌었나'를 알려면 이전 값이 있어야 한다.
@@ -8049,6 +8148,7 @@ class _EditorScreenState extends State<EditorScreen>
     store.removeListener(_onStoreChanged);
     _tagTimer?.cancel();
     bodyCtl.removeListener(_onSelectionChanged);
+    _edgeTimer?.cancel();
     _bodyScroll.dispose();
     // 지금 쓰면 나가는 애니메이션이 무너진다(Store.flushAfter 주석).
     //
@@ -11263,7 +11363,14 @@ class _EditorScreenState extends State<EditorScreen>
                                           if (_nearSelectionHandle(
                                             e.position,
                                           )) {
+                                            _noteDraggedEnd(e.position);
+                                            _dragPointer = e.position;
                                             _setSelHandleDrag(true);
+                                          }
+                                        },
+                                        onPointerMove: (e) {
+                                          if (_selHandleDrag) {
+                                            _dragPointer = e.position;
                                           }
                                         },
                                         onPointerUp: (_) =>
@@ -11271,6 +11378,7 @@ class _EditorScreenState extends State<EditorScreen>
                                         onPointerCancel: (_) =>
                                             _setSelHandleDrag(false),
                                         child: SingleChildScrollView(
+                                          key: _scrollKey,
                                           controller: _bodyScroll,
                                           // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
                                           physics: _selHandleDrag
