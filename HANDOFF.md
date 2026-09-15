@@ -1953,7 +1953,9 @@ tool/verify.sh
   `--submit` 은 소유자가 말했을 때만
 - `appstore_android.sh` — 플레이용 AAB 굽기·올리기(alpha). 인수인계서의 손 명령 두 줄이 이것이 됐다
 - `patch.sh <ios|android|both>` — **심사 없이** 다트 고침 내보내기(Shorebird 덧판). `docs/셔버드.md`.
-  판 번호를 올리지 않는다. 원어·자산이 바뀌었으면 거절된다 — 그때는 판을 굽는다
+  판 번호를 올리지 않는다. 원어·자산이 바뀌었으면 거절된다 — 그때는 판을 굽는다.
+  **개발용 판(deploy.sh)이 든 기기에는 덧판이 안 온다** — 소유자 아이폰에 개발용 판을 넣는 것은
+  확인이 필요할 때만 한다(PENDING C-19, 2026-09-15)
 - `screenshots_mac.sh` — 맥 스크린샷 33장. 앱이 화면을 차리고 이 스크립트가 찍는다(맥에는
   `takeScreenshot` 다리가 없다). 시연 메모는 `integration_test/shot_demo.dart` 한 벌
 
