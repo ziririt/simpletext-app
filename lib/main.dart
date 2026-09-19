@@ -10993,9 +10993,12 @@ class _EditorScreenState extends State<EditorScreen>
                             // 2026-09-19 소유자 지시 — "편집하다가 자동 바꾸기 규칙을
                             // 추가하고 싶은데 앱 설정 안에만 있다. 여기서 바로 보이게."
                             // 앱 설정의 그 자리로 곧장 간다(anchor: rules).
+                            // 아이콘은 앱에 **이미 있는 것**을 쓴다. 새 아이콘은 글꼴
+                            // 자산이 바뀌는 일이라 덧판(Shorebird)으로 못 나간다 —
+                            // 첫 덧판 시도가 이 한 줄 때문에 거절됐다(2026-09-19).
                             act(
                               'set:rules',
-                              CupertinoIcons.arrow_2_squarepath,
+                              Icons.find_replace,
                               lm.rulesSectionTitle,
                             ),
                             act(
