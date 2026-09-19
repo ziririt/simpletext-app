@@ -33,6 +33,7 @@ import 'core/update_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ads_service.dart';
+import 'core/ai_clean.dart';
 import 'core/edge_scroll.dart';
 import 'core/handle_hit.dart';
 import 'core/read_mark.dart';
@@ -8461,7 +8462,15 @@ class _EditorScreenState extends State<EditorScreen>
       // 남의 글을 30초마다 제 옛 글로 도로 덮었다. 소유자가 웹앱에서 쓴
       // 줄들이 맥앱 때문에 계속 사라진 사건이 이것이다. 깃발은 태그 셈에만
       // 남기고, 여기서는 지금 이 순간의 사실을 묻는다.
-      editing: bodyCtl.text != note.body,
+      // 제목도 센다(2026-09-19 소유자 신고 — "제목이 길어지면 아예 입력이
+      // 안 된다"). 본문은 저장이 미뤄지는 잠깐 동안 '치는 중'으로 잡히지만,
+      // 제목은 한 글자마다 바로 저장돼서 언제나 '다 저장됐다'로 보였다. 그래서
+      // 동기화가 옛 판을 물어 오면 **치는 중인 제목이 옛 제목으로 덮였다** —
+      // 갓 바뀐 노트는 2분 동안 3초마다 동기화가 도니, 길게 칠수록 더 자주.
+      // 제목 칸에 손가락이 있으면 지금 치는 중이다. 그때는 내 것이 이긴다.
+      editing: bodyCtl.text != note.body ||
+          titleCtl.text != note.title ||
+          _titleFocus.hasFocus,
     )) {
       case EditorRefresh.keep:
         return;
@@ -8518,6 +8527,12 @@ class _EditorScreenState extends State<EditorScreen>
 
     // 제목은 손대기 전까지 본문을 따라간다(소유자 제안 2026-08-16).
     // 규칙은 core/auto_meta.dart에 있고 테스트로 고정되어 있다.
+    // 제목 칸에서 무언가 치고 있으면 그건 손으로 적은 제목이다. 동기화가
+    // 물어 온 옛 객체는 titleAuto 가 참일 수 있어서(2026-09-19), 여기서 못 박지
+    // 않으면 아래 자동 제목이 치는 글자 위로 저장된다.
+    if (_titleFocus.hasFocus && titleCtl.text.trim().isNotEmpty) {
+      note.titleAuto = false;
+    }
     if (canRetitle(auto: note.titleAuto)) {
       final t = autoTitle(note.body);
       note.title = t;
@@ -9285,8 +9300,17 @@ class _EditorScreenState extends State<EditorScreen>
     );
   }
 
+  // 2026-09-19 — 이 노트가 **무슨 표기로 쓰였는지** 모델에게 말해 준다. 안 말해
+  // 주니 '제목3' 소리를 듣고 <h3 style="font-family: 제목3;"> 을 써 보냈다(소유자
+  // 신고). 그래도 태그가 오면 core/ai_clean.dart 가 걷는다 — 두 겹이다.
   static const _aiSys =
-      '너는 텍스트 편집 도구다. 사용자의 지시대로만 본문을 편집한다. 규칙: 숫자·날짜·통화·퍼센트·고유명사·URL은 절대 바꾸지 않는다. 요청하지 않은 사실을 추가하지 않고, 요청하지 않은 내용을 삭제하지 않는다. 입력 언어를 유지한다. 결과 본문만 출력하고 설명·인사·코드펜스는 붙이지 않는다.';
+      '너는 텍스트 편집 도구다. 사용자의 지시대로만 본문을 편집한다. '
+      '이 글은 HTML 이 아니라 가벼운 표기의 순수 텍스트다. 쓸 수 있는 표기는 이것뿐이다: '
+      '제목1·제목2·제목3 은 줄 앞에 "# " "## " "### ", 인용은 줄 앞에 "> ", 목록은 줄 앞에 "- ", '
+      '코드는 ``` 로 감싼다. 글꼴·크기·색·스타일·폰트를 바꾸라는 말은 전부 이 제목 표기로 옮긴다'
+      '("제목3으로"는 그 줄 앞에 "### "). HTML 태그·CSS·마크다운 굵게(**)는 절대 쓰지 않는다. '
+      '규칙: 숫자·날짜·통화·퍼센트·고유명사·URL은 절대 바꾸지 않는다. 요청하지 않은 사실을 추가하지 않고, '
+      '요청하지 않은 내용을 삭제하지 않는다. 입력 언어를 유지한다. 결과 본문만 출력하고 설명·인사·코드펜스는 붙이지 않는다.';
 
   /// [system]을 주면 그 규칙으로 부른다(태그 뽑기처럼 편집이 아닌 용도).
   ///
@@ -9816,6 +9840,9 @@ class _EditorScreenState extends State<EditorScreen>
                             out = out
                                 .replaceFirst(RegExp(r'^```[a-z]*\n?'), '')
                                 .replaceFirst(RegExp(r'\n?```$'), '');
+                            // 모델이 그래도 HTML 을 보냈으면 우리 표기로 걷는다
+                            // (core/ai_clean.dart 머리말, 2026-09-19).
+                            out = stripHtmlToNote(out);
                             if (out.isEmpty) throw Exception(l.aiEmptyResponse);
                             guard = numberGuard(text, out);
                             text = out;
@@ -10963,6 +10990,14 @@ class _EditorScreenState extends State<EditorScreen>
                             // 그리고 보기 설정과 앱 설정은 붙어 있어야 한다.
                             // 하나는 이 노트를 어떻게 보여 줄지, 하나는 앱 전체를
                             // 어떻게 할지 — 같은 결의 일이라 나란히 둔다.
+                            // 2026-09-19 소유자 지시 — "편집하다가 자동 바꾸기 규칙을
+                            // 추가하고 싶은데 앱 설정 안에만 있다. 여기서 바로 보이게."
+                            // 앱 설정의 그 자리로 곧장 간다(anchor: rules).
+                            act(
+                              'set:rules',
+                              CupertinoIcons.arrow_2_squarepath,
+                              lm.rulesSectionTitle,
+                            ),
                             act(
                               'view',
                               Icons.text_format,
@@ -11647,7 +11682,20 @@ class _EditorScreenState extends State<EditorScreen>
                                               ),
                                               // 글보다 아래, 빈칸보다 아래. 타자를 치는 동안에는
                                               // 눈에 들어오지 않는 자리다(2026-08-17 소유자 지시).
-                                              const InlineAdBlock(),
+                                              //
+                                              // 2026-09-19 소유자 지시 — "편집할 때 하단의 큰 배너도
+                                              // 안 보이게. 자판이 올라오면 간섭이 된다." 자판이 떠
+                                              // 있는 동안은 숨긴다. 위쪽 띠와 같은 규칙이다. 지우지
+                                              // 않고 숨기는 까닭: 지우면 자판이 내려갈 때마다 광고를
+                                              // 새로 불러 쓸데없는 요청이 늘고 자리가 흔들린다.
+                                              Offstage(
+                                                offstage:
+                                                    MediaQuery.viewInsetsOf(
+                                                          context,
+                                                        ).bottom >
+                                                        0,
+                                                child: const InlineAdBlock(),
+                                              ),
                                             ],
                                           ),
                                         ),
