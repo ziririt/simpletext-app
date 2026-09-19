@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "dart": {
+      "command": "dart",
+      "args": [
+        "mcp-server",
+        "--disable", "flutter_driver",
+        "--disable", "flutter_app_lifecycle",
+        "--disable", "create_project",
+        "--disable", "pub_dev_search"
+      ]
+    }
+  }
+}
