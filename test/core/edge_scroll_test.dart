@@ -27,9 +27,15 @@ void main() {
       expect(edgePlan(y: -50, top: 0, bottom: 800)!.depth, 1);
       expect(edgePlan(y: 900, top: 0, bottom: 800)!.depth, 1);
     });
-    test('창이 좁으면 띠를 반씩 나눈다', () {
-      // 100 높이 → 띠 50. 가운데(50)는 위 띠의 경계이자 아래 띠의 경계.
+    test('창이 짧으면 띠도 줄어든다 — 창의 22%까지 (2026-09-19)', () {
+      // 자판이 올라온 아이폰: 창 300pt → 띠 66. 가운데 150 은 띠 밖이어야 한다.
+      expect(edgePlan(y: 150, top: 0, bottom: 300), isNull);
+      expect(edgePlan(y: 100, top: 0, bottom: 300), isNull);
+      expect(edgePlan(y: 60, top: 0, bottom: 300)!.dir, -1);
+      expect(edgePlan(y: 240, top: 0, bottom: 300)!.dir, 1);
+      // 100 높이 → 띠 22
       expect(edgePlan(y: 20, top: 0, bottom: 100)!.dir, -1);
+      expect(edgePlan(y: 50, top: 0, bottom: 100), isNull);
       expect(edgePlan(y: 80, top: 0, bottom: 100)!.dir, 1);
     });
   });

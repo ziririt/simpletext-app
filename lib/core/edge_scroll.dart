@@ -43,11 +43,16 @@ const Duration kEdgeRamp = Duration(milliseconds: 1500);
   required double bottom,
   double zone = kEdgeZone,
 }) {
-  if (bottom - top <= zone * 2) {
-    // 창이 띠 둘보다 좁으면 반씩 나눈다. 아주 작은 창에서만 생긴다.
-    zone = (bottom - top) / 2;
-  }
-  if (zone <= 0) return null;
+  // 띠는 창 높이의 22%를 넘지 않는다.
+  //
+  // 2026-09-19 소유자 신고 — "핸들을 잡아 옆으로 끄는 게 여전히 안 된다. 시험할 땐
+  // 됐는데." 아이폰에서 자판이 올라오면 굴리는 창이 300pt 남짓이다. 거기에 위아래
+  // 72px 씩 띠를 두면 **창의 절반이 띠**라, 옆으로 끄는 손가락도 거의 늘 띠 안에
+  // 있었다. 시험은 자판을 내린 긴 창에서 했고, 거기서는 띠가 창의 한 줌이었다.
+  // 창이 짧아지면 띠도 같이 줄인다 — 300pt 창이면 66px, 200pt 창이면 44px.
+  final h = bottom - top;
+  if (h <= 0) return null;
+  if (zone > h * 0.22) zone = h * 0.22;
   if (y <= top + zone) {
     final depth = ((top + zone - y) / zone).clamp(0.0, 1.0);
     return (dir: -1, depth: depth);

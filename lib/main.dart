@@ -7061,6 +7061,12 @@ class _EditorScreenState extends State<EditorScreen>
   /// 끌고 있는 것이 블록의 앞쪽 끝인가(아니면 뒤쪽 끝).
   bool _dragsStart = false;
 
+  /// 잡는 순간 '핸들이 가리키는 글자 자리 − 손가락 자리'. 손가락은 핸들 손잡이를
+  /// 잡지 글자를 잡지 않는다 — 아래 핸들은 글줄보다 한 줄쯤 아래를 누른다.
+  /// 이 차이를 빼지 않고 손가락 자리로 글자를 고르면 한 줄 어긋난 자리를 고른다.
+  /// 플러터의 핸들 끌기가 안에서 하는 셈과 같다.
+  Offset _grabDelta = Offset.zero;
+
   /// 굴리는 창(SingleChildScrollView)을 찾기 위한 열쇠.
   final GlobalKey _scrollKey = GlobalKey();
 
@@ -7075,6 +7081,7 @@ class _EditorScreenState extends State<EditorScreen>
         .toList();
     if (pts.length < 2) return;
     _dragsStart = (pts[0] - global).distance <= (pts[1] - global).distance;
+    _grabDelta = (_dragsStart ? pts[0] : pts[1]) - global;
   }
 
   void _edgeTick() {
@@ -7103,14 +7110,25 @@ class _EditorScreenState extends State<EditorScreen>
       pos.minScrollExtent,
       pos.maxScrollExtent,
     );
-    if (want != pos.pixels) _bodyScroll.jumpTo(want);
+    // 굴릴 데가 없으면(맨 위·맨 아래에 닿았으면) **선택도 건드리지 않는다.**
+    //
+    // 2026-09-19 소유자 신고의 진짜 원인이 여기였다. 예전 코드는 띠 안에만 있으면
+    // 매 틱 손가락 자리로 선택을 다시 썼다. 굴러가지 않는 자리에서도 그랬다.
+    // 플러터의 핸들 끌기는 핸들 손잡이 기준으로 글자를 고르고, 우리는 손가락
+    // 기준으로 골랐으니 둘이 매 틱 다른 자리를 두고 **싸웠다.** 옆으로 끌면
+    // 선택이 떨리고, 한 줄 아래로 튀고, 잡히지 않는 것처럼 보였다.
+    // 시험에서는 안 걸렸다 — 자판을 내린 긴 창에서 아래로 끌어 굴리기만 봤다.
+    if (want == pos.pixels) return;
+    _bodyScroll.jumpTo(want);
 
-    // 굴린 만큼 선택을 늘린다 — 손가락 밑, 다만 창 안쪽으로 물린 자리.
+    // 굴린 만큼 선택을 늘린다 — 핸들이 가리키던 자리(손가락 + 잡을 때의 차이),
+    // 다만 창 안쪽으로 물린 자리. 캐럿이 여백 안에 있으면 플러터가 따로 뛰지 않는다.
     final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
     if (ed == null) return;
     const inset = 18.0;
-    final y = p.dy.clamp(top + inset, bottom - inset);
-    final tp = ed.getPositionForPoint(Offset(p.dx, y));
+    final anchor = p + _grabDelta;
+    final y = anchor.dy.clamp(top + inset, bottom - inset);
+    final tp = ed.getPositionForPoint(Offset(anchor.dx, y));
     final sel = bodyCtl.selection;
     if (!sel.isValid) return;
     var start = _dragsStart ? tp.offset : sel.start;
