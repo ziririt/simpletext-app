@@ -15953,7 +15953,11 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
   Widget build(BuildContext context) {
     final l = L10n.of(context);
     final s = store.settings;
-    return Scaffold(
+    // 2026-09-19 소유자 지시 — "설정 페이지에서도 위아래 배너 광고가 안 뜨게."
+    // 결제·첫인사 화면과 같은 손들기(AdFreeScope). 설정 아래에서 여는 규칙·
+    // 동기화·보기 화면도 설정이 뒤에 살아 있으므로 같이 걷힌다.
+    return AdFreeScope(
+      child: Scaffold(
       // 2026-08-17 소유자 지시 — "버전을 설정페이지 맨 밑에 표시하는데,
       // 설정 페이지 맨 위에 표시해줘. 가운데는 '설정'이라고 나오고, 우측에
       // 버전을 기본 폰트 사이즈로 표시해줘."
@@ -16926,6 +16930,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -17214,7 +17219,9 @@ class _RulesScreenState extends State<RulesScreen> {
   Widget build(BuildContext context) {
     final l = L10n.of(context);
     final s = store.settings;
-    return Scaffold(
+    // 편집 메뉴에서 곧장 올 때는 설정이 뒤에 없다 — 여기서도 손을 든다(2026-09-19).
+    return AdFreeScope(
+      child: Scaffold(
       appBar: AppBar(title: Text(l.rulesSectionTitle)),
       body: Center(
         child: ConstrainedBox(
@@ -17256,6 +17263,7 @@ class _RulesScreenState extends State<RulesScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }
