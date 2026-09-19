@@ -6981,6 +6981,43 @@ class _EditorScreenState extends State<EditorScreen>
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
   final GlobalKey _bodyKey = GlobalKey();
 
+  /// 제목 칸의 열쇠. 아래 _revealTitleCaret 에서 쓴다.
+  final GlobalKey _titleKey = GlobalKey();
+
+  /// 제목 칸이 커서를 보이는 자리까지 스스로 굴러가게 한다.
+  ///
+  /// 2026-09-19 소유자 신고 — "제목이 길어지면 아무리 쳐도, 지워도 무반응이다.
+  /// 나갔다 들어오면 글자가 더 쳐져 있거나 지워져 있다." 즉 글자는 들어가는데
+  /// **보이는 자리가 안 따라온다.** 한 줄짜리 칸은 글이 칸보다 길어지면 가로로
+  /// 굴러가며 커서를 보여야 하는데, 우리 화면은 한 글자마다 저장하고 앱 전체를
+  /// 다시 그리는 바람에 그 굴림이 매번 제자리로 돌아갔다. 그래서 글자를 칠 때마다
+  /// 그림이 끝난 뒤 커서 자리를 보이게 직접 부른다(EditableTextState.bringIntoView).
+  void _revealTitleCaret() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_titleFocus.hasFocus) return;
+      final ctx = _titleKey.currentContext;
+      if (ctx == null) return;
+      EditableTextState? found;
+      void visit(Element e) {
+        if (found != null) return;
+        if (e is StatefulElement && e.state is EditableTextState) {
+          found = e.state as EditableTextState;
+          return;
+        }
+        e.visitChildren(visit);
+      }
+
+      try {
+        ctx.visitChildElements(visit);
+      } catch (_) {
+        return;
+      }
+      final sel = titleCtl.selection;
+      if (!sel.isValid) return;
+      found?.bringIntoView(sel.extent);
+    });
+  }
+
   // ── 선택 핸들 끌기 vs 바깥 스크롤 (2026-09-07 소유자 신고) ──────────
   //
   // 본문 TextField는 maxLines:null 로 글 길이만큼 늘어나고 굴리는 일은
@@ -7085,6 +7122,43 @@ class _EditorScreenState extends State<EditorScreen>
     _grabDelta = (_dragsStart ? pts[0] : pts[1]) - global;
   }
 
+  /// 손가락을 따라 선택 끝을 옮긴다 — 플러터의 핸들 끌기가 안 잡혔을 때의 보험.
+  ///
+  /// 2026-09-19 소유자 — "열 번 중 두 번은 안 잡힌다." 우리 판정 상자(handle_hit)는
+  /// 넉넉해서 잠금은 걸리는데, 플러터 핸들 자체의 손잡이는 그보다 작다. 손가락이
+  /// 우리 상자 안이지만 플러터 손잡이 밖에 닿으면, 스크롤은 잠겼고 핸들은 안 움직여
+  /// **아무 일도 안 일어난다.** 그 두 번이 이것이다. 그래서 잠금이 걸린 동안은
+  /// 우리가 직접 손가락을 따라 선택을 옮긴다. 플러터도 같이 끌고 있으면 둘 다
+  /// 같은 자리(핸들이 가리키던 자리 + 손가락 이동)를 고르므로 싸우지 않는다.
+  void _followHandle(Offset global) {
+    final box = _scrollKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    final bottom = top + box.size.height;
+    _selectAt(global + _grabDelta, top: top, bottom: bottom);
+  }
+
+  /// [anchor](전역 좌표)의 글자로 끌고 있는 끝을 옮긴다. 창 밖이면 안쪽으로 물린다.
+  void _selectAt(Offset anchor, {required double top, required double bottom}) {
+    final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
+    if (ed == null) return;
+    const inset = 18.0;
+    final y = anchor.dy.clamp(top + inset, bottom - inset);
+    final tp = ed.getPositionForPoint(Offset(anchor.dx, y));
+    final sel = bodyCtl.selection;
+    if (!sel.isValid) return;
+    var start = _dragsStart ? tp.offset : sel.start;
+    var end = _dragsStart ? sel.end : tp.offset;
+    if (start > end) {
+      final s = start;
+      start = end;
+      end = s;
+    }
+    if (start == end) return; // 끝이 서로 만나면 블록이 사라진다 — 거기까진 안 간다
+    if (start == sel.start && end == sel.end) return;
+    bodyCtl.selection = TextSelection(baseOffset: start, extentOffset: end);
+  }
+
   void _edgeTick() {
     if (!mounted || !_selHandleDrag || !_bodyScroll.hasClients) return;
     final p = _dragPointer;
@@ -7124,23 +7198,7 @@ class _EditorScreenState extends State<EditorScreen>
 
     // 굴린 만큼 선택을 늘린다 — 핸들이 가리키던 자리(손가락 + 잡을 때의 차이),
     // 다만 창 안쪽으로 물린 자리. 캐럿이 여백 안에 있으면 플러터가 따로 뛰지 않는다.
-    final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
-    if (ed == null) return;
-    const inset = 18.0;
-    final anchor = p + _grabDelta;
-    final y = anchor.dy.clamp(top + inset, bottom - inset);
-    final tp = ed.getPositionForPoint(Offset(anchor.dx, y));
-    final sel = bodyCtl.selection;
-    if (!sel.isValid) return;
-    var start = _dragsStart ? tp.offset : sel.start;
-    var end = _dragsStart ? sel.end : tp.offset;
-    if (start > end) {
-      final s = start;
-      start = end;
-      end = s;
-    }
-    if (start == sel.start && end == sel.end) return;
-    bodyCtl.selection = TextSelection(baseOffset: start, extentOffset: end);
+    _selectAt(p + _grabDelta, top: top, bottom: bottom);
   }
 
   /// 직전 선택 범위. '방금 무엇이 바뀌었나'를 알려면 이전 값이 있어야 한다.
@@ -10572,6 +10630,18 @@ class _EditorScreenState extends State<EditorScreen>
                             if (mounted) setState(() {});
                             return;
                           }
+                          if (v == 'rules') {
+                            // 설정 화면의 그 자리로 굴러가는 대신 규칙 화면으로 곧장
+                            // (2026-09-19 소유자: "아예 자동규칙 설정 페이지로").
+                            await Navigator.push<void>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RulesScreen(),
+                              ),
+                            );
+                            if (mounted) setState(() {});
+                            return;
+                          }
                           if (v == 'wizard') {
                             _showWizardDialog();
                             return;
@@ -10997,7 +11067,7 @@ class _EditorScreenState extends State<EditorScreen>
                             // 자산이 바뀌는 일이라 덧판(Shorebird)으로 못 나간다 —
                             // 첫 덧판 시도가 이 한 줄 때문에 거절됐다(2026-09-19).
                             act(
-                              'set:rules',
+                              'rules',
                               Icons.find_replace,
                               lm.rulesSectionTitle,
                             ),
@@ -11084,6 +11154,7 @@ class _EditorScreenState extends State<EditorScreen>
                                   ),
                                 ),
                                 TextField(
+                                  key: _titleKey,
                                   controller: titleCtl,
                                   focusNode: _titleFocus,
                                   decoration: InputDecoration(
@@ -11125,6 +11196,7 @@ class _EditorScreenState extends State<EditorScreen>
                                     if (stopAutoTitle(v))
                                       note.titleAuto = false;
                                     _save();
+                                    _revealTitleCaret();
                                   },
                                 ),
                               ],
@@ -11429,6 +11501,7 @@ class _EditorScreenState extends State<EditorScreen>
                                         onPointerMove: (e) {
                                           if (_selHandleDrag) {
                                             _dragPointer = e.position;
+                                            _followHandle(e.position);
                                           }
                                         },
                                         onPointerUp: (_) =>

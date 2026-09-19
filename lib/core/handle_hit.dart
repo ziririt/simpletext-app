@@ -36,11 +36,13 @@ library;
 import 'dart:ui' show Offset;
 
 /// 핸들 좌우로 이만큼까지는 '잡으려는 것'으로 본다.
-const double kHandleGrabX = 60;
+// 2026-09-19 — 60 → 76. 소유자: "열 번 중 두 번은 안 잡힌다. 범위를 더 넓혀 달라."
+// 넓혀서 잃는 것은 없다(위 머리말) — 블록이 잡혀 있을 때만 도는 셈이다.
+const double kHandleGrabX = 76;
 
 /// 핸들 위아래로 이만큼까지. 핸들은 줄 위(시작)와 아래(끝)로 튀어나와
 /// 있어서 세로를 더 넉넉히 둔다.
-const double kHandleGrabY = 72;
+const double kHandleGrabY = 88;
 
 /// 손가락이 핸들 가운데 하나라도 가까운가.
 bool nearAnyHandle(

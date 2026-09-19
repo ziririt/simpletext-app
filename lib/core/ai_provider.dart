@@ -74,11 +74,15 @@ List<String> defaultLadder(String provider) {
         'claude-sonnet-5',
       ];
     case 'openai':
-      // 2026-08-17 — nano에서 mini로 올렸다. 아래 tierRank의 주석 참고.
-      return const ['gpt-5-mini', 'gpt-5-nano', 'gpt-5'];
+      // 2026-09-19 점검 — gpt-5 / gpt-5-mini / gpt-5-nano 는 **2026-12-11 에 꺼진다**
+      // (OpenAI 폐기 공지 06-11). 공식 대체는 mini→gpt-5.6-terra, nano→gpt-5.6-luna,
+      // gpt-5→gpt-5.6-sol. 차례는 08-17 결정 그대로(중간 급 먼저, 그다음 싼 것).
+      // 옛 이름은 12-11 까지 마지막 보루로 하나만 남긴다.
+      return const ['gpt-5.6-terra', 'gpt-5.6-luna', 'gpt-5.6-sol', 'gpt-5-mini'];
     case 'xai':
-      // grok-4.1-fast는 물러났다. 지금 공식 주력은 4.6 하나다.
-      return const ['grok-4.6', 'grok-4.1-fast', 'grok-4'];
+      // 2026-09-19 점검 — grok-4.1-fast·grok-4 계열은 05-15 에 이미 물러났다
+      // (xAI 공지). 지금 주력은 4.6, 옛 fast 자리의 대체는 4.3 이다.
+      return const ['grok-4.6', 'grok-4.3'];
   }
   return const [];
 }
@@ -164,8 +168,10 @@ int tierRank(String provider, String id) {
       if (lo.contains('opus')) return 2;
       return 3;
     case 'openai':
-      if (lo.contains('mini')) return 0;
-      if (lo.contains('nano')) return 1;
+      // 5.6 세대는 이름이 별자리다(2026-09-19): terra = 옛 mini 자리, luna = 옛 nano,
+      // sol = 옛 gpt-5. 급은 옛 이름의 것을 그대로 잇는다.
+      if (lo.contains('mini') || lo.contains('terra')) return 0;
+      if (lo.contains('nano') || lo.contains('luna')) return 1;
       if (lo.contains('pro')) return 3;
       return 2;
     case 'xai':
