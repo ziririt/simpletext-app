@@ -1045,7 +1045,10 @@ class SimpleTextApp extends StatelessWidget {
                 // 검사도 다 통과했다. 다만 조건이 한 번도 참이 안 됐을 뿐이다.
                 ClipRect(
                   child: AnimatedSize(
-                    duration: MediaQuery.viewInsetsOf(ctx).bottom > 0
+                    // 자판이 올라올 때와 배너를 걷을 때(AdFreeScope·메뉴)는 한 번에 —
+                    // 그 위에 서는 것들(선택 손잡이·메뉴 자리)이 흔들리지 않게.
+                    duration: MediaQuery.viewInsetsOf(ctx).bottom > 0 ||
+                            AdsService.instance.adFree.value > 0
                         ? Duration.zero
                         : const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
@@ -4467,7 +4470,13 @@ class _HomeScreenState extends State<HomeScreen>
   /// 편집 화면의 '...'과 같은 모양으로 만든다. 위쪽은 이 화면에서 하는 일,
   /// 맨 아래는 앱 설정, 그 사이에 구분선. 두 화면의 메뉴가 다르게 생기면
   /// 사용자는 매번 새로 배운다.
-  Widget _listMenu(L10n l) => PopupMenuButton<String>(
+  final MenuAdHold _listMenuHold = MenuAdHold();
+
+  Widget _listMenu(L10n l) => Listener(
+    onPointerDown: (_) => _listMenuHold.down(),
+    onPointerUp: (_) => _listMenuHold.up(),
+    onPointerCancel: (_) => _listMenuHold.up(),
+    child: PopupMenuButton<String>(
     // 2026-08-17 소유자 요청 — 삼선. '...'은 애플이 '더 있음'을 뜻할 때
     // 쓰는 표시고, 삼선은 '메뉴'를 뜻한다. 이 자리는 이제 불러오기·
     // 내보내기·휴지통·설정이 들어 있는 진짜 메뉴다.
@@ -4477,14 +4486,12 @@ class _HomeScreenState extends State<HomeScreen>
     // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
     position: PopupMenuPosition.under,
     offset: const Offset(0, 6),
-    // 메뉴가 펼쳐진 동안은 위쪽 배너를 가린다(2026-09-21 소유자 신고 — "노트 메뉴에서
-    // 여전히 나온다"). 메뉴는 한 번에 한 가지 일을 고르는 자리라 그 위에 광고가 서 있을
-    // 까닭이 없다. 걷지 않고 가리는 까닭은 ads_service.dart 의 adCovered 머리말.
-    // 닫히는 길이 둘(고름·바깥 누름)이라 열 때 하나 올리고 두 길에서 각각 내린다.
-    onOpened: () => AdsService.instance.adCovered.value++,
-    onCanceled: () => AdsService.instance.adCovered.value--,
+    // 메뉴가 펼쳐진 동안은 위쪽 배너를 **자리째** 걷는다(2026-09-22 소유자 —
+    // "넓게 보려고 하는 건데"). 손가락이 닿을 때 걷는 까닭은 MenuAdHold 머리말.
+    onOpened: _listMenuHold.opened,
+    onCanceled: _listMenuHold.closed,
     onSelected: (v) async {
-      AdsService.instance.adCovered.value--;
+      _listMenuHold.closed();
       switch (v) {
         case 'import':
           final n = await ImportService.importFiles();
@@ -4553,6 +4560,7 @@ class _HomeScreenState extends State<HomeScreen>
         row('trash', Icons.delete_outline, l.trashTitle),
       ];
     },
+    ),
   );
 
   /// 맥 상단 '파일' 메뉴를 달고, 눌렀을 때 할 일을 잇는다.
@@ -6987,6 +6995,9 @@ class _EditorScreenState extends State<EditorScreen>
 
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
   final GlobalKey _bodyKey = GlobalKey();
+
+  /// 삼선 메뉴가 펼쳐진 동안 배너를 걷는 손잡이(ads_service.dart MenuAdHold).
+  final MenuAdHold _editMenuHold = MenuAdHold();
 
   /// 제목 칸의 열쇠. 아래 _revealTitleCaret 에서 쓴다.
   final GlobalKey _titleKey = GlobalKey();
@@ -10601,6 +10612,11 @@ class _EditorScreenState extends State<EditorScreen>
                       // 자주 하는 일이 올라온다.
                       // 2026-08-16 소유자 요청 — 애플 메모장처럼 '...' 메뉴.
                       // 이 메모에 대한 설정이 앞으로 여기에 쌓인다. 지금은 삭제 하나.
+                      Listener(
+                        onPointerDown: (_) => _editMenuHold.down(),
+                        onPointerUp: (_) => _editMenuHold.up(),
+                        onPointerCancel: (_) => _editMenuHold.up(),
+                        child:
                       PopupMenuButton<String>(
                         // 목록 화면과 같은 삼선. 한쪽만 바꾸면 같은 일을 하는 버튼이
                         // 두 모양이 된다(2026-08-17).
@@ -10620,12 +10636,12 @@ class _EditorScreenState extends State<EditorScreen>
                           minWidth: 288,
                           maxWidth: 344,
                         ),
-                        // 메뉴가 펼쳐진 동안은 위쪽 배너를 가린다 — 목록 메뉴와 같다
-                        // (2026-09-21 소유자 신고 "노트 메뉴에서 여전히 나온다").
-                        onOpened: () => AdsService.instance.adCovered.value++,
-                        onCanceled: () => AdsService.instance.adCovered.value--,
+                        // 메뉴가 펼쳐진 동안은 위쪽 배너를 자리째 걷는다 — 목록 메뉴와
+                        // 같다(MenuAdHold 머리말, 2026-09-22).
+                        onOpened: _editMenuHold.opened,
+                        onCanceled: _editMenuHold.closed,
                         onSelected: (v) async {
-                          AdsService.instance.adCovered.value--;
+                          _editMenuHold.closed();
                           // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
                           // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
                           // 앱 설정은 편집과 직접 상관이 없어 구분선으로 갈라 놨다.
@@ -11112,6 +11128,7 @@ class _EditorScreenState extends State<EditorScreen>
                             ),
                           ];
                         },
+                      ),
                       ),
                     ],
                   ),

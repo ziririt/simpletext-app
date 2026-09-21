@@ -114,13 +114,6 @@ class AdsService {
 
   /// 배너를 걷어야 하는 화면이 몇 장 떠 있는가(AdFreeScope).
   final ValueNotifier<int> adFree = ValueNotifier(0);
-
-  /// 광고를 **가리되 자리는 남긴다**. 메뉴가 펼쳐진 동안(2026-09-21).
-  ///
-  /// adFree 처럼 아예 걷으면 아래 화면이 띠 높이만큼 위로 올라오는데, 이미
-  /// 펼쳐진 메뉴는 단추가 있던 옛 자리에 그대로 떠 있어 단추와 메뉴가 떨어져
-  /// 보인다. 그래서 여기서는 자리를 그대로 두고 광고만 앱 색으로 덮는다.
-  final ValueNotifier<int> adCovered = ValueNotifier(0);
   bool _booting = false;
   bool _adBusy = false;
 
@@ -285,7 +278,6 @@ class _TopBannerBarState extends State<TopBannerBar> {
     Store.instance.addListener(_refresh);
     AdsService.instance.ready.addListener(_refresh);
     AdsService.instance.adFree.addListener(_refresh);
-    AdsService.instance.adCovered.addListener(_refresh);
   }
 
   void _refresh() {
@@ -480,7 +472,6 @@ class _TopBannerBarState extends State<TopBannerBar> {
     Store.instance.removeListener(_refresh);
     AdsService.instance.ready.removeListener(_refresh);
     AdsService.instance.adFree.removeListener(_refresh);
-    AdsService.instance.adCovered.removeListener(_refresh);
     _ad?.dispose();
     _ad = null;
     super.dispose();
@@ -560,12 +551,6 @@ class _TopBannerBarState extends State<TopBannerBar> {
               Positioned.fill(
                 child: ClipRect(child: AdWidget(ad: native ?? _ad!)),
               ),
-              // 메뉴가 펼쳐진 동안은 광고를 앱 색으로 덮는다(adCovered 머리말).
-              // 광고 위젯은 그대로 살아 있다 — 부수지 않는다.
-              if (AdsService.instance.adCovered.value > 0)
-                Positioned.fill(
-                  child: ColoredBox(color: c.panel),
-              ),
               Positioned(
                 top: 2,
                 right: 2,
@@ -594,6 +579,47 @@ class _TopBannerBarState extends State<TopBannerBar> {
         ),
       ),
     );
+  }
+}
+
+/// 메뉴가 펼쳐진 동안 배너를 **걷는** 손잡이 — 자리까지 없앤다.
+///
+/// 2026-09-22 소유자 — "메뉴를 펼치면 광고 자리 자체가 없어져야 한다. 넓게 보려고
+/// 하는 건데." 03시에 낸 '가리기'는 자리를 남겼다. 소유자가 원한 것은 자리였다.
+///
+/// 걷으면 아래 화면이 띠 높이만큼 올라오는데, 이미 펼쳐진 메뉴는 단추가 있던 옛
+/// 자리에 떠서 단추와 떨어져 보인다 — 그래서 **단추를 누르는 순간(손가락이 닿을 때)**
+/// 걷는다. 메뉴가 열리는 것은 손가락을 뗄 때이고, 그 사이에 화면이 다시 놓이므로
+/// 메뉴는 올라온 단추 자리에 맞춰 펼쳐진다. 닿았다가 메뉴가 안 열리면(끌어 나감)
+/// 다음 그림에서 도로 놓는다.
+class MenuAdHold {
+  bool _holding = false;
+  bool _open = false;
+
+  void down() {
+    if (_holding) return;
+    _holding = true;
+    AdsService.instance.adFree.value++;
+  }
+
+  void opened() => _open = true;
+
+  /// 손가락을 뗐다. 메뉴가 열렸으면 닫힐 때 놓고, 안 열렸으면 지금 놓는다.
+  void up() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_holding && !_open) _release();
+    });
+  }
+
+  void closed() {
+    _open = false;
+    _release();
+  }
+
+  void _release() {
+    if (!_holding) return;
+    _holding = false;
+    AdsService.instance.adFree.value--;
   }
 }
 
