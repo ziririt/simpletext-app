@@ -4477,7 +4477,14 @@ class _HomeScreenState extends State<HomeScreen>
     // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
     position: PopupMenuPosition.under,
     offset: const Offset(0, 6),
+    // 메뉴가 펼쳐진 동안은 위쪽 배너를 가린다(2026-09-21 소유자 신고 — "노트 메뉴에서
+    // 여전히 나온다"). 메뉴는 한 번에 한 가지 일을 고르는 자리라 그 위에 광고가 서 있을
+    // 까닭이 없다. 걷지 않고 가리는 까닭은 ads_service.dart 의 adCovered 머리말.
+    // 닫히는 길이 둘(고름·바깥 누름)이라 열 때 하나 올리고 두 길에서 각각 내린다.
+    onOpened: () => AdsService.instance.adCovered.value++,
+    onCanceled: () => AdsService.instance.adCovered.value--,
     onSelected: (v) async {
+      AdsService.instance.adCovered.value--;
       switch (v) {
         case 'import':
           final n = await ImportService.importFiles();
@@ -10613,7 +10620,12 @@ class _EditorScreenState extends State<EditorScreen>
                           minWidth: 288,
                           maxWidth: 344,
                         ),
+                        // 메뉴가 펼쳐진 동안은 위쪽 배너를 가린다 — 목록 메뉴와 같다
+                        // (2026-09-21 소유자 신고 "노트 메뉴에서 여전히 나온다").
+                        onOpened: () => AdsService.instance.adCovered.value++,
+                        onCanceled: () => AdsService.instance.adCovered.value--,
                         onSelected: (v) async {
+                          AdsService.instance.adCovered.value--;
                           // 2026-08-16 소유자 요청 — '...' 맨 아래에 앱 설정을 둔다.
                           // 위쪽은 앞으로도 편집 관련 항목 자리이고(지금은 삭제 하나),
                           // 앱 설정은 편집과 직접 상관이 없어 구분선으로 갈라 놨다.
