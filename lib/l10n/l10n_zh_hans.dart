@@ -1614,7 +1614,7 @@ class L10nZhHans extends L10n {
   @override
   String get aiAdvancedLabel => '高级 — 手动选择模型';
   @override
-  String get aiManualModelHint => '输入模型名称（例如 gemini-2.5-flash-lite）';
+  String get aiManualModelHint => '输入模型名称（例如 gemini-3.5-flash-lite）';
   @override
   String aiAutoLabel(String provider, String model) =>
       '自动选择：$provider · $model';

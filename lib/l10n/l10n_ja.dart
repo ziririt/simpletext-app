@@ -1634,7 +1634,7 @@ class L10nJa extends L10n {
   @override
   String get aiAdvancedLabel => '詳細 — モデルを直接選択';
   @override
-  String get aiManualModelHint => 'モデル名を入力（例: gemini-2.5-flash-lite）';
+  String get aiManualModelHint => 'モデル名を入力（例: gemini-3.5-flash-lite）';
   @override
   String aiAutoLabel(String provider, String model) =>
       '自動選択: $provider · $model';

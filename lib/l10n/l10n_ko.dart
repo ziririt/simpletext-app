@@ -1639,7 +1639,7 @@ class L10nKo extends L10n {
   @override
   String get aiAdvancedLabel => '고급 — 모델 직접 선택';
   @override
-  String get aiManualModelHint => '모델 이름 직접 입력 (예: gemini-2.5-flash-lite)';
+  String get aiManualModelHint => '모델 이름 직접 입력 (예: gemini-3.5-flash-lite)';
   @override
   String aiAutoLabel(String provider, String model) =>
       '자동 선택: $provider · $model';

@@ -1661,7 +1661,10 @@ class AppSettings {
   // 날 앱이 죽는다. 등급 이름(flash-lite·haiku·nano·fast)은 안 바뀐다.
   // 판정·선별 규칙과 예비 사다리는 core/ai_provider.dart (테스트로 고정).
   String aiProvider = ''; // google | anthropic | openai | xai | ''(미판정)
-  String aiModel = 'gemini-2.5-flash-lite';
+  // 2026-10-16 — 이름을 여기 따로 적지 않는다. 예비 사다리 맨 앞이 곧 기본값이다.
+  // 따로 적었던 'gemini-2.5-flash-lite' 가 구글의 2.5 접근 제한(09-18) 뒤
+  // 새 사용자의 첫 호출을 헛돌게 할 뻔했다. 저장된 값이 있으면 그것이 이긴다.
+  String aiModel = defaultLadder('google').first;
   List<String> aiModels = []; // '키 확인' 때 받아 온 실제 모델 목록
 
   /// 지금 프리미엄인가 — **읽기 전용으로 여겨라.** 아래 두 칸에서 계산해

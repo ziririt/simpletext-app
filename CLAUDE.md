@@ -91,8 +91,10 @@ AI 서두 보수적 제거 → escape 복원 → 사용자 치환 규칙 → 출
 ## AI 마법사
 
 - 1층: 규칙 명령을 로컬 해석 (여백 줄 수, 들여쓰기 칸 수, 글머리, 강조, 구분선, 출처, A를 B로 바꿔)
-- 2층: 자유 편집 — BYOK. 지원: Gemini(2.5 Flash-Lite 기본/Flash), Claude(Haiku/Sonnet),
-  ChatGPT(gpt-5-mini/gpt-5-nano), Grok(grok-4.1-fast). 결과는 미리보기 + NumberGuard(숫자 보존 검증) 후 적용.
+- 2층: 자유 편집 — BYOK. 지원: Gemini·Claude·ChatGPT·Grok. 모델은 키에서 자동으로 고르고
+  (제일 싸면서 쓸 만한 등급의 최신), 목록을 못 받으면 `lib/core/ai_provider.dart` 의 예비 사다리를 탄다.
+  **모델 이름은 여기 적지 않는다** — 각사가 수시로 바꾸므로 매달 1일 점검한다(`docs/AI모델점검.md`).
+  결과는 미리보기 + NumberGuard(숫자 보존 검증) 후 적용.
 - 시스템 규칙: 숫자·날짜·고유명사·URL 불변, 추가·삭제 금지, 입력 언어 유지, 본문만 반환.
 
 ## 현재 상태 (2026-08-12 오후)

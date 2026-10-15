@@ -1722,7 +1722,7 @@ class L10nFr extends L10n {
   String get aiAdvancedLabel => 'Avancé — choisir le modèle soi-même';
   @override
   String get aiManualModelHint =>
-      'Saisir le nom du modèle (ex. : gemini-2.5-flash-lite)';
+      'Saisir le nom du modèle (ex. : gemini-3.5-flash-lite)';
   @override
   String aiAutoLabel(String provider, String model) =>
       'Automatique : $provider · $model';

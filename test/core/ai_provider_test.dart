@@ -58,7 +58,40 @@ void main() {
     }
   });
 
+  // 2026-10-16 — 구글이 09-18 부터 2.5 세대를 "예전에 써 본 사용자"에게만 연다.
+  // 새로 키를 넣은 사람이 예비 사다리를 타면 첫 칸부터 열리는 이름이어야 한다.
+  group('구글 예비 사다리 — 새 사용자도 첫 칸이 열린다', () {
+    test('앞 두 칸은 2.5 가 아니다', () {
+      final l = defaultLadder('google');
+      expect(l.length, greaterThanOrEqualTo(2));
+      expect(l[0].startsWith('gemini-2.5'), isFalse, reason: l[0]);
+      expect(l[1].startsWith('gemini-2.5'), isFalse, reason: l[1]);
+    });
+
+    test('첫 칸은 제일 싼 등급(flash-lite) 정식판이다', () {
+      final first = defaultLadder('google').first;
+      expect(tierRank('google', first), 0, reason: first);
+      expect(isPreviewModel(first), isFalse, reason: first);
+    });
+  });
+
   group('목록에서 제일 싼 등급의 최신을 고른다', () {
+    // 2026-10-16 — 구글 모델 페이지의 실제 이름들로 적었다. flash-lite 가
+    // 세 세대(2.5·3.1·3.5) 있고, 음성·그림용 flash-lite 도 섞여 온다.
+    test('구글 — 세대가 섞여 와도 3.5 flash-lite 를 집는다', () {
+      final pick = pickCheapest('google', [
+        'gemini-2.5-flash-lite',
+        'gemini-3.1-flash-lite',
+        'gemini-3.5-flash-lite',
+        'gemini-3.8-flash',
+        'gemini-3.8-flash-lite-tts',
+        'gemini-3.1-flash-lite-image',
+        'gemini-3.1-pro-preview',
+        'gemini-4-argon',
+      ]);
+      expect(pick, 'gemini-3.5-flash-lite');
+    });
+
     test('구글 — 임베딩·이미지·음성은 걸러 내고 flash-lite 최신을 집는다', () {
       final pick = pickCheapest('google', [
         'gemini-2.5-pro',

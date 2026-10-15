@@ -62,10 +62,16 @@ String providerLabel(String provider) {
 List<String> defaultLadder(String provider) {
   switch (provider) {
     case 'google':
+      // 2026-10-16 — 2.5 세대는 꺼진 게 아니라 **문이 좁아졌다.** 구글이 09-18 부터
+      // "예전에 써 본 사용자"에게만 열어 두고, 새 사용자에게는 3.5 Flash-Lite 와
+      // 3.8 Flash 를 쓰라고 한다(changelog 09-18). 새로 키를 넣은 사람은 옛 사다리
+      // 세 칸이 전부 거절될 수 있었다. 앞 두 칸을 구글이 권하는 이름으로 바꾸고,
+      // 2.5 는 예전부터 쓰던 사람의 마지막 보루로 하나만 남긴다.
+      // (3.1-flash-lite 는 더 싸지만 2027-05-07 종료가 잡혀 있어 넣지 않는다.)
       return const [
+        'gemini-3.5-flash-lite',
+        'gemini-3.8-flash',
         'gemini-2.5-flash-lite',
-        'gemini-2.5-flash',
-        'gemini-2.5-pro',
       ];
     case 'anthropic':
       return const [
