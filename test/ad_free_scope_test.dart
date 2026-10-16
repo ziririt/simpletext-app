@@ -14,8 +14,11 @@ import 'package:simpletext/ads_service.dart';
 
 final _nav = GlobalKey<NavigatorState>();
 
+final _obs = PopupAdObserver();
+
 Widget _app() => MaterialApp(
   navigatorKey: _nav,
+  navigatorObservers: [_obs],
   builder: (ctx, child) => Column(
     children: [
       const TopBannerBar(),
@@ -63,5 +66,40 @@ void main() {
       expect(tester.takeException(), isNull);
     }
     expect(n.value, 0, reason: '설정을 닫으면 띠가 돌아온다');
+  });
+
+  // 2026-10-17 — "p15 인데도 AI편집 등에서 배너가 나온다." AI 편집은 대화상자다.
+  // 화면마다 손들기를 두르는 대신 떠 있는 길(대화상자·아래 판)이면 저절로 걷는다.
+  testWidgets('대화상자와 아래 판이 떠 있는 동안은 걷히고, 닫으면 돌아온다', (
+    tester,
+  ) async {
+    final n = AdsService.instance.adFree;
+    await tester.pumpWidget(_app());
+    expect(n.value, 0);
+
+    final ctx = _nav.currentContext!;
+    showDialog<void>(context: ctx, builder: (_) => const Text('AI 편집'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(n.value, 1, reason: 'AI 편집 같은 대화상자');
+
+    _nav.currentState!.pop();
+    await tester.pumpAndSettle();
+    expect(n.value, 0);
+
+    showModalBottomSheet<void>(context: ctx, builder: (_) => const Text('판'));
+    await tester.pumpAndSettle();
+    expect(n.value, 1, reason: '아래에서 올라오는 판');
+    _nav.currentState!.pop();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(n.value, 0);
+
+    // 화면을 갈아 끼우는 길은 세지 않는다 — 노트 편집 화면은 광고가 사는 곳이다.
+    _nav.currentState!.push(_route(const Scaffold(body: Text('편집'))));
+    await tester.pumpAndSettle();
+    expect(n.value, 0);
+    _nav.currentState!.pop();
+    await tester.pumpAndSettle();
   });
 }

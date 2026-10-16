@@ -603,6 +603,49 @@ class _TopBannerBarState extends State<TopBannerBar> {
   }
 }
 
+/// 대화상자·아래에서 올라오는 판이 떠 있는 동안 배너를 걷는다 — 앱 전체에 한 번.
+///
+/// 2026-10-17 소유자 — "p15 인데도 AI편집 등 설정 페이지에서 배너가 나온다."
+/// 손들기(AdFreeScope)는 **화면을 하나씩** 둘러야 했다. 설정·결제·규칙·보기 설정은
+/// 둘렀지만, 편집 메뉴에서 여는 AI 편집·찾아 바꾸기·내보내기·첨부·폴더 고르기·
+/// 시간 여행 같은 대화상자와 아래 판은 열일곱 군데가 넘고 앞으로도 는다. 하나씩
+/// 두르는 길은 또 하나를 빠뜨린다 — 이번이 그랬다.
+///
+/// 그래서 네비게이터 쪽에서 본다. 떠 있는 길(PopupRoute — 대화상자, 아래 판, 펼친
+/// 메뉴)이 하나라도 있으면 손들기 수를 하나 올리고, 닫히면 내린다. 새 대화상자를
+/// 누가 어디에 만들든 저절로 걷힌다. 화면 전체를 갈아 끼우는 길(MaterialPageRoute)은
+/// 세지 않는다 — 그쪽은 화면마다 손들기를 두른 대로 간다(설정 가족만 걷고, 목록·
+/// 편집은 광고가 사는 곳이다).
+class PopupAdObserver extends NavigatorObserver {
+  final Set<Route<dynamic>> _up = {};
+
+  void _add(Route<dynamic>? r) {
+    if (r is PopupRoute && _up.add(r)) AdsService.instance.adFree.value++;
+  }
+
+  void _drop(Route<dynamic>? r) {
+    if (r != null && _up.remove(r)) AdsService.instance.adFree.value--;
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _add(route);
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _drop(route);
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _drop(route);
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    _drop(oldRoute);
+    _add(newRoute);
+  }
+}
+
 /// 메뉴가 펼쳐진 동안 배너를 **걷는** 손잡이 — 자리까지 없앤다.
 ///
 /// 2026-09-22 소유자 — "메뉴를 펼치면 광고 자리 자체가 없어져야 한다. 넓게 보려고

@@ -899,6 +899,9 @@ class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
 /// 화면 안에서는 그냥 Navigator.of(context)가 맞다.
 final GlobalKey<NavigatorState> rootNavKey = GlobalKey<NavigatorState>();
 
+/// 앱 하나에 하나. MaterialApp 이 다시 그려져도 같은 관찰자가 남아야 센 수가 안 꼬인다.
+final PopupAdObserver _popupAds = PopupAdObserver();
+
 class SimpleTextApp extends StatelessWidget {
   /// 스토어 스크린샷 촬영용 강제 로케일. 평상시엔 null이라 기기 설정을 따른다.
   /// (integration_test/screenshots_test.dart에서 언어별로 지정한다 —
@@ -916,6 +919,8 @@ class SimpleTextApp extends StatelessWidget {
         return MaterialApp(
           locale: locale,
           navigatorKey: rootNavKey,
+          // 대화상자·아래 판이 떠 있는 동안 배너를 걷는다(2026-10-17, PopupAdObserver).
+          navigatorObservers: [_popupAds],
           onGenerateTitle: (ctx) => L10n.of(ctx).appTitle,
           debugShowCheckedModeBanner: false,
           scrollBehavior: const GlideScrollBehavior(),
