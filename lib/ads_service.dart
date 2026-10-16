@@ -31,6 +31,7 @@ import 'package:flutter/material.dart';
 // material.dart는 rendering.dart를 다시 내보내지 않는다. InlineAdBlock이
 // 뷰포트에 자기 자리를 물으려면 이것이 필요하다(2026-08-17 analyze가 잡음).
 import 'package:flutter/rendering.dart' show RenderAbstractViewport;
+import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'core/ad_gate.dart';
@@ -291,7 +292,23 @@ class _TopBannerBarState extends State<TopBannerBar> {
   }
 
   void _refresh() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    // 2026-10-17 — 설정 화면의 손들기(AdFreeScope)는 **그 화면이 그려지는 도중에**
+    // 수를 올린다(initState). 그 소식을 받은 이 띠가 그 자리에서 setState 를 부르면
+    // 플러터가 "그리는 중에 남을 다시 그리라 했다"고 막는다 — 개발용 판에서는 붉은
+    // 오류, 스토어 판에서는 이 띠가 **그 장에서 다시 안 그려질 수 있다**(프레임워크
+    // 주석: "the framework might not visit this widget during this build phase").
+    // 실제로 눌러 보는 시험(integration_test/adfree_test.dart)이 잡았다. 그리는 중이면
+    // 그 장이 끝난 직후로 미룬다 — 한 장(16ms) 늦을 뿐 반드시 다시 그린다.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
+      SchedulerBinding.instance.scheduleFrame();
+      return;
+    }
+    setState(() {});
   }
 
   /// 몇 번째 시도에 어떤 크기를 주문할지.
