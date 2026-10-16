@@ -87,7 +87,17 @@ const double kNativeSmallH = 110;
 /// 달아 배너로 내려가게 고쳤지만(_natTimer), **네이티브 자체가 끝내 안
 /// 채워지는 상황**도 있을 수 있다. 그때는 이 줄만 false 로 바꾸면 예전처럼
 /// 배너만 쓴다. 되돌리는 길을 한 줄로 남겨 두는 것이 실험의 예의다.
-const bool kTopNative = true;
+///
+/// 2026-10-17 — **false 로 돌렸다.** 소유자 신고(첨부) — "우측엔 '설치하기'
+/// 버튼이 나오는데 이게 왜 나오나? 그냥 배너만 보여주는 게 좋을 듯. 배너는
+/// 오히려 좌측에 잘 보이지 않을 정도로 작아서 무슨 메시지인지도 모르겠다."
+/// 그 파란 단추는 광고주가 아니라 **우리가** 그린 것이다 — 네이티브 small
+/// 틀의 행동 단추를 앱 색으로 칠했더니 앱의 제 단추처럼 보였다. 틀의 모양
+/// (아이콘 작게, 단추 크게)은 플러그인 것이라 우리가 못 바꾼다. 그래서 맨 위
+/// 띠는 표준 배너(앵커드 어댑티브 → 320x50)로 돌아간다. 09-09 의 걱정(그림
+/// 한 장짜리 광고)은 100pt 인라인 칸이 부른 것이었고, 그 칸은 이번에 사다리에서
+/// 뺐다(_sizeFor). 목록 가운데 네이티브(InlineAdBlock)는 그대로다.
+const bool kTopNative = false;
 
 String get interstitialUnitId => Platform.isIOS
     ? (kRealAds
@@ -286,12 +296,18 @@ class _TopBannerBarState extends State<TopBannerBar> {
 
   /// 몇 번째 시도에 어떤 크기를 주문할지.
   ///
-  /// 0) 우리가 바라는 큰 자리(인라인 어댑티브, 최대 100pt)
-  /// 1) 판마다 표준인 앵커드 어댑티브(폰에서 50pt 남짓) — 재고가 제일 많다
-  /// 2) 320x50 고정 배너 — 세상에서 제일 흔한 자리. 여기서도 안 나오면
+  /// 0) 판마다 표준인 앵커드 어댑티브(폰에서 50pt 남짓) — 재고가 제일 많다
+  /// 1) 320x50 고정 배너 — 세상에서 제일 흔한 자리. 여기서도 안 나오면
   ///    그건 우리 잘못이 아니다.
-  /// 그다음은 다시 0으로 돈다. 한 번 실패했다고 작은 자리에 영영 갇히면
-  /// 큰 자리가 다시 생겨도 못 받는다.
+  /// 그다음은 다시 0으로 돈다.
+  ///
+  /// 2026-10-17 — 세 번째 칸(100pt 인라인 어댑티브, 2026-09-06 소유자 지시로
+  /// 만든 큰 칸)을 뺐다. 표준 칸에 맞는 글자 소재가 없을 때 **그림 한 장을
+  /// 늘려 채운 광고**가 오던 자리가 바로 이 칸이었다(09-09 신고). 이제 맨 위
+  /// 띠는 네이티브도 안 쓰므로(kTopNative) 여기가 광고의 전부다 — 표준 두 칸만
+  /// 남겨 "글자 있는 작은 광고"가 오게 한다. 빈칸보다 큰 광고가 낫다는 셈은
+  /// 소유자가 두 번(09-09, 10-17) 뒤집었다.
+  static const int kSizeSteps = 2;
   Future<AdSize?> _sizeFor(int step, int w) async {
     // 2026-09-09 — 차례를 뒤집었다. 예전엔 큰 칸부터 불렀는데, 낯선 칸에는
     // 글자 있는 소재가 없어서 **그림 한 장짜리 광고**가 왔다(위 _native
@@ -299,19 +315,7 @@ class _TopBannerBarState extends State<TopBannerBar> {
     if (step == 0) {
       return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
     }
-    if (step == 1) return AdSize.banner;
-    // 마지막 자리. 2026-09-06 소유자 지시로 만든 큰 칸인데, 여기까지
-    // 내려왔다는 것은 표준 칸 둘이 다 비었다는 뜻이다. 빈칸보다는 낫다.
-    // 이건 **최대치**이지 실제 높이가 아니다.
-    const double kMaxBannerHeight = 100;
-    final anchored =
-        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(w);
-    if (anchored == null) return null;
-    final tall = anchored.height * 1.2;
-    // 둘 중 **큰 것**을 쓴다. 작은 쪽을 고르면 아무것도 안 달라진다 —
-    // 처음에 그렇게 썼다가 바로 알아챘다.
-    final want = tall > kMaxBannerHeight ? tall : kMaxBannerHeight;
-    return AdSize.getInlineAdaptiveBannerAdSize(w, want.round());
+    return AdSize.banner;
   }
 
   void _later() {
@@ -332,7 +336,7 @@ class _TopBannerBarState extends State<TopBannerBar> {
     _creating = true;
     _retry?.cancel();
     final w = width.truncate();
-    final size = await _sizeFor(_tries % 3, w);
+    final size = await _sizeFor(_tries % kSizeSteps, w);
     if (size == null || !mounted) {
       _creating = false;
       _tries++;

@@ -4,6 +4,12 @@
 #   bash tool/patch.sh ios          # 아이폰·아이패드
 #   bash tool/patch.sh android      # 안드로이드
 #   bash tool/patch.sh both
+#   REL=254 bash tool/patch.sh ios  # 저장소 번호와 다른 스토어 판에 붙일 때
+#
+# 2026-10-17 — REL. 플레이에는 255 가, 앱스토어에는 254 가 나가 있는데 저장소는
+# 255 다. 덧판은 "굽힌 판과 같은 번호"로 빌드돼야 셔버드가 받아 주므로, REL 이
+# 주어지면 pubspec·version.dart 의 번호를 **그 번호로 잠깐 바꿔 굽고 되돌린다.**
+# 끝나면(실패해도) 원래 번호로 돌아간다(trap). 저장소에는 아무 흔적이 안 남는다.
 #
 # 2026-09-14 소유자 결정 — "심사를 꼭 받지 않아도 되는 고침은 안 받으면 좋겠다.
 # 웹앱처럼." 애플 규정 3.3.1(b)·구글 규정이 해석기 위 코드의 갱신은 허락한다.
@@ -42,6 +48,22 @@ for k in GOOGLE_WEB_CLIENT_ID GOOGLE_IOS_CLIENT_ID; do
   [ -n "$v" ] && DEFINES="$DEFINES --dart-define=$k=$v"
 done
 FV=$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([0-9.]*\).*/\1/p')
+
+ORIG_NUM="$NUM"
+restore_num() {
+  [ "$NUM" = "$ORIG_NUM" ] && return 0
+  sed -i '' "s/^version: $NAME+$NUM\$/version: $NAME+$ORIG_NUM/" pubspec.yaml
+  sed -i '' "s/^const int appBuild = $NUM;\$/const int appBuild = $ORIG_NUM;/" lib/version.dart
+  NUM="$ORIG_NUM"
+  log "번호를 $ORIG_NUM 으로 되돌렸다"
+}
+trap restore_num EXIT
+if [ -n "${REL:-}" ] && [ "$REL" != "$NUM" ]; then
+  sed -i '' "s/^version: $NAME+$NUM\$/version: $NAME+$REL/" pubspec.yaml
+  sed -i '' "s/^const int appBuild = $NUM;\$/const int appBuild = $REL;/" lib/version.dart
+  NUM="$REL"
+  log "스토어 판 $REL 에 붙이려고 번호를 잠깐 $REL 로 바꿨다(끝나면 $ORIG_NUM 으로)"
+fi
 
 one() {
   local plat="$1" extra=""
