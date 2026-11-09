@@ -205,7 +205,8 @@ export OPS_RUNNER="1번-스카이블루"
   `com.ezlong.skybluenote.premium` 으로 바꾼다(`main()`). 알아보는 쪽(`isPremiumProduct`·`isAllDevices`·`guardDaysFor`)은
   **두 이름을 다 받는다** — 드라이브로 넘어온 다른 기기의 결제 기록을 이름 때문에 놓치지 않게. 시험 `test/core/product_ids_test.dart`.
 - 판 번호 **4.0 (빌드 256)**. 안드로이드는 다음 플레이 판을 낼 때 이름을 따로 줄 수 있다(`tool/appstore_android.sh 3.20 257` 처럼 인자).
-- 애플 기기 첫 실행: 첫 안내 다음에 **"옛 Skyblue Note 에서 옮겨 오기"** 시트(`lib/migrate_sheet.dart`), 설정 → 정보 맨 위 줄에서 다시 연다.
+- **"옛 Skyblue Note 에서 옮겨 오기"** 시트(`lib/migrate_sheet.dart`) — 설정 → 정보 맨 위 줄에서만 연다(애플 기기만).
+  처음 켤 때 저절로 띄우지 **않는다**(소유자 11-09: 처음 쓰는 사람은 무슨 말인지 모른다, 구글 로그인만으로 되면 된다).
   구글 드라이브 연결 / 파일에서 가져오기 / AI 키 다시 넣기 / 옛 앱 구매자 영수증 → 새 앱 무료 코드. 파일 앱의 아이클라우드 폴더에서
   꺼내는 길은 **실기기에서 보이는지 확인한 뒤에만** 적는다(아직 안 적었다).
 - 스토어 이름 `store/ios/*/name.txt` → **Skyblue Note Pro**.

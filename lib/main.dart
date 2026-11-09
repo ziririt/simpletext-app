@@ -4454,10 +4454,6 @@ class _HomeScreenState extends State<HomeScreen>
         fullscreenDialog: true,
       ),
     );
-    // 2026-11-09 — 애플 기기는 새 계정의 Skyblue Note Pro 다. 첫 안내 다음에
-    // "옛 앱에서 옮겨 오기"를 한 번 보여 준다(migrate_sheet.dart). 스크린샷 판은 뺀다.
-    if (!mounted || kShotMode || deviceFamily() != kFamilyApple) return;
-    await showMigrateSheet(context);
   }
 
   @override
@@ -16877,7 +16873,9 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
                   _secHeader(l.settingsSecInfo),
                   _card([
                     // 2026-11-09 — 옛 Skyblue Note 에서 옮겨 오기(애플 기기만).
-                    // 처음 켤 때 한 번 뜨고, 그 뒤로는 여기서 다시 연다.
+                    // 처음 켤 때 저절로 띄우지 않는다(소유자 11-09 — "최초 사용자들은
+                    // 무슨 말인지도 모른다. 구글 로그인만 하면 정상적으로 되면 된다").
+                    // 찾는 사람만 여기서 연다.
                     if (deviceFamily() == kFamilyApple) ...[
                       ListTile(
                         leading: Icon(
