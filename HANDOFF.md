@@ -226,9 +226,15 @@ cd ../simpletext_legacy && REL=254 bash tool/patch.sh ios   # pubspec 3.19.0+255
 `GOOGLE_IOS_CLIENT_ID_LEGACY` 로 남겨 두고, 옛 판 덧판은 옛 값으로 굽는다(`SKY_SECRETS_HOME` 에 옛 값 파일을 따로 두는 식).
 덧판의 dart-define 은 그 판을 구웠을 때와 같아야 한다.
 
-남은 일(PENDING C-31): 구글 iOS 클라이언트(같은 `skyblue-note` 프로젝트 — 다른 프로젝트면 드라이브가 빈 폴더로 보인다),
-새 계정의 묶음 아이디·앱 그룹·아이클라우드 컨테이너 등록, 애드몹 새 앱·광고 단위, 개발 빌드로 노트 수 대조(안드로이드와 같은
-계정에서 숫자 비교), 앱 기록·상품·심사 제출(소유자 확인 뒤), 출시 **뒤** `lib/core/store_links.dart` 의 `kAppStoreId`.
+**서명 — 새 계정은 API 키가 아니라 맥 Xcode 에 로그인된 계정으로 한다(11-09 확인).** API 키로 `xcodebuild -allowProvisioningUpdates`
+를 돌리면 "Authentication failed: … bearer token" 으로 막힌다. 키는 REST(아이디 등록·앱 기록·심사) 전용으로 쓰고, 서명·내보내기는
+키 인자 없이 `-allowProvisioningUpdates` 만 준다. 앱 그룹·아이클라우드 컨테이너는 그 서명 때 저절로 등록됐다.
+`tool/appstore_ios.sh`·`appstore_mac.sh` 의 내보내기 단계는 아직 키 인자를 쓴다 — 첫 업로드 전에 고친다.
+
+11-09 에 끝난 것: 구글 iOS 클라이언트(`skyblue-note` 프로젝트, 앞 숫자가 옛 것과 같다), 새 계정의 묶음 아이디 넷과 기능,
+앱 그룹·아이클라우드 컨테이너, 소유자 아이폰 17 에 개발용 판 설치(19:47).
+
+남은 일(PENDING C-31): 노트 수 대조(옛 앱·안드로이드와 숫자 비교), 애드몹 새 앱·광고 단위, 앱 기록·상품·심사 제출(소유자 확인 뒤), 출시 **뒤** `lib/core/store_links.dart` 의 `kAppStoreId`.
 
 ## 1. 한 장 요약
 
