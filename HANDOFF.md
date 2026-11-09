@@ -231,7 +231,10 @@ cd ../simpletext_legacy && REL=254 bash tool/patch.sh ios   # pubspec 3.19.0+255
 를 돌리면 "Authentication failed: … bearer token" 으로 막힌다. 키는 REST(아이디 등록·앱 기록·심사) 전용으로 쓰고, 서명·내보내기는
 키 인자 없이 `-allowProvisioningUpdates` 만 준다. 앱 그룹·아이클라우드 컨테이너는 그 서명 때 저절로 등록됐다.
 `tool/appstore_ios.sh`·`appstore_mac.sh` 의 보관함·내보내기도 11-09 에 키 인자를 뺐다. 업로드(altool)만 키를 쓰고,
-아이폰 쪽은 altool 이 실패하면 Xcode 계정으로 바로 올린다(`destination=upload`). 첫 업로드 때 어느 길로 갔는지 여기 적을 것.
+아이폰 쪽은 altool 이 실패하면 Xcode 계정으로 바로 올린다(`destination=upload`).
+**첫 업로드(11-10 01:16, 4.0 빌드 256)는 altool + 새 키로 됐다.** 다만 처음엔 둘 다 "Invalid Signature —
+GoogleMobileAds.framework is not properly signed" 로 막혔다. 아카이브 안의 애드몹 두 꾸러미가 짧은 이름으로 임시 서명돼
+있어서다. `appstore_ios.sh` 가 내보내기 전에 꾸러미 이름으로 다시 임시 서명한다 — 지우지 말 것.
 
 11-09 에 끝난 것: 구글 iOS 클라이언트(`skyblue-note` 프로젝트, 앞 숫자가 옛 것과 같다), 새 계정의 묶음 아이디 넷과 기능,
 앱 그룹·아이클라우드 컨테이너, 소유자 아이폰 17 에 개발용 판 설치(19:47).
@@ -249,7 +252,13 @@ cd ../simpletext_legacy && REL=254 bash tool/patch.sh ios   # pubspec 3.19.0+255
   **첫 구독 묶음은 새 판과 한 제출함에 담겨야 한다** — 상품을 따로 심사에 내지 말 것(4.1-1).
   상품마다 '심사용 스크린샷'이 있어야 제출이 된다 — 제출 준비 때 넣는다.
 
-남은 일: 상품 심사용 스크린샷, 첫 업로드(4.0 빌드 256), 심사 제출(소유자 확인 뒤, 소유자가 채울 칸은 비워 둔다),
+11-10 01시대(C-32 "1"): 4.0 빌드 256 업로드·판에 붙임, 11개 언어 글·스크린샷(아이폰 6.9형·아이패드 13형, `store/screenshots`),
+분류·연령·권리·무료·175개 나라, 개인정보 라벨(기기 ID·광고 데이터 — 타사 광고, 추적, 연결 안 됨; 옛 앱 공개 라벨과 같다),
+상품 심사용 스크린샷(옛 상품 것과 같은 결제 화면) — 상품 다섯 개 READY_TO_SUBMIT. **출시 방식은 수동(MANUAL)** — 승인 뒤
+소개 페이지 안내와 같은 때에 사람이 내보낸다. 셔버드 릴리스 `4.0.0+256` 도 같이 생겼다(덧판은 `--release-version=4.0.0+256`).
+맥 판(1.0 자리)은 아직 손대지 않았다.
+
+남은 일: 심사 제출(소유자 확인 뒤 — C-33),
 출시 **뒤** `lib/core/store_links.dart` 의 `kAppStoreId` = 6832539218.
 
 ## 1. 한 장 요약

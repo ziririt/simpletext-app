@@ -151,6 +151,18 @@ if [ "$GOT_NAME" != "$NAME" ] || [ "$GOT_NUM" != "$NUM" ]; then
 fi
 log "아카이브 확인: $GOT_NAME ($GOT_NUM)"
 
+# 2026-11-10 — 애드몹 두 꾸러미(GoogleMobileAds·UserMessagingPlatform)가 아카이브 안에서 꾸러미 이름이 아닌
+# 짧은 이름("GoogleMobileAds")으로 임시 서명돼 나온다. 그대로 내보내면 지정 요건과 서명 이름이 어긋나
+# 업로드가 "Invalid Signature … is not properly signed" 로 막힌다(Xcode 27.2, 4.0 빌드 256 실측).
+# 내보내기 전에 꾸러미 이름(CFBundleIdentifier)으로 임시 서명을 다시 해 두면 내보내기가 바르게 서명한다.
+for fw in build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/*.framework; do
+  bid=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$fw/Info.plist" 2>/dev/null)
+  cur=$(codesign -dv "$fw" 2>&1 | sed -n 's/^Identifier=//p')
+  if [ -n "$bid" ] && [ "$bid" != "$cur" ]; then
+    codesign -f -s - -i "$bid" "$fw" >/dev/null 2>&1 && log "임시 서명 이름 고침: $(basename "$fw") → $bid"
+  fi
+done
+
 # 서명·내보내기는 Xcode 에 로그인된 계정으로 한다(-allowProvisioningUpdates, 열쇠 인자 없음).
 # 2026-11-09 — 새 계정 API 키를 xcodebuild 에 넘기면 "Authentication failed … bearer token" 으로
 # 막힌다(실측). 같은 팀의 다른 앱들도 계정 서명으로 올린다. 업로드(altool)만 API 키를 쓴다.
