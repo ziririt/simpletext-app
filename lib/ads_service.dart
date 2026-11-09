@@ -44,9 +44,11 @@ const bool kRealAds = bool.fromEnvironment('REAL_ADS');
 bool get adsSupported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
 /// 발급 기록: ~/development/_agent/admob_ids.md (2026-08-16 크롬으로 직접 발급)
+// 2026-11-09 — 아이폰 단위는 새 계정 앱 'Skyblue Note Pro'(애드몹 앱 ~2581132465)의 것이다.
+// 옛 앱(com.ziririt.simpletext)의 단위는 꼬리표 legacy-ios-254 에 그대로 있다. 안드로이드는 그대로.
 String get bannerUnitId => Platform.isIOS
     ? (kRealAds
-          ? 'ca-app-pub-2336764115275414/1938836960'
+          ? 'ca-app-pub-2336764115275414/4650047550'
           : 'ca-app-pub-3940256099942544/2934735716')
     : (kRealAds
           ? 'ca-app-pub-2336764115275414/2139765486'
@@ -59,7 +61,7 @@ String get bannerUnitId => Platform.isIOS
 /// 이 두 상수를 채우기 전까지는 비어 있고, 그동안은 아래 [nativeUnitId]가
 /// null을 돌려주어 **예전 배너 사다리로 저절로 되돌아간다.**
 /// 빈 문자열인 채로 스토어에 나가도 광고 자리가 비지 않는다는 뜻이다.
-const String kNativeUnitIos = 'ca-app-pub-2336764115275414/1760076247';
+const String kNativeUnitIos = 'ca-app-pub-2336764115275414/3420726361';
 const String kNativeUnitAndroid = 'ca-app-pub-2336764115275414/9986050629';
 
 /// 시험용 네이티브 단위(구글 공식). 개발 빌드는 언제나 이것으로 돈다.
@@ -102,7 +104,7 @@ const bool kTopNative = false;
 
 String get interstitialUnitId => Platform.isIOS
     ? (kRealAds
-          ? 'ca-app-pub-2336764115275414/3636679980'
+          ? 'ca-app-pub-2336764115275414/8669183611'
           : 'ca-app-pub-3940256099942544/4411468910')
     : (kRealAds
           ? 'ca-app-pub-2336764115275414/5020441662'

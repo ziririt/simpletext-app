@@ -21,7 +21,7 @@
 #   - 'flutter build ipa' 같은 한 방이 없다. flutter build macos 로 짓고,
 #     xcodebuild archive 로 보관함을 만들고, 내보내기로 .pkg 를 뽑는다
 #   - 맥 앱스토어 판은 .ipa 가 아니라 .pkg 다. 그 .pkg 는 '설치용 인증서'로
-#     따로 서명된다. 없으면 -allowProvisioningUpdates 가 API 열쇠로 만들어 온다
+#     따로 서명된다. 없으면 -allowProvisioningUpdates 가 Xcode 계정으로 만들어 온다
 #   - altool 의 -t 가 ios 가 아니라 macos 다
 #
 # 번들 id 는 아이폰과 같다(com.ezlong.skybluenote, 2026-11-09 새 계정). 같아야 한 번 산 사람이
@@ -64,7 +64,9 @@ printf '// tool 이 만든 파일이다. 손으로 고치지 말 것.\nGOOGLE_IO
 # 키도 새 계정 것(asc-new.env, asc.py 의 ASC_PROFILE=new 와 같은 값)을 쓴다.
 . "$SECHOME/.appstoreconnect/asc-new.env"
 P8="$SECHOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
-AUTH="-allowProvisioningUpdates -authenticationKeyPath $P8 -authenticationKeyID $ASC_KEY_ID -authenticationKeyIssuerID $ASC_ISSUER_ID"
+# 서명은 Xcode 에 로그인된 계정으로 한다 — 새 계정 API 키를 xcodebuild 에 넘기면 인증이 막힌다(2026-11-09 실측).
+# 업로드(altool)만 API 키를 쓴다.
+AUTH="-allowProvisioningUpdates"
 
 ARCH=build/macos/archive/Runner.xcarchive
 if [ "${UPLOAD_ONLY:-}" = "1" ]; then
@@ -93,7 +95,7 @@ if [ $RC -ne 0 ]; then
   exit 1
 fi
 
-# 2) 보관함. 서명은 자동 — 없는 프로파일·인증서는 API 열쇠로 만들어 온다.
+# 2) 보관함. 서명은 자동 — 없는 프로파일·인증서는 Xcode 계정으로 만들어 온다.
 log "xcodebuild archive…"
 xcodebuild -workspace macos/Runner.xcworkspace -scheme Runner \
   -configuration Release -destination 'generic/platform=macOS' \

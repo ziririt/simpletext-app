@@ -107,7 +107,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-2336764115275414~3251918630</string>
+	<string>ca-app-pub-2336764115275414~2581132465</string>
 	<!-- 네이티브 광고 검사기(Native Validator)를 끈다. 2026-09-11.
 
 	     소유자 신고 — "개발자 버전 앱을 써야 테스트가 가능한데 그때마다

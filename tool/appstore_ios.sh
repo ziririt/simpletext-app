@@ -151,8 +151,9 @@ if [ "$GOT_NAME" != "$NAME" ] || [ "$GOT_NUM" != "$NUM" ]; then
 fi
 log "아카이브 확인: $GOT_NAME ($GOT_NUM)"
 
-# 서명·내보내기는 App Store Connect API 키로 한다. Xcode 에 로그인된 계정이
-# 없어도 되고, 사람이 창을 열 필요도 없다.
+# 서명·내보내기는 Xcode 에 로그인된 계정으로 한다(-allowProvisioningUpdates, 열쇠 인자 없음).
+# 2026-11-09 — 새 계정 API 키를 xcodebuild 에 넘기면 "Authentication failed … bearer token" 으로
+# 막힌다(실측). 같은 팀의 다른 앱들도 계정 서명으로 올린다. 업로드(altool)만 API 키를 쓴다.
 # shellcheck source=/dev/null
 # 2026-11-09 — 아이폰·맥은 새 애플 계정(팀 779ML27PH2)의 Skyblue Note Pro 다.
 # 키도 새 계정 것(asc-new.env, asc.py 의 ASC_PROFILE=new 와 같은 값)을 쓴다.
@@ -175,10 +176,7 @@ xcodebuild -exportArchive \
   -archivePath build/ios/archive/Runner.xcarchive \
   -exportPath build/ios/ipa \
   -exportOptionsPlist ${WORK}ExportAuto.plist \
-  -allowProvisioningUpdates \
-  -authenticationKeyPath "$P8" \
-  -authenticationKeyID "$ASC_KEY_ID" \
-  -authenticationKeyIssuerID "$ASC_ISSUER_ID" > ${WORK}appstore_ios_export.log 2>&1
+  -allowProvisioningUpdates > ${WORK}appstore_ios_export.log 2>&1
 log "내보내기 rc=$?"
 
 IPA=$(ls build/ios/ipa/*.ipa 2>/dev/null | head -1)
@@ -191,6 +189,16 @@ log "올린다: $IPA"
 xcrun altool --upload-app -f "$IPA" -t ios \
   --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" \
   >> ${WORK}appstore_ios_export.log 2>&1
-log "업로드 rc=$?"
+RC=$?
+log "업로드 rc=$RC"
+if [ $RC -ne 0 ]; then
+  # altool 이 새 키를 못 받으면 Xcode 계정으로 바로 올린다(destination=upload).
+  log "altool 실패 — Xcode 계정으로 다시 올린다"
+  sed 's#<string>export</string>#<string>upload</string>#' ${WORK}ExportAuto.plist > ${WORK}ExportUpload.plist
+  xcodebuild -exportArchive -archivePath build/ios/archive/Runner.xcarchive \
+    -exportPath build/ios/ipa_upload -exportOptionsPlist ${WORK}ExportUpload.plist \
+    -allowProvisioningUpdates >> ${WORK}appstore_ios_export.log 2>&1
+  log "계정 업로드 rc=$?"
+fi
 tail -3 ${WORK}appstore_ios_export.log
 log "끝. 애플이 처리하는 데 5~30분 걸린다 — python3 tool/review_status.py 로 확인."

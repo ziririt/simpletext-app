@@ -230,12 +230,27 @@ cd ../simpletext_legacy && REL=254 bash tool/patch.sh ios   # pubspec 3.19.0+255
 **서명 — 새 계정은 API 키가 아니라 맥 Xcode 에 로그인된 계정으로 한다(11-09 확인).** API 키로 `xcodebuild -allowProvisioningUpdates`
 를 돌리면 "Authentication failed: … bearer token" 으로 막힌다. 키는 REST(아이디 등록·앱 기록·심사) 전용으로 쓰고, 서명·내보내기는
 키 인자 없이 `-allowProvisioningUpdates` 만 준다. 앱 그룹·아이클라우드 컨테이너는 그 서명 때 저절로 등록됐다.
-`tool/appstore_ios.sh`·`appstore_mac.sh` 의 내보내기 단계는 아직 키 인자를 쓴다 — 첫 업로드 전에 고친다.
+`tool/appstore_ios.sh`·`appstore_mac.sh` 의 보관함·내보내기도 11-09 에 키 인자를 뺐다. 업로드(altool)만 키를 쓰고,
+아이폰 쪽은 altool 이 실패하면 Xcode 계정으로 바로 올린다(`destination=upload`). 첫 업로드 때 어느 길로 갔는지 여기 적을 것.
 
 11-09 에 끝난 것: 구글 iOS 클라이언트(`skyblue-note` 프로젝트, 앞 숫자가 옛 것과 같다), 새 계정의 묶음 아이디 넷과 기능,
 앱 그룹·아이클라우드 컨테이너, 소유자 아이폰 17 에 개발용 판 설치(19:47).
 
-남은 일(PENDING C-31): 노트 수 대조(옛 앱·안드로이드와 숫자 비교), 애드몹 새 앱·광고 단위, 앱 기록·상품·심사 제출(소유자 확인 뒤), 출시 **뒤** `lib/core/store_links.dart` 의 `kAppStoreId`.
+11-09 저녁에 끝난 것(소유자 "1 : 1 / 2 : 애드몹 니가"):
+
+- **애드몹** — 새 앱 "Skyblue Note Pro"(iOS) `ca-app-pub-2336764115275414~2581132465`. 단위: 배너 `/4650047550`,
+  전면 `/8669183611`, 네이티브 `/3420726361`. `lib/ads_service.dart`·`ios/Runner/Info.plist` 에 넣었다.
+  민감 범주 차단은 계정 단위라 그대로 따라온다. 안드로이드 단위는 그대로.
+- **앱 기록** — App Store Connect 앱 id **6832539218**, 이름 "Skyblue Note Pro", iOS+macOS, 기본 언어 한국어,
+  SKU `skybluenote-pro`. 앱 기록은 API 로 못 만든다(`'apps' does not allow 'CREATE'`) — 웹 화면에서 만들었다.
+- **상품** — 옛 앱 값을 읽어(옛 계정은 읽기만) 그대로 옮겼다. 구독 묶음 "Skyblue Note Premium"(en-US·ko 현지화),
+  구독 넷(`all.*` 등급 1, 기본 등급 2 — 옛 앱과 같다), 평생 이용권(비소모성). 가격은 미국 값을 고르고 애플 환산으로
+  175 개 나라 전부. 스토어 체험(소개 할인)은 없다 — 14일 체험은 앱 안에서 센다. 가족 공유 끔.
+  **첫 구독 묶음은 새 판과 한 제출함에 담겨야 한다** — 상품을 따로 심사에 내지 말 것(4.1-1).
+  상품마다 '심사용 스크린샷'이 있어야 제출이 된다 — 제출 준비 때 넣는다.
+
+남은 일: 상품 심사용 스크린샷, 첫 업로드(4.0 빌드 256), 심사 제출(소유자 확인 뒤, 소유자가 채울 칸은 비워 둔다),
+출시 **뒤** `lib/core/store_links.dart` 의 `kAppStoreId` = 6832539218.
 
 ## 1. 한 장 요약
 
