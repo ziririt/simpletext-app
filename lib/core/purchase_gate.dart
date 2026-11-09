@@ -47,13 +47,26 @@ const String kFamilyOther = 'other'; // 윈도우·리눅스 — 살 스토어�
 // App Store Connect·Play Console에 **글자 하나까지 같게** 넣는다. 어긋나면
 // 조회가 빈 목록을 주고, 화면에는 값이 안 뜨는데 오류도 안 난다 — 제일
 // 찾기 어려운 종류의 고장이다.
-const String kProductMonthly = 'com.ziririt.simpletext.premium.monthly';
-const String kProductYearly = 'com.ziririt.simpletext.premium.yearly';
-const String kProductAllMonthly = 'com.ziririt.simpletext.premium.all.monthly';
-const String kProductAllYearly = 'com.ziririt.simpletext.premium.all.yearly';
-const String kProductLifetime = 'com.ziririt.simpletext.premium.lifetime';
+//
+// 2026-11-09 — **스토어마다 상품 이름이 다르다.** 아이폰·아이패드·맥은 새 계정의
+// 'Skyblue Note Pro'(com.ezlong.skybluenote) 로 옮겼고, 안드로이드는 옛 이름 그대로다.
+// 화면 코드가 앱을 켤 때 한 번 [productPrefix] 를 고른다(여기서 Platform 을 부르면
+// 시험에서 못 돌린다). 상품을 **알아보는** 쪽([isPremiumProduct]·[isAllDevices]·
+// [guardDaysFor])은 두 이름을 다 받는다 — 드라이브로 넘어온 다른 기기의 결제 기록을
+// 이름 때문에 못 알아보면, 산 사람이 산 것을 못 쓴다.
+const String kAppleProductPrefix = 'com.ezlong.skybluenote.premium';
+const String kGoogleProductPrefix = 'com.ziririt.simpletext.premium';
 
-const List<String> kPremiumProductIds = <String>[
+/// 이 기기가 사고파는 상품 이름의 머리. 애플 기기는 앱을 켤 때 바꿔 넣는다.
+String productPrefix = kGoogleProductPrefix;
+
+String get kProductMonthly => '$productPrefix.monthly';
+String get kProductYearly => '$productPrefix.yearly';
+String get kProductAllMonthly => '$productPrefix.all.monthly';
+String get kProductAllYearly => '$productPrefix.all.yearly';
+String get kProductLifetime => '$productPrefix.lifetime';
+
+List<String> get kPremiumProductIds => <String>[
   kProductMonthly,
   kProductYearly,
   kProductAllMonthly,
@@ -61,13 +74,32 @@ const List<String> kPremiumProductIds = <String>[
   kProductLifetime,
 ];
 
-bool isPremiumProduct(String id) => kPremiumProductIds.contains(id);
+const Set<String> _kTails = <String>{
+  'monthly',
+  'yearly',
+  'all.monthly',
+  'all.yearly',
+  'lifetime',
+};
+
+/// 상품 이름에서 머리를 떼고 남은 꼬리('monthly' 등). 우리 상품이 아니면 null.
+String? productTail(String id) {
+  for (final p in const [kAppleProductPrefix, kGoogleProductPrefix]) {
+    if (id.startsWith('$p.')) {
+      final t = id.substring(p.length + 1);
+      return _kTails.contains(t) ? t : null;
+    }
+  }
+  return null;
+}
+
+bool isPremiumProduct(String id) => productTail(id) != null;
 
 /// '모든 기기' 등급의 상품인가.
-bool isAllDevices(String id) =>
-    id == kProductAllMonthly ||
-    id == kProductAllYearly ||
-    id == kProductLifetime;
+bool isAllDevices(String id) {
+  final t = productTail(id);
+  return t == 'all.monthly' || t == 'all.yearly' || t == 'lifetime';
+}
 
 // ---------------------------------------------------------------- 울타리
 //
@@ -86,12 +118,12 @@ const int kYearlyGuardDays = 370;
 
 /// 이 상품이 구독이면 울타리 날수, 평생권이면 null.
 int? guardDaysFor(String productId) {
-  switch (productId) {
-    case kProductMonthly:
-    case kProductAllMonthly:
+  switch (productTail(productId)) {
+    case 'monthly':
+    case 'all.monthly':
       return kMonthlyGuardDays;
-    case kProductYearly:
-    case kProductAllYearly:
+    case 'yearly':
+    case 'all.yearly':
       return kYearlyGuardDays;
   }
   return null;
@@ -136,7 +168,7 @@ class Entitlement {
     required String family,
     required DateTime at,
   }) {
-    if (productId == kProductLifetime) {
+    if (productTail(productId) == 'lifetime') {
       return copyWith(lifetime: true);
     }
     final until = subscriptionUntilMs(productId: productId, seenAt: at);
@@ -268,7 +300,7 @@ bool shouldOfferUpgrade({
 /// 여기 적힌 숫자는 미국 값 하나뿐이며, 기념가가 끝나는 날 어긋난다.
 ///
 /// 2026-08-26 소유자 확정값. App Store Connect 에 실제로 등록한 값과 같다.
-const Map<String, String> kDevUsdPrice = <String, String>{
+Map<String, String> get kDevUsdPrice => <String, String>{
   kProductMonthly: r'$2.99',
   kProductYearly: r'$19.99',
   kProductAllMonthly: r'$3.99',

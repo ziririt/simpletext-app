@@ -29,7 +29,7 @@
 import SwiftUI
 import WidgetKit
 
-private let kAppGroup = "group.com.ziririt.simpletext"
+private let kAppGroup = "group.com.ezlong.skybluenote"
 private let kScheme = "skybluenote"
 
 // MARK: - 자료

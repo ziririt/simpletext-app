@@ -1654,4 +1654,27 @@ class L10nJa extends L10n {
   @override
   String get settingsFooter =>
       '設定は保存と同時に反映され、次に「整理」を実行したときから適用されます。すでに整理済みのメモは遡って変わりません。';
+  @override
+  String get migrateTitle => '旧 Skyblue Note から移行する';
+  @override
+  String get migrateIntro =>
+      'iPhone・iPad・Mac 版は Skyblue Note Pro として新しくなりました。お使いのメモは次の方法でそのまま移せます。';
+  @override
+  String get migrateDrive =>
+      'Google ドライブで同期していた方 — このアプリで同じ Google アカウントに接続すれば、メモがそのまま戻ってきます。';
+  @override
+  String get migrateIcloud =>
+      'iCloud だけを使っていた方 — 旧アプリで同期先を Google ドライブに切り替えてから、上と同じように接続してください。または旧アプリでバックアップファイルを保存し、このアプリの「ファイルから読み込む」で取り込んでください。';
+  @override
+  String get migrateLocal =>
+      'この端末だけに保存していた方 — 旧アプリでバックアップファイルを保存し、このアプリの「ファイルから読み込む」で取り込んでください。';
+  @override
+  String get migrateKeys => 'AI 編集で使っていた API キーは移行されません。設定でもう一度入力してください。';
+  @override
+  String get migrateReceipt =>
+      '旧アプリでサブスクリプションや購入をされた方は、領収書を easy.invest.good@gmail.com までお送りください。新しいアプリの無料コードをお送りします。';
+  @override
+  String get migrateBtnDrive => 'Google ドライブに接続';
+  @override
+  String get migrateRow => '旧 Skyblue Note から移行する';
 }

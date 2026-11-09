@@ -154,14 +154,16 @@ log "아카이브 확인: $GOT_NAME ($GOT_NUM)"
 # 서명·내보내기는 App Store Connect API 키로 한다. Xcode 에 로그인된 계정이
 # 없어도 되고, 사람이 창을 열 필요도 없다.
 # shellcheck source=/dev/null
-. "$SECHOME/.appstoreconnect/asc.env"
+# 2026-11-09 — 아이폰·맥은 새 애플 계정(팀 779ML27PH2)의 Skyblue Note Pro 다.
+# 키도 새 계정 것(asc-new.env, asc.py 의 ASC_PROFILE=new 와 같은 값)을 쓴다.
+. "$SECHOME/.appstoreconnect/asc-new.env"
 P8="$SECHOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
 cat > ${WORK}ExportAuto.plist <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>method</key><string>app-store-connect</string>
-  <key>teamID</key><string>ZK846VZN92</string>
+  <key>teamID</key><string>779ML27PH2</string>
   <key>signingStyle</key><string>automatic</string>
   <key>uploadSymbols</key><true/>
   <key>destination</key><string>export</string>

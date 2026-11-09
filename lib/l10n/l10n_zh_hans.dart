@@ -1632,4 +1632,26 @@ class L10nZhHans extends L10n {
   String get addRule => '添加规则';
   @override
   String get settingsFooter => '设置保存后立即生效，从下一次"整理"开始应用。已整理过的备忘录不会被追溯修改。';
+  @override
+  String get migrateTitle => '从旧版 Skyblue Note 迁移';
+  @override
+  String get migrateIntro =>
+      'iPhone、iPad 和 Mac 版已更新为 Skyblue Note Pro。原来的备忘录可以按下面的方法原样迁移过来。';
+  @override
+  String get migrateDrive =>
+      '原来用 Google 云端硬盘同步的用户 — 在本应用中连接同一个 Google 账号，备忘录就会原样同步下来。';
+  @override
+  String get migrateIcloud =>
+      '只用 iCloud 的用户 — 先在旧应用中把同步方式改为 Google 云端硬盘，再按上面的方法连接。也可以在旧应用中保存备份文件，再在本应用中用"从文件导入"导入。';
+  @override
+  String get migrateLocal => '只保存在本设备上的用户 — 在旧应用中保存备份文件，再在本应用中用"从文件导入"导入。';
+  @override
+  String get migrateKeys => 'AI 编辑使用的 API 密钥不会迁移。请在设置中重新输入一次。';
+  @override
+  String get migrateReceipt =>
+      '在旧应用中订阅或购买过的用户，请把收据发送到 easy.invest.good@gmail.com，我们会送上新应用的免费兑换码。';
+  @override
+  String get migrateBtnDrive => '连接 Google 云端硬盘';
+  @override
+  String get migrateRow => '从旧版 Skyblue Note 迁移';
 }

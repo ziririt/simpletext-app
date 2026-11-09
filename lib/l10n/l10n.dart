@@ -261,6 +261,16 @@ abstract class L10n {
   String aiCallFailed(String error);
   String get aiAppliedToast;
   String get close;
+  // 2026-11-09 — 새 계정의 Skyblue Note Pro 로 옮겨 오는 안내(애플 기기만).
+  String get migrateTitle;
+  String get migrateIntro;
+  String get migrateDrive;
+  String get migrateIcloud;
+  String get migrateLocal;
+  String get migrateKeys;
+  String get migrateReceipt;
+  String get migrateBtnDrive;
+  String get migrateRow;
   String get interpretApply;
 
   // ---------------- 바꾸기 ----------------
@@ -1056,6 +1066,15 @@ abstract class L10n {
     'aiEmptyResponse': aiEmptyResponse,
     'aiAppliedToast': aiAppliedToast,
     'close': close,
+    'migrateTitle': migrateTitle,
+    'migrateIntro': migrateIntro,
+    'migrateDrive': migrateDrive,
+    'migrateIcloud': migrateIcloud,
+    'migrateLocal': migrateLocal,
+    'migrateKeys': migrateKeys,
+    'migrateReceipt': migrateReceipt,
+    'migrateBtnDrive': migrateBtnDrive,
+    'migrateRow': migrateRow,
     'interpretApply': interpretApply,
     'replaceTitle': replaceTitle,
     'findLabel': findLabel,

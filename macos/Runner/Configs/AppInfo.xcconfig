@@ -15,7 +15,7 @@
 PRODUCT_NAME = Skyblue Note
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.ziririt.simpletext
+PRODUCT_BUNDLE_IDENTIFIER = com.ezlong.skybluenote
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.ziririt. All rights reserved.
@@ -30,6 +30,6 @@ PRODUCT_COPYRIGHT = Copyright © 2026 com.ziririt. All rights reserved.
 // 죽는 자리다(2026-08-15에 겪었다). 여기 넣는 이유: Xcode의 설정 우선순위
 // 에서 '타깃의 xcconfig'가 '프로젝트 설정'보다 위라서, 프로젝트의 "-"를
 // 이 파일이 덮는다.
-DEVELOPMENT_TEAM = ZK846VZN92
+DEVELOPMENT_TEAM = 779ML27PH2
 CODE_SIGN_STYLE = Automatic
 CODE_SIGN_IDENTITY = Apple Development

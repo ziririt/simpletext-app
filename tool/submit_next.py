@@ -33,13 +33,15 @@ for _cand in (os.environ.get('SKY_SECRETS_HOME'), os.path.expanduser('~'),
     if _cand and os.path.isdir(os.path.join(_cand, '.appstoreconnect')):
         sys.path.insert(0, os.path.join(_cand, '.appstoreconnect'))
         break
+# 2026-11-09 — 아이폰·맥은 새 애플 계정이다. asc.py 가 이 값을 보고 새 키를 고른다.
+os.environ.setdefault('ASC_PROFILE', 'new')
 try:
     from asc import api
 except Exception as e:  # noqa: BLE001
     print('열쇠 꾸러미를 못 읽었다(.appstoreconnect): %s' % e)
     raise SystemExit(2)
 
-BUNDLE = 'com.ziririt.simpletext'
+BUNDLE = 'com.ezlong.skybluenote'  # 2026-11-09 새 계정의 Skyblue Note Pro
 
 
 def store_version_in_repo():

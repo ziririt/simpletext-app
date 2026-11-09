@@ -1660,4 +1660,27 @@ class L10nKo extends L10n {
   @override
   String get settingsFooter =>
       '설정은 저장 즉시 반영되며, 이후 "정리"를 실행할 때부터 적용됩니다. 이미 정리해 둔 노트는 소급해서 바뀌지 않습니다.';
+  @override
+  String get migrateTitle => '옛 Skyblue Note 에서 옮겨 오기';
+  @override
+  String get migrateIntro =>
+      '아이폰·아이패드·맥 앱이 Skyblue Note Pro 로 새로 나왔습니다. 쓰던 노트는 아래 방법으로 그대로 옮겨 올 수 있습니다.';
+  @override
+  String get migrateDrive =>
+      '구글 드라이브로 동기화하던 분 — 이 앱에서 같은 구글 계정으로 연결하면 노트가 그대로 내려옵니다.';
+  @override
+  String get migrateIcloud =>
+      'iCloud 로만 쓰던 분 — 옛 앱에서 동기화를 구글 드라이브로 바꾼 뒤 위처럼 연결하세요. 또는 옛 앱에서 백업 파일을 저장해 이 앱의 \'파일에서 가져오기\'로 넣으세요.';
+  @override
+  String get migrateLocal =>
+      '이 기기에만 두던 분 — 옛 앱에서 백업 파일을 저장해 이 앱의 \'파일에서 가져오기\'로 넣으세요.';
+  @override
+  String get migrateKeys => 'AI 편집에 쓰던 API 키는 옮겨지지 않습니다. 설정에서 한 번 다시 넣어 주세요.';
+  @override
+  String get migrateReceipt =>
+      '옛 앱에서 구독·구매하신 분은 영수증을 easy.invest.good@gmail.com 로 보내 주시면 새 앱 무료 이용 코드를 드립니다.';
+  @override
+  String get migrateBtnDrive => '구글 드라이브 연결';
+  @override
+  String get migrateRow => '옛 Skyblue Note 에서 옮겨 오기';
 }

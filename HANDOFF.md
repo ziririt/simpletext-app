@@ -1,6 +1,6 @@
 # HANDOFF — Skyblue Note (simpletext_app)
 
-최종 갱신: **2026-10-28 12:32 KST** (플레이 두 번째 거절·안드로이드 로그인 함정 반영. 나머지 절은 09-12 기준)
+최종 갱신: **2026-11-09 17:57 KST** (아이폰·맥을 새 애플 계정의 Skyblue Note Pro 로 옮기는 작업 시작 — 0-5절. 나머지 절은 09-12~10-28 기준)
 이 문서는 누적 기록이 아니라 **현재 상태 한 장**이다. 다음 담당자는 이 문서 하나만 읽고 바로 이어서 작업할 수 있어야 한다.
 갱신할 때는 밑에 덧붙이지 말고 **통째로 덮어쓴다.**
 
@@ -189,6 +189,46 @@ export OPS_RUNNER="1번-스카이블루"
 > **다섯 번 넘게 주고받을 일이면 새 대화가 이득이고, 한 마디로 끝날 일이면 그냥 이어서 하는 게 낫다.**
 
 ---
+
+## 0-5. 아이폰·아이패드·맥은 새 애플 계정의 **Skyblue Note Pro** 다 (2026-11-09 시작)
+
+**먼저 알 것 — 안드로이드는 아무것도 안 바뀐다.** 패키지 `com.ziririt.simpletext`, 플레이 상품, 플레이 판 번호 그대로.
+
+바뀐 것(저장소, 2026-11-09):
+
+- 묶음 아이디 `com.ziririt.simpletext` → **`com.ezlong.skybluenote`** (아이폰·아이패드·맥 같은 아이디).
+  공유 확장 `.ShareExtension`, 위젯 `.SkyblueWidget`, 시험 `.RunnerTests` 도 같이.
+- 팀 `DEVELOPMENT_TEAM` → **779ML27PH2** (ios 모든 타깃, macos `AppInfo.xcconfig`, `ios/ExportOptions.plist`, 굽는 스크립트의 export plist).
+- 앱 그룹 `group.com.ezlong.skybluenote`, 아이클라우드 `iCloud.com.ezlong.skybluenote`(파일 앱 폴더 이름은 "Skyblue Note" 그대로),
+  맥 키체인 그룹 `$(AppIdentifierPrefix)com.ezlong.skybluenote`. 홈 화면 이름(`CFBundleDisplayName`)은 **Skyblue Note** 그대로.
+- 상품 이름이 스토어마다 다르다 — `lib/core/purchase_gate.dart`. 애플 기기는 앱을 켤 때 `productPrefix` 를
+  `com.ezlong.skybluenote.premium` 으로 바꾼다(`main()`). 알아보는 쪽(`isPremiumProduct`·`isAllDevices`·`guardDaysFor`)은
+  **두 이름을 다 받는다** — 드라이브로 넘어온 다른 기기의 결제 기록을 이름 때문에 놓치지 않게. 시험 `test/core/product_ids_test.dart`.
+- 판 번호 **4.0 (빌드 256)**. 안드로이드는 다음 플레이 판을 낼 때 이름을 따로 줄 수 있다(`tool/appstore_android.sh 3.20 257` 처럼 인자).
+- 애플 기기 첫 실행: 첫 안내 다음에 **"옛 Skyblue Note 에서 옮겨 오기"** 시트(`lib/migrate_sheet.dart`), 설정 → 정보 맨 위 줄에서 다시 연다.
+  구글 드라이브 연결 / 파일에서 가져오기 / AI 키 다시 넣기 / 옛 앱 구매자 영수증 → 새 앱 무료 코드. 파일 앱의 아이클라우드 폴더에서
+  꺼내는 길은 **실기기에서 보이는지 확인한 뒤에만** 적는다(아직 안 적었다).
+- 스토어 이름 `store/ios/*/name.txt` → **Skyblue Note Pro**.
+- 도구: 애플 쪽 스크립트는 **새 계정 키**를 쓴다 — `~/.appstoreconnect/asc-new.env`(셸), `ASC_PROFILE=new`(파이썬,
+  `submit_next.py`·`mac_store.py` 가 스스로 고른다). `review_status.py` 는 기본이 옛 키라 옛 앱 감시에 그대로 쓴다.
+  `deploy.sh` 의 아이폰 설치 확인도 새 아이디를 본다. 안드로이드 줄은 옛 아이디 그대로.
+
+**옛 아이폰 판(3.19, 빌드 254) — 덧판은 아직 붙일 수 있다.** 셔버드 덧판은 애플을 거치지 않으므로, 옛 계정을 못 써도 옛 판에
+다트 고침을 보낼 수 있다(10-17 까지 #17 을 보냈다). 다만 **main 의 다트 코드로 굽으면 안 된다** — 새 앱 그룹·상품 이름이 옛 앱에
+들어가 위젯·결제가 깨진다. 옛 판 덧판은 꼬리표 **`legacy-ios-254`** 에서 가지를 따서 굽는다:
+
+```bash
+git worktree add ../simpletext_legacy legacy-ios-254
+cd ../simpletext_legacy && REL=254 bash tool/patch.sh ios   # pubspec 3.19.0+255 → 254 로 잠깐 바꿔 굽는다
+```
+
+구글 iOS 클라이언트가 새로 생기면 `skyblue_keys.env` 의 `GOOGLE_IOS_CLIENT_ID` 는 새 값이 된다. 그날 옛 값을
+`GOOGLE_IOS_CLIENT_ID_LEGACY` 로 남겨 두고, 옛 판 덧판은 옛 값으로 굽는다(`SKY_SECRETS_HOME` 에 옛 값 파일을 따로 두는 식).
+덧판의 dart-define 은 그 판을 구웠을 때와 같아야 한다.
+
+남은 일(PENDING C-31): 구글 iOS 클라이언트(같은 `skyblue-note` 프로젝트 — 다른 프로젝트면 드라이브가 빈 폴더로 보인다),
+새 계정의 묶음 아이디·앱 그룹·아이클라우드 컨테이너 등록, 애드몹 새 앱·광고 단위, 개발 빌드로 노트 수 대조(안드로이드와 같은
+계정에서 숫자 비교), 앱 기록·상품·심사 제출(소유자 확인 뒤), 출시 **뒤** `lib/core/store_links.dart` 의 `kAppStoreId`.
 
 ## 1. 한 장 요약
 

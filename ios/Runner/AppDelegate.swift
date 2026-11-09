@@ -68,7 +68,7 @@ import UIKit
 enum ShareBridge {
   /// 확장과 앱이 함께 쓰는 창고. 둘은 서로 다른 프로세스라 변수로는
   /// 아무것도 못 넘긴다. 애플이 열어 준 유일한 공용 자리가 이것이다.
-  static let appGroup = "group.com.ziririt.simpletext"
+  static let appGroup = "group.com.ezlong.skybluenote"
 
   /// 아직 다트에게 못 넘긴 것들.
   ///
@@ -200,7 +200,7 @@ enum ShareBridge {
 /// 두 벌은 반드시 어긋난다.
 enum ICloudBridge {
   /// 애플 개발자 계정에 등록해 둔 컨테이너. 2026-08-16 등록.
-  static let containerId = "iCloud.com.ziririt.simpletext"
+  static let containerId = "iCloud.com.ezlong.skybluenote"
 
   static func register(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(name: "skyblue/icloud", binaryMessenger: messenger)

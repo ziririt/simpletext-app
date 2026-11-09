@@ -65,7 +65,7 @@ class WidgetBridge {
 
   /// 애플에서 앱과 위젯이 같은 서랍을 보게 하는 이름. ios/Runner.entitlements
   /// 의 application-groups 와 **글자 하나까지 같아야 한다.**
-  static const String appGroup = 'group.com.ziririt.simpletext';
+  static const String appGroup = 'group.com.ezlong.skybluenote';
 
   static const String androidProvider = 'SkyblueWidgetProvider';
   static const String iosWidget = 'SkyblueWidget';

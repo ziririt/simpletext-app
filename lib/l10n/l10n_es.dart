@@ -1736,4 +1736,28 @@ class L10nEs extends L10n {
   @override
   String get settingsFooter =>
       'Los ajustes se guardan al instante y se aplican desde el próximo "Ordenar". Las notas ya ordenadas no cambian retroactivamente.';
+  @override
+  String get migrateTitle => 'Pasar desde el antiguo Skyblue Note';
+  @override
+  String get migrateIntro =>
+      'La app para iPhone, iPad y Mac ahora es Skyblue Note Pro. Puede traer sus notas tal como están:';
+  @override
+  String get migrateDrive =>
+      'Si sincronizaba con Google Drive — conecte aquí la misma cuenta de Google y sus notas volverán tal como estaban.';
+  @override
+  String get migrateIcloud =>
+      'Si solo usaba iCloud — cambie la sincronización de la app antigua a Google Drive y conéctese como arriba. O guarde un archivo de copia en la app antigua y ábralo aquí con "Importar desde archivos".';
+  @override
+  String get migrateLocal =>
+      'Si sus notas estaban solo en este dispositivo — guarde un archivo de copia en la app antigua y ábralo aquí con "Importar desde archivos".';
+  @override
+  String get migrateKeys =>
+      'Las claves API de la edición con IA no se trasladan. Vuelva a introducirlas en Ajustes.';
+  @override
+  String get migrateReceipt =>
+      'Si tenía una suscripción o una compra en la app antigua, envíe su recibo a easy.invest.good@gmail.com y le enviaremos un código gratuito para la nueva app.';
+  @override
+  String get migrateBtnDrive => 'Conectar Google Drive';
+  @override
+  String get migrateRow => 'Pasar desde el antiguo Skyblue Note';
 }

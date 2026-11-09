@@ -89,6 +89,7 @@ import 'scroll_hint.dart';
 import 'wipe_screen.dart';
 import 'core/time_travel.dart';
 import 'import_service.dart';
+import 'migrate_sheet.dart';
 import 'lock_service.dart';
 import 'mac_menu.dart';
 import 'share_intake.dart';
@@ -103,6 +104,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 몇 번째 덧판인지 읽어 둔다(version.dart 의 patchNumber). 기다리지 않는다.
   unawaited(readPatchNumber());
+  // 애플 기기는 새 계정의 상품 이름을 쓴다(2026-11-09, core/purchase_gate.dart).
+  if (deviceFamily() == kFamilyApple) productPrefix = kAppleProductPrefix;
 
   // 앱이 뒤로 갈 때 모아 둔 저장을 즉시 비운다.
   //
@@ -4451,6 +4454,10 @@ class _HomeScreenState extends State<HomeScreen>
         fullscreenDialog: true,
       ),
     );
+    // 2026-11-09 — 애플 기기는 새 계정의 Skyblue Note Pro 다. 첫 안내 다음에
+    // "옛 앱에서 옮겨 오기"를 한 번 보여 준다(migrate_sheet.dart). 스크린샷 판은 뺀다.
+    if (!mounted || kShotMode || deviceFamily() != kFamilyApple) return;
+    await showMigrateSheet(context);
   }
 
   @override
@@ -16869,6 +16876,25 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
                   // 것인가 의심한다. 자주 여는 쪽(목록)에 남긴다.
                   _secHeader(l.settingsSecInfo),
                   _card([
+                    // 2026-11-09 — 옛 Skyblue Note 에서 옮겨 오기(애플 기기만).
+                    // 처음 켤 때 한 번 뜨고, 그 뒤로는 여기서 다시 연다.
+                    if (deviceFamily() == kFamilyApple) ...[
+                      ListTile(
+                        leading: Icon(
+                          Icons.drive_file_move_outline,
+                          color: context.c.sub,
+                        ),
+                        title: Text(
+                          l.migrateRow,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onTap: () => unawaited(showMigrateSheet(context)),
+                      ),
+                      _sep(),
+                    ],
                     // 2026-08-24 소유자 지시 — "다른 앱들처럼 앱공유와
                     // 평가해주세요를 설정 하단에 만들어줘."
                     //

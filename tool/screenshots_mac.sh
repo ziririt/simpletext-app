@@ -12,7 +12,7 @@ set -u
 cd "$(dirname "$0")/.." || exit 1
 export PATH="$HOME/development/flutter/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 OUT="store/screenshots/mac"
-BOX="$HOME/Library/Containers/com.ziririt.simpletext/Data/shots"
+BOX="$HOME/Library/Containers/com.ezlong.skybluenote/Data/shots"
 X=80; Y=60; W=1280; H=800
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 

@@ -1723,4 +1723,28 @@ class L10nEn extends L10n {
   @override
   String get settingsFooter =>
       'Settings take effect immediately and apply from the next "Tidy". Notes you have already tidied are not changed retroactively.';
+  @override
+  String get migrateTitle => 'Move over from the old Skyblue Note';
+  @override
+  String get migrateIntro =>
+      'The iPhone, iPad and Mac app is now Skyblue Note Pro. You can bring your notes over as they are:';
+  @override
+  String get migrateDrive =>
+      'If you synced with Google Drive — connect the same Google account here and your notes come down as they were.';
+  @override
+  String get migrateIcloud =>
+      'If you used iCloud only — switch the old app\'s sync to Google Drive, then connect as above. Or save a backup file in the old app and open it here with "Import from files".';
+  @override
+  String get migrateLocal =>
+      'If your notes were only on this device — save a backup file in the old app and open it here with "Import from files".';
+  @override
+  String get migrateKeys =>
+      'API keys for AI Edit do not carry over. Please enter them once more in Settings.';
+  @override
+  String get migrateReceipt =>
+      'If you subscribed or bought in the old app, send your receipt to easy.invest.good@gmail.com and we will send you a free code for the new app.';
+  @override
+  String get migrateBtnDrive => 'Connect Google Drive';
+  @override
+  String get migrateRow => 'Move over from the old Skyblue Note';
 }

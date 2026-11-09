@@ -152,8 +152,8 @@ build_no()   { sed -n 's/^const int appBuild = \([0-9]*\);/\1/p' lib/version.dar
 # 기기에 깔린 판을 묻는다. 안 깔려 있으면 빈 글자.
 installed_version() { # $1=udid
   xcrun devicectl device info apps --device "$1" \
-      --bundle-id com.ziririt.simpletext 2>/dev/null |
-    awk '/com.ziririt.simpletext/{print $(NF-1)"."$NF}'
+      --bundle-id com.ezlong.skybluenote 2>/dev/null |
+    awk '/com.ezlong.skybluenote/{print $(NF-1)"."$NF}'
 }
 
 # 기기가 대답을 하는가. 붙지도 않은 기기에 설치를 **시작조차 하지 않기**
@@ -164,7 +164,7 @@ installed_version() { # $1=udid
 # 치우고 못 넣으면 앱은 사라진다.
 device_awake() { # $1=udid
   xcrun devicectl device info apps --device "$1" \
-      --bundle-id com.ziririt.simpletext >/dev/null 2>&1
+      --bundle-id com.ezlong.skybluenote >/dev/null 2>&1
 }
 
 install_to() { # $1=udid $2=이름

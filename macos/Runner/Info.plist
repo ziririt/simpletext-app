@@ -26,7 +26,7 @@
 	     바꾼 뒤에는 빌드 번호가 올라가야 다시 읽는다. -->
 	<key>NSUbiquitousContainers</key>
 	<dict>
-		<key>iCloud.com.ziririt.simpletext</key>
+		<key>iCloud.com.ezlong.skybluenote</key>
 		<dict>
 			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
 			<true/>
@@ -90,7 +90,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.ziririt.simpletext.google</string>
+			<string>com.ezlong.skybluenote.google</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>$(GOOGLE_IOS_REVERSED)</string>

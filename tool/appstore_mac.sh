@@ -24,7 +24,7 @@
 #     따로 서명된다. 없으면 -allowProvisioningUpdates 가 API 열쇠로 만들어 온다
 #   - altool 의 -t 가 ios 가 아니라 macos 다
 #
-# 번들 id 는 아이폰과 같다(com.ziririt.simpletext). 같아야 한 번 산 사람이
+# 번들 id 는 아이폰과 같다(com.ezlong.skybluenote, 2026-11-09 새 계정). 같아야 한 번 산 사람이
 # 맥에서도 그대로 쓴다(유니버설 구매). **바꾸지 마라.**
 set -u
 cd "$(dirname "$0")/.." || exit 1
@@ -60,7 +60,9 @@ REV="com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_ID%%.apps.googleusercontent.
 printf '// tool 이 만든 파일이다. 손으로 고치지 말 것.\nGOOGLE_IOS_REVERSED = %s\n' \
   "$REV" > macos/Runner/Configs/Skyblue.xcconfig
 
-. "$SECHOME/.appstoreconnect/asc.env"
+# 2026-11-09 — 아이폰·맥은 새 애플 계정(팀 779ML27PH2)의 Skyblue Note Pro 다.
+# 키도 새 계정 것(asc-new.env, asc.py 의 ASC_PROFILE=new 와 같은 값)을 쓴다.
+. "$SECHOME/.appstoreconnect/asc-new.env"
 P8="$SECHOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
 AUTH="-allowProvisioningUpdates -authenticationKeyPath $P8 -authenticationKeyID $ASC_KEY_ID -authenticationKeyIssuerID $ASC_ISSUER_ID"
 
@@ -122,7 +124,7 @@ cat > ${WORK}ExportMac.plist <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>method</key><string>app-store-connect</string>
-  <key>teamID</key><string>ZK846VZN92</string>
+  <key>teamID</key><string>779ML27PH2</string>
   <key>signingStyle</key><string>automatic</string>
   <key>uploadSymbols</key><true/>
   <key>destination</key><string>export</string>

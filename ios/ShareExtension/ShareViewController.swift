@@ -41,7 +41,7 @@ import SwiftUI
 /// 을 찾아내 openURL 을 부르는 것인데, 애플이 열어 준 길이 아니라 심사에서
 /// 걸릴 수 있다. **남의 집 뒷문으로 들어가는 편의는 쓰지 않는다.**
 class ShareViewController: UIViewController {
-  static let appGroup = "group.com.ziririt.simpletext"
+  static let appGroup = "group.com.ezlong.skybluenote"
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -81,7 +81,7 @@ class ShareViewController: UIViewController {
   /// 저쪽에서 뒷정리를 잘못한다.
   private func cancelRequest() {
     extensionContext?.cancelRequest(
-      withError: NSError(domain: "com.ziririt.simpletext.ShareExtension",
+      withError: NSError(domain: "com.ezlong.skybluenote.ShareExtension",
                          code: NSUserCancelledError))
   }
 

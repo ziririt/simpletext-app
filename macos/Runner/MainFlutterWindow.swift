@@ -149,7 +149,7 @@ final class AppMenuBridge: NSObject {
 /// 다트에게 아이클라우드 폴더의 '경로'만 알려 주는 얇은 다리.
 /// (아이폰 쪽 ios/Runner/AppDelegate.swift에 같은 내용이 있다.)
 enum ICloudBridge {
-  static let containerId = "iCloud.com.ziririt.simpletext"
+  static let containerId = "iCloud.com.ezlong.skybluenote"
 
   static func register(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(name: "skyblue/icloud", binaryMessenger: messenger)
