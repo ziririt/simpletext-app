@@ -1092,7 +1092,10 @@ class ICloudSync {
       'monoEditor': s.monoEditor,
       'previewBeforeApply': s.previewBeforeApply,
       'sortMode': s.sortMode,
-      'pasteTipDone': s.pasteTipDone,
+      // pasteTipDone 은 싣지 않는다(2026-11-11). '붙여넣기 묻지 않게'는
+      // 아이폰 설정 안에서 **앱마다** 따로 켜는 스위치다. 옛 Skyblue Note
+      // 에서 켰어도 새 Pro 앱은 다시 켜야 하는데, 옛 앱의 '이미 안내함'이
+      // 구름을 타고 내려와 Pro 에서 안내가 한 번도 안 떴다(소유자 신고).
     };
   }
 
@@ -1124,7 +1127,6 @@ class ICloudSync {
     s.monoEditor = pick('monoEditor', s.monoEditor);
     s.previewBeforeApply = pick('previewBeforeApply', s.previewBeforeApply);
     s.sortMode = pick('sortMode', s.sortMode);
-    s.pasteTipDone = pick('pasteTipDone', s.pasteTipDone);
   }
 
   /// 이 기기의 모양 값을 구름의 제 칸에 맞춘다.

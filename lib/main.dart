@@ -43,6 +43,8 @@ import 'view_settings.dart';
 import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'attach_store.dart';
+import 'note_file.dart';
+import 'core/note_store_codec.dart';
 import 'core/attach_meta.dart';
 import 'core/auto_meta.dart';
 import 'core/folders.dart';
@@ -1878,7 +1880,9 @@ class AppSettings {
     'removeCitations': removeCitations,
     'monoEditor': monoEditor,
     'previewBeforeApply': previewBeforeApply,
-    'pasteTipDone': pasteTipDone,
+    // 키 이름을 바꿨다(2026-11-11): 옛 앱에서 넘어온 '이미 안내함'을 버리고
+    // Pro 앱에서 한 번 더 안내한다. 이 값은 이제 동기화하지 않는다.
+    'pasteTipDone2': pasteTipDone,
     'bodyFontSize': bodyFontSize,
     'bodyFont': bodyFont,
     'bodyLineHeight': bodyLineHeight,
@@ -2001,7 +2005,7 @@ class AppSettings {
     s.monoEditor = (j['monoEditor'] ?? s.monoEditor) as bool;
     s.previewBeforeApply =
         (j['previewBeforeApply'] ?? s.previewBeforeApply) as bool;
-    s.pasteTipDone = (j['pasteTipDone'] ?? s.pasteTipDone) as bool;
+    s.pasteTipDone = (j['pasteTipDone2'] ?? s.pasteTipDone) as bool;
     // 2026-08-17 — 기본값을 껐다. 기본값만 바꾸면 이미 쓰던 기기는 저장된
     // true를 그대로 읽어 와서 아무것도 안 바뀐다(2026-08-14에 따옴표
     // 규칙에서 똑같은 일을 겪었다). 그래서 판(rev)이 2보다 낮은 저장본에
@@ -2126,37 +2130,74 @@ class Store extends ChangeNotifier {
   AppSettings settings = AppSettings();
   bool loaded = false;
 
+  /// 읽지 못한 노트 원본. 화면에는 안 나오고, 저장할 때 그대로 되쓴다.
+  List<Map<String, dynamic>> _unreadable = [];
+
+  /// 옛 서랍의 노트를 파일로 옮긴다. 파일에 쓴 것을 **다시 읽어 수가
+  /// 맞을 때만** 서랍 사본을 지운다. 하나라도 어긋나면 서랍은 그대로 두고
+  /// 다음 실행에 다시 해 본다 — 파일이 생겼으니 다음엔 파일이 이긴다.
+  Future<void> _moveOutOfPrefs(SharedPreferences prefs) async {
+    try {
+      await persistLocalOnly();
+      final back = await NoteFile.read();
+      if (back == null) return; // 웹: 파일이 없다. 서랍이 곧 저장소다.
+      final d = decodeStore<Note>(back, Note.fromJson);
+      if (d == null) return;
+      if (mayDropPrefsCopy(
+        notesInPrefs: notes.length,
+        notesReadBackFromFile: d.notes.length,
+      )) {
+        await prefs.remove(_notesKey);
+      }
+    } catch (_) {}
+  }
+
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
+    // 노트는 파일(notes.v3.json)이 참이다. 옛 판이 쓰던 서랍
+    // (SharedPreferences)은 옮겨 오는 데만 쓴다. 사연은
+    // core/note_store_codec.dart 맨 위에 적었다(2026-11-11).
+    DecodedStore<Note>? fromFile;
+    String? fileRaw;
     try {
-      final raw = prefs.getString(_notesKey);
-      if (raw != null) {
-        final p = jsonDecode(raw) as Map<String, dynamic>;
-        notes = ((p['notes'] ?? []) as List)
-            .map((e) => Note.fromJson(e as Map<String, dynamic>))
-            .toList();
-        tombstones = ((p['tombstones'] ?? []) as List)
-            .map((e) => (e as Map).cast<String, dynamic>())
-            .toList();
-        // 기한이 지난 것은 여기서 조용히 버린다. 따로 청소 절차를 두면
-        // 그 절차가 안 돌았을 때 휴지통이 영원히 자란다.
-        trash = pruneTrash<Map<String, dynamic>>(
-          ((p['trash'] ?? []) as List)
-              .map((e) => (e as Map).cast<String, dynamic>())
-              .toList(),
-          deletedAtOf: (e) => (e['deletedAt'] ?? 0) as int,
-          nowMs: DateTime.now().millisecondsSinceEpoch,
-        );
-        // 옛 판이 쌓아 둔 시드들을 여기서 한 번 접는다. 아이클라우드가
-        // 켜지기 전이어야 한다 — 접기 전에 올라가면 옛 번호가 그대로 다시
-        // 퍼진다.
-        if (foldOldSeeds(notes, tombstones)) {
-          await persist();
-        }
-      } else {
-        notes = [_seedNote()];
+      fileRaw = await NoteFile.read();
+      if (fileRaw != null) {
+        fromFile = decodeStore<Note>(fileRaw, Note.fromJson);
+        // 껍데기가 깨진 파일은 지우지 않고 옆에 떠 둔다.
+        if (fromFile == null) await NoteFile.keepBroken(fileRaw);
       }
-    } catch (_) {
+    } catch (_) {}
+    DecodedStore<Note>? prefsStore;
+    final prefsRaw = prefs.getString(_notesKey);
+    if (fromFile == null && prefsRaw != null) {
+      prefsStore = decodeStore<Note>(prefsRaw, Note.fromJson);
+    }
+    final src = pickStoreSource(
+      fileReadable: fromFile != null,
+      prefsReadable: prefsStore != null,
+    );
+    final d = src == StoreSource.file ? fromFile : prefsStore;
+    if (d != null) {
+      notes = d.notes;
+      tombstones = d.tombstones;
+      _unreadable = d.unreadable;
+      // 기한이 지난 것은 여기서 조용히 버린다. 따로 청소 절차를 두면
+      // 그 절차가 안 돌았을 때 휴지통이 영원히 자란다.
+      trash = pruneTrash<Map<String, dynamic>>(
+        d.trash,
+        deletedAtOf: (e) => (e['deletedAt'] ?? 0) as int,
+        nowMs: DateTime.now().millisecondsSinceEpoch,
+      );
+      // 옛 판이 쌓아 둔 시드들을 여기서 한 번 접는다. 아이클라우드가
+      // 켜지기 전이어야 한다 — 접기 전에 올라가면 옛 번호가 그대로 다시
+      // 퍼진다.
+      final folded = foldOldSeeds(notes, tombstones);
+      if (src == StoreSource.prefs) {
+        await _moveOutOfPrefs(prefs);
+      } else if (folded) {
+        await persist();
+      }
+    } else {
       notes = [_seedNote()];
     }
     try {
@@ -2247,10 +2288,16 @@ class Store extends ChangeNotifier {
         'notes': notes.map((n) => n.toJson()).toList(),
         'tombstones': tombstones,
         'trash': trash,
+        // 읽지 못한 노트는 버리지 않고 그대로 되쓴다(note_store_codec.dart).
+        if (_unreadable.isNotEmpty) 'unreadable': _unreadable,
       };
       final text = await compute(_encodeStore, payload);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_notesKey, text);
+      // 파일이 있는 기기(웹 말고 전부)는 파일에 쓴다. 서랍에 다시 넣지
+      // 않는다 — 16MB 를 서랍에 넣었다가 노트가 사라졌다(2026-11-11).
+      if (!await NoteFile.write(text)) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_notesKey, text);
+      }
       notifyListeners();
     } finally {
       _writing = false;

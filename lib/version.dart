@@ -51,7 +51,7 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 /// 앱스토어 화면, 설정 화면, 꾸러미 안 — 전부 이 값이다.
 /// 새 판을 스토어에 낼 때 이것만 올린다. `pubspec.yaml` 의 version 도
 /// 같은 값이어야 하고, 어긋나면 `tool/version_check.py` 가 잡는다.
-const String appVersion = '4.0';
+const String appVersion = '4.0.1';
 
 /// 빌드 번호. 같은 이름으로 여러 번 올릴 때 구분한다.
 ///
@@ -62,7 +62,7 @@ const String appVersion = '4.0';
 /// 처음 깔 때 한 번 읽고, 그 뒤로는 **빌드 번호가 올라갈 때만** 다시 읽는다.
 /// 앞자리를 올릴 때 이 번호를 1로 되돌리는 습관이 원인이었다. 그 습관을
 /// 버린다. 판이 바뀌든 안 바뀌든 여기는 늘 오른다.
-const int appBuild = 256;
+const int appBuild = 257;
 
 /// 스토어로 나갈 판인가. 아니면 담당자가 손으로 넣은 시험판이다.
 ///
