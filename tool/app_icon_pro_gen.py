@@ -1,17 +1,19 @@
 # Skyblue Note Pro 아이콘 v2: B안 색 + 뭉게구름 + 구름 밑 글줄 + 우측 상단 PRO
-C = [(-175,-45,132),(-20,-92,146),(150,-5,104),(-300,30,104),(-345,100,74),(272,72,74),
-     (-235,110,96),(-90,128,108),(55,124,100),(185,108,82),(-40,30,175),(-230,-110,70)]
+C = [(-269,-90,115),(-99,-230,170),(121,-175,145),(274,-80,110)]
 def cloud(fill, extra=""):
     g = f'<g {extra} fill="{fill}">'
     for x,y,r in C: g += f'<circle cx="{x}" cy="{y}" r="{r}"/>'
+    # 바닥: 일자로 두되 양 끝을 둥글게 (옛 아이콘의 각진 '식빵 밑동' 제거)
+    g += '<rect x="-372" y="-150" width="752" height="180" rx="88"/>'
+    g += '<rect x="-260" y="-160" width="500" height="170"/>'
     return g + '</g>'
-def svg(cx=532, cy=458, s=1.0):
+def svg(cx=509, cy=610, s=1.0):
     T = f'translate({cx},{cy}) scale({s})'
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
 <defs>
  <linearGradient id="sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#0A2A66"/><stop offset="0.6" stop-color="#1E5BC6"/><stop offset="1" stop-color="#5FB4F5"/></linearGradient>
  <radialGradient id="glow" cx="0.82" cy="0.88" r="0.5"><stop offset="0" stop-color="#BFE6FF" stop-opacity="0.45"/><stop offset="1" stop-color="#BFE6FF" stop-opacity="0"/></radialGradient>
- <linearGradient id="cl" x1="0" y1="-260" x2="0" y2="230" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.55" stop-color="#F7FBFF"/><stop offset="1" stop-color="#D9ECFF"/></linearGradient>
+ <linearGradient id="cl" x1="0" y1="-400" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.55" stop-color="#F7FBFF"/><stop offset="1" stop-color="#D9ECFF"/></linearGradient>
  <radialGradient id="hl" cx="0.35" cy="0.25" r="0.6"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
  <clipPath id="cc">'+cloud("#000")+'</clipPath>
  <filter id="sh" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="26"/></filter>
@@ -20,7 +22,7 @@ def svg(cx=532, cy=458, s=1.0):
 <rect width="1024" height="1024" fill="url(#sky)"/>
 <rect width="1024" height="1024" fill="url(#glow)"/>
 <g transform="translate({cx},{cy+34}) scale({s})">{cloud("#04163A", 'opacity="0.30" filter="url(#sh)"')}</g>
-<g transform="{T}">{cloud("url(#cl)")}<g clip-path="url(#cc)"><ellipse cx="-70" cy="-80" rx="230" ry="120" fill="url(#hl)"/></g></g>
+<g transform="{T}">{cloud("url(#cl)")}<g clip-path="url(#cc)"><ellipse cx="-150" cy="-260" rx="260" ry="150" fill="url(#hl)"/></g></g>
 <rect x="272" y="712" width="480" height="36" rx="18" fill="#FFFFFF" opacity="0.95"/>
 <rect x="322" y="780" width="380" height="36" rx="18" fill="#FFFFFF" opacity="0.62"/>
 <rect x="387" y="848" width="250" height="36" rx="18" fill="#FFFFFF" opacity="0.38"/>
