@@ -210,7 +210,7 @@ export OPS_RUNNER="1번-스카이블루"
   구글 드라이브 연결 / 파일에서 가져오기 / AI 키 다시 넣기 / 옛 앱 구매자 영수증 → 새 앱 무료 코드. 파일 앱의 아이클라우드 폴더에서
   꺼내는 길은 **실기기에서 보이는지 확인한 뒤에만** 적는다(아직 안 적었다).
 - 스토어 이름 `store/ios/*/name.txt` → **Skyblue Note Pro**.
-- **앱 아이콘(11-11)** — 애플 기기만 PRO 딱지 아이콘 `assets/icon/app_icon_pro.png`(원본 `.svg`, 생성기 `tool/app_icon_pro_gen.py` B안). pubspec 의 `image_path_ios`·`macos.image_path` 가 가리킨다. 안드로이드·웹은 옛 아이콘 그대로. 심사 중인 4.0(256)에는 안 들어가 있다 — 다음 빌드부터 나간다(아이콘은 셔버드 덧판으로 못 보낸다).
+- **앱 아이콘(11-11)** — 애플 기기만 PRO 딱지 아이콘 `assets/icon/app_icon_pro.png`(원본 `.svg`, 생성기 `tool/app_icon_pro_gen.py`, 11-11 소유자 확정 v2: B안 색 + 뭉게구름 + 구름 밑 글줄 + 우측 상단 PRO). pubspec 의 `image_path_ios`·`macos.image_path` 가 가리킨다. 안드로이드·웹은 옛 아이콘 그대로. 심사 중인 4.0(256)에는 안 들어가 있다 — 다음 빌드부터 나간다(아이콘은 셔버드 덧판으로 못 보낸다).
 - 도구: 애플 쪽 스크립트는 **새 계정 키**를 쓴다 — `~/.appstoreconnect/asc-new.env`(셸), `ASC_PROFILE=new`(파이썬,
   `submit_next.py`·`mac_store.py` 가 스스로 고른다). `review_status.py` 는 기본이 옛 키라 옛 앱 감시에 그대로 쓴다.
   `deploy.sh` 의 아이폰 설치 확인도 새 아이디를 본다. 안드로이드 줄은 옛 아이디 그대로.
