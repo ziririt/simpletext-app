@@ -1926,6 +1926,54 @@ TidyResult tidy(String raw, TidyOptions optsIn) {
 }
 
 /// 문서에서 표만 추출 (표 도구용)
+/// 본문 속 표 하나의 자리와 내용(2026-11-11 — 표 메뉴에서 '이 표만'
+/// 다른 모양으로 바꾸려면 어디를 갈아 끼울지 알아야 한다).
+class TableSpot {
+  final int start; // 첫 줄 첫 글자
+  final int end; // 마지막 줄 끝(줄바꿈 앞)
+  final TableGrid grid;
+  const TableSpot(this.start, this.end, this.grid);
+}
+
+/// 본문에서 표들을 자리와 함께 찾는다. 코드 울타리 안은 표로 보지 않는다
+/// (가로 스크롤·화면 폭 표의 울타리는 core/table_blocks.dart 가 따로 찾는다).
+/// 풀어쓴 표(record)도 찾는다 — 표 메뉴에서 다시 표로 되돌릴 수 있게.
+List<TableSpot> locateTables(String text) {
+  final lines = text.split('\n');
+  final masked = <String>[];
+  var inFence = false;
+  for (final l in lines) {
+    if (RegExp(r'^\s*(```|~~~)').hasMatch(l)) {
+      inFence = !inFence;
+      masked.add('');
+    } else {
+      masked.add(inFence ? '' : l);
+    }
+  }
+  final starts = <int>[];
+  var off = 0;
+  for (final l in lines) {
+    starts.add(off);
+    off += l.length + 1;
+  }
+  final out = <TableSpot>[];
+  for (final b in _detectTableBlocks(masked, true)) {
+    final bl = lines.sublist(b.start, b.end + 1);
+    try {
+      final t = b.kind == 'record'
+          ? _recordBlockToTable(b, null)
+          : b.kind == 'tsv'
+          ? _parseTsvTable(bl, null)
+          : b.kind == 'aligned'
+          ? _parseAlignedTable(bl, null)
+          : _parseTable(bl, <String>[], null);
+      if (t.header.length < 2) continue;
+      out.add(TableSpot(starts[b.start], starts[b.end] + lines[b.end].length, t));
+    } catch (_) {}
+  }
+  return out;
+}
+
 ({List<TableGrid> tables, List<String> warnings}) extractTables(String raw) {
   // detectRecords: 풀어쓴 표도 스프레드시트로 되돌릴 수 있도록 표 도구에서만 인식
   final r = tidy(

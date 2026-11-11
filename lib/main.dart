@@ -9439,10 +9439,14 @@ class _EditorScreenState extends State<EditorScreen>
   /// 가로로 밀기·화면 폭 맞춤은 이름표 붙은 울타리로 남아 정리를 다시 돌려도
   /// 그대로다. 칸 맞춤·풀어쓰기는 글자로 풀어 넣는다(그 뒤로는 보통 글이다).
   /// 이미지는 본문을 안 바꾸고 그림 한 장을 만들어 공유한다.
-  Future<void> _showTableEdit(ScrollTableBlock b) async {
-    final grid = b.grid;
-    if (grid == null) return;
-    var mode = b.mode;
+  Future<void> _showTableEdit({
+    required int start,
+    required int end,
+    required TableGrid grid,
+    required String mode,
+  }) async {
+    // 창을 여는 순간의 그 글자. 적용할 때 이것과 같아야 갈아 끼운다.
+    final orig = bodyCtl.text.substring(start, end);
     final shotKey = GlobalKey();
     final scaler = MediaQuery.textScalerOf(context);
     await showModalBottomSheet<void>(
@@ -9546,15 +9550,12 @@ class _EditorScreenState extends State<EditorScreen>
                 out = tableToScrollBlock(grid);
             }
             final t = bodyCtl.text;
-            // 표 편집 창이 떠 있는 동안 글이 바뀌었으면 자리를 다시 찾는다.
-            final now = findScrollTables(t).where(
-              (x) => x.start == b.start && x.end == b.end,
-            );
-            if (now.isEmpty) {
+            // 표 편집 창이 떠 있는 동안 글이 바뀌었으면(동기화 등) 손대지 않는다.
+            if (t.length < end || t.substring(start, end) != orig) {
               Navigator.pop(ctx);
               return;
             }
-            bodyCtl.text = t.replaceRange(b.start, b.end, out);
+            bodyCtl.text = t.replaceRange(start, end, out);
             Navigator.pop(ctx);
             await _save();
             if (mounted) setState(() {});
@@ -9637,7 +9638,17 @@ class _EditorScreenState extends State<EditorScreen>
 
   Future<void> _showTables() async {
     await _save();
-    final r = extractTables(note.body);
+    // 2026-11-11 소유자 신고 — "표 메뉴에는 옵션이 없는데?" 표 편집이 카드
+    // 단추에서만 열렸다. 이제 본문의 모든 표를 자리와 함께 찾아, 표마다
+    // '표 편집'을 단다. 카드 표(울타리)와 글자 표(칸 맞춤·풀어쓰기·파이프)를
+    // 한 줄로 세운다.
+    final body = bodyCtl.text;
+    final spots = <(int, int, TableGrid, String)>[
+      for (final b in findScrollTables(body))
+        if (b.grid != null) (b.start, b.end, b.grid!, b.mode),
+      for (final t in locateTables(body)) (t.start, t.end, t.grid, 'aligned'),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    final r = (tables: [for (final x in spots) x.$3]);
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
@@ -9700,7 +9711,19 @@ class _EditorScreenState extends State<EditorScreen>
                         Wrap(
                           spacing: 8,
                           children: [
-                            FilledButton.tonal(
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                _showTableEdit(
+                                  start: spots[i].$1,
+                                  end: spots[i].$2,
+                                  grid: spots[i].$3,
+                                  mode: spots[i].$4,
+                                );
+                              },
+                              child: Text(L10n.of(ctx).tableEditTitle),
+                            ),
+                            TextButton(
                               onPressed: () {
                                 Clipboard.setData(
                                   ClipboardData(text: tableToTSV(t)),
@@ -12257,7 +12280,18 @@ Stack(
                                                           },
                                                           onEdit: () =>
                                                               _showTableEdit(
-                                                                _cardBlocks[ci],
+                                                                start:
+                                                                    _cardBlocks[ci]
+                                                                        .start,
+                                                                end:
+                                                                    _cardBlocks[ci]
+                                                                        .end,
+                                                                grid:
+                                                                    _cardBlocks[ci]
+                                                                        .grid!,
+                                                                mode:
+                                                                    _cardBlocks[ci]
+                                                                        .mode,
                                                               ),
                                                         ),
                                                       ),

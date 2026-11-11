@@ -59,4 +59,13 @@ void main() {
     expect(findScrollTables(once).single.mode, 'fit');
     expect(tidy(once, TidyOptions(repairTables: true, wideTables: 'fit')).text, once);
   });
+
+  test('locateTables: 글자 표의 자리를 찾고, 울타리 안은 안 본다', () {
+    const t1 = '| 구분 | 값 |\n|---|---|\n| 입력 | 2 |';
+    final text = '앞 글\n$t1\n\n$table\n끝';
+    final spots = locateTables(text);
+    expect(spots.length, 1);
+    expect(text.substring(spots[0].start, spots[0].end), t1);
+    expect(spots[0].grid.rows.single, ['입력', '2']);
+  });
 }
