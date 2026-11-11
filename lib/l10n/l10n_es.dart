@@ -440,7 +440,7 @@ class L10nEs extends L10n {
   @override
   String get wideTableFit => 'Ajustar al ancho';
   @override
-  String get tableEditTitle => 'Editar tabla';
+  String get tableEditTitle => 'Más estilos de tabla';
   @override
   String get tableModeScroll => 'Desplazar en horizontal';
   @override

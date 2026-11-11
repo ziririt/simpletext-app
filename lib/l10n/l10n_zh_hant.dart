@@ -426,7 +426,7 @@ class L10nZhHant extends L10n {
   @override
   String get wideTableFit => '符合螢幕寬度';
   @override
-  String get tableEditTitle => '編輯表格';
+  String get tableEditTitle => '更多表格樣式';
   @override
   String get tableModeScroll => '橫向捲動';
   @override

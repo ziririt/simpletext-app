@@ -438,7 +438,7 @@ class L10nEn extends L10n {
   @override
   String get wideTableFit => 'Fit to screen width';
   @override
-  String get tableEditTitle => 'Edit table';
+  String get tableEditTitle => 'More table styles';
   @override
   String get tableModeScroll => 'Scroll sideways';
   @override

@@ -427,7 +427,7 @@ class L10nKo extends L10n {
   @override
   String get wideTableFit => '화면 폭에 맞추기';
   @override
-  String get tableEditTitle => '표 편집';
+  String get tableEditTitle => '더 많은 표 스타일';
   @override
   String get tableModeScroll => '가로로 밀기';
   @override

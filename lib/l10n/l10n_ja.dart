@@ -427,7 +427,7 @@ class L10nJa extends L10n {
   @override
   String get wideTableFit => '画面幅に合わせる';
   @override
-  String get tableEditTitle => '表を編集';
+  String get tableEditTitle => 'その他の表スタイル';
   @override
   String get tableModeScroll => '横にスクロール';
   @override
