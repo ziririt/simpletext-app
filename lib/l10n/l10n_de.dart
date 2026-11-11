@@ -440,6 +440,24 @@ class L10nDe extends L10n {
   @override
   String get wideTableScroll => 'Seitlich scrollen';
   @override
+  String get wideTableFit => 'An Bildschirmbreite anpassen';
+  @override
+  String get tableEditTitle => 'Tabelle bearbeiten';
+  @override
+  String get tableModeScroll => 'Seitlich scrollen';
+  @override
+  String get tableModeFit => 'Breite anpassen';
+  @override
+  String get tableModeAligned => 'Ausgerichtet';
+  @override
+  String get tableModeRecords => 'Ausschreiben';
+  @override
+  String get tableModeImage => 'Bild';
+  @override
+  String get tableApply => 'Auf diese Tabelle anwenden';
+  @override
+  String get tableShareImage => 'Als Bild teilen';
+  @override
   String get headingBigTitle => 'Zwischentitel als Überschrift 2';
   @override
   String get headingBigSub =>

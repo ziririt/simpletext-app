@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:io' show File;
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
+import 'dart:ui' as ui show ImageByteFormat;
 
 import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
@@ -17,7 +18,8 @@ import 'package:flutter/cupertino.dart'
 import 'package:flutter/foundation.dart'
     show compute, defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderEditable;
+import 'package:flutter/rendering.dart'
+    show RenderEditable, RenderRepaintBoundary;
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart' show openFiles, XFile;
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -7103,6 +7105,7 @@ class _EditorScreenState extends State<EditorScreen>
           maxWidth: _cardW,
           scaler: _cardScaler,
           family: _cardFamily,
+          fit: b.mode == 'fit',
         ),
     ];
     _cardSlotList = [
@@ -9430,6 +9433,208 @@ class _EditorScreenState extends State<EditorScreen>
   /// 2026-08-14 소유자 지적: "표1 · 3열 5행"만 봐서는 본문의 어느 표인지 알 수 없다.
   /// 그래서 표를 실제 모양 그대로(등폭·칸 맞춰) 보여 주고, 큰 창에서 세로로
   /// 넘겨 보며 고르게 한다. 표가 가로로 길 수 있으니 가로 스크롤도 둔다.
+  /// 표 편집 — 이 표 하나만 다른 모양으로 살린다(2026-11-11 소유자 지시
+  /// "전체 문서 포맷과 무관하게 표에 대해서만 옵션을 줘서 표 옵션대로").
+  ///
+  /// 가로로 밀기·화면 폭 맞춤은 이름표 붙은 울타리로 남아 정리를 다시 돌려도
+  /// 그대로다. 칸 맞춤·풀어쓰기는 글자로 풀어 넣는다(그 뒤로는 보통 글이다).
+  /// 이미지는 본문을 안 바꾸고 그림 한 장을 만들어 공유한다.
+  Future<void> _showTableEdit(ScrollTableBlock b) async {
+    final grid = b.grid;
+    if (grid == null) return;
+    var mode = b.mode;
+    final shotKey = GlobalKey();
+    final scaler = MediaQuery.textScalerOf(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          final l = L10n.of(ctx);
+          final ink =
+              Theme.of(ctx).textTheme.bodyLarge?.color ?? Colors.black;
+          final fs = _cardFont;
+          Widget preview(double w) {
+            switch (mode) {
+              case 'scroll':
+              case 'fit':
+                return TableCard(
+                  grid: grid,
+                  layout: measureTableCard(
+                    grid,
+                    fontSize: fs,
+                    maxWidth: w,
+                    scaler: scaler,
+                    family: _cardFamily,
+                    fit: mode == 'fit',
+                  ),
+                  fontSize: fs,
+                  family: _cardFamily,
+                  ink: ink,
+                  line: ctx.c.line,
+                );
+              case 'image':
+                // 그림은 칸을 잘리지 않게 제 폭 그대로 그린다. 넓으면 옆으로 민다.
+                final lay = measureTableCard(
+                  grid,
+                  fontSize: fs,
+                  maxWidth: 0,
+                  scaler: scaler,
+                  family: _cardFamily,
+                  fill: false,
+                );
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: RepaintBoundary(
+                    key: shotKey,
+                    child: Container(
+                      color: ctx.c.panel,
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                      child: TableCard(
+                        grid: grid,
+                        layout: TableCardLayout(
+                          lay.colWidths,
+                          lay.rowHeights,
+                          fit: true,
+                        ),
+                        fontSize: fs,
+                        family: _cardFamily,
+                        ink: ink,
+                        line: ctx.c.line,
+                      ),
+                    ),
+                  ),
+                );
+              default:
+                final txt = mode == 'records'
+                    ? tableToRecords(grid, store.effOpts(buildPresets().first))
+                    : tableToAligned(grid);
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: ctx.c.codeBg,
+                    border: Border.all(color: ctx.c.codeLine),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      txt,
+                      style: const TextStyle(
+                        fontFamily: MonoTextController.fontFamily,
+                        fontSize: 12.5,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                );
+            }
+          }
+
+          Future<void> apply() async {
+            final String out;
+            switch (mode) {
+              case 'fit':
+                out = tableToFitBlock(grid);
+              case 'aligned':
+                out = tableToAligned(grid);
+              case 'records':
+                out = tableToRecords(grid, store.effOpts(buildPresets().first));
+              default:
+                out = tableToScrollBlock(grid);
+            }
+            final t = bodyCtl.text;
+            // 표 편집 창이 떠 있는 동안 글이 바뀌었으면 자리를 다시 찾는다.
+            final now = findScrollTables(t).where(
+              (x) => x.start == b.start && x.end == b.end,
+            );
+            if (now.isEmpty) {
+              Navigator.pop(ctx);
+              return;
+            }
+            bodyCtl.text = t.replaceRange(b.start, b.end, out);
+            Navigator.pop(ctx);
+            await _save();
+            if (mounted) setState(() {});
+          }
+
+          Future<void> share() async {
+            final ro =
+                shotKey.currentContext?.findRenderObject()
+                    as RenderRepaintBoundary?;
+            if (ro == null) return;
+            final img = await ro.toImage(
+              pixelRatio: MediaQuery.devicePixelRatioOf(ctx).clamp(2.0, 3.0),
+            );
+            final bd = await img.toByteData(format: ui.ImageByteFormat.png);
+            if (bd == null) return;
+            await ExportService.shareImage(
+              bd.buffer.asUint8List(),
+              'table.png',
+            );
+          }
+
+          final modes = <(String, String)>[
+            ('scroll', l.tableModeScroll),
+            ('fit', l.tableModeFit),
+            ('aligned', l.tableModeAligned),
+            ('records', l.tableModeRecords),
+            ('image', l.tableModeImage),
+          ];
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l.tableEditTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final m in modes)
+                        ChoiceChip(
+                          label: Text(m.$2),
+                          selected: mode == m.$1,
+                          onSelected: (_) => setSheet(() => mode = m.$1),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(ctx).height * 0.5,
+                    ),
+                    child: SingleChildScrollView(
+                      child: LayoutBuilder(
+                        builder: (_, box) => preview(box.maxWidth),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (mode == 'image')
+                    FilledButton(onPressed: share, child: Text(l.tableShareImage))
+                  else
+                    FilledButton(onPressed: apply, child: Text(l.tableApply)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _showTables() async {
     await _save();
     final r = extractTables(note.body);
@@ -12033,7 +12238,27 @@ Stack(
                                                                   ?.color ??
                                                               Colors.black,
                                                           line: context.c.line,
-                                                          onTap: _showTables,
+                                                          panel: context.c.panel,
+                                                          onCopy: () {
+                                                            Clipboard.setData(
+                                                              ClipboardData(
+                                                                text: tableToTSV(
+                                                                  _cardBlocks[ci]
+                                                                      .grid!,
+                                                                ),
+                                                              ),
+                                                            );
+                                                            _toast(
+                                                              context,
+                                                              L10n.of(
+                                                                context,
+                                                              ).copiedSpreadsheet,
+                                                            );
+                                                          },
+                                                          onEdit: () =>
+                                                              _showTableEdit(
+                                                                _cardBlocks[ci],
+                                                              ),
                                                         ),
                                                       ),
                                                 ],
@@ -16000,6 +16225,7 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
               ('aligned', l.wideTableAligned),
               ('records', l.wideTableRecords),
               ('scroll', l.wideTableScroll),
+              ('fit', l.wideTableFit),
             ], (v) => s.wideTables = v),
             _sep(),
             _switchRow(

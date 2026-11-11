@@ -22,7 +22,11 @@ class ScrollTableBlock {
   /// 그대로 보여 준다. 망가진 표를 빈 카드로 덮으면 고칠 길이 없어진다.
   final TableGrid? grid;
 
+  /// 'scroll'(가로로 민다) | 'fit'(화면 폭에 맞추고 세로로 길어진다).
+  final String mode;
+
   const ScrollTableBlock({
+    this.mode = 'scroll',
     required this.start,
     required this.firstLineEnd,
     required this.end,
@@ -30,7 +34,9 @@ class ScrollTableBlock {
   });
 }
 
-final RegExp _open = RegExp(r'^\s*```\s*' + kScrollTableFence + r'\s*$');
+final RegExp _open = RegExp(
+  r'^\s*```\s*' + kScrollTableFence + r'(?:\s+(' + kFitTableMode + r'))?\s*$',
+);
 final RegExp _close = RegExp(r'^\s*```\s*$');
 
 /// [text] 안의 가로 스크롤 표 구간들. 닫히지 않은 울타리는 표가 아니다.
@@ -39,15 +45,18 @@ List<ScrollTableBlock> findScrollTables(String text) {
   var pos = 0;
   int? openStart;
   int? openEnd;
+  var openMode = 'scroll';
   var inOtherFence = false;
   while (pos <= text.length) {
     var nl = text.indexOf('\n', pos);
     if (nl < 0) nl = text.length;
     final line = text.substring(pos, nl);
     if (openStart == null) {
-      if (!inOtherFence && _open.hasMatch(line)) {
+      final om = inOtherFence ? null : _open.firstMatch(line);
+      if (om != null) {
         openStart = pos;
         openEnd = nl;
+        openMode = om.group(1) == kFitTableMode ? 'fit' : 'scroll';
       } else if (RegExp(r'^\s*```').hasMatch(line)) {
         // 다른 코드 울타리 안의 '```table' 은 글자일 뿐이다.
         inOtherFence = !inOtherFence;
@@ -63,6 +72,7 @@ List<ScrollTableBlock> findScrollTables(String text) {
           firstLineEnd: openEnd,
           end: nl,
           grid: parseScrollTable(inner),
+          mode: openMode,
         ),
       );
       openStart = null;

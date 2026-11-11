@@ -45,4 +45,18 @@ void main() {
     expect(twice, once);
     expect(findScrollTables(twice).first.grid!.rows.length, 2);
   });
+
+  test('fit 이름표는 화면 폭 표다', () {
+    const text = '```table fit\n| a | b |\n| - | - |\n| 1 | 2 |\n```';
+    final b = findScrollTables(text);
+    expect(b.single.mode, 'fit');
+    expect(findScrollTables(table).single.mode, 'scroll');
+  });
+
+  test('정리(fit)도 다시 돌려도 그대로다', () {
+    const raw = '| 구분 | 값 |\n|---|---|\n| 입력 | 2 |';
+    final once = tidy(raw, TidyOptions(repairTables: true, wideTables: 'fit')).text;
+    expect(findScrollTables(once).single.mode, 'fit');
+    expect(tidy(once, TidyOptions(repairTables: true, wideTables: 'fit')).text, once);
+  });
 }

@@ -438,6 +438,24 @@ class L10nPt extends L10n {
   @override
   String get wideTableScroll => 'Rolar na horizontal';
   @override
+  String get wideTableFit => 'Ajustar à largura';
+  @override
+  String get tableEditTitle => 'Editar tabela';
+  @override
+  String get tableModeScroll => 'Rolar na horizontal';
+  @override
+  String get tableModeFit => 'Ajustar largura';
+  @override
+  String get tableModeAligned => 'Alinhado';
+  @override
+  String get tableModeRecords => 'Escrever por extenso';
+  @override
+  String get tableModeImage => 'Imagem';
+  @override
+  String get tableApply => 'Aplicar a esta tabela';
+  @override
+  String get tableShareImage => 'Compartilhar como imagem';
+  @override
   String get headingBigTitle => 'Subtítulos como Título 2';
   @override
   String get headingBigSub =>

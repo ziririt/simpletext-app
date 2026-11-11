@@ -6,6 +6,9 @@
 // 그 자리에 이 카드를 얹는다. **재는 셈과 그리는 셈이 같아야** 카드가 빈
 // 자리에 꼭 맞는다 — 그래서 둘 다 아래 숫자만 쓴다.
 
+import 'dart:math' as math;
+
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 
 import 'core/tidy_engine.dart';
@@ -16,15 +19,19 @@ const double kMinCol = 64;
 const double kMaxCol = 196; // 이보다 긴 글은 칸 안에서 줄을 바꾼다
 const double kScrollBarSpace = 12; // 아래 굴림 막대 자리
 const double kCardVPad = 6;
+const double kFitGap = 12; // 화면 폭 표는 칸 사이를 조금 좁힌다
 
 class TableCardLayout {
   final List<double> colWidths;
   final List<double> rowHeights; // 0번이 머리줄
-  const TableCardLayout(this.colWidths, this.rowHeights);
+  const TableCardLayout(this.colWidths, this.rowHeights, {this.fit = false});
+  final bool fit;
+
+  double get gap => fit ? kFitGap : kCellGap;
 
   double get height =>
       rowHeights.fold<double>(0, (a, b) => a + b) +
-      kScrollBarSpace +
+      (fit ? 0 : kScrollBarSpace) +
       kCardVPad * 2;
 }
 
@@ -45,6 +52,8 @@ TableCardLayout measureTableCard(
   required double maxWidth,
   required TextScaler scaler,
   String? family,
+  bool fit = false,
+  bool fill = true,
 }) {
   final cols = t.header.length;
   final all = [t.header, ...t.rows];
@@ -66,16 +75,52 @@ TableCardLayout measureTableCard(
       if (v > widths[c]) widths[c] = v;
     }
   }
-  for (var c = 0; c < cols; c++) {
-    widths[c] = widths[c].clamp(kMinCol, kMaxCol);
+  if (fit && cols > 0) {
+    // 화면 폭에 꼭 맞춘다. 글이 긴 칸이 더 넓게 — 다만 긴 칸이 판을 다
+    // 가져가지 않게 지수 0.6 으로 누그러뜨린다(짧은 칸도 숨은 쉬게).
+    final avail = maxWidth - kFitGap * (cols - 1);
+    final nat = [for (final w in widths) w];
+    final weight = [for (final w in nat) math.pow(w, 0.6).toDouble()];
+    final sum = weight.fold<double>(0, (a, b) => a + b);
+    for (var c = 0; c < cols; c++) {
+      widths[c] = avail * weight[c] / sum;
+    }
+    // 짧은 칸이 제 글보다 넓게 받았으면 남는 몫을 긴 칸에 돌려준다.
+    for (var round = 0; round < 3; round++) {
+      var spare = 0.0;
+      final room = <int>[];
+      for (var c = 0; c < cols; c++) {
+        if (widths[c] > nat[c] + 4) {
+          spare += widths[c] - (nat[c] + 4);
+          widths[c] = nat[c] + 4;
+        } else {
+          room.add(c);
+        }
+      }
+      if (spare < 1 || room.isEmpty) break;
+      final rs = room.fold<double>(0, (a, c) => a + weight[c]);
+      for (final c in room) {
+        widths[c] += spare * weight[c] / rs;
+      }
+    }
+    for (var c = 0; c < cols; c++) {
+      widths[c] = widths[c].floorToDouble();
+    }
+  } else {
+    for (var c = 0; c < cols; c++) {
+      widths[c] = widths[c].clamp(kMinCol, kMaxCol);
+    }
   }
   // 화면보다 좁으면 남는 폭을 열마다 고르게 나눠 판을 채운다.
   final used = widths.fold<double>(0, (a, b) => a + b) + kCellGap * (cols - 1);
-  if (used < maxWidth && cols > 0) {
+  if (!fit && fill && used < maxWidth && cols > 0) {
     final add = (maxWidth - used) / cols;
     for (var c = 0; c < cols; c++) {
       widths[c] = (widths[c] + add).floorToDouble();
     }
+  }
+  for (var c = 0; c < cols; c++) {
+    if (widths[c] < 24) widths[c] = 24;
   }
   final heights = <double>[];
   for (var r = 0; r < all.length; r++) {
@@ -91,7 +136,7 @@ TableCardLayout measureTableCard(
     }
     heights.add((h + kCellPadV * 2 + 2).ceilToDouble()); // +2: 아래 가름선 몫
   }
-  return TableCardLayout(widths, heights);
+  return TableCardLayout(widths, heights, fit: fit);
 }
 
 class TableCard extends StatefulWidget {
@@ -102,7 +147,9 @@ class TableCard extends StatefulWidget {
     required this.fontSize,
     required this.ink,
     required this.line,
-    required this.onTap,
+    this.onCopy,
+    this.onEdit,
+    this.panel,
     this.family,
   });
 
@@ -111,7 +158,12 @@ class TableCard extends StatefulWidget {
   final double fontSize;
   final Color ink;
   final Color line;
-  final VoidCallback onTap;
+
+  /// 카드 오른쪽 아래 떠 있는 작은 단추 둘(2026-11-11 소유자 지시 — 챗GPT
+  /// 표처럼). 둘 다 null 이면 단추를 안 띄운다(표 편집 창의 미리보기·그림).
+  final VoidCallback? onCopy;
+  final VoidCallback? onEdit;
+  final Color? panel;
   final String? family;
 
   @override
@@ -127,66 +179,109 @@ class _TableCardState extends State<TableCard> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _grid() {
     final t = widget.grid;
     final l = widget.layout;
     final rows = [t.header, ...t.rows];
-    return SizedBox(
-      height: l.height,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: kCardVPad),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Scrollbar(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var r = 0; r < rows.length; r++)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var c = 0; c < l.colWidths.length; c++) ...[
+                if (c > 0) SizedBox(width: l.gap),
+                Container(
+                  width: l.colWidths[c],
+                  height: l.rowHeights[r],
+                  padding: const EdgeInsets.symmetric(vertical: kCellPadV),
+                  decoration: r == rows.length - 1
+                      ? null
+                      : BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: widget.line,
+                              width: r == 0 ? 1.2 : 0.8,
+                            ),
+                          ),
+                        ),
+                  child: Text(
+                    _cell(rows[r], c),
+                    style: tableCellStyle(
+                      widget.fontSize,
+                      head: r == 0,
+                      family: widget.family,
+                    ).copyWith(color: widget.ink),
+                  ),
+                ),
+              ],
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _btn(IconData ic, VoidCallback onTap) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(9),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      child: Icon(ic, size: 17, color: widget.ink.withValues(alpha: 0.75)),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final l = widget.layout;
+    final body = l.fit
+        ? _grid()
+        : Scrollbar(
             controller: _sc,
             thumbVisibility: true,
             child: SingleChildScrollView(
               controller: _sc,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.only(bottom: kScrollBarSpace),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var r = 0; r < rows.length; r++)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var c = 0; c < l.colWidths.length; c++) ...[
-                          if (c > 0) const SizedBox(width: kCellGap),
-                          Container(
-                            width: l.colWidths[c],
-                            height: l.rowHeights[r],
-                            padding: const EdgeInsets.symmetric(
-                              vertical: kCellPadV,
-                            ),
-                            decoration: r == rows.length - 1
-                                ? null
-                                : BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: widget.line,
-                                        width: r == 0 ? 1.2 : 0.8,
-                                      ),
-                                    ),
-                                  ),
-                            child: Text(
-                              _cell(rows[r], c),
-                              style: tableCellStyle(
-                                widget.fontSize,
-                                head: r == 0,
-                                family: widget.family,
-                              ).copyWith(color: widget.ink),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                ],
-              ),
+              child: _grid(),
             ),
-          ),
+          );
+    final hasBtns = widget.onCopy != null || widget.onEdit != null;
+    return SizedBox(
+      height: l.height,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: kCardVPad),
+        child: Stack(
+          children: [
+            Positioned.fill(child: body),
+            if (hasBtns)
+              Positioned(
+                right: 2,
+                bottom: (l.fit ? 0 : kScrollBarSpace) + 4,
+                child: Material(
+                  color: (widget.panel ?? Colors.white).withValues(alpha: 0.94),
+                  elevation: 1.5,
+                  shadowColor: Colors.black26,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(color: widget.line),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.onCopy != null)
+                        _btn(CupertinoIcons.doc_on_doc, widget.onCopy!),
+                      if (widget.onCopy != null && widget.onEdit != null)
+                        Container(width: 1, height: 18, color: widget.line),
+                      if (widget.onEdit != null)
+                        _btn(CupertinoIcons.slider_horizontal_3, widget.onEdit!),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

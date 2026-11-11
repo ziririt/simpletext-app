@@ -438,6 +438,24 @@ class L10nEs extends L10n {
   @override
   String get wideTableScroll => 'Desplazar en horizontal';
   @override
+  String get wideTableFit => 'Ajustar al ancho';
+  @override
+  String get tableEditTitle => 'Editar tabla';
+  @override
+  String get tableModeScroll => 'Desplazar en horizontal';
+  @override
+  String get tableModeFit => 'Ajustar ancho';
+  @override
+  String get tableModeAligned => 'Alineado';
+  @override
+  String get tableModeRecords => 'Desarrollar';
+  @override
+  String get tableModeImage => 'Imagen';
+  @override
+  String get tableApply => 'Aplicar a esta tabla';
+  @override
+  String get tableShareImage => 'Compartir como imagen';
+  @override
   String get headingBigTitle => 'Subtítulos como Título 2';
   @override
   String get headingBigSub =>

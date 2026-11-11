@@ -20,6 +20,17 @@ import 'core/export_md.dart';
 import 'main.dart' show Store, Note;
 
 class ExportService {
+  /// 표를 그린 그림 한 장을 공유한다(2026-11-11 — 표를 이미지로).
+  static Future<bool> shareImage(List<int> png, String name) async {
+    try {
+      final f = await _temp(name, png);
+      await SharePlus.instance.share(ShareParams(files: [XFile(f.path)]));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// 임시 폴더에 파일을 쓴다.
   ///
   /// 앱 문서 폴더가 아니라 임시 폴더인 이유: 내보낸 파일은 사용자가 어디로

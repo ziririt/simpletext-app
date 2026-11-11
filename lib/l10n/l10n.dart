@@ -254,6 +254,17 @@ abstract class L10n {
 
   /// 표를 본문 속 카드로 두고 가로로 민다(2026-11-11).
   String get wideTableScroll;
+
+  /// 표 편집(2026-11-11) — 이 표 하나만 다른 모양으로.
+  String get wideTableFit;
+  String get tableEditTitle;
+  String get tableModeScroll;
+  String get tableModeFit;
+  String get tableModeAligned;
+  String get tableModeRecords;
+  String get tableModeImage;
+  String get tableApply;
+  String get tableShareImage;
   String get headingBigTitle;
   String get headingBigSub;
   String get aiBusyLabel;
@@ -1074,6 +1085,15 @@ abstract class L10n {
     'wideTableAligned': wideTableAligned,
     'wideTableRecords': wideTableRecords,
     'wideTableScroll': wideTableScroll,
+    'wideTableFit': wideTableFit,
+    'tableEditTitle': tableEditTitle,
+    'tableModeScroll': tableModeScroll,
+    'tableModeFit': tableModeFit,
+    'tableModeAligned': tableModeAligned,
+    'tableModeRecords': tableModeRecords,
+    'tableModeImage': tableModeImage,
+    'tableApply': tableApply,
+    'tableShareImage': tableShareImage,
     'headingBigTitle': headingBigTitle,
     'headingBigSub': headingBigSub,
     'aiBusyLabel': aiBusyLabel,

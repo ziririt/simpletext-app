@@ -436,6 +436,24 @@ class L10nEn extends L10n {
   @override
   String get wideTableScroll => 'Scroll sideways';
   @override
+  String get wideTableFit => 'Fit to screen width';
+  @override
+  String get tableEditTitle => 'Edit table';
+  @override
+  String get tableModeScroll => 'Scroll sideways';
+  @override
+  String get tableModeFit => 'Fit width';
+  @override
+  String get tableModeAligned => 'Aligned';
+  @override
+  String get tableModeRecords => 'Write out';
+  @override
+  String get tableModeImage => 'Image';
+  @override
+  String get tableApply => 'Apply to this table';
+  @override
+  String get tableShareImage => 'Share as image';
+  @override
   String get headingBigTitle => 'Subheads as Heading 2';
   @override
   String get headingBigSub =>

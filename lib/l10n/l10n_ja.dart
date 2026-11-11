@@ -425,6 +425,24 @@ class L10nJa extends L10n {
   @override
   String get wideTableScroll => '横にスクロール';
   @override
+  String get wideTableFit => '画面幅に合わせる';
+  @override
+  String get tableEditTitle => '表を編集';
+  @override
+  String get tableModeScroll => '横にスクロール';
+  @override
+  String get tableModeFit => '画面幅に合わせる';
+  @override
+  String get tableModeAligned => '列をそろえる';
+  @override
+  String get tableModeRecords => '文章に開く';
+  @override
+  String get tableModeImage => '画像';
+  @override
+  String get tableApply => 'この表に適用';
+  @override
+  String get tableShareImage => '画像で共有';
+  @override
   String get headingBigTitle => '小見出しを見出し2に';
   @override
   String get headingBigSub => '見つけた小見出しを大きく太く(見出し2)します';

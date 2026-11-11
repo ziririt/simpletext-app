@@ -36,7 +36,7 @@ class TidyOptions {
   bool tablesToTSV;
   bool tablesOnly;
   bool detectRecords; // 풀어쓴 표도 표로 인식 (표 도구 전용 — 본문 오탐 방지)
-  String wideTables; // auto | aligned | records | scroll
+  String wideTables; // auto | aligned | records | scroll | fit
   String linkMode; // keep | text | textUrl
   bool stripHtml;
   bool unescape;
@@ -996,6 +996,13 @@ const String kScrollTableFence = 'table';
 String tableToScrollBlock(TableGrid t) =>
     '```$kScrollTableFence\n${tableToMarkdown(t)}\n```';
 
+/// 화면 폭에 꼭 맞추는 표(2026-11-11 소유자 지시 — "가로 폭은 기기 해상도에
+/// 100% 라서 세로로 긴 표. 글자 수가 많은 칸은 더 넓게"). 이름표 뒤에 fit.
+const String kFitTableMode = 'fit';
+
+String tableToFitBlock(TableGrid t) =>
+    '```$kScrollTableFence $kFitTableMode\n${tableToMarkdown(t)}\n```';
+
 String _flat(String c) => c.replaceAll(RegExp(r'[\t\n\r]+'), ' ');
 
 /// 표시폭: 한글·CJK·전각·이모지는 2칸, 그 외는 1칸.
@@ -1615,6 +1622,8 @@ List<String> _processTextSegment(
         } else if (o.wideTables == 'scroll') {
           // 넓든 좁든 전부 가로로 미는 표 카드로.
           out.add(tableToScrollBlock(t));
+        } else if (o.wideTables == 'fit') {
+          out.add(tableToFitBlock(t));
         } else if (o.wideTables != 'aligned' &&
             (o.wideTables == 'records' || tableIsWide(t))) {
           // 좁은 표는 칸 맞추기, 넓거나 문장이 든 표는 행 단위 풀어쓰기 (자동 판단)

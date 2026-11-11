@@ -442,6 +442,24 @@ class L10nFr extends L10n {
   @override
   String get wideTableScroll => 'Défiler latéralement';
   @override
+  String get wideTableFit => 'Adapter à la largeur';
+  @override
+  String get tableEditTitle => 'Modifier le tableau';
+  @override
+  String get tableModeScroll => 'Défiler latéralement';
+  @override
+  String get tableModeFit => 'Adapter la largeur';
+  @override
+  String get tableModeAligned => 'Aligné';
+  @override
+  String get tableModeRecords => 'Développer';
+  @override
+  String get tableModeImage => 'Image';
+  @override
+  String get tableApply => 'Appliquer à ce tableau';
+  @override
+  String get tableShareImage => 'Partager en image';
+  @override
   String get headingBigTitle => 'Sous-titres en Titre 2';
   @override
   String get headingBigSub =>
