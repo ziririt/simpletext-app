@@ -256,7 +256,16 @@ fi
 
 if [ "$WHAT" = "all" ] || [ "$WHAT" = "mac" ]; then
   log "맥 빌드…"
-  if flutter build macos --release $DEFINES > /tmp/dep_mac.log 2>&1; then
+  # 2026-11-12 — Pro 로 옮긴 뒤(com.ezlong.skybluenote) flutter build macos 가
+  # "No profiles … Automatic signing is disabled" 로 막혔다. 플러터는 xcodebuild 에
+  # -allowProvisioningUpdates 를 안 넘긴다. 그래서 플러터에게는 설정만 쓰게 하고
+  # (--config-only), 굽기는 xcodebuild 가 Xcode 계정으로 프로파일을 받아 오며 한다.
+  # 산출물 자리는 예전과 같게(-derivedDataPath build/macos).
+  if flutter build macos --release --config-only $DEFINES > /tmp/dep_mac.log 2>&1 &&
+     xcodebuild -workspace macos/Runner.xcworkspace -scheme Runner \
+       -configuration Release -derivedDataPath build/macos \
+       -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+       build >> /tmp/dep_mac.log 2>&1; then
     pkill -f "Products/Release/Skyblue Note.app" >/dev/null 2>&1
     sleep 1
     # 따옴표를 뺀 채로 두면 'Skyblue' 와 'Note.app' 두 조각으로 갈라진다.
