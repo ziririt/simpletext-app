@@ -434,6 +434,8 @@ class L10nEn extends L10n {
   @override
   String get wideTableRecords => 'Write out as text';
   @override
+  String get wideTableScroll => 'Scroll sideways';
+  @override
   String get headingBigTitle => 'Subheads as Heading 2';
   @override
   String get headingBigSub =>

@@ -30,6 +30,14 @@ class MonoTextController extends TextEditingController {
   /// 할 일 네모의 색. 화면 build에서 넣어 준다.
   Color? accentColor;
 
+  /// 표 카드가 앉을 자리들(2026-11-11). 글자를 받아 '여기서 여기까지는
+  /// 카드 자리, 높이는 이만큼'을 돌려준다. 화면이 넣어 준다.
+  ///
+  /// 값을 들고 있지 않고 함수로 받는 까닭: 글자가 바뀌는 순간 이 컨트롤러가
+  /// 먼저 다시 그린다. 화면이 새 자리를 넣어 주기 전에 그리면 옛 자리에
+  /// 새 글을 접어 버린다. 함수면 언제 불려도 지금 글자로 셈한다.
+  List<CardSlot> Function(String text)? cardSlots;
+
   /// 제목을 얼마나 키우나.
   ///
   /// 값을 1.3 위로 안 올리는 데는 까닭이 있다. 이 앱에는 **줄 쳐진 종이**가
@@ -115,7 +123,12 @@ class MonoTextController extends TextEditingController {
     final gaps = paraGap > kParaGapMin
         ? blankLineBreaks(text).toSet()
         : const <int>{};
-    if (spans.isEmpty && rich.isEmpty && composing == null && gaps.isEmpty) {
+    final cards = cardSlots?.call(text) ?? const <CardSlot>[];
+    if (spans.isEmpty &&
+        rich.isEmpty &&
+        composing == null &&
+        gaps.isEmpty &&
+        cards.isEmpty) {
       return TextSpan(text: text, style: style);
     }
 
@@ -150,6 +163,11 @@ class MonoTextController extends TextEditingController {
     for (final r in rich) {
       cuts.add(r.start.clamp(0, text.length));
       cuts.add(r.end.clamp(0, text.length));
+    }
+    for (final c in cards) {
+      cuts.add(c.start);
+      cuts.add(c.firstLineEnd);
+      cuts.add(c.end);
     }
     if (composing != null) {
       cuts.add(composing.start.clamp(0, text.length));
@@ -191,6 +209,27 @@ class MonoTextController extends TextEditingController {
         segStyle = segStyle.copyWith(
           height: (segStyle.height ?? lineHeight) * paraGap,
         );
+      }
+      // 표 카드 자리. 첫 줄은 카드 높이만큼 비우고, 나머지 줄은 접는다.
+      // 글자는 그대로 있다 — 커서 자리와 글자 수가 어긋나면 안 된다.
+      for (final c in cards) {
+        if (a >= c.start && b <= c.firstLineEnd) {
+          final fs = base.fontSize ?? bodyFontSize;
+          segStyle = base.copyWith(
+            color: const Color(0x00000000),
+            fontSize: fs,
+            height: c.height / fs,
+            leadingDistribution: TextLeadingDistribution.even,
+            decoration: TextDecoration.none,
+          );
+        } else if (a >= c.firstLineEnd && b <= c.end) {
+          segStyle = base.copyWith(
+            color: const Color(0x00000000),
+            fontSize: 0.01,
+            height: 1,
+            decoration: TextDecoration.none,
+          );
+        }
       }
       children.add(TextSpan(text: text.substring(a, b), style: segStyle));
     }
@@ -244,4 +283,16 @@ class MonoTextController extends TextEditingController {
       fontWeight: FontWeight.w700,
     );
   }
+}
+
+/// 표 카드 한 장이 본문에서 차지하는 자리.
+class CardSlot {
+  final int start;
+  final int firstLineEnd;
+
+  /// 접을 끝. 닫는 울타리 뒤의 줄바꿈까지 넣는다 — 안 넣으면 그 줄바꿈
+  /// 하나가 보통 크기 빈 줄로 남는다.
+  final int end;
+  final double height;
+  const CardSlot(this.start, this.firstLineEnd, this.end, this.height);
 }

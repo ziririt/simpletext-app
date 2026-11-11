@@ -422,6 +422,8 @@ class L10nZhHant extends L10n {
   @override
   String get wideTableRecords => '展開成文字';
   @override
+  String get wideTableScroll => '橫向捲動';
+  @override
   String get headingBigTitle => '小標題設為標題2';
   @override
   String get headingBigSub => '把辨識出的小標題變大加粗(標題2)';

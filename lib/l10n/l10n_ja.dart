@@ -423,6 +423,8 @@ class L10nJa extends L10n {
   @override
   String get wideTableRecords => '文章に開く';
   @override
+  String get wideTableScroll => '横にスクロール';
+  @override
   String get headingBigTitle => '小見出しを見出し2に';
   @override
   String get headingBigSub => '見つけた小見出しを大きく太く(見出し2)します';

@@ -438,6 +438,8 @@ class L10nDe extends L10n {
   @override
   String get wideTableRecords => 'Als Text ausschreiben';
   @override
+  String get wideTableScroll => 'Seitlich scrollen';
+  @override
   String get headingBigTitle => 'Zwischentitel als Überschrift 2';
   @override
   String get headingBigSub =>

@@ -436,6 +436,8 @@ class L10nEs extends L10n {
   @override
   String get wideTableRecords => 'Desarrollar como texto';
   @override
+  String get wideTableScroll => 'Desplazar en horizontal';
+  @override
   String get headingBigTitle => 'Subtítulos como Título 2';
   @override
   String get headingBigSub =>

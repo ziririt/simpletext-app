@@ -423,6 +423,8 @@ class L10nKo extends L10n {
   @override
   String get wideTableRecords => '글로 풀어쓰기';
   @override
+  String get wideTableScroll => '가로로 밀어 보기';
+  @override
   String get headingBigTitle => '소제목을 제목2로';
   @override
   String get headingBigSub => '알아본 소제목을 크고 굵게(제목2) 만듭니다';

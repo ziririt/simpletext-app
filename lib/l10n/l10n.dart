@@ -251,6 +251,9 @@ abstract class L10n {
   String get wideTableAuto;
   String get wideTableAligned;
   String get wideTableRecords;
+
+  /// 표를 본문 속 카드로 두고 가로로 민다(2026-11-11).
+  String get wideTableScroll;
   String get headingBigTitle;
   String get headingBigSub;
   String get aiBusyLabel;
@@ -1070,6 +1073,7 @@ abstract class L10n {
     'wideTableAuto': wideTableAuto,
     'wideTableAligned': wideTableAligned,
     'wideTableRecords': wideTableRecords,
+    'wideTableScroll': wideTableScroll,
     'headingBigTitle': headingBigTitle,
     'headingBigSub': headingBigSub,
     'aiBusyLabel': aiBusyLabel,

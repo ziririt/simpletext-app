@@ -436,6 +436,8 @@ class L10nPt extends L10n {
   @override
   String get wideTableRecords => 'Escrever como texto';
   @override
+  String get wideTableScroll => 'Rolar na horizontal';
+  @override
   String get headingBigTitle => 'Subtítulos como Título 2';
   @override
   String get headingBigSub =>

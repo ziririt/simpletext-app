@@ -36,7 +36,7 @@ class TidyOptions {
   bool tablesToTSV;
   bool tablesOnly;
   bool detectRecords; // 풀어쓴 표도 표로 인식 (표 도구 전용 — 본문 오탐 방지)
-  String wideTables; // auto | aligned | records
+  String wideTables; // auto | aligned | records | scroll
   String linkMode; // keep | text | textUrl
   bool stripHtml;
   bool unescape;
@@ -980,6 +980,22 @@ String tableToMarkdown(TableGrid t) {
   ].join('\n');
 }
 
+/// 가로로 미는 표(2026-11-11 소유자 지시 — "표가 깨지지 않고 가로로
+/// 스크롤되는 표"). 본문에는 이름표 붙은 울타리 안의 마크다운 표로 남는다.
+///
+///   ```table
+///   | 구분 | 값 |
+///   | --- | --- |
+///   ```
+///
+/// 울타리 안은 정리 엔진이 손대지 않는 구간이라(04 FenceSplitter) 정리를
+/// 다시 돌려도 이 표는 그대로다 — "표 옵션대로 살린다"가 이것이다. 화면은
+/// 이 울타리를 글 대신 표 카드로 그린다(core/table_blocks.dart).
+const String kScrollTableFence = 'table';
+
+String tableToScrollBlock(TableGrid t) =>
+    '```$kScrollTableFence\n${tableToMarkdown(t)}\n```';
+
 String _flat(String c) => c.replaceAll(RegExp(r'[\t\n\r]+'), ' ');
 
 /// 표시폭: 한글·CJK·전각·이모지는 2칸, 그 외는 1칸.
@@ -1596,6 +1612,9 @@ List<String> _processTextSegment(
           // 본문 출력 안 함
         } else if (o.tablesToTSV) {
           out.add(tableToTSV(t));
+        } else if (o.wideTables == 'scroll') {
+          // 넓든 좁든 전부 가로로 미는 표 카드로.
+          out.add(tableToScrollBlock(t));
         } else if (o.wideTables != 'aligned' &&
             (o.wideTables == 'records' || tableIsWide(t))) {
           // 좁은 표는 칸 맞추기, 넓거나 문장이 든 표는 행 단위 풀어쓰기 (자동 판단)

@@ -44,6 +44,8 @@ import 'clipboard_source.dart';
 import 'core/ai_provider.dart';
 import 'attach_store.dart';
 import 'note_file.dart';
+import 'table_card.dart';
+import 'core/table_blocks.dart';
 import 'core/note_store_codec.dart';
 import 'core/attach_meta.dart';
 import 'core/auto_meta.dart';
@@ -7060,6 +7062,106 @@ class _EditorScreenState extends State<EditorScreen>
   /// 본문 칸을 찾아가기 위한 열쇠. 아래 _reshowToolbar에서 쓴다.
   final GlobalKey _bodyKey = GlobalKey();
 
+  // ── 본문 속 가로로 미는 표 카드 (2026-11-11 소유자 지시) ─────────────
+  //
+  // 글상자 안에 카드를 끼울 수는 없다. 그래서 글상자가 카드 높이만큼 자리를
+  // 비우고(mono_controller.dart 의 cardSlots), 그 자리 위에 카드를 얹는다.
+  // 자리의 위치는 그림이 끝난 뒤 글상자에게 물어 맞춘다(_syncCardTops).
+  final GlobalKey _bodyStackKey = GlobalKey();
+  double _cardW = 0;
+  double _cardFont = 16;
+  TextScaler _cardScaler = TextScaler.noScaling;
+  String? _cardFamily;
+  String? _cardKey;
+  List<ScrollTableBlock> _cardBlocks = const [];
+  List<TableCardLayout> _cardLayouts = const [];
+  List<CardSlot> _cardSlotList = const [];
+  final Map<int, double> _cardTops = {};
+
+  List<CardSlot> _cardSlotsFor(String text) {
+    if (_cardW <= 0 || !text.contains('```$kScrollTableFence')) {
+      _cardKey = null;
+      _cardBlocks = const [];
+      _cardLayouts = const [];
+      _cardSlotList = const [];
+      return _cardSlotList;
+    }
+    final key =
+        '${text.length}:${text.hashCode}:$_cardW:$_cardFont:'
+        '${_cardScaler.scale(10)}:$_cardFamily';
+    if (key == _cardKey) return _cardSlotList;
+    _cardKey = key;
+    final blocks = findScrollTables(
+      text,
+    ).where((b) => b.grid != null).toList();
+    _cardBlocks = blocks;
+    _cardLayouts = [
+      for (final b in blocks)
+        measureTableCard(
+          b.grid!,
+          fontSize: _cardFont,
+          maxWidth: _cardW,
+          scaler: _cardScaler,
+          family: _cardFamily,
+        ),
+    ];
+    _cardSlotList = [
+      for (var i = 0; i < blocks.length; i++)
+        CardSlot(
+          blocks[i].start,
+          blocks[i].firstLineEnd,
+          blocks[i].end < text.length && text[blocks[i].end] == '\n'
+              ? blocks[i].end + 1
+              : blocks[i].end,
+          _cardLayouts[i].height,
+        ),
+    ];
+    return _cardSlotList;
+  }
+
+  /// 그림이 끝난 뒤 — 카드 자리(비워 둔 첫 줄)가 어디에 그려졌는지 묻는다.
+  void _syncCardTops() {
+    if (!mounted) return;
+    final stack =
+        _bodyStackKey.currentContext?.findRenderObject() as RenderBox?;
+    if (stack == null || !stack.attached || !stack.hasSize) return;
+    if ((stack.size.width - _cardW).abs() > 0.5) {
+      setState(() => _cardW = stack.size.width);
+      return;
+    }
+    if (_cardBlocks.isEmpty) {
+      if (_cardTops.isNotEmpty) setState(_cardTops.clear);
+      return;
+    }
+    final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
+    if (ed == null || !ed.attached) return;
+    final next = <int, double>{};
+    for (var i = 0; i < _cardBlocks.length; i++) {
+      final b = _cardBlocks[i];
+      final h = _cardLayouts[i].height;
+      final boxes = ed.getBoxesForSelection(
+        TextSelection(baseOffset: b.start, extentOffset: b.firstLineEnd),
+      );
+      if (boxes.isEmpty) continue;
+      // 글자를 줄 한가운데 두었으니(even) 글자 상자의 가운데가 곧 줄의 가운데다.
+      final mid = (boxes.first.top + boxes.first.bottom) / 2;
+      final g = ed.localToGlobal(Offset(0, mid - h / 2));
+      next[b.start] = stack.globalToLocal(g).dy;
+    }
+    var changed = next.length != _cardTops.length;
+    for (final e in next.entries) {
+      final was = _cardTops[e.key];
+      if (was == null || (was - e.value).abs() > 0.5) changed = true;
+    }
+    if (changed) {
+      setState(() {
+        _cardTops
+          ..clear()
+          ..addAll(next);
+      });
+    }
+  }
+
   /// 삼선 메뉴가 펼쳐진 동안 배너를 걷는 손잡이(ads_service.dart MenuAdHold).
   final MenuAdHold _editMenuHold = MenuAdHold();
 
@@ -10445,6 +10547,15 @@ class _EditorScreenState extends State<EditorScreen>
     // 결과다(core/view_prefs.dart). 화면 어디서도 두 층을 직접 섞지 않는다.
     final view = store.viewFor(note.id);
     bodyCtl.bodyFontSize = view.fontSize;
+    _cardFont = view.fontSize;
+    _cardScaler = MediaQuery.textScalerOf(context);
+    _cardFamily = bodyFontFamily(
+      view.font,
+      webDefault: kIsWeb ? kWebFontFamily : null,
+    );
+    bodyCtl.cardSlots = _cardSlotsFor;
+    _cardSlotsFor(bodyCtl.text);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncCardTops());
     bodyCtl.lineHeight = view.lineHeight;
     bodyCtl.paraGap = view.paraGap;
     // 마크다운을 눈에 보이게 그릴 때 쓸 색(2026-08-18).
@@ -11693,7 +11804,10 @@ class _EditorScreenState extends State<EditorScreen>
                                                   note.updatedAt,
                                                 ),
                                               ),
-                                              ConstrainedBox(
+Stack(
+                                                key: _bodyStackKey,
+                                                children: [
+                                                                                                ConstrainedBox(
                                                 constraints: BoxConstraints(
                                                   minHeight: minBody,
                                                 ),
@@ -11890,6 +12004,39 @@ class _EditorScreenState extends State<EditorScreen>
                                                     );
                                                   },
                                                 ),
+                                              ),
+                                                  // 표 카드. 자리를 아직 모르면 안 띄운다.
+                                                  for (var ci = 0;
+                                                      ci < _cardBlocks.length;
+                                                      ci++)
+                                                    if (_cardTops[_cardBlocks[ci]
+                                                            .start] !=
+                                                        null)
+                                                      Positioned(
+                                                        top: _cardTops[
+                                                            _cardBlocks[ci]
+                                                                .start]!,
+                                                        left: 0,
+                                                        right: 0,
+                                                        child: TableCard(
+                                                          grid: _cardBlocks[ci]
+                                                              .grid!,
+                                                          layout:
+                                                              _cardLayouts[ci],
+                                                          fontSize: _cardFont,
+                                                          family: _cardFamily,
+                                                          ink:
+                                                              paperInk ??
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyLarge
+                                                                  ?.color ??
+                                                              Colors.black,
+                                                          line: context.c.line,
+                                                          onTap: _showTables,
+                                                        ),
+                                                      ),
+                                                ],
                                               ),
                                               // 글 끝 아래의 빈칸.
                                               //
@@ -15852,6 +15999,7 @@ class _TidyRulesScreenState extends State<TidyRulesScreen> with SettingsRows {
               ('auto', l.wideTableAuto),
               ('aligned', l.wideTableAligned),
               ('records', l.wideTableRecords),
+              ('scroll', l.wideTableScroll),
             ], (v) => s.wideTables = v),
             _sep(),
             _switchRow(

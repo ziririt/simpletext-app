@@ -440,6 +440,8 @@ class L10nFr extends L10n {
   @override
   String get wideTableRecords => 'Développer en texte';
   @override
+  String get wideTableScroll => 'Défiler latéralement';
+  @override
   String get headingBigTitle => 'Sous-titres en Titre 2';
   @override
   String get headingBigSub =>
