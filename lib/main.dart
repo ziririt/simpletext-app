@@ -9754,17 +9754,16 @@ class _EditorScreenState extends State<EditorScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    height: 48,
+                  // 2026-11-12 소유자 — "적용 버튼이 너무 크다." 화면 폭을 다
+                  // 차지하는 48짜리 막대였다. 보통 단추 크기로, 가운데에.
+                  Center(
                     child: FilledButton(
                       onPressed: apply,
-                      child: Text(
-                        l.tableApply,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(120, 38),
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
                       ),
+                      child: Text(l.tableApply),
                     ),
                   ),
                   const SizedBox(height: 8),
