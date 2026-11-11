@@ -4593,6 +4593,12 @@ class _HomeScreenState extends State<HomeScreen>
             MaterialPageRoute(builder: (_) => const TrashScreen()),
           );
           if (mounted) setState(() {});
+        case 'settings':
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          );
+          if (mounted) setState(() {});
       }
     },
     itemBuilder: (ctx) {
@@ -4612,6 +4618,10 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           );
       return [
+        // 2026-11-12 소유자 지시: 맨 위에 '앱 설정' 바로가기. 위 줄 톱니와
+        // 같은 곳으로 간다. 메뉴부터 여는 사람도 설정을 찾게.
+        row('settings', CupertinoIcons.gear_alt, l.menuAppSettings),
+        const PopupMenuDivider(height: 6),
         // --- 이 화면에서 하는 일 (앞으로 여기에 더 붙는다) ---
         row('import', Icons.file_open_outlined, l.importFiles),
         row('exportMd', Icons.folder_zip_outlined, l.exportAllMd),
