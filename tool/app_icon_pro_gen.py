@@ -27,8 +27,8 @@ def svg(cx=509, cy=610, s=1.0):
 <rect x="322" y="780" width="380" height="36" rx="18" fill="#FFFFFF" opacity="0.62"/>
 <rect x="387" y="848" width="250" height="36" rx="18" fill="#FFFFFF" opacity="0.38"/>
 <g filter="url(#ps)">
- <rect x="646" y="78" width="290" height="124" rx="62" fill="#F3E7C9"/>
- <text x="791" y="164" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="84" letter-spacing="6" fill="#0A2A66">PRO</text>
+ <rect x="556" y="68" width="380" height="162" rx="81" fill="#F3E7C9"/>
+ <text x="746" y="182" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="110" letter-spacing="8" fill="#0A2A66">PRO</text>
 </g>
 </svg>'''
 open("icon_v2.svg","w").write(svg())
