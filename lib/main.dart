@@ -4549,7 +4549,7 @@ class _HomeScreenState extends State<HomeScreen>
     // 2026-08-17 소유자 요청 — 삼선. '...'은 애플이 '더 있음'을 뜻할 때
     // 쓰는 표시고, 삼선은 '메뉴'를 뜻한다. 이 자리는 이제 불러오기·
     // 내보내기·휴지통·설정이 들어 있는 진짜 메뉴다.
-    icon: const Icon(Icons.menu),
+    icon: const Icon(Icons.menu, size: 26),
     tooltip: l.moreTooltip,
     // 메뉴가 '...' 버튼을 덮으면 같은 자리를 다시 눌러 닫을 수 없다
     // (2026-08-16에 편집 화면에서 겪고 고친 것과 같은 문제다).
@@ -5099,11 +5099,11 @@ class _HomeScreenState extends State<HomeScreen>
                                             // 2026-08-27 — 당기기가 안 잡히는
                                             // 웹·맥을 위해 나란히 둔다. 자세한
                                             // 까닭은 SyncNowButton 머리말.
-                                            const SyncNowButton(),
+                                            const SyncNowButton(size: 24),
                                             IconButton(
                                               icon: const Icon(
                                                 CupertinoIcons.search,
-                                                size: 22,
+                                                size: 24,
                                               ),
                                               tooltip: l.searchHint,
                                               onPressed: () => setState(
@@ -5113,7 +5113,7 @@ class _HomeScreenState extends State<HomeScreen>
                                             IconButton(
                                               icon: const Icon(
                                                 CupertinoIcons.gear_alt,
-                                                size: 23,
+                                                size: 25,
                                               ),
                                               tooltip: l.menuAppSettings,
                                               onPressed: () async {
@@ -6403,8 +6403,7 @@ class _EditorScreenState extends State<EditorScreen>
     await _save();
     if (!mounted) return;
     setState(() {});
-    // 조용히 채워 넣으면 사용자는 자기가 고른 줄 안다.
-    _toast(context, L10n.of(context).sourceDetected(g.name));
+    // 2026-11-12 출처 칸을 화면에서 뺐으므로 알림도 띄우지 않는다.
   }
 
   /// 글 사이에 구분선 한 줄.
@@ -12080,81 +12079,13 @@ class _EditorScreenState extends State<EditorScreen>
                               ],
                             ),
                           ),
-                        if (_showMeta)
+                        if (_showMeta && aiUiVisible())
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                             child: Row(
                               children: [
-                                // 2026-08-17 소유자 신고 — "수동으로 출처를 선택해도 이게
-                                // 바로 저장이 된 것인지, 따로 저장 버튼을 눌러야 하는지
-                                // 직관적이지 않다."
-                                //
-                                // 저장은 원래 즉시 되고 있었다. 문제는 그걸 아무도 말해
-                                // 주지 않았다는 것이고, 이름표가 없어 그 칸이 무엇인지도
-                                // 흐렸다는 것이다.
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: Text(
-                                    l.sourceFieldLabel,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: context.c.sub,
-                                    ),
-                                  ),
-                                ),
-                                DropdownButton<String>(
-                                  value: note.source.isEmpty ? '' : note.source,
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: '',
-                                      child: Text(l.sourceNone),
-                                    ),
-                                    const DropdownMenuItem(
-                                      value: 'ChatGPT',
-                                      child: Text('ChatGPT'),
-                                    ),
-                                    const DropdownMenuItem(
-                                      value: 'Claude',
-                                      child: Text('Claude'),
-                                    ),
-                                    const DropdownMenuItem(
-                                      value: 'Gemini',
-                                      child: Text('Gemini'),
-                                    ),
-                                    const DropdownMenuItem(
-                                      value: 'Grok',
-                                      child: Text('Grok'),
-                                    ),
-                                    const DropdownMenuItem(
-                                      value: 'Perplexity',
-                                      child: Text('Perplexity'),
-                                    ),
-                                    // 저장 값('기타')은 데이터 호환을 위해 유지, 표시만 번역한다
-                                    DropdownMenuItem(
-                                      value: '기타',
-                                      child: Text(l.sourceOther),
-                                    ),
-                                  ],
-                                  onChanged: (v) async {
-                                    note.source = v ?? '';
-                                    // 손으로 고른 순간부터는 추측이 아니다.
-                                    note.sourceAuto = false;
-                                    await _save();
-                                    if (!mounted) return;
-                                    setState(() {});
-                                    // 눌렀는데 아무 일도 안 일어난 것처럼 보이면, 사람은
-                                    // 저장 버튼을 찾는다. 없는 버튼을.
-                                    _toast(
-                                      context,
-                                      note.source.isEmpty
-                                          ? L10n.of(context).sourceCleared
-                                          : L10n.of(
-                                              context,
-                                            ).sourceSaved(note.source),
-                                    );
-                                  },
-                                ),
+                                // 2026-11-12 출처 칸을 뺐다. 소유자: "자동인식이 안
+                                // 돼서 무용지물." 저장된 note.source 값은 그대로 둔다.
                                 const Spacer(),
                                 // 2026-08-14 소유자 요청: "태그 AI 자동입력" 버튼.
                                 // 키가 없으면 앱이 직접 뽑는다(소유자 확정) — _autoTags 참고.
@@ -14689,7 +14620,7 @@ class _SyncNowButtonState extends State<SyncNowButton> {
                 color: context.c.accent,
               ),
             )
-          : SyncCloudIcon(size: size),
+          : SyncCloudIcon(size: size + 3),
       onPressed: _spin ? null : () => unawaited(_go()),
     );
   }

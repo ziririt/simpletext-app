@@ -47,20 +47,26 @@ class _SyncCloudPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final k = size.width / 24;
     canvas.scale(k);
+    // 11-12 "인식 어렵다, 더 크게." 24칸을 꽉 채우도록 그림 전체를 키운다.
+    // 선 굵기는 키운 만큼 나눠 다른 아이콘과 같은 무게를 지킨다.
+    const grow = 1.2;
+    canvas.translate(12, 12.3);
+    canvas.scale(grow);
+    canvas.translate(-12, -11.7);
     final line = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
+      ..strokeWidth = 1.75 / grow
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(cloud(), line);
 
     // 도는 화살표 두 개. 구름 몸통 한가운데.
-    const cx = 12.3, cy = 13.4, r = 3.0;
+    const cx = 12.3, cy = 13.1, r = 3.6;
     final arrow = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
+      ..strokeWidth = 1.8 / grow
       ..strokeCap = StrokeCap.round;
     final head = Paint()
       ..color = color
@@ -75,7 +81,7 @@ class _SyncCloudPainter extends CustomPainter {
       // 진행 방향(시계 방향 접선)과 바깥쪽 법선.
       final dx = -math.sin(a), dy = math.cos(a);
       final nx = math.cos(a), ny = math.sin(a);
-      const tip = 1.6, half = 1.45, back = 0.2;
+      const tip = 1.75, half = 1.55, back = 0.2;
       canvas.drawPath(
         Path()
           ..moveTo(px + dx * tip, py + dy * tip)
