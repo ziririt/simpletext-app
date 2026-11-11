@@ -103,6 +103,7 @@ import 'sync/drive_auth.dart';
 import 'sync/google_button.dart';
 import 'web_font.dart';
 import 'icloud_sync.dart';
+import 'sync_cloud_icon.dart';
 import 'l10n/l10n.dart';
 import 'version.dart';
 
@@ -3686,15 +3687,15 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen>
                       padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
                       child: Row(
                         children: [
-                          Icon(
-                            ok
-                                ? Icons.cloud_done_outlined
-                                : busy
-                                ? Icons.cloud_sync_outlined
-                                : Icons.cloud_off_outlined,
-                            size: 22,
-                            color: ok ? context.c.accent : context.c.sub,
-                          ),
+                          busy && !ok
+                              ? SyncCloudIcon(size: 22, color: context.c.sub)
+                              : Icon(
+                                  ok
+                                      ? Icons.cloud_done_outlined
+                                      : Icons.cloud_off_outlined,
+                                  size: 22,
+                                  color: ok ? context.c.accent : context.c.sub,
+                                ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -14688,7 +14689,7 @@ class _SyncNowButtonState extends State<SyncNowButton> {
                 color: context.c.accent,
               ),
             )
-          : Icon(Icons.cloud_sync_outlined, size: size),
+          : SyncCloudIcon(size: size),
       onPressed: _spin ? null : () => unawaited(_go()),
     );
   }
@@ -17036,19 +17037,22 @@ class _SettingsScreenState extends State<SettingsScreen> with SettingsRows {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    paused
-                                        ? Icons.cloud_off_outlined
-                                        : ok
-                                        ? Icons.cloud_done_outlined
-                                        : busy
-                                        ? Icons.cloud_sync_outlined
-                                        : Icons.cloud_off_outlined,
-                                    size: 22,
-                                    color: ok
-                                        ? context.c.accent
-                                        : context.c.sub,
-                                  ),
+                                  !paused && !ok && busy
+                                      ? SyncCloudIcon(
+                                          size: 22,
+                                          color: context.c.sub,
+                                        )
+                                      : Icon(
+                                          paused
+                                              ? Icons.cloud_off_outlined
+                                              : ok
+                                              ? Icons.cloud_done_outlined
+                                              : Icons.cloud_off_outlined,
+                                          size: 22,
+                                          color: ok
+                                              ? context.c.accent
+                                              : context.c.sub,
+                                        ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
