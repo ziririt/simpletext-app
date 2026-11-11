@@ -1393,6 +1393,24 @@ class L10nEn extends L10n {
   @override
   String get menuTidyPreview => 'Preview the tidy';
   @override
+  String get menuCapTidy => 'Tidy';
+  @override
+  String get menuCapInOut => 'Insert · Export';
+  @override
+  String get menuPresetShort => 'Style';
+  @override
+  String get menuPreviewShort => 'Preview';
+  @override
+  String get menuCompareShort => 'Compare';
+  @override
+  String get menuAppendShort => 'Append';
+  @override
+  String get bookmarkHereShort => 'Bookmark here';
+  @override
+  String get rulesShort => 'Auto-replace rules';
+  @override
+  String get deleteNoteAction => 'Delete this note';
+  @override
   String get dividerTip => 'Divider';
   @override
   String get syncScroll => 'Scroll together';

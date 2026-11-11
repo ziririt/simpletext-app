@@ -1403,6 +1403,24 @@ class L10nDe extends L10n {
   @override
   String get menuTidyPreview => 'Bereinigung ansehen';
   @override
+  String get menuCapTidy => 'Bereinigen';
+  @override
+  String get menuCapInOut => 'Einfügen · Export';
+  @override
+  String get menuPresetShort => 'Stil';
+  @override
+  String get menuPreviewShort => 'Vorschau';
+  @override
+  String get menuCompareShort => 'Vergleich';
+  @override
+  String get menuAppendShort => 'Anhängen';
+  @override
+  String get bookmarkHereShort => 'Hier merken';
+  @override
+  String get rulesShort => 'Ersetzungsregeln';
+  @override
+  String get deleteNoteAction => 'Diese Notiz löschen';
+  @override
   String get dividerTip => 'Trennlinie';
   @override
   String get syncScroll => 'Gemeinsam scrollen';

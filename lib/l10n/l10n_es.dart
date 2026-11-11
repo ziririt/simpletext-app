@@ -1401,6 +1401,24 @@ class L10nEs extends L10n {
   @override
   String get menuTidyPreview => 'Vista previa de la limpieza';
   @override
+  String get menuCapTidy => 'Limpieza';
+  @override
+  String get menuCapInOut => 'Insertar · Exportar';
+  @override
+  String get menuPresetShort => 'Estilo';
+  @override
+  String get menuPreviewShort => 'Vista previa';
+  @override
+  String get menuCompareShort => 'Comparar';
+  @override
+  String get menuAppendShort => 'Anexar';
+  @override
+  String get bookmarkHereShort => 'Marcar aquí';
+  @override
+  String get rulesShort => 'Reglas de reemplazo';
+  @override
+  String get deleteNoteAction => 'Eliminar esta nota';
+  @override
   String get dividerTip => 'Separador';
   @override
   String get syncScroll => 'Desplazar a la vez';

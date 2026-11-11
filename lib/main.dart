@@ -10626,8 +10626,13 @@ class _EditorScreenState extends State<EditorScreen>
                               // 귀띔은 작을수록 귀띔답다.
                               const SizedBox(width: 5),
                               Icon(
-                                _showMeta ? Icons.edit : Icons.edit_outlined,
-                                size: 11,
+                                // 2026-11-11 소유자 지시 — 밑줄 달린 연필로. 메뉴의
+                                // '제목·태그'를 걷고 이 귀띔 하나로 모았다. 밑줄이
+                                // '이 줄(제목)을 고친다'를 말해 준다.
+                                _showMeta
+                                    ? Icons.border_color
+                                    : Icons.border_color_outlined,
+                                size: 13,
                                 color: _showMeta
                                     ? context.c.accent
                                     : context.c.sub,
@@ -10686,13 +10691,20 @@ class _EditorScreenState extends State<EditorScreen>
                         // 내려가 버튼이 계속 보이고, 그 자리를 다시 누르면 닫힌다.
                         position: PopupMenuPosition.under,
                         offset: const Offset(0, 6),
+                        // 카드식 메뉴(2026-11-11): 바탕은 화면 배경색, 그 위에 흰
+                        // 카드들. 바탕과 카드가 같은 색이면 묶음이 안 보인다.
+                        color: context.c.bg,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        menuPadding: const EdgeInsets.symmetric(vertical: 8),
                         // 2026-08-29 소유자 지시 — "메뉴 레이어의 width 를 좀 더
                         // 넓혀줘." 한 줄에 셋을 넣으면서 칸이 좁아졌다. 좁은 칸에
                         // 세 글자를 우겨넣으면 말줄임표가 뜨고, 무엇을 누르는지
                         // 모르는 단추가 된다.
                         constraints: const BoxConstraints(
-                          minWidth: 288,
-                          maxWidth: 344,
+                          minWidth: 320,
+                          maxWidth: 352,
                         ),
                         // 메뉴가 펼쳐진 동안은 위쪽 배너를 자리째 걷는다 — 목록 메뉴와
                         // 같다(MenuAdHold 머리말, 2026-09-22).
@@ -10864,115 +10876,6 @@ class _EditorScreenState extends State<EditorScreen>
                           // 여기로 들어왔다. 메뉴로 옮긴 것을 아무도 못 찾는 일이
                           // 없도록 아이콘과 이름을 그대로 가져왔다 — 손가락은
                           // 자리를 기억하지만 눈은 모양을 기억한다.
-                          PopupMenuItem<String> act(
-                            String v,
-                            IconData ic,
-                            String label, {
-                            bool enabled = true,
-                            Color? tint,
-                            bool bold = false,
-                          }) => PopupMenuItem<String>(
-                            value: v,
-                            enabled: enabled,
-                            // 48이 기본인데 열다섯 줄이면 720이다. 그러면 메뉴가
-                            // 화면에 안 들어가서 플러터가 위로 밀어 올리고, 밀어
-                            // 올린 메뉴가 삼선 단추를 덮는다(소유자 신고).
-                            //
-                            // 2026-08-27 — 42도 모자랐다. 소유자 신고: "해상도가
-                            // 낮은 기기에서 메뉴 하단 항목이 안 보인다." 36으로
-                            // 죈다. 열다섯 줄에 가름선 넷이면 570 남짓이라 작은
-                            // 아이폰에서도 들어간다.
-                            //
-                            // 손가락이 놓칠 만큼 좁지는 않은가. 애플이 권하는
-                            // 최소 손가락 자리는 44인데, 그건 **화면에 흩어져
-                            // 있는 단추** 이야기다. 메뉴는 줄이 위아래로 붙어
-                            // 있어서 겨냥이 세로 한 줄로 좁혀지고, 잘못 눌러도
-                            // 옆줄이지 딴 세상이 아니다. 애플 메모의 메뉴도 이
-                            // 언저리다.
-                            height: 36,
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  ic,
-                                  size: 18,
-                                  color: (tint ?? ctx.c.guideInk).withValues(
-                                    alpha: enabled ? 1.0 : 0.4,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  label,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: tint,
-                                    fontWeight: bold
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          /// 한 줄에 셋. 2026-08-29 소유자 지시 —
-                          /// "'내보내기 | PDF | 인쇄' 이렇게 한 라인에. 단, 3개가
-                          /// 터치 간섭이 안 생기게 간격을 많이 띄어줘."
-                          ///
-                          /// 세 칸을 똑같이 나눠 갖고, 사이에 가는 세로선을 둔다.
-                          /// 선은 눈으로 칸을 가르는 일만 하고 누를 수는 없다 —
-                          /// 그 자리를 누르면 어느 쪽이 눌릴지 사람이 모른다.
-                          PopupMenuItem<String> trio(
-                            List<(String, IconData, String)> three,
-                          ) => PopupMenuItem<String>(
-                            padding: EdgeInsets.zero,
-                            height: 46,
-                            child: Row(
-                              children: [
-                                for (var i = 0; i < three.length; i++) ...[
-                                  if (i > 0)
-                                    Container(
-                                      width: 1,
-                                      height: 22,
-                                      color: ctx.c.line.withValues(alpha: 0.7),
-                                    ),
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: () =>
-                                          Navigator.pop(ctx, three[i].$1),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 6,
-                                          horizontal: 4,
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              three[i].$2,
-                                              size: 17,
-                                              color: ctx.c.guideInk,
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(
-                                              three[i].$3,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          );
-
                           // 2026-08-29 소유자 지시 — "낮은 해상도에서 메뉴 하단에
                           // 가려진 부분을 스크롤하면 더 있다는 직관적인 UI가 필요."
                           //
@@ -10984,197 +10887,351 @@ class _EditorScreenState extends State<EditorScreen>
                           // 줄들을 통째로 한 칸 안에 넣는다. 안의 줄들은 여전히
                           // PopupMenuItem 이라 눌리면 제 값으로 메뉴가 닫힌다 —
                           // 눌리는 방식은 하나도 안 바뀐다.
-                          final rows = <PopupMenuEntry<String>>[
-                            // 2026-08-18 소유자 지시로 차례를 통째로 다시 짰다.
-                            //
-                            // 스물세 줄이 한 폭에 다 나와 있었다. 그중 여덟은 설정
-                            // 화면의 목차를 그대로 베껴 온 것이었는데, 서랍을 열면
-                            // 그 안에 다른 서랍의 목차까지 붙어 있는 꼴이었다.
-                            // 그 여덟을 '앱 설정' 한 줄로 접었다 — 두 뎁스로 가는
-                            // 것이 줄을 줄이는 유일하게 정직한 방법이다.
-                            //
-                            // 남은 것을 네 무리로 묶었다.
-                            //   1. 이 메모가 무엇인가        출처·태그, 폴더
-                            //   2. 정리                      미리보기, 방식 고르기
-                            //   3. 글을 손대는 일            마법사, 표, 붙이기,
-                            //                                복사, 내보내기
-                            //   4. 되돌리고 지우는 일        버전 기록, 원본 복귀, 삭제
-                            //
-                            // '상단 고정'은 뺐다. 목록에서 길게 눌러 하는 편이
-                            // 빠르고, 몇 달에 한 번 누르는 것이 매번 여는 서랍의
-                            // 한 줄을 차지할 이유가 없다.
-                            // '바꾸기'는 자판 위 도구 막대로 내려갔다.
-                            act(
-                              'meta',
-                              _showMeta ? Icons.sell : Icons.sell_outlined,
-                              lm.metaTooltip,
+                          // 2026-11-11 소유자 지시 — "설정 UI 를 좀 더 정리정돈
+                          // 세련되게." 웨일·삼성 인터넷·알라딘 메뉴를 보고 다시 짰다.
+                          //
+                          //   자주 누르는 일      → 아이콘 칸(정리 4, 넣기·내보내기 8)
+                          //   상태가 있는 것      → 줄(폴더 이름, 잠금 스위치, 책갈피)
+                          //   정하는 일           → 줄(보기·규칙·앱 설정)
+                          //   되돌릴 수 없는 일   → 맨 아래 따로 한 줄(삭제)
+                          //
+                          // 묶음마다 흰 카드 하나. 가름선 대신 카드 사이 틈이 묶음을
+                          // 가른다. '제목·태그'는 뺐다 — 제목 옆 연필(밑줄 달린)이
+                          // 같은 일을 한다. 문이 둘이면 둘 다 못 찾는다.
+                          void go(String v) => Navigator.pop(ctx, v);
+                          final ink =
+                              Theme.of(ctx).textTheme.bodyLarge?.color ??
+                              ctx.c.guideInk;
+                          Widget card(List<Widget> children, {String? cap}) =>
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: ctx.c.panel,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    if (cap != null)
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          14,
+                                          9,
+                                          14,
+                                          0,
+                                        ),
+                                        child: Text(
+                                          cap,
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w500,
+                                            color: ctx.c.sub,
+                                          ),
+                                        ),
+                                      ),
+                                    ...children,
+                                  ],
+                                ),
+                              );
+                          Widget tile(
+                            String v,
+                            IconData ic,
+                            String label, {
+                            bool on = true,
+                            Color? tint,
+                          }) {
+                            final col = (tint ?? ink).withValues(
+                              alpha: on ? 1.0 : 0.35,
+                            );
+                            return Expanded(
+                              child: InkWell(
+                                onTap: on ? () => go(v) : null,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 6,
+                                    horizontal: 2,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: ctx.c.field,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Icon(ic, size: 20, color: col),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        label,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: col,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          Widget grid(List<Widget> tiles) => Padding(
+                            padding: const EdgeInsets.fromLTRB(4, 2, 4, 4),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: tiles,
                             ),
-                            act(
-                              'folder',
-                              note.folder.isEmpty
-                                  ? Icons.folder_outlined
-                                  : Icons.folder,
-                              note.folder.isEmpty
-                                  ? lm.folderTitle
-                                  : note.folder,
-                              tint: note.folder.isEmpty ? null : ctx.c.accent,
+                          );
+                          Widget gap() => Divider(
+                            height: 1,
+                            thickness: 1,
+                            indent: 46,
+                            color: ctx.c.line.withValues(alpha: 0.6),
+                          );
+                          Widget item(
+                            String v,
+                            IconData ic,
+                            String label, {
+                            Widget? trailing,
+                            Color? tint,
+                            bool chev = false,
+                          }) => InkWell(
+                            onTap: () => go(v),
+                            child: SizedBox(
+                              height: 44,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      ic,
+                                      size: 20,
+                                      color: tint ?? ctx.c.guideInk,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        label,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: tint,
+                                        ),
+                                      ),
+                                    ),
+                                    ?trailing,
+                                    if (chev)
+                                      Icon(
+                                        CupertinoIcons.chevron_right,
+                                        size: 14,
+                                        color: ctx.c.sub,
+                                      ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            // 잠금은 '이 메모가 무엇인가' 무리에 둔다. 정리·복사와
-                            // 달리 글을 손대는 일이 아니라 이 메모의 성격이다.
-                            act(
-                              'lock',
-                              note.locked ? Icons.lock : Icons.lock_outline,
-                              note.locked ? lm.noteUnlock : lm.noteLock,
-                              tint: note.locked ? ctx.c.accent : null,
-                            ),
-                            // 스크롤 책갈피 (2026-09-09 소유자 요청).
-                            //
-                            // 줄이 늘어나면 작은 아이폰에서 메뉴가 잘린다 —
-                            // 그래서 **한 줄만 쓴다.** 책갈피가 없을 때는
-                            // '끼우기' 하나, 있을 때는 '가기 | 빼기' 둘을
-                            // 한 줄에 나눠 담는다(trio 는 두 개도 받는다).
-                            if (_mark == null)
-                              act(
-                                'markset',
-                                Icons.bookmark_add_outlined,
-                                lm.bookmarkAdd,
-                              )
-                            else
-                              trio([
-                                (
+                          );
+
+                          final rows = <Widget>[
+                            card(cap: lm.menuCapTidy, [
+                              grid([
+                                tile(
+                                  'preset',
+                                  CupertinoIcons.wand_stars,
+                                  lm.menuPresetShort,
+                                ),
+                                tile(
+                                  'preview',
+                                  CupertinoIcons.eye,
+                                  lm.menuPreviewShort,
+                                ),
+                                tile(
+                                  'wipe',
+                                  CupertinoIcons.rectangle_split_3x1,
+                                  lm.menuCompareShort,
+                                ),
+                                tile(
+                                  'wizard',
+                                  CupertinoIcons.sparkles,
+                                  lm.wizardAction,
+                                  tint: ctx.c.accent,
+                                ),
+                              ]),
+                            ]),
+                            card(cap: lm.menuCapInOut, [
+                              grid([
+                                tile(
+                                  'tables',
+                                  CupertinoIcons.table,
+                                  lm.tableAction,
+                                ),
+                                tile(
+                                  'attach',
+                                  CupertinoIcons.paperclip,
+                                  lm.attachAdd,
+                                ),
+                                tile(
+                                  'append',
+                                  CupertinoIcons.tray_arrow_down,
+                                  lm.menuAppendShort,
+                                ),
+                                tile(
+                                  'history',
+                                  CupertinoIcons.clock,
+                                  lm.historyTitle,
+                                  on: _canTravel,
+                                ),
+                              ]),
+                              grid([
+                                tile(
+                                  'copy',
+                                  CupertinoIcons.doc_on_doc,
+                                  lm.copyAction,
+                                ),
+                                tile(
+                                  'export',
+                                  CupertinoIcons.square_arrow_up,
+                                  lm.exportShort,
+                                ),
+                                tile(
+                                  'pdf',
+                                  CupertinoIcons.doc_richtext,
+                                  lm.exportPdfShort,
+                                ),
+                                tile(
+                                  'print',
+                                  CupertinoIcons.printer,
+                                  lm.printShort,
+                                ),
+                              ]),
+                            ]),
+                            card([
+                              item(
+                                'folder',
+                                note.folder.isEmpty
+                                    ? Icons.folder_outlined
+                                    : Icons.folder,
+                                lm.folderTitle,
+                                trailing: note.folder.isEmpty
+                                    ? null
+                                    : Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 4,
+                                        ),
+                                        child: Text(
+                                          note.folder,
+                                          style: TextStyle(
+                                            fontSize: 13.5,
+                                            color: ctx.c.accent,
+                                          ),
+                                        ),
+                                      ),
+                                chev: true,
+                              ),
+                              gap(),
+                              // 잠금은 스위치로 지금 상태를 보인다. 스위치 자체는
+                              // 눌리지 않는다 — 줄 전체가 한 단추다. 잠글 때 암호를
+                              // 묻는 길(toggleNoteLock)은 그대로다.
+                              item(
+                                'lock',
+                                note.locked
+                                    ? Icons.lock
+                                    : Icons.lock_outline,
+                                lm.noteLock,
+                                tint: note.locked ? ctx.c.accent : null,
+                                trailing: IgnorePointer(
+                                  child: SizedBox(
+                                    height: 28,
+                                    child: FittedBox(
+                                      child: Switch.adaptive(
+                                        value: note.locked,
+                                        onChanged: (_) {},
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              gap(),
+                              // 책갈피가 있으면 '가기'와 오른쪽 끝 '빼기'를 한 줄에.
+                              if (_mark == null)
+                                item(
+                                  'markset',
+                                  Icons.bookmark_add_outlined,
+                                  lm.bookmarkHereShort,
+                                )
+                              else
+                                item(
                                   'markgo',
                                   Icons.bookmark,
                                   lm.bookmarkGoAt(_mark!.percent),
+                                  tint: ctx.c.accent,
+                                  trailing: InkWell(
+                                    onTap: () => go('markclear'),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6),
+                                      child: Icon(
+                                        Icons.bookmark_remove_outlined,
+                                        size: 20,
+                                        color: ctx.c.sub,
+                                        semanticLabel: lm.bookmarkRemove,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                (
-                                  'markclear',
-                                  Icons.bookmark_remove_outlined,
-                                  lm.bookmarkRemove,
-                                ),
-                              ]),
-                            const PopupMenuDivider(height: 6),
-                            // 2026-08-29 소유자 지시 — 정리 셋을 한 줄로.
-                            trio([
-                              (
-                                'preset',
-                                CupertinoIcons.wand_stars,
-                                lm.choosePreset,
+                            ]),
+                            card([
+                              item(
+                                'view',
+                                Icons.text_format,
+                                lm.viewSettingsTitle,
+                                chev: true,
                               ),
-                              (
-                                'preview',
-                                CupertinoIcons.eye,
-                                lm.menuTidyPreview,
+                              gap(),
+                              item(
+                                'rules',
+                                Icons.find_replace,
+                                lm.rulesShort,
+                                chev: true,
                               ),
-                              (
-                                'wipe',
-                                CupertinoIcons.rectangle_split_3x1,
-                                lm.wipeAction,
+                              gap(),
+                              item(
+                                'set:',
+                                CupertinoIcons.gear_alt,
+                                lm.menuAppSettings,
+                                chev: true,
                               ),
                             ]),
-                            // 2026-08-29 소유자 지시 — 셋을 하나로 합쳤다.
-                            //
-                            //   버전 기록(목록)  정확하지만 아무 감흥이 없다
-                            //   시간 여행(손잡이) 같은 자료를 훑는다
-                            //   원본 복귀        기록 중 맨 처음으로 가는 일일 뿐이다
-                            //
-                            // 셋은 같은 것을 다르게 부른 이름이었다. 이름은 사람들이
-                            // 아는 '버전 기록'으로 두고, 안에서는 손잡이로 훑는다.
-                            // 원본은 그 길의 첫 정거장이라 따로 둘 자리가 없다.
-                            //
-                            // 2026-09-02 소유자 지시로 정리 셋 **바로 아래**로 올렸다.
-                            // 전에는 삭제 바로 위, 서랍의 한참 아래에 있었다. 그런데
-                            // 버전 기록을 여는 까닭은 거의 언제나 '방금 정리한 것을
-                            // 되돌아보려고'다. 그 일과 붙어 있어야 찾는다.
-                            act(
-                              'history',
-                              CupertinoIcons.clock,
-                              lm.historyTitle,
-                              enabled: _canTravel,
-                            ),
-                            const PopupMenuDivider(height: 6),
-                            act(
-                              'wizard',
-                              CupertinoIcons.sparkles,
-                              lm.wizardAction,
-                            ),
-                            act('tables', CupertinoIcons.table, lm.tableAction),
-                            // 클립은 '첨부'에 준다. 여태 '붙이기'(다른 파일의 글을
-                            // 본문 뒤에 잇는 일)가 쓰고 있었는데, 클립이 뜻하는 것은
-                            // 어디서나 파일을 매다는 일이다. 이름과 그림이 어긋나
-                            // 있으면 둘 다 못 찾는다.
-                            act(
-                              'append',
-                              CupertinoIcons.tray_arrow_down,
-                              lm.importAppend,
-                            ),
-                            act(
-                              'attach',
-                              CupertinoIcons.paperclip,
-                              lm.attachAdd,
-                            ),
-                            act(
-                              'copy',
-                              CupertinoIcons.doc_on_doc,
-                              lm.copyAction,
-                            ),
-                            // 2026-08-29 소유자 지시 — 내보내기 셋을 한 줄로.
-                            // '내보내기'가 마크다운 파일을 건네는 일이라면 나머지
-                            // 둘은 **다 그려진 결과**를 건네는 일이다.
-                            trio([
-                              (
-                                'export',
-                                CupertinoIcons.square_arrow_up,
-                                lm.exportShort,
+                            // 되돌릴 수 없는 일은 카드 밖, 맨 끝에 글자 한 줄로.
+                            InkWell(
+                              onTap: () => go('delete'),
+                              borderRadius: BorderRadius.circular(12),
+                              child: SizedBox(
+                                height: 42,
+                                child: Center(
+                                  child: Text(
+                                    lm.deleteNoteAction,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: ctx.c.danger,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              (
-                                'pdf',
-                                CupertinoIcons.doc_richtext,
-                                lm.exportPdfShort,
-                              ),
-                              ('print', CupertinoIcons.printer, lm.printShort),
-                            ]),
-                            const PopupMenuDivider(height: 6),
-                            // 2026-09-09 소유자 지시 — 차례를 이렇게 못 박았다.
-                            //   보기 설정 → 앱 설정 → 삭제
-                            //
-                            // 까닭이 보인다. 앞의 둘은 **정하는 일**이고 마지막
-                            // 하나는 **되돌릴 수 없는 일**이다. 되돌릴 수 없는
-                            // 것은 서랍의 맨 끝에 있어야 한다 — 손가락이 미끄러져
-                            // 닿는 자리가 아니어야 하고, 다른 것을 찾다가 눈에
-                            // 먼저 들어오는 자리도 아니어야 한다.
-                            //
-                            // 그리고 보기 설정과 앱 설정은 붙어 있어야 한다.
-                            // 하나는 이 노트를 어떻게 보여 줄지, 하나는 앱 전체를
-                            // 어떻게 할지 — 같은 결의 일이라 나란히 둔다.
-                            // 2026-09-19 소유자 지시 — "편집하다가 자동 바꾸기 규칙을
-                            // 추가하고 싶은데 앱 설정 안에만 있다. 여기서 바로 보이게."
-                            // 앱 설정의 그 자리로 곧장 간다(anchor: rules).
-                            // 아이콘은 앱에 **이미 있는 것**을 쓴다. 새 아이콘은 글꼴
-                            // 자산이 바뀌는 일이라 덧판(Shorebird)으로 못 나간다 —
-                            // 첫 덧판 시도가 이 한 줄 때문에 거절됐다(2026-09-19).
-                            act(
-                              'rules',
-                              Icons.find_replace,
-                              lm.rulesSectionTitle,
-                            ),
-                            act(
-                              'view',
-                              Icons.text_format,
-                              lm.viewSettingsTitle,
-                            ),
-                            act(
-                              'set:',
-                              CupertinoIcons.gear_alt,
-                              lm.menuAppSettings,
-                              tint: ctx.c.accent,
-                              bold: true,
-                            ),
-                            const PopupMenuDivider(height: 6),
-                            act(
-                              'delete',
-                              CupertinoIcons.trash,
-                              lm.delete,
-                              tint: ctx.c.danger,
                             ),
                           ];
                           return [
@@ -11182,7 +11239,10 @@ class _EditorScreenState extends State<EditorScreen>
                               // 값이 없다 — 이 껍데기를 눌러도 아무 일이 안 난다.
                               padding: EdgeInsets.zero,
                               height: 0,
-                              child: _MenuScroll(rows: rows),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 2, 8, 0),
+                                child: _MenuScroll(rows: rows),
+                              ),
                             ),
                           ];
                         },
@@ -12830,7 +12890,7 @@ String historyWhyLabel(L10n l, String code) {
 /// 2026-08-29. 까닭은 scroll_hint.dart 머리말에 있다.
 class _MenuScroll extends StatefulWidget {
   const _MenuScroll({required this.rows});
-  final List<PopupMenuEntry<String>> rows;
+  final List<Widget> rows;
 
   @override
   State<_MenuScroll> createState() => _MenuScrollState();
@@ -12855,7 +12915,7 @@ class _MenuScrollState extends State<_MenuScroll> {
       constraints: BoxConstraints(maxHeight: max),
       child: ScrollHint(
         controller: _c,
-        color: Theme.of(context).canvasColor,
+        color: context.c.bg,
         child: SingleChildScrollView(
           controller: _c,
           child: Column(mainAxisSize: MainAxisSize.min, children: widget.rows),

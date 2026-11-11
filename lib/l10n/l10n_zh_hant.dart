@@ -1327,6 +1327,24 @@ class L10nZhHant extends L10n {
   @override
   String get menuTidyPreview => '整理預覽';
   @override
+  String get menuCapTidy => '整理';
+  @override
+  String get menuCapInOut => '插入 · 匯出';
+  @override
+  String get menuPresetShort => '整理方式';
+  @override
+  String get menuPreviewShort => '預覽';
+  @override
+  String get menuCompareShort => '前後對比';
+  @override
+  String get menuAppendShort => '追加檔案';
+  @override
+  String get bookmarkHereShort => '在此加書籤';
+  @override
+  String get rulesShort => '自動取代規則';
+  @override
+  String get deleteNoteAction => '刪除此筆記';
+  @override
   String get dividerTip => '分隔線';
   @override
   String get syncScroll => '同步捲動';

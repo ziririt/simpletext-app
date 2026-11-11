@@ -1339,6 +1339,24 @@ class L10nJa extends L10n {
   @override
   String get menuTidyPreview => '整理をプレビュー';
   @override
+  String get menuCapTidy => '整理';
+  @override
+  String get menuCapInOut => '挿入・書き出し';
+  @override
+  String get menuPresetShort => '整理方法';
+  @override
+  String get menuPreviewShort => 'プレビュー';
+  @override
+  String get menuCompareShort => '前後比較';
+  @override
+  String get menuAppendShort => '追記';
+  @override
+  String get bookmarkHereShort => 'ここにしおり';
+  @override
+  String get rulesShort => '自動置換ルール';
+  @override
+  String get deleteNoteAction => 'このノートを削除';
+  @override
   String get dividerTip => '区切り線';
   @override
   String get syncScroll => '同時スクロール';

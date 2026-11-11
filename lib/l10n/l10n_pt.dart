@@ -1400,6 +1400,24 @@ class L10nPt extends L10n {
   @override
   String get menuTidyPreview => 'Prévia da organização';
   @override
+  String get menuCapTidy => 'Organizar';
+  @override
+  String get menuCapInOut => 'Inserir · Exportar';
+  @override
+  String get menuPresetShort => 'Estilo';
+  @override
+  String get menuPreviewShort => 'Prévia';
+  @override
+  String get menuCompareShort => 'Comparar';
+  @override
+  String get menuAppendShort => 'Anexar';
+  @override
+  String get bookmarkHereShort => 'Marcar aqui';
+  @override
+  String get rulesShort => 'Regras de substituição';
+  @override
+  String get deleteNoteAction => 'Excluir esta nota';
+  @override
   String get dividerTip => 'Separador';
   @override
   String get syncScroll => 'Rolar junto';

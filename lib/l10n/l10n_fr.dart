@@ -1406,6 +1406,24 @@ class L10nFr extends L10n {
   @override
   String get menuTidyPreview => 'Aperçu du nettoyage';
   @override
+  String get menuCapTidy => 'Nettoyage';
+  @override
+  String get menuCapInOut => 'Insérer · Exporter';
+  @override
+  String get menuPresetShort => 'Style';
+  @override
+  String get menuPreviewShort => 'Aperçu';
+  @override
+  String get menuCompareShort => 'Comparer';
+  @override
+  String get menuAppendShort => 'Ajouter';
+  @override
+  String get bookmarkHereShort => 'Signet ici';
+  @override
+  String get rulesShort => 'Règles de remplacement';
+  @override
+  String get deleteNoteAction => 'Supprimer cette note';
+  @override
   String get dividerTip => 'Séparateur';
   @override
   String get syncScroll => 'Défilement synchronisé';

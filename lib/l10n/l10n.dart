@@ -772,6 +772,17 @@ abstract class L10n {
   /// 편집 메뉴 맨 위 — 정리 결과를 먼저 보고 적용할지 고른다.
   String get menuTidyPreview;
 
+  /// 편집 메뉴 카드식 정리(2026-11-11) — 묶음 이름과 칸 안의 짧은 이름.
+  String get menuCapTidy;
+  String get menuCapInOut;
+  String get menuPresetShort;
+  String get menuPreviewShort;
+  String get menuCompareShort;
+  String get menuAppendShort;
+  String get bookmarkHereShort;
+  String get rulesShort;
+  String get deleteNoteAction;
+
   /// 편집 툴바의 구분선 단추.
   String get dividerTip;
 
@@ -1378,6 +1389,15 @@ abstract class L10n {
     'aiSectionDesc': aiSectionDesc,
     'aiKeyHint': aiKeyHint,
     'menuTidyPreview': menuTidyPreview,
+    'menuCapTidy': menuCapTidy,
+    'menuCapInOut': menuCapInOut,
+    'menuPresetShort': menuPresetShort,
+    'menuPreviewShort': menuPreviewShort,
+    'menuCompareShort': menuCompareShort,
+    'menuAppendShort': menuAppendShort,
+    'bookmarkHereShort': bookmarkHereShort,
+    'rulesShort': rulesShort,
+    'deleteNoteAction': deleteNoteAction,
     'dividerTip': dividerTip,
     'syncScroll': syncScroll,
     'pasteTipTitle': pasteTipTitle,

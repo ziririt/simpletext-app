@@ -1327,6 +1327,24 @@ class L10nZhHans extends L10n {
   @override
   String get menuTidyPreview => '整理预览';
   @override
+  String get menuCapTidy => '整理';
+  @override
+  String get menuCapInOut => '插入 · 导出';
+  @override
+  String get menuPresetShort => '整理方式';
+  @override
+  String get menuPreviewShort => '预览';
+  @override
+  String get menuCompareShort => '前后对比';
+  @override
+  String get menuAppendShort => '追加文件';
+  @override
+  String get bookmarkHereShort => '在此加书签';
+  @override
+  String get rulesShort => '自动替换规则';
+  @override
+  String get deleteNoteAction => '删除此笔记';
+  @override
   String get dividerTip => '分隔线';
   @override
   String get syncScroll => '同步滚动';

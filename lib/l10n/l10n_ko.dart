@@ -1342,6 +1342,24 @@ class L10nKo extends L10n {
   @override
   String get menuTidyPreview => '정리 미리보기';
   @override
+  String get menuCapTidy => '정리';
+  @override
+  String get menuCapInOut => '넣기 · 내보내기';
+  @override
+  String get menuPresetShort => '정리 방식';
+  @override
+  String get menuPreviewShort => '미리보기';
+  @override
+  String get menuCompareShort => '전·후 비교';
+  @override
+  String get menuAppendShort => '이어 붙이기';
+  @override
+  String get bookmarkHereShort => '여기에 책갈피';
+  @override
+  String get rulesShort => '자동 바꾸기 규칙';
+  @override
+  String get deleteNoteAction => '이 노트 삭제';
+  @override
   String get dividerTip => '구분선';
   @override
   String get syncScroll => '동시 스크롤';
