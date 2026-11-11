@@ -12916,7 +12916,11 @@ class _MenuScrollState extends State<_MenuScroll> {
     // 화면 높이에서 위아래 여백을 뺀 만큼까지만 자란다. 안 죄면 플러터가
     // 메뉴를 위로 밀어 올려 삼선 단추를 덮는다(2026-08-27 소유자 신고).
     final h = MediaQuery.sizeOf(context).height;
-    final max = (h - 170).clamp(220.0, 620.0);
+    // 2026-11-11 — 카드식 메뉴로 바꾸고 나서 천장 620 이 모자랐다. 아이폰 17
+    // 에서 20px 남짓 넘쳐 '더 있다' 꺾쇠가 맨 끝의 '이 노트 삭제' 위에 겹쳤다
+    // (소유자 신고). 화면이 허락하면 다 보이게 천장을 올린다. 작은 기기는
+    // 여전히 h-170 에서 멈추고 굴린다.
+    final max = (h - 170).clamp(220.0, 760.0);
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: max),
       child: ScrollHint(
