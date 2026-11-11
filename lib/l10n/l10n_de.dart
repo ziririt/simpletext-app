@@ -442,7 +442,9 @@ class L10nDe extends L10n {
   @override
   String get wideTableFit => 'An Bildschirmbreite anpassen';
   @override
-  String get tableEditTitle => 'Weitere Tabellenstile';
+  String get tableEditTitle => 'Tabellenstil wählen';
+  @override
+  String get tableStyleHint => 'Wähle passend zur Bildschirmbreite von Smartphone oder PC. Der Stil lässt sich später ändern.';
   @override
   String get tableModeScroll => 'Seitlich scrollen';
   @override
@@ -454,7 +456,7 @@ class L10nDe extends L10n {
   @override
   String get tableModeImage => 'Bild';
   @override
-  String get tableApply => 'Auf diese Tabelle anwenden';
+  String get tableApply => 'Anwenden';
   @override
   String get tableShareImage => 'Als Bild teilen';
   @override

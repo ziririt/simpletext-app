@@ -9477,25 +9477,56 @@ class _EditorScreenState extends State<EditorScreen>
     );
   }
 
-  /// 표 도구.
+  /// 본문의 표들 — 카드 표(울타리)와 글자 표(칸 맞춤·풀어쓰기·파이프)를
+  /// 글 순서대로. (시작, 끝, 표, 지금 모양)
+  List<(int, int, TableGrid, String)> _tableSpots() {
+    final body = bodyCtl.text;
+    return [
+      for (final b in findScrollTables(body))
+        if (b.grid != null) (b.start, b.end, b.grid!, b.mode),
+      for (final t in locateTables(body)) (t.start, t.end, t.grid, 'aligned'),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+  }
+
+  /// 메뉴의 '표' — 곧장 표 스타일 선택 창을 연다.
   ///
-  /// 2026-08-14 소유자 지적: "표1 · 3열 5행"만 봐서는 본문의 어느 표인지 알 수 없다.
-  /// 그래서 표를 실제 모양 그대로(등폭·칸 맞춰) 보여 주고, 큰 창에서 세로로
-  /// 넘겨 보며 고르게 한다. 표가 가로로 길 수 있으니 가로 스크롤도 둔다.
-  /// 표 편집 — 이 표 하나만 다른 모양으로 살린다(2026-11-11 소유자 지시
-  /// "전체 문서 포맷과 무관하게 표에 대해서만 옵션을 줘서 표 옵션대로").
+  /// 2026-11-12 소유자 지시 — "2단계로 할 게 아니다. 표 복사는 중요한 기능도
+  /// 아니다. 1단계를 없애고 2단계를 1단계처럼." 예전에는 표 목록(복사 단추들)
+  /// 을 먼저 보이고 그 안에서 표 편집을 열었다. 이제 커서가 놓인 표(없으면 첫
+  /// 표)의 스타일 창이 바로 뜨고, 표가 여럿이면 창 안에서 넘긴다.
+  Future<void> _showTables() async {
+    await _save();
+    if (!mounted) return;
+    final spots = _tableSpots();
+    if (spots.isEmpty) {
+      _toast(context, L10n.of(context).noTablesFound);
+      return;
+    }
+    final caret = bodyCtl.selection.isValid
+        ? bodyCtl.selection.extentOffset
+        : -1;
+    var idx = spots.indexWhere((x) => caret >= x.$1 && caret <= x.$2);
+    if (idx < 0) idx = spots.indexWhere((x) => x.$1 >= caret);
+    if (idx < 0) idx = 0;
+    await _showTableStyle(spots, idx);
+  }
+
+  /// 표 스타일 선택 창.
   ///
-  /// 가로로 밀기·화면 폭 맞춤은 이름표 붙은 울타리로 남아 정리를 다시 돌려도
-  /// 그대로다. 칸 맞춤·풀어쓰기는 글자로 풀어 넣는다(그 뒤로는 보통 글이다).
-  /// 이미지는 본문을 안 바꾸고 그림 한 장을 만들어 공유한다.
-  Future<void> _showTableEdit({
-    required int start,
-    required int end,
-    required TableGrid grid,
-    required String mode,
-  }) async {
-    // 창을 여는 순간의 그 글자. 적용할 때 이것과 같아야 갈아 끼운다.
-    final orig = bodyCtl.text.substring(start, end);
+  /// 모양 다섯(가로로 밀기 · 화면 폭 맞춤 · 칸 맞춤 · 이미지 · 풀어쓰기) 중에
+  /// 고르고 큰 '적용'. 그 아래 작게 '복사' 셋. 이 표 하나만 바뀐다 — 문서 전체
+  /// 설정과 상관없다. 가로로 밀기·화면 폭·이미지는 이름표 붙은 울타리로 남아
+  /// 정리를 다시 돌려도 그대로고, 칸 맞춤·풀어쓰기는 글자로 풀어 넣는다.
+  Future<void> _showTableStyle(
+    List<(int, int, TableGrid, String)> spots,
+    int startIdx,
+  ) async {
+    // 창을 여는 순간의 글자들. 적용할 때 이것과 같아야 갈아 끼운다.
+    final origs = [
+      for (final x in spots) bodyCtl.text.substring(x.$1, x.$2),
+    ];
+    var idx = startIdx;
+    var mode = spots[idx].$4;
     final shotKey = GlobalKey();
     var shotScale = 1.0;
     final scaler = MediaQuery.textScalerOf(context);
@@ -9506,6 +9537,7 @@ class _EditorScreenState extends State<EditorScreen>
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) {
           final l = L10n.of(ctx);
+          final grid = spots[idx].$3;
           final ink =
               Theme.of(ctx).textTheme.bodyLarge?.color ?? Colors.black;
           final fs = _cardFont;
@@ -9529,7 +9561,6 @@ class _EditorScreenState extends State<EditorScreen>
                   line: ctx.c.line,
                 );
               case 'image':
-                // 그림 표: 제 폭으로 그려 화면 폭에 맞게 줄인 모양 그대로.
                 final lay = measureTableCard(
                   grid,
                   fontSize: fs,
@@ -9595,15 +9626,22 @@ class _EditorScreenState extends State<EditorScreen>
                 out = tableToScrollBlock(grid);
             }
             final t = bodyCtl.text;
-            // 표 편집 창이 떠 있는 동안 글이 바뀌었으면(동기화 등) 손대지 않는다.
-            if (t.length < end || t.substring(start, end) != orig) {
+            final st = spots[idx].$1, en = spots[idx].$2;
+            // 창이 떠 있는 동안 글이 바뀌었으면(동기화 등) 손대지 않는다.
+            if (t.length < en || t.substring(st, en) != origs[idx]) {
               Navigator.pop(ctx);
               return;
             }
-            bodyCtl.text = t.replaceRange(start, end, out);
+            bodyCtl.text = t.replaceRange(st, en, out);
             Navigator.pop(ctx);
             await _save();
             if (mounted) setState(() {});
+          }
+
+          void copy(String text, String toast) {
+            Clipboard.setData(ClipboardData(text: text));
+            Navigator.pop(ctx);
+            _toast(context, toast);
           }
 
           Future<void> share() async {
@@ -9623,26 +9661,73 @@ class _EditorScreenState extends State<EditorScreen>
             );
           }
 
+          // 2026-11-12 소유자 지시 — 풀어쓰기는 이미지 오른쪽, 다섯째.
           final modes = <(String, String)>[
             ('scroll', l.tableModeScroll),
             ('fit', l.tableModeFit),
             ('aligned', l.tableModeAligned),
-            ('records', l.tableModeRecords),
             ('image', l.tableModeImage),
+            ('records', l.tableModeRecords),
           ];
+          final small = TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            minimumSize: const Size(0, 36),
+            visualDensity: VisualDensity.compact,
+          );
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l.tableEditTitle,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      // 표가 여럿이면 여기서 넘긴다.
+                      if (spots.length > 1) ...[
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          onPressed: idx > 0
+                              ? () => setSheet(() {
+                                  idx--;
+                                  mode = spots[idx].$4;
+                                })
+                              : null,
+                          icon: const Icon(CupertinoIcons.chevron_left, size: 18),
+                        ),
+                        Text(
+                          '${idx + 1} / ${spots.length}',
+                          style: TextStyle(fontSize: 13, color: ctx.c.sub),
+                        ),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          onPressed: idx < spots.length - 1
+                              ? () => setSheet(() {
+                                  idx++;
+                                  mode = spots[idx].$4;
+                                })
+                              : null,
+                          icon: const Icon(
+                            CupertinoIcons.chevron_right,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
                   Text(
-                    l.tableEditTitle,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    l.tableStyleHint,
+                    style: TextStyle(fontSize: 12.5, height: 1.4, color: ctx.c.sub),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -9660,7 +9745,7 @@ class _EditorScreenState extends State<EditorScreen>
                   const SizedBox(height: 12),
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.sizeOf(ctx).height * 0.5,
+                      maxHeight: MediaQuery.sizeOf(ctx).height * 0.45,
                     ),
                     child: SingleChildScrollView(
                       child: LayoutBuilder(
@@ -9669,189 +9754,79 @@ class _EditorScreenState extends State<EditorScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // 2026-11-11 소유자 지적 — "이미지로 할 때 하단 버튼은 왜 '이미지
-                  // 공유'지? 이미지 형태로 적용돼야." 맞다. 적용이 주인공이고
-                  // 공유는 곁가지다.
-                  FilledButton(onPressed: apply, child: Text(l.tableApply)),
-                  if (mode == 'image')
-                    TextButton(onPressed: share, child: Text(l.tableShareImage)),
+                  SizedBox(
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: apply,
+                      child: Text(
+                        l.tableApply,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 복사는 곁가지다 — 작게, 이름표를 달아 한 줄에.
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, right: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              CupertinoIcons.doc_on_doc,
+                              size: 14,
+                              color: ctx.c.sub,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l.copyAction,
+                              style: TextStyle(fontSize: 13, color: ctx.c.sub),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        style: small,
+                        onPressed: () => copy(
+                          tableToTSV(grid),
+                          L10n.of(context).copiedSpreadsheet,
+                        ),
+                        child: Text(l.forSpreadsheet),
+                      ),
+                      TextButton(
+                        style: small,
+                        onPressed: () => copy(
+                          tableToCSV(grid),
+                          L10n.of(context).copiedCsv,
+                        ),
+                        child: const Text('CSV'),
+                      ),
+                      TextButton(
+                        style: small,
+                        onPressed: () => copy(
+                          tableToMarkdown(grid),
+                          L10n.of(context).copiedMarkdown,
+                        ),
+                        child: const Text('Markdown'),
+                      ),
+                      if (mode == 'image')
+                        TextButton(
+                          style: small,
+                          onPressed: share,
+                          child: Text(l.tableShareImage),
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
           );
         },
-      ),
-    );
-  }
-
-  Future<void> _showTables() async {
-    await _save();
-    // 2026-11-11 소유자 신고 — "표 메뉴에는 옵션이 없는데?" 표 편집이 카드
-    // 단추에서만 열렸다. 이제 본문의 모든 표를 자리와 함께 찾아, 표마다
-    // '표 편집'을 단다. 카드 표(울타리)와 글자 표(칸 맞춤·풀어쓰기·파이프)를
-    // 한 줄로 세운다.
-    final body = bodyCtl.text;
-    final spots = <(int, int, TableGrid, String)>[
-      for (final b in findScrollTables(body))
-        if (b.grid != null) (b.start, b.end, b.grid!, b.mode),
-      for (final t in locateTables(body)) (t.start, t.end, t.grid, 'aligned'),
-    ]..sort((a, b) => a.$1.compareTo(b.$1));
-    final r = (tables: [for (final x in spots) x.$3]);
-    if (!mounted) return;
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true, // 큰 창으로 — 기본 절반 높이로는 표가 안 보인다
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.85,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
-        builder: (ctx, scrollCtl) => SafeArea(
-          child: r.tables.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.all(30),
-                  child: Text(L10n.of(ctx).noTablesFound),
-                )
-              : ListView.separated(
-                  controller: scrollCtl,
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  itemCount: r.tables.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 18),
-                  itemBuilder: (ctx, i) {
-                    final t = r.tables[i];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          L10n.of(
-                            ctx,
-                          ).tableInfo(i + 1, t.header.length, t.rows.length),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: context.c.sub,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        // 본문에 보이는 그 모양 그대로. 이게 있어야 "아, 그 표"가 된다.
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: context.c.codeBg,
-                            border: Border.all(color: context.c.codeLine),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Text(
-                              tableToAligned(t),
-                              style: const TextStyle(
-                                fontFamily: MonoTextController.fontFamily,
-                                fontSize: 12.5,
-                                height: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        // 2026-11-11 소유자 지시 — 표 편집은 복사 셋과 다른 줄,
-                        // 다른 무게로. 하나는 이 표를 바꾸는 일이고 셋은 밖으로
-                        // 가져가는 일이다.
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              _showTableEdit(
-                                start: spots[i].$1,
-                                end: spots[i].$2,
-                                grid: spots[i].$3,
-                                mode: spots[i].$4,
-                              );
-                            },
-                            icon: const Icon(
-                              CupertinoIcons.slider_horizontal_3,
-                              size: 18,
-                            ),
-                            label: Text(L10n.of(ctx).tableEditTitle),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        // 2026-11-12 소유자 질문 — "아래 3개는 표 스타일을 바꾸는 게
-                        // 아니라 복사하기 용도인가?" 맞다. 그런데 그걸 물어야 알았다면
-                        // 화면이 말을 안 한 것이다. 줄 앞에 '복사'를 붙이고 단추마다
-                        // 복사 그림을 단다 — 위의 '더 많은 표 스타일'(바꾸기)과 이
-                        // 줄(밖으로 가져가기)이 다른 일이라는 것이 한눈에 보이게.
-                        Wrap(
-                          spacing: 2,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4, right: 4),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.doc_on_doc,
-                                    size: 15,
-                                    color: context.c.sub,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    L10n.of(ctx).copyAction,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: context.c.sub,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Clipboard.setData(
-                                  ClipboardData(text: tableToTSV(t)),
-                                );
-                                Navigator.pop(ctx);
-                                _toast(
-                                  context,
-                                  L10n.of(context).copiedSpreadsheet,
-                                );
-                              },
-                              child: Text(L10n.of(ctx).forSpreadsheet),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Clipboard.setData(
-                                  ClipboardData(text: tableToCSV(t)),
-                                );
-                                Navigator.pop(ctx);
-                                _toast(context, L10n.of(context).copiedCsv);
-                              },
-                              child: const Text('CSV'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Clipboard.setData(
-                                  ClipboardData(text: tableToMarkdown(t)),
-                                );
-                                Navigator.pop(ctx);
-                                _toast(
-                                  context,
-                                  L10n.of(context).copiedMarkdown,
-                                );
-                              },
-                              child: const Text('Markdown'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
-        ),
       ),
     );
   }
@@ -12373,21 +12348,22 @@ Stack(
                                                               ).copiedSpreadsheet,
                                                             );
                                                           },
-                                                          onEdit: () =>
-                                                              _showTableEdit(
-                                                                start:
-                                                                    _cardBlocks[ci]
-                                                                        .start,
-                                                                end:
-                                                                    _cardBlocks[ci]
-                                                                        .end,
-                                                                grid:
-                                                                    _cardBlocks[ci]
-                                                                        .grid!,
-                                                                mode:
-                                                                    _cardBlocks[ci]
-                                                                        .mode,
-                                                              ),
+                                                          onEdit: () {
+                                                            final sp =
+                                                                _tableSpots();
+                                                            final at = sp.indexWhere(
+                                                              (x) =>
+                                                                  x.$1 ==
+                                                                  _cardBlocks[ci]
+                                                                      .start,
+                                                            );
+                                                            if (at >= 0) {
+                                                              _showTableStyle(
+                                                                sp,
+                                                                at,
+                                                              );
+                                                            }
+                                                          },
                                                         ),
                                                       ),
                                                 ],

@@ -444,7 +444,9 @@ class L10nFr extends L10n {
   @override
   String get wideTableFit => 'Adapter à la largeur';
   @override
-  String get tableEditTitle => 'Plus de styles de tableau';
+  String get tableEditTitle => 'Choisir le style du tableau';
+  @override
+  String get tableStyleHint => 'Choisissez selon la largeur d’écran, smartphone ou PC. Vous pourrez changer de style plus tard.';
   @override
   String get tableModeScroll => 'Défiler latéralement';
   @override
@@ -456,7 +458,7 @@ class L10nFr extends L10n {
   @override
   String get tableModeImage => 'Image';
   @override
-  String get tableApply => 'Appliquer à ce tableau';
+  String get tableApply => 'Appliquer';
   @override
   String get tableShareImage => 'Partager en image';
   @override

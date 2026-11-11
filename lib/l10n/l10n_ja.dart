@@ -427,7 +427,9 @@ class L10nJa extends L10n {
   @override
   String get wideTableFit => '画面幅に合わせる';
   @override
-  String get tableEditTitle => 'その他の表スタイル';
+  String get tableEditTitle => '表スタイルを選択';
+  @override
+  String get tableStyleHint => 'スマートフォンやPCなど、画面の幅を考えて選んでください。あとからスタイルを変更できます。';
   @override
   String get tableModeScroll => '横にスクロール';
   @override
@@ -439,7 +441,7 @@ class L10nJa extends L10n {
   @override
   String get tableModeImage => '画像';
   @override
-  String get tableApply => 'この表に適用';
+  String get tableApply => '適用';
   @override
   String get tableShareImage => '画像で共有';
   @override

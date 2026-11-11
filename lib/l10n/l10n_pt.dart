@@ -440,7 +440,9 @@ class L10nPt extends L10n {
   @override
   String get wideTableFit => 'Ajustar à largura';
   @override
-  String get tableEditTitle => 'Mais estilos de tabela';
+  String get tableEditTitle => 'Escolher estilo da tabela';
+  @override
+  String get tableStyleHint => 'Escolha conforme a largura da tela, celular ou PC. Você pode mudar o estilo depois.';
   @override
   String get tableModeScroll => 'Rolar na horizontal';
   @override
@@ -452,7 +454,7 @@ class L10nPt extends L10n {
   @override
   String get tableModeImage => 'Imagem';
   @override
-  String get tableApply => 'Aplicar a esta tabela';
+  String get tableApply => 'Aplicar';
   @override
   String get tableShareImage => 'Compartilhar como imagem';
   @override

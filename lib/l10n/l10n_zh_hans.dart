@@ -426,7 +426,9 @@ class L10nZhHans extends L10n {
   @override
   String get wideTableFit => '适应屏幕宽度';
   @override
-  String get tableEditTitle => '更多表格样式';
+  String get tableEditTitle => '选择表格样式';
+  @override
+  String get tableStyleHint => '请根据手机、电脑等屏幕宽度选择。之后也可以更改样式。';
   @override
   String get tableModeScroll => '横向滚动';
   @override
@@ -438,7 +440,7 @@ class L10nZhHans extends L10n {
   @override
   String get tableModeImage => '图片';
   @override
-  String get tableApply => '应用到此表格';
+  String get tableApply => '应用';
   @override
   String get tableShareImage => '以图片分享';
   @override

@@ -258,6 +258,9 @@ abstract class L10n {
   /// 표 편집(2026-11-11) — 이 표 하나만 다른 모양으로.
   String get wideTableFit;
   String get tableEditTitle;
+
+  /// 표 스타일 선택 창의 안내(2026-11-12).
+  String get tableStyleHint;
   String get tableModeScroll;
   String get tableModeFit;
   String get tableModeAligned;
@@ -1087,6 +1090,7 @@ abstract class L10n {
     'wideTableScroll': wideTableScroll,
     'wideTableFit': wideTableFit,
     'tableEditTitle': tableEditTitle,
+    'tableStyleHint': tableStyleHint,
     'tableModeScroll': tableModeScroll,
     'tableModeFit': tableModeFit,
     'tableModeAligned': tableModeAligned,

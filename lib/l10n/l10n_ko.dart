@@ -427,7 +427,9 @@ class L10nKo extends L10n {
   @override
   String get wideTableFit => '화면 폭에 맞추기';
   @override
-  String get tableEditTitle => '더 많은 표 스타일';
+  String get tableEditTitle => '표 스타일 선택';
+  @override
+  String get tableStyleHint => '스마트폰, PC 등 화면 너비를 고려하여 선택하세요. 이후에 스타일 변경이 가능합니다.';
   @override
   String get tableModeScroll => '가로로 밀기';
   @override
@@ -439,7 +441,7 @@ class L10nKo extends L10n {
   @override
   String get tableModeImage => '이미지';
   @override
-  String get tableApply => '이 표에 적용';
+  String get tableApply => '적용';
   @override
   String get tableShareImage => '이미지로 공유';
   @override

@@ -440,7 +440,9 @@ class L10nEs extends L10n {
   @override
   String get wideTableFit => 'Ajustar al ancho';
   @override
-  String get tableEditTitle => 'Más estilos de tabla';
+  String get tableEditTitle => 'Elegir estilo de tabla';
+  @override
+  String get tableStyleHint => 'Elige según el ancho de pantalla, móvil o PC. Puedes cambiar el estilo después.';
   @override
   String get tableModeScroll => 'Desplazar en horizontal';
   @override
@@ -452,7 +454,7 @@ class L10nEs extends L10n {
   @override
   String get tableModeImage => 'Imagen';
   @override
-  String get tableApply => 'Aplicar a esta tabla';
+  String get tableApply => 'Aplicar';
   @override
   String get tableShareImage => 'Compartir como imagen';
   @override
