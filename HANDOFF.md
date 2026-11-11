@@ -1,6 +1,6 @@
 # HANDOFF — Skyblue Note (simpletext_app)
 
-최종 갱신: **2026-11-09 17:57 KST** (아이폰·맥을 새 애플 계정의 Skyblue Note Pro 로 옮기는 작업 시작 — 0-5절. 나머지 절은 09-12~10-28 기준)
+최종 갱신: **2026-11-11 18:55 KST** (0-6절: 노트 파일 저장·Pro 아이콘·카드식 메뉴·표 카드. 0-5절: Pro 이전. 나머지 절은 09-12~10-28 기준)
 이 문서는 누적 기록이 아니라 **현재 상태 한 장**이다. 다음 담당자는 이 문서 하나만 읽고 바로 이어서 작업할 수 있어야 한다.
 갱신할 때는 밑에 덧붙이지 말고 **통째로 덮어쓴다.**
 
@@ -189,6 +189,31 @@ export OPS_RUNNER="1번-스카이블루"
 > **다섯 번 넘게 주고받을 일이면 새 대화가 이득이고, 한 마디로 끝날 일이면 그냥 이어서 하는 게 낫다.**
 
 ---
+
+## 0-6. 2026-11-11 하루 작업 (4.0.1, 빌드 257~265 — 소유자 아이폰에 개발판, 스토어 미제출)
+
+**심사 중인 4.0(256)은 내보내지 말 것.** 아래 1번(노트 저장) 고침이 없다. 승인이 나도 4.0.1 을
+새로 심사에 올려 그걸로 출시하는 것이 소유자에게 권한 안이다.
+
+1. **노트는 이제 파일(notes.v3.json, Application Support)에 저장한다.** 노트 600개·16.3MB 를
+   SharedPreferences(NSUserDefaults)에 넣다가, 받기 직후 다른 앱으로 넘어가면 노트와 동기화 기록이
+   함께 사라졌다(4MB 넘으면 direct mode). `lib/note_file.dart`(옆 이름에 쓰고 이름 바꾸기),
+   `lib/core/note_store_codec.dart`(순수 규칙·시험). 옛 서랍은 첫 실행 때 옮기고 다시 읽어 수가 맞을 때만
+   지운다. 노트 하나가 깨져도 전체를 환영 노트로 갈지 않는다(unreadable 로 들고 있다). 원복 `before-note-file`.
+2. 붙여넣기 안내(pasteTipDone)는 동기화에서 뺐다 — 앱마다 따로인 iOS 스위치라 옛 앱 값이 Pro 를 막았다.
+3. Pro 아이콘: 애플 기기만 `assets/icon/app_icon_pro.png`(생성기 `tool/app_icon_pro_gen.py`).
+   확정은 v4 + PRO 30% 키움(`before-pro-big` 이전으로 되돌릴 수 있다).
+4. `tool/deploy.sh` 아이폰 대상 = 소유자 "Z iPhone17"(00008150-001C690C26F3C01C). 옛 iPhone 16 번호였다.
+5. 편집 메뉴를 카드식으로(정리 4칸·넣기/내보내기 8칸·이 노트 줄·설정 줄·삭제), 제목 옆 아이콘은
+   밑줄 연필(border_color). 강조색 밝은 #0A5CF5 / 어두운 #6AA8FF.
+6. **표 카드.** 본문에 ```table(가로로 밀기) / ```table fit(화면 폭) / ```table image(그림) 울타리로
+   마크다운 표를 둔다. 울타리 안은 정리 엔진이 안 건드린다. 편집칸은 그 자리를 카드 키만큼 비우고
+   (mono_controller cardSlots) 화면이 그 위에 TableCard 를 얹는다(lib/table_card.dart,
+   core/table_blocks.dart, 편집 화면 _syncCardTops). **함정: TextField 는 기본으로 줄 키를 못 박는다
+   (forceStrutHeight) — strutStyle: StrutStyle.disabled 를 지우면 카드가 글 위에 얹힌다.** 시험
+   test/table_card_slot_layout_test.dart 가 지킨다. 표 메뉴의 표마다 '표 편집'(이 표만 모양 바꾸기).
+   정리 설정 '넓은 표'에 '가로로 밀어 보기'·'화면 폭에 맞추기' 추가.
+   남은 일: 실기기 화면 확인(소유자), 표 칸 글자 고치기, PDF 강조색.
 
 ## 0-5. 아이폰·아이패드·맥은 새 애플 계정의 **Skyblue Note Pro** 다 (2026-11-09 시작)
 
