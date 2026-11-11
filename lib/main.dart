@@ -9779,9 +9779,36 @@ class _EditorScreenState extends State<EditorScreen>
                           ),
                         ),
                         const SizedBox(height: 4),
+                        // 2026-11-12 소유자 질문 — "아래 3개는 표 스타일을 바꾸는 게
+                        // 아니라 복사하기 용도인가?" 맞다. 그런데 그걸 물어야 알았다면
+                        // 화면이 말을 안 한 것이다. 줄 앞에 '복사'를 붙이고 단추마다
+                        // 복사 그림을 단다 — 위의 '더 많은 표 스타일'(바꾸기)과 이
+                        // 줄(밖으로 가져가기)이 다른 일이라는 것이 한눈에 보이게.
                         Wrap(
-                          spacing: 8,
+                          spacing: 2,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4, right: 4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.doc_on_doc,
+                                    size: 15,
+                                    color: context.c.sub,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    L10n.of(ctx).copyAction,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: context.c.sub,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                             TextButton(
                               onPressed: () {
                                 Clipboard.setData(
