@@ -258,6 +258,7 @@ abstract class L10n {
   /// 표 편집(2026-11-11) — 이 표 하나만 다른 모양으로.
   String get wideTableFit;
   String get tableEditTitle;
+  String tablePage(int i, int n);
 
   /// 표 스타일 선택 창의 안내(2026-11-12).
   String get tableStyleHint;

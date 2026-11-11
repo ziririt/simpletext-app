@@ -1804,4 +1804,8 @@ class L10nPt extends L10n {
   String get migrateBtnDrive => 'Conectar o Google Drive';
   @override
   String get migrateRow => 'Passar do antigo Skyblue Note';
+
+  // 2026-11-12 표 스타일 시트의 표 넘기기
+  @override
+  String tablePage(int i, int n) => 'Tabela $i de $n';
 }

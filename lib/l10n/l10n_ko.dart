@@ -1732,4 +1732,8 @@ class L10nKo extends L10n {
   String get migrateBtnDrive => '구글 드라이브 연결';
   @override
   String get migrateRow => '옛 Skyblue Note 에서 옮겨 오기';
+
+  // 2026-11-12 표 스타일 시트의 표 넘기기
+  @override
+  String tablePage(int i, int n) => '표 $i / $n';
 }

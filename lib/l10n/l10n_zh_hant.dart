@@ -1704,4 +1704,8 @@ class L10nZhHant extends L10n {
   String get migrateBtnDrive => '連結 Google 雲端硬碟';
   @override
   String get migrateRow => '從舊版 Skyblue Note 搬移';
+
+  // 2026-11-12 표 스타일 시트의 표 넘기기
+  @override
+  String tablePage(int i, int n) => '表格 $i / $n';
 }

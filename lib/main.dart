@@ -10024,35 +10024,80 @@ class _EditorScreenState extends State<EditorScreen>
                         ),
                       ),
                       // 표가 여럿이면 여기서 넘긴다.
-                      if (spots.length > 1) ...[
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
-                          onPressed: idx > 0
-                              ? () => setSheet(() {
-                                  idx--;
-                                  mode = spots[idx].$4;
-                                })
-                              : null,
-                          icon: const Icon(CupertinoIcons.chevron_left, size: 18),
-                        ),
-                        Text(
-                          '${idx + 1} / ${spots.length}',
-                          style: TextStyle(fontSize: 13, color: ctx.c.sub),
-                        ),
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
-                          onPressed: idx < spots.length - 1
-                              ? () => setSheet(() {
-                                  idx++;
-                                  mode = spots[idx].$4;
-                                })
-                              : null,
-                          icon: const Icon(
-                            CupertinoIcons.chevron_right,
-                            size: 18,
+                      // 2026-11-12 소유자: "표 여러 개일 때 이 부분을 더 강조해서
+                      // 가시성 높여줘." 회색 숫자 둘이 제목 옆에 묻혀 있었다.
+                      // 강조색 알약 안에 '표 1 / 6' 과 큰 화살표를 넣는다.
+                      if (spots.length > 1)
+                        Container(
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: ctx.c.accent.withValues(alpha: 0.13),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: ctx.c.accent.withValues(alpha: 0.45),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
+                                color: ctx.c.accent,
+                                disabledColor: ctx.c.accent.withValues(
+                                  alpha: 0.3,
+                                ),
+                                onPressed: idx > 0
+                                    ? () => setSheet(() {
+                                        idx--;
+                                        mode = spots[idx].$4;
+                                      })
+                                    : null,
+                                icon: const Icon(
+                                  CupertinoIcons.chevron_left,
+                                  size: 19,
+                                ),
+                              ),
+                              Text(
+                                l.tablePage(idx + 1, spots.length),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: ctx.c.accent,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
+                                color: ctx.c.accent,
+                                disabledColor: ctx.c.accent.withValues(
+                                  alpha: 0.3,
+                                ),
+                                onPressed: idx < spots.length - 1
+                                    ? () => setSheet(() {
+                                        idx++;
+                                        mode = spots[idx].$4;
+                                      })
+                                    : null,
+                                icon: const Icon(
+                                  CupertinoIcons.chevron_right,
+                                  size: 19,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
                     ],
                   ),
                   const SizedBox(height: 2),
