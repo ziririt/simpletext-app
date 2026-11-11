@@ -68,4 +68,9 @@ void main() {
     expect(text.substring(spots[0].start, spots[0].end), t1);
     expect(spots[0].grid.rows.single, ['입력', '2']);
   });
+
+  test('image 이름표는 그림 표다', () {
+    const text = '```table image\n| a | b |\n| - | - |\n| 1 | 2 |\n```';
+    expect(findScrollTables(text).single.mode, 'image');
+  });
 }

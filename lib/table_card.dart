@@ -24,15 +24,28 @@ const double kFitGap = 12; // 화면 폭 표는 칸 사이를 조금 좁힌다
 class TableCardLayout {
   final List<double> colWidths;
   final List<double> rowHeights; // 0번이 머리줄
-  const TableCardLayout(this.colWidths, this.rowHeights, {this.fit = false});
+  const TableCardLayout(
+    this.colWidths,
+    this.rowHeights, {
+    this.fit = false,
+    this.scale = 1.0,
+    this.image = false,
+  });
   final bool fit;
+
+  /// 그림 표(image): 제 폭으로 그린 것을 이만큼 줄여 놓는다.
+  final double scale;
+  final bool image;
+
+  double get gridW =>
+      colWidths.fold<double>(0, (a, b) => a + b) + gap * (colWidths.length - 1);
+  double get gridH => rowHeights.fold<double>(0, (a, b) => a + b);
 
   double get gap => fit ? kFitGap : kCellGap;
 
-  double get height =>
-      rowHeights.fold<double>(0, (a, b) => a + b) +
-      (fit ? 0 : kScrollBarSpace) +
-      kCardVPad * 2;
+  double get height => image
+      ? (gridH * scale).ceilToDouble() + kCardVPad * 2
+      : gridH + (fit ? 0 : kScrollBarSpace) + kCardVPad * 2;
 }
 
 TextStyle tableCellStyle(double fontSize, {bool head = false, String? family}) =>
@@ -54,7 +67,28 @@ TableCardLayout measureTableCard(
   String? family,
   bool fit = false,
   bool fill = true,
+  bool image = false,
 }) {
+  if (image) {
+    // 제 폭으로 재고(채우지 않는다) 화면 폭에 맞게 줄인다. 키울 일은 없다.
+    final nat = measureTableCard(
+      t,
+      fontSize: fontSize,
+      maxWidth: 0,
+      scaler: scaler,
+      family: family,
+      fill: false,
+    );
+    final n = TableCardLayout(nat.colWidths, nat.rowHeights, fit: true);
+    final sc = n.gridW <= 0 ? 1.0 : math.min(1.0, maxWidth / n.gridW);
+    return TableCardLayout(
+      nat.colWidths,
+      nat.rowHeights,
+      fit: true,
+      scale: sc,
+      image: true,
+    );
+  }
   final cols = t.header.length;
   final all = [t.header, ...t.rows];
   double w(String s, TextStyle st) {
@@ -236,7 +270,23 @@ class _TableCardState extends State<TableCard> {
   @override
   Widget build(BuildContext context) {
     final l = widget.layout;
-    final body = l.fit
+    final body = l.image
+        ? Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: l.gridW * l.scale,
+              height: l.gridH * l.scale,
+              child: FittedBox(
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: l.gridW,
+                  height: l.gridH,
+                  child: _grid(),
+                ),
+              ),
+            ),
+          )
+        : l.fit
         ? _grid()
         : Scrollbar(
             controller: _sc,

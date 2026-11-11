@@ -9,7 +9,7 @@ import 'dart:convert';
 import 'dart:io' show File;
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
-import 'dart:ui' as ui show ImageByteFormat;
+import 'dart:ui' as ui show ImageByteFormat, BoxHeightStyle;
 
 import 'package:flutter/cupertino.dart'
     show CupertinoAlertDialog, CupertinoDialogAction, CupertinoIcons;
@@ -7080,6 +7080,9 @@ class _EditorScreenState extends State<EditorScreen>
   List<CardSlot> _cardSlotList = const [];
   final Map<int, double> _cardTops = {};
 
+  /// 접은 줄들이 그래도 차지하는 키(카드 순번별). 비워 둘 줄에서 뺀다.
+  final Map<int, double> _cardExtra = {};
+
   List<CardSlot> _cardSlotsFor(String text) {
     if (_cardW <= 0 || !text.contains('```$kScrollTableFence')) {
       _cardKey = null;
@@ -7106,6 +7109,7 @@ class _EditorScreenState extends State<EditorScreen>
           scaler: _cardScaler,
           family: _cardFamily,
           fit: b.mode == 'fit',
+          image: b.mode == 'image',
         ),
     ];
     _cardSlotList = [
@@ -7116,7 +7120,10 @@ class _EditorScreenState extends State<EditorScreen>
           blocks[i].end < text.length && text[blocks[i].end] == '\n'
               ? blocks[i].end + 1
               : blocks[i].end,
-          _cardLayouts[i].height,
+          (_cardLayouts[i].height - (_cardExtra[i] ?? 0)).clamp(
+            1.0,
+            double.infinity,
+          ),
         ),
     ];
     return _cardSlotList;
@@ -7139,19 +7146,61 @@ class _EditorScreenState extends State<EditorScreen>
     final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
     if (ed == null || !ed.attached) return;
     final next = <int, double>{};
+    var extraChanged = false;
     for (var i = 0; i < _cardBlocks.length; i++) {
       final b = _cardBlocks[i];
-      final h = _cardLayouts[i].height;
-      final boxes = ed.getBoxesForSelection(
+      // 카드 자리 = 비워 둔 키 큰 줄 그 자체. 줄 전체 높이 상자(max)로 묻는다.
+      //
+      // 2026-11-11 두 번 헛짚었다. 첫 판은 글자 상자 가운데를 줄 가운데로
+      // 여겼고, 둘째 판은 윗줄 끝에서 셈했다. 정작 원인은 따로 있었다 —
+      // 편집칸이 줄 높이를 한 값으로 못 박고 있어서(EditableText 의 기본
+      // forceStrutHeight) **키 큰 줄이 아예 생기지 않았다.** 그래서 카드는
+      // 빈자리 없이 글 위에 얹혔다(소유자 캡처). 못 박기를 풀고(TextField 의
+      // strutStyle), 시험으로 줄 상자를 재어 확인했다: 높이 H 를 주면 줄이
+      // 정확히 H 다.
+      final old = ed.selectionHeightStyle;
+      ed.selectionHeightStyle = ui.BoxHeightStyle.max;
+      final line = ed.getBoxesForSelection(
         TextSelection(baseOffset: b.start, extentOffset: b.firstLineEnd),
       );
-      if (boxes.isEmpty) continue;
-      // 글자를 줄 한가운데 두었으니(even) 글자 상자의 가운데가 곧 줄의 가운데다.
-      final mid = (boxes.first.top + boxes.first.bottom) / 2;
-      final g = ed.localToGlobal(Offset(0, mid - h / 2));
+      // 접은 줄들이 그래도 조금씩 키를 갖는다. 다음 글줄의 윗변까지 재서
+      // 그 몫만큼 비워 둔 줄을 줄인다(_cardExtra). 한두 판이면 맞아떨어진다.
+      final txt = bodyCtl.text;
+      var k = b.end;
+      while (k < txt.length && txt[k] == '\n') {
+        k++;
+      }
+      final nextBox = k < txt.length
+          ? ed.getBoxesForSelection(
+              TextSelection(baseOffset: k, extentOffset: k + 1),
+            )
+          : const <TextBox>[];
+      ed.selectionHeightStyle = old;
+      if (line.isEmpty) continue;
+      final topLocal = line.first.top;
+      if (nextBox.isNotEmpty && i < _cardSlotList.length) {
+        final blanks = k - b.end - 1; // 닫는 울타리 뒤 빈 줄(제 키대로 둔다)
+        final lineH = _cardFont * bodyCtl.lineHeight;
+        final gapK = bodyCtl.paraGap > kParaGapMin ? bodyCtl.paraGap : 1.0;
+        final hidden =
+            nextBox.first.top -
+            (topLocal + _cardSlotList[i].height) -
+            (blanks > 0 ? blanks * lineH * gapK : 0);
+        // 다음 글줄까지 = 비워 둔 줄 + 접은 줄들 + 빈 줄. 접은 줄들의 키가
+        // 곧 hidden 이고, 비워 둘 줄은 카드 키에서 그만큼 뺀다.
+        final want = hidden < 0 ? 0.0 : hidden;
+        if (((_cardExtra[i] ?? 0) - want).abs() > 0.5) {
+          extraChanged = true;
+          _cardExtra[i] = want;
+        }
+      }
+      final g = ed.localToGlobal(Offset(0, topLocal));
       next[b.start] = stack.globalToLocal(g).dy;
     }
-    var changed = next.length != _cardTops.length;
+    if (extraChanged) {
+      _cardKey = null; // 자리 높이를 다시 셈하게
+    }
+    var changed = extraChanged || next.length != _cardTops.length;
     for (final e in next.entries) {
       final was = _cardTops[e.key];
       if (was == null || (was - e.value).abs() > 0.5) changed = true;
@@ -9448,6 +9497,7 @@ class _EditorScreenState extends State<EditorScreen>
     // 창을 여는 순간의 그 글자. 적용할 때 이것과 같아야 갈아 끼운다.
     final orig = bodyCtl.text.substring(start, end);
     final shotKey = GlobalKey();
+    var shotScale = 1.0;
     final scaler = MediaQuery.textScalerOf(context);
     await showModalBottomSheet<void>(
       context: context,
@@ -9479,34 +9529,27 @@ class _EditorScreenState extends State<EditorScreen>
                   line: ctx.c.line,
                 );
               case 'image':
-                // 그림은 칸을 잘리지 않게 제 폭 그대로 그린다. 넓으면 옆으로 민다.
+                // 그림 표: 제 폭으로 그려 화면 폭에 맞게 줄인 모양 그대로.
                 final lay = measureTableCard(
                   grid,
                   fontSize: fs,
-                  maxWidth: 0,
+                  maxWidth: w,
                   scaler: scaler,
                   family: _cardFamily,
-                  fill: false,
+                  image: true,
                 );
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: RepaintBoundary(
-                    key: shotKey,
-                    child: Container(
-                      color: ctx.c.panel,
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                      child: TableCard(
-                        grid: grid,
-                        layout: TableCardLayout(
-                          lay.colWidths,
-                          lay.rowHeights,
-                          fit: true,
-                        ),
-                        fontSize: fs,
-                        family: _cardFamily,
-                        ink: ink,
-                        line: ctx.c.line,
-                      ),
+                shotScale = lay.scale;
+                return RepaintBoundary(
+                  key: shotKey,
+                  child: Container(
+                    color: ctx.c.panel,
+                    child: TableCard(
+                      grid: grid,
+                      layout: lay,
+                      fontSize: fs,
+                      family: _cardFamily,
+                      ink: ink,
+                      line: ctx.c.line,
                     ),
                   ),
                 );
@@ -9542,6 +9585,8 @@ class _EditorScreenState extends State<EditorScreen>
             switch (mode) {
               case 'fit':
                 out = tableToFitBlock(grid);
+              case 'image':
+                out = tableToImageBlock(grid);
               case 'aligned':
                 out = tableToAligned(grid);
               case 'records':
@@ -9566,8 +9611,9 @@ class _EditorScreenState extends State<EditorScreen>
                 shotKey.currentContext?.findRenderObject()
                     as RenderRepaintBoundary?;
             if (ro == null) return;
+            // 화면에는 줄여 놓았으니 그만큼 더 촘촘히 찍어야 글자가 선명하다.
             final img = await ro.toImage(
-              pixelRatio: MediaQuery.devicePixelRatioOf(ctx).clamp(2.0, 3.0),
+              pixelRatio: (3.0 / shotScale).clamp(2.0, 8.0),
             );
             final bd = await img.toByteData(format: ui.ImageByteFormat.png);
             if (bd == null) return;
@@ -9623,10 +9669,12 @@ class _EditorScreenState extends State<EditorScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // 2026-11-11 소유자 지적 — "이미지로 할 때 하단 버튼은 왜 '이미지
+                  // 공유'지? 이미지 형태로 적용돼야." 맞다. 적용이 주인공이고
+                  // 공유는 곁가지다.
+                  FilledButton(onPressed: apply, child: Text(l.tableApply)),
                   if (mode == 'image')
-                    FilledButton(onPressed: share, child: Text(l.tableShareImage))
-                  else
-                    FilledButton(onPressed: apply, child: Text(l.tableApply)),
+                    TextButton(onPressed: share, child: Text(l.tableShareImage)),
                 ],
               ),
             ),
@@ -9708,21 +9756,32 @@ class _EditorScreenState extends State<EditorScreen>
                           ),
                         ),
                         const SizedBox(height: 6),
+                        // 2026-11-11 소유자 지시 — 표 편집은 복사 셋과 다른 줄,
+                        // 다른 무게로. 하나는 이 표를 바꾸는 일이고 셋은 밖으로
+                        // 가져가는 일이다.
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _showTableEdit(
+                                start: spots[i].$1,
+                                end: spots[i].$2,
+                                grid: spots[i].$3,
+                                mode: spots[i].$4,
+                              );
+                            },
+                            icon: const Icon(
+                              CupertinoIcons.slider_horizontal_3,
+                              size: 18,
+                            ),
+                            label: Text(L10n.of(ctx).tableEditTitle),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         Wrap(
                           spacing: 8,
                           children: [
-                            FilledButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                _showTableEdit(
-                                  start: spots[i].$1,
-                                  end: spots[i].$2,
-                                  grid: spots[i].$3,
-                                  mode: spots[i].$4,
-                                );
-                              },
-                              child: Text(L10n.of(ctx).tableEditTitle),
-                            ),
                             TextButton(
                               onPressed: () {
                                 Clipboard.setData(
@@ -12060,6 +12119,15 @@ Stack(
                                                   // expands를 뗐다. 이제 이 칸은 글 길이만큼 늘어나고,
                                                   // 굴리는 일은 바깥이 맡는다.
                                                   maxLines: null,
+                                                  // 줄 높이를 한 값으로 못 박지 않는다(2026-11-11).
+                                                  // 플러터 편집칸은 기본으로 모든 줄을 같은 키로
+                                                  // 누른다. 그러면 표 카드 자리(키 큰 줄)도, 접은
+                                                  // 줄도, 문단 간격(paraGap)도 안 먹는다. 글자
+                                                  // 조각마다 키를 이미 맞춰 두었으니(제목·등폭이
+                                                  // 같은 줄 상자를 쓰게) 못 박기가 없어도 줄은
+                                                  // 고르다 — mono_controller.dart 머리말.
+                                                  strutStyle:
+                                                      StrutStyle.disabled,
                                                   // 선택 돋보기는 TextField가 기본으로 켜 준다(따로 지정할 필요 없음).
                                                   // 2026-08-14에 명시적으로 넣으려다 이름을 틀려 빌드가 깨졌고,
                                                   // 확인해 보니 어차피 기본값이었다. 즉 선택 조작감 문제의 원인은

@@ -22,7 +22,8 @@ class ScrollTableBlock {
   /// 그대로 보여 준다. 망가진 표를 빈 카드로 덮으면 고칠 길이 없어진다.
   final TableGrid? grid;
 
-  /// 'scroll'(가로로 민다) | 'fit'(화면 폭에 맞추고 세로로 길어진다).
+  /// 'scroll'(가로로 민다) | 'fit'(화면 폭에 맞추고 세로로 길어진다)
+  /// | 'image'(제 폭으로 그려 화면 폭에 맞게 줄인 그림).
   final String mode;
 
   const ScrollTableBlock({
@@ -35,7 +36,13 @@ class ScrollTableBlock {
 }
 
 final RegExp _open = RegExp(
-  r'^\s*```\s*' + kScrollTableFence + r'(?:\s+(' + kFitTableMode + r'))?\s*$',
+  r'^\s*```\s*' +
+      kScrollTableFence +
+      r'(?:\s+(' +
+      kFitTableMode +
+      '|' +
+      kImageTableMode +
+      r'))?\s*$',
 );
 final RegExp _close = RegExp(r'^\s*```\s*$');
 
@@ -56,7 +63,7 @@ List<ScrollTableBlock> findScrollTables(String text) {
       if (om != null) {
         openStart = pos;
         openEnd = nl;
-        openMode = om.group(1) == kFitTableMode ? 'fit' : 'scroll';
+        openMode = om.group(1) ?? 'scroll';
       } else if (RegExp(r'^\s*```').hasMatch(line)) {
         // 다른 코드 울타리 안의 '```table' 은 글자일 뿐이다.
         inOtherFence = !inOtherFence;

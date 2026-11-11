@@ -1003,6 +1003,14 @@ const String kFitTableMode = 'fit';
 String tableToFitBlock(TableGrid t) =>
     '```$kScrollTableFence $kFitTableMode\n${tableToMarkdown(t)}\n```';
 
+/// 그림처럼 놓는 표(2026-11-11 소유자 지시 — "이미지 형태로 적용돼야").
+/// 칸을 자르지 않고 표 전체를 제 폭으로 그린 뒤 화면 폭에 맞게 줄여 놓는다.
+/// 글은 그대로 남아 있어 언제든 다른 모양으로 되돌릴 수 있다.
+const String kImageTableMode = 'image';
+
+String tableToImageBlock(TableGrid t) =>
+    '```$kScrollTableFence $kImageTableMode\n${tableToMarkdown(t)}\n```';
+
 String _flat(String c) => c.replaceAll(RegExp(r'[\t\n\r]+'), ' ');
 
 /// 표시폭: 한글·CJK·전각·이모지는 2칸, 그 외는 1칸.
