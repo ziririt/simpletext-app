@@ -257,7 +257,10 @@ SystemUiOverlayStyle systemBars(Brightness b) {
   );
 }
 
-const _accent = Color(0xFF0070BE);
+// 2026-11-11 소유자 지시 — "좀 더 세련되고 또렷하고 선명한 블루." 옛
+// #0070BE 는 청록이 섞여 흐릿했다. #0A5CF5 는 순한 파랑 쪽으로 채도를
+// 올린 값이고, 흰 바탕 대비도 5.17 → 5.44:1 로 오히려 올랐다.
+const _accent = Color(0xFF0A5CF5);
 
 /// 하늘색 위에 얹는 글자·아이콘 색(다크). 브랜드 '딥'이다.
 ///
@@ -280,7 +283,7 @@ const _onAccentDark = Color(0xFF08205A);
 /// 쪽이다. 한쪽에서 배운 것을 다른 쪽에 안 옮기면 배운 게 아니다.
 ///
 /// 그래서 **채우는 색과 글자로 쓰는 색을 가른다.**
-///   _accent(#0070BE)  밝은 바탕 위의 글자·아이콘. 진해야 읽힌다.
+///   _accent(#0A5CF5)  밝은 바탕 위의 글자·아이콘. 진해야 읽힌다.
 ///   kAccentFill       채운 단추의 바탕. 밝아야 산뜻하다.
 /// 하나로 쓰려니 한쪽이 반드시 손해를 봤다. 두 자리의 요구가 반대다.
 ///
@@ -602,7 +605,10 @@ class AppC extends ThemeExtension<AppC> {
     // 찌른다(소유자: 밤에 눈부시지 않게). 다만 옛 #6FC4F4는 채도가
     // 모자라 흐릿했다. #4FC3F7은 같은 밝기에 채도만 올린 값이라 밤에
     // 눈부시지 않으면서 훨씬 맑다.  on #15191D 8.8:1, on 검정 10.5:1
-    accent: Color(0xFF4FC3F7),
+    // 2026-11-11 — 밝은 쪽을 또렷한 파랑(#0A5CF5)으로 바꾸면서 어두운 쪽도
+    // 같은 파랑을 밝힌 톤으로 맞췄다. 두 모드가 다른 색으로 말하면 안 된다.
+    // #6AA8FF on #15191D 7.3:1 — 밤에 눈부시지 않을 만큼만 밝다.
+    accent: Color(0xFF6AA8FF),
     field: Color(0xFF15191D),
     toolbar: Color(0xFF15191D),
     toolbarLine: Color(0xFF2E3740),
@@ -617,7 +623,7 @@ class AppC extends ThemeExtension<AppC> {
     // 선택 블럭 #3FB2F0 48%+검정 = #1E5573 → 흰 글자 8.1:1
     // 손잡이는 기존 검증값 유지(#4FC3F7 on 검정 10.5:1)
     selBg: Color(0x7A3FB2F0),
-    selHandle: Color(0xFF4FC3F7),
+    selHandle: Color(0xFF6AA8FF),
     glass: Color(0x3315191D),
     glassLine: Color(0x26FFFFFF),
     tagBg: Color(0xFF10344F),
@@ -11065,10 +11071,10 @@ class _EditorScreenState extends State<EditorScreen>
                                   lm.menuCompareShort,
                                 ),
                                 tile(
-                                  'wizard',
-                                  CupertinoIcons.sparkles,
-                                  lm.wizardAction,
-                                  tint: ctx.c.accent,
+                                  'history',
+                                  CupertinoIcons.clock,
+                                  lm.historyTitle,
+                                  on: _canTravel,
                                 ),
                               ]),
                             ]),
@@ -11090,10 +11096,10 @@ class _EditorScreenState extends State<EditorScreen>
                                   lm.menuAppendShort,
                                 ),
                                 tile(
-                                  'history',
-                                  CupertinoIcons.clock,
-                                  lm.historyTitle,
-                                  on: _canTravel,
+                                  'wizard',
+                                  CupertinoIcons.sparkles,
+                                  lm.wizardAction,
+                                  tint: ctx.c.accent,
                                 ),
                               ]),
                               grid([
