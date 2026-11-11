@@ -435,6 +435,10 @@ class L10nKo extends L10n {
   @override
   String get findNext => '다음';
   @override
+  String get replaceAllShort => '모두';
+  @override
+  String get replaceHint => '바꿀 말';
+  @override
   String get tableModeScroll => '가로로 밀기';
   @override
   String get tableModeFit => '화면 폭 맞춤';
@@ -1532,36 +1536,37 @@ class L10nKo extends L10n {
   String get premiumHeadline => '한도 없이, 광고 없이';
 
   @override
-  String get onbTitle1 => '붙여넣으면, 정리됩니다';
+  String get onbWelcome => 'Skyblue Note에\n오신 것을 환영합니다';
 
   @override
-  String get onbBody1 => 'AI 답변을 그대로 붙여넣어 보세요. 별표와 우물 정, 군더더기 인사말이 한 번에 걷힙니다.';
+  String get onbTitle1 => '붙여넣기만 하면 정리';
 
   @override
-  String get onbTitle2 => '깨진 표가 다시 섭니다';
+  String get onbBody1 => 'AI 답변을 붙여넣으면 기호와 인사말은 걷히고 글만 남습니다.';
 
   @override
-  String get onbBody2 => '줄이 어긋난 표를 맞춰 세우고, 표 단추 한 번이면 엑셀·구글 시트에 그대로 붙습니다.';
+  String get onbTitle2 => '표는 표답게';
+
+  @override
+  String get onbBody2 => '어긋난 표를 바로 세우고, 화면에 맞는 스타일로 보여 줍니다.';
 
   @override
   String get onbTitle3 => '모든 기기에서 같은 노트';
 
   @override
-  String get onbBody3 =>
-      '아이폰·아이패드·맥, 그리고 브라우저에서 여는 웹앱까지 같은 노트를 봅니다. 함께 쓰시는 다른 기기도 이어집니다. 한쪽에서 고치면 나머지도 따라옵니다.';
+  String get onbBody3 => 'iCloud나 Google Drive로 동기화해 어디서든 이어서 씁니다.';
 
   @override
-  String get onbTitle4 => '전부 열어 두었습니다';
+  String get onbTitle4 => '모든 기능을 무료로';
 
   @override
-  String onbBody4(int days) =>
-      '$days일 동안 한도 없이 써 보시고, 계속 쓸 만하면 그때 정하시면 됩니다. 지금 결제하실 필요는 없습니다.';
+  String onbBody4(int days) => '$days일 동안 제한 없이 써 보세요. 결제는 그 뒤에 정해도 됩니다.';
 
   @override
   String get onbNext => '다음';
 
   @override
-  String get onbStart => '시작하기';
+  String get onbStart => '계속';
 
   @override
   String get onbSkip => '건너뛰기';

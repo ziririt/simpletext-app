@@ -446,6 +446,10 @@ class L10nEn extends L10n {
   @override
   String get findNext => 'Next';
   @override
+  String get replaceAllShort => 'All';
+  @override
+  String get replaceHint => 'Replace with';
+  @override
   String get tableModeScroll => 'Scroll sideways';
   @override
   String get tableModeFit => 'Fit width';
@@ -1588,38 +1592,37 @@ class L10nEn extends L10n {
   String get premiumHeadline => 'No limits. No ads.';
 
   @override
-  String get onbTitle1 => 'Paste, and it is tidy';
+  String get onbWelcome => 'Welcome to\nSkyblue Note';
 
   @override
-  String get onbBody1 =>
-      'Paste an AI answer as it came. Asterisks, hashes and filler greetings come off in one press.';
+  String get onbTitle1 => 'Paste, and it’s clean';
 
   @override
-  String get onbTitle2 => 'Broken tables stand again';
+  String get onbBody1 => 'Paste an AI answer. Markdown symbols and filler fall away, leaving just the text.';
 
   @override
-  String get onbBody2 =>
-      'Misaligned tables are rebuilt, and one tap copies them straight into Excel or Google Sheets.';
+  String get onbTitle2 => 'Tables that stay tables';
 
   @override
-  String get onbTitle3 => 'The same notes everywhere';
+  String get onbBody2 => 'Broken tables snap back into shape and fit the screen you’re on.';
 
   @override
-  String get onbBody3 =>
-      'iPhone, iPad, Mac and the web app in your browser all show the same notes. Other devices you use alongside them keep up as well. Fix it in one place and the rest follow.';
+  String get onbTitle3 => 'Same notes, every device';
 
   @override
-  String get onbTitle4 => 'Everything is open';
+  String get onbBody3 => 'Sync with iCloud or Google Drive and pick up where you left off.';
 
   @override
-  String onbBody4(int days) =>
-      'Use it without limits for $days days. Decide later, if it turns out to be worth keeping. Nothing to pay now.';
+  String get onbTitle4 => 'Everything, free to try';
+
+  @override
+  String onbBody4(int days) => 'Use every feature for $days days. Decide later.';
 
   @override
   String get onbNext => 'Next';
 
   @override
-  String get onbStart => 'Get started';
+  String get onbStart => 'Continue';
 
   @override
   String get onbSkip => 'Skip';

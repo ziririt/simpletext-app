@@ -450,6 +450,10 @@ class L10nDe extends L10n {
   @override
   String get findNext => 'Weiter';
   @override
+  String get replaceAllShort => 'Alle';
+  @override
+  String get replaceHint => 'Ersetzen durch';
+  @override
   String get tableModeScroll => 'Seitlich scrollen';
   @override
   String get tableModeFit => 'Breite anpassen';
@@ -1599,38 +1603,37 @@ class L10nDe extends L10n {
   String get premiumHeadline => 'Ohne Limit. Ohne Werbung.';
 
   @override
-  String get onbTitle1 => 'Einfügen — und es ist aufgeräumt';
+  String get onbWelcome => 'Willkommen bei\nSkyblue Note';
 
   @override
-  String get onbBody1 =>
-      'Fügen Sie die KI-Antwort so ein, wie sie kam. Sternchen, Rauten und Floskeln verschwinden auf einen Druck.';
+  String get onbTitle1 => 'Einfügen und fertig';
 
   @override
-  String get onbTitle2 => 'Kaputte Tabellen stehen wieder';
+  String get onbBody1 => 'Füge eine KI-Antwort ein. Symbole und Floskeln verschwinden, der Text bleibt.';
 
   @override
-  String get onbBody2 =>
-      'Verrutschte Tabellen werden neu gesetzt, und ein Tippen fügt sie unverändert in Excel oder Google Tabellen ein.';
+  String get onbTitle2 => 'Tabellen bleiben Tabellen';
 
   @override
-  String get onbTitle3 => 'Überall dieselben Notizen';
+  String get onbBody2 => 'Zerbrochene Tabellen richten sich auf und passen sich deinem Bildschirm an.';
 
   @override
-  String get onbBody3 =>
-      'iPhone, iPad, Mac und die Web-App im Browser zeigen dieselben Notizen. Andere Geräte, die Sie parallel nutzen, ziehen ebenfalls mit. Ändern Sie es an einer Stelle, der Rest folgt.';
+  String get onbTitle3 => 'Gleiche Notizen auf jedem Gerät';
 
   @override
-  String get onbTitle4 => 'Alles ist offen';
+  String get onbBody3 => 'Synchronisiere über iCloud oder Google Drive und schreib überall weiter.';
 
   @override
-  String onbBody4(int days) =>
-      'Nutzen Sie es $days Tage lang ohne Limit. Entscheiden Sie später, wenn es sich lohnt. Jetzt ist nichts zu zahlen.';
+  String get onbTitle4 => 'Alles zum Ausprobieren';
+
+  @override
+  String onbBody4(int days) => 'Nutze $days Tage lang alle Funktionen ohne Limit. Entscheiden kannst du später.';
 
   @override
   String get onbNext => 'Weiter';
 
   @override
-  String get onbStart => 'Los geht’s';
+  String get onbStart => 'Weiter';
 
   @override
   String get onbSkip => 'Überspringen';

@@ -265,6 +265,8 @@ abstract class L10n {
   /// 찾기 막대 ‹ › (2026-11-12).
   String get findPrev;
   String get findNext;
+  String get replaceAllShort;
+  String get replaceHint;
   String get tableModeScroll;
   String get tableModeFit;
   String get tableModeAligned;
@@ -897,6 +899,8 @@ abstract class L10n {
   String get premiumPerkNoAds;
   String get premiumGroupPerks;
   String get premiumHeadline;
+  /// 첫 화면 큰 환영 제목(2026-11-12 애플식 한 장 온보딩).
+  String get onbWelcome;
   String get onbTitle1;
   String get onbBody1;
   String get onbTitle2;
@@ -1097,6 +1101,8 @@ abstract class L10n {
     'tableStyleHint': tableStyleHint,
     'findPrev': findPrev,
     'findNext': findNext,
+    'replaceAllShort': replaceAllShort,
+    'replaceHint': replaceHint,
     'tableModeScroll': tableModeScroll,
     'tableModeFit': tableModeFit,
     'tableModeAligned': tableModeAligned,
@@ -1494,6 +1500,7 @@ abstract class L10n {
     'premiumPerkNoAds': premiumPerkNoAds,
     'premiumGroupPerks': premiumGroupPerks,
     'premiumHeadline': premiumHeadline,
+    'onbWelcome': onbWelcome,
     'onbTitle1': onbTitle1,
     'onbBody1': onbBody1,
     'onbTitle2': onbTitle2,

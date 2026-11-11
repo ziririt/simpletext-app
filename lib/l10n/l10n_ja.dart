@@ -435,6 +435,10 @@ class L10nJa extends L10n {
   @override
   String get findNext => '次へ';
   @override
+  String get replaceAllShort => 'すべて';
+  @override
+  String get replaceHint => '置換後';
+  @override
   String get tableModeScroll => '横にスクロール';
   @override
   String get tableModeFit => '画面幅に合わせる';
@@ -1528,36 +1532,37 @@ class L10nJa extends L10n {
   String get premiumHeadline => '上限なし、広告なし';
 
   @override
-  String get onbTitle1 => '貼るだけで、整います';
+  String get onbWelcome => 'Skyblue Noteへ\nようこそ';
 
   @override
-  String get onbBody1 => 'AIの回答をそのまま貼ってみてください。アスタリスクや井桁、余計な挨拶が一度で消えます。';
+  String get onbTitle1 => '貼り付けるだけで整理';
 
   @override
-  String get onbTitle2 => '崩れた表が立ち直ります';
+  String get onbBody1 => 'AIの回答を貼り付けると、記号やあいさつ文が消えて本文だけが残ります。';
 
   @override
-  String get onbBody2 => 'ずれた表を組み直し、ボタンひとつでExcelやGoogleスプレッドシートにそのまま貼れます。';
+  String get onbTitle2 => '表は表らしく';
 
   @override
-  String get onbTitle3 => 'どの端末でも同じノート';
+  String get onbBody2 => '崩れた表をすぐに整え、画面に合ったスタイルで表示します。';
 
   @override
-  String get onbBody3 =>
-      'iPhone・iPad・Mac、そしてブラウザで開くWebアプリまで同じノートを見ます。併用しているほかの端末もついてきます。一つ直せば残りもついてきます。';
+  String get onbTitle3 => 'どのデバイスでも同じノート';
 
   @override
-  String get onbTitle4 => 'すべて開いています';
+  String get onbBody3 => 'iCloudまたはGoogle Driveで同期して、どこでも続きを書けます。';
 
   @override
-  String onbBody4(int days) =>
-      '$days日間、上限なしでお試しください。続けたくなったらそのとき決めれば十分です。今すぐのお支払いは不要です。';
+  String get onbTitle4 => 'すべての機能をお試し';
+
+  @override
+  String onbBody4(int days) => '$days日間、制限なくお使いいただけます。購入はその後で決められます。';
 
   @override
   String get onbNext => '次へ';
 
   @override
-  String get onbStart => 'はじめる';
+  String get onbStart => '続ける';
 
   @override
   String get onbSkip => 'スキップ';

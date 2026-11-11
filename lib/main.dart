@@ -7094,6 +7094,9 @@ class _EditorScreenState extends State<EditorScreen>
   final TextEditingController _findCtl = TextEditingController();
   final FocusNode _findFocus = FocusNode();
   int _findIdx = -1;
+  bool _replaceMode = false;
+  bool _findRegex = false;
+  final TextEditingController _replCtl = TextEditingController();
 
   void _openFindBar() {
     setState(() => _findOpen = true);
@@ -7121,14 +7124,61 @@ class _EditorScreenState extends State<EditorScreen>
     setState(() {
       _findOpen = false;
       _findIdx = -1;
+      _replaceMode = false;
     });
   }
+
+  /// 바꿀 말. \n·\t 는 줄바꿈·탭으로, 정규식이면 \$1 같은 묶음을 채운다.
+  String _replFor(String matched) {
+    var r = _replCtl.text.replaceAll(r'\n', '\n').replaceAll(r'\t', '\t');
+    if (_findRegex) {
+      try {
+        final m = RegExp(_findCtl.text).firstMatch(matched);
+        if (m != null) {
+          for (int g = 1; g <= m.groupCount; g++) {
+            r = r.replaceAll('\$$g', m.group(g) ?? '');
+          }
+        }
+      } catch (_) {}
+    }
+    return r;
+  }
+
+  /// 지금 자리 하나를 바꾸고 다음으로.
+  Future<void> _replaceCurrent() async {
+    final hits = bodyCtl.findHits;
+    if (_findIdx < 0 || _findIdx >= hits.length) return;
+    final h = hits[_findIdx];
+    final t = bodyCtl.text;
+    final repl = _replFor(t.substring(h.start, h.end));
+    note.pushHistory(t, why: 'replace');
+    bodyCtl.text = t.replaceRange(h.start, h.end, repl);
+    await _save();
+    // 같은 순번이 이제 '다음 것'이다.
+    _findUpdate();
+  }
+
+  Future<void> _replaceEvery() async {
+    final hits = bodyCtl.findHits;
+    if (hits.isEmpty) return;
+    var t = bodyCtl.text;
+    note.pushHistory(t, why: 'replace');
+    for (final h in hits.reversed) {
+      t = t.replaceRange(h.start, h.end, _replFor(t.substring(h.start, h.end)));
+    }
+    bodyCtl.text = t;
+    await _save();
+    final n = hits.length;
+    _findUpdate(reset: true);
+    if (mounted) _toast(context, L10n.of(context).replacedCount(n));
+  }
+
 
   void _findUpdate({bool reset = false}) {
     final q = _findCtl.text;
     final hits = q.isEmpty
         ? const <({int start, int end})>[]
-        : findAll(bodyCtl.text, q);
+        : findAll(bodyCtl.text, q, regex: _findRegex);
     if (hits.isEmpty) {
       _findIdx = -1;
     } else if (reset || _findIdx < 0) {
@@ -7178,92 +7228,173 @@ class _EditorScreenState extends State<EditorScreen>
     });
   }
 
+  /// 찾기 막대. 2026-11-12 소유자 — "대치 팝업도 애플 기본 앱처럼."
+  /// 대화창을 띄우지 않고 막대가 한 줄 더 펴진다(애플 메모·Pages 의 찾기와
+  /// 바꾸기). 위 줄: 찾기 칸 ‹ › 완료. 아래 줄: 바꿀 말 칸 · 바꾸기 · 모두.
+  /// 정규식과 규칙 저장처럼 가끔 쓰는 것은 '⋯' 한 겹 뒤로.
   Widget _findBar() {
     final l = L10n.of(context);
+    final c = context.c;
     final n = bodyCtl.findHits.length;
     final q = _findCtl.text;
     final count = q.isEmpty ? '' : (n == 0 ? '0' : '${_findIdx + 1}/$n');
+    InputDecoration deco(String hint, IconData icon, {String? suffix}) =>
+        InputDecoration(
+          isDense: true,
+          hintText: hint,
+          prefixIcon: Icon(icon, size: 16, color: c.sub),
+          prefixIconConstraints: const BoxConstraints(minWidth: 32),
+          suffixText: suffix,
+          suffixStyle: TextStyle(
+            fontSize: 13,
+            color: n == 0 && q.isNotEmpty ? c.danger : c.sub,
+          ),
+          filled: true,
+          fillColor: c.field,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 9,
+            horizontal: 8,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        );
+    final textBtn = TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      minimumSize: const Size(0, 36),
+      visualDensity: VisualDensity.compact,
+    );
+    Widget icon(IconData ic, String tip, VoidCallback? on) => IconButton(
+      visualDensity: VisualDensity.compact,
+      tooltip: tip,
+      onPressed: on,
+      icon: Icon(ic, size: 18),
+    );
     return Material(
-      color: context.c.toolbar,
+      color: c.toolbar,
       child: Container(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: context.c.toolbarLine)),
+          border: Border(top: BorderSide(color: c.toolbarLine)),
         ),
         padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
-                controller: _findCtl,
-                focusNode: _findFocus,
-                textInputAction: TextInputAction.search,
-                onChanged: (_) => _findUpdate(reset: true),
-                // 자판의 '검색'은 다음으로 — 맥 메모장의 리턴과 같다.
-                onSubmitted: (_) {
-                  _findStep(1);
-                  _findFocus.requestFocus();
-                },
-                style: const TextStyle(fontSize: 15),
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: l.findLabel,
-                  prefixIcon: const Icon(CupertinoIcons.search, size: 17),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 34),
-                  suffixText: count,
-                  suffixStyle: TextStyle(
-                    fontSize: 13,
-                    color: n == 0 && q.isNotEmpty
-                        ? context.c.danger
-                        : context.c.sub,
-                  ),
-                  filled: true,
-                  fillColor: context.c.field,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 9,
-                    horizontal: 8,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _findCtl,
+                    focusNode: _findFocus,
+                    textInputAction: TextInputAction.search,
+                    onChanged: (_) => _findUpdate(reset: true),
+                    onSubmitted: (_) {
+                      _findStep(1);
+                      _findFocus.requestFocus();
+                    },
+                    style: const TextStyle(fontSize: 15),
+                    decoration: deco(
+                      l.findLabel,
+                      CupertinoIcons.search,
+                      suffix: count,
+                    ),
                   ),
                 ),
+                icon(
+                  CupertinoIcons.chevron_left,
+                  l.findPrev,
+                  n > 1 ? () => _findStep(-1) : null,
+                ),
+                icon(
+                  CupertinoIcons.chevron_right,
+                  l.findNext,
+                  n > 1 ? () => _findStep(1) : null,
+                ),
+                // 대치는 켜고 끄는 스위치다 — 켜지면 강조색.
+                TextButton(
+                  style: textBtn.copyWith(
+                    foregroundColor: WidgetStatePropertyAll(
+                      _replaceMode ? c.accent : null,
+                    ),
+                  ),
+                  onPressed: () =>
+                      setState(() => _replaceMode = !_replaceMode),
+                  child: Text(
+                    l.showReplaceLabel,
+                    style: TextStyle(
+                      fontWeight: _replaceMode
+                          ? FontWeight.w700
+                          : FontWeight.w400,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  style: textBtn,
+                  onPressed: _closeFindBar,
+                  child: Text(
+                    l.done,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            if (_replaceMode) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _replCtl,
+                      textInputAction: TextInputAction.done,
+                      style: const TextStyle(fontSize: 15),
+                      decoration: deco(
+                        l.replaceHint,
+                        CupertinoIcons.arrow_2_squarepath,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    style: textBtn,
+                    onPressed: n > 0 ? () => unawaited(_replaceCurrent()) : null,
+                    child: Text(l.replaceOneAction),
+                  ),
+                  TextButton(
+                    style: textBtn,
+                    onPressed: n > 0 ? () => unawaited(_replaceEvery()) : null,
+                    child: Text(l.replaceAllShort),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: '',
+                    icon: Icon(
+                      CupertinoIcons.ellipsis_circle,
+                      size: 20,
+                      color: c.sub,
+                    ),
+                    onSelected: (v) {
+                      if (v == 'regex') {
+                        setState(() => _findRegex = !_findRegex);
+                        _findUpdate(reset: true);
+                      } else if (v == 'rule') {
+                        final f = _findCtl.text;
+                        _closeFindBar();
+                        unawaited(
+                          _showFindDialog(initialFind: f, replace: true),
+                        );
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      CheckedPopupMenuItem(
+                        value: 'regex',
+                        checked: _findRegex,
+                        child: Text(l.regexLabel),
+                      ),
+                      PopupMenuItem(value: 'rule', child: Text(l.saveAsRule)),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              tooltip: l.findPrev,
-              onPressed: n > 1 ? () => _findStep(-1) : null,
-              icon: const Icon(CupertinoIcons.chevron_left, size: 18),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              tooltip: l.findNext,
-              onPressed: n > 1 ? () => _findStep(1) : null,
-              icon: const Icon(CupertinoIcons.chevron_right, size: 18),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                minimumSize: const Size(0, 36),
-              ),
-              onPressed: () {
-                final text = _findCtl.text;
-                _closeFindBar();
-                unawaited(_showFindDialog(initialFind: text, replace: true));
-              },
-              child: Text(l.showReplaceLabel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                minimumSize: const Size(0, 36),
-              ),
-              onPressed: _closeFindBar,
-              child: Text(
-                l.done,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
+            ],
           ],
         ),
       ),
@@ -8653,6 +8784,7 @@ class _EditorScreenState extends State<EditorScreen>
     _edgeTimer?.cancel();
     _bodyScroll.dispose();
     _findCtl.dispose();
+    _replCtl.dispose();
     _findFocus.dispose();
     // 지금 쓰면 나가는 애니메이션이 무너진다(Store.flushAfter 주석).
     //
@@ -11346,7 +11478,8 @@ class _EditorScreenState extends State<EditorScreen>
                             return;
                           }
                           if (v == 'replace') {
-                            _showFindDialog();
+                            _openFindBar();
+                            setState(() => _replaceMode = true);
                             return;
                           }
                           if (v == 'copy') {
@@ -15226,76 +15359,70 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pc = PageController();
-  int _i = 0;
-
-  static const int _pages = 4;
-
-  @override
-  void dispose() {
-    _pc.dispose();
-    super.dispose();
-  }
+  // 2026-11-12 소유자 지시 — "온보딩을 애플 기본 앱처럼. 지금은 초보틱하고
+  // 촌스럽다. 선명한 느낌도 없고 다시 보고 싶지 않다. 카피도 촌스럽다."
+  //
+  // 넘기는 네 장(큰 동그라미 그림 + 굵은 제목 + 긴 설명)을 버리고, 애플
+  // 메모·Pages·Freeform 의 첫 화면 문법을 따른다: 한 장. 위에 큰 환영 제목,
+  // 그 아래 기능 넷을 **왼쪽 그림 + 짧은 제목 + 회색 한 줄**로 세우고, 맨
+  // 아래 '계속' 하나. 그림은 강조색 선 아이콘, 장식 없음. 줄들은 차례로
+  // 살짝 떠오른다(애플이 쓰는 그 정도만).
 
   void _close() {
     if (Navigator.canPop(context)) Navigator.pop(context);
   }
 
-  void _next() {
-    if (_i >= _pages - 1) {
-      _close();
-      return;
-    }
-    _pc.nextPage(
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-    );
-  }
-
-  Widget _page(IconData icon, String title, String body) {
+  Widget _row(int i, IconData icon, String title, String body) {
     final c = context.c;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 그림 자산이 없다. 아이콘 하나를 크게 세우고 그 뒤에 브랜드
-          // 색을 옅게 깐다 — 빈 네모를 두는 것보다 낫고, 나라마다 글자가
-          // 들어간 그림을 다시 그릴 필요도 없다.
-          Container(
-            width: 132,
-            height: 132,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  c.accent.withValues(alpha: .18),
-                  c.accent.withValues(alpha: .05),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: 380 + 90 * i),
+      curve: Curves.easeOutCubic,
+      builder: (_, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 28),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 52,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(icon, size: 32, color: c.accent),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16.5,
+                      height: 1.3,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    body,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 1.4,
+                      letterSpacing: -.1,
+                      color: c.sub,
+                    ),
+                  ),
                 ],
               ),
             ),
-            child: Icon(icon, size: 62, color: c.accent),
-          ),
-          const SizedBox(height: 40),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 27,
-              height: 1.25,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -.5,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            body,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16.5, height: 1.6),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -15304,104 +15431,105 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final l = L10n.of(context);
     final c = context.c;
-    final last = _i == _pages - 1;
+    final wide = MediaQuery.sizeOf(context).width > 600;
     return Scaffold(
+      backgroundColor: c.panel,
       body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _close,
-                child: Text(
-                  l.onbSkip,
-                  style: TextStyle(fontSize: 15, color: c.sub),
-                ),
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pc,
-                onPageChanged: (v) => setState(() => _i = v),
-                children: [
-                  _page(Icons.content_paste_go, l.onbTitle1, l.onbBody1),
-                  _page(Icons.table_chart_outlined, l.onbTitle2, l.onbBody2),
-                  _page(Icons.devices, l.onbTitle3, l.onbBody3),
-                  _page(
-                    Icons.workspace_premium,
-                    l.onbTitle4,
-                    l.onbBody4(kTrialActiveDays),
-                  ),
-                ],
-              ),
-            ),
-            // 점. 몇 장인지 알면 사람은 끝까지 넘긴다 — 끝이 안 보이면 만다.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_pages, (k) {
-                final on = k == _i;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: on ? 22 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: on ? c.accent : c.line,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                );
-              }),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 22, 24, 14),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: _next,
-                      child: Text(
-                        last ? l.onbStart : l.onbNext,
-                        style: const TextStyle(
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // 마지막 장에서만 값 화면으로 가는 문을 연다. 그 전에 두면
-                  // 기능을 보러 온 사람에게 값부터 들이미는 꼴이 된다.
-                  if (last && kPaidTierLive)
-                    TextButton(
-                      onPressed: () {
-                        _close();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) =>
-                                const AdFreeScope(child: PremiumScreen()),
+        child: Center(
+          child: ConstrainedBox(
+            // 아이패드·맥에서는 가운데 기둥으로. 줄이 너무 길면 눈이 길을 잃는다.
+            constraints: BoxConstraints(maxWidth: wide ? 480 : 560),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(32, wide ? 72 : 56, 32, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            l.onbWelcome,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 32,
+                              height: 1.18,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -.8,
+                            ),
                           ),
-                        );
-                      },
-                      child: Text(
-                        l.onbSeePremium,
-                        style: TextStyle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w700,
-                          color: c.accent,
+                        ),
+                        SizedBox(height: wide ? 52 : 44),
+                        _row(
+                          0,
+                          CupertinoIcons.doc_on_clipboard,
+                          l.onbTitle1,
+                          l.onbBody1,
+                        ),
+                        _row(1, CupertinoIcons.table, l.onbTitle2, l.onbBody2),
+                        _row(2, CupertinoIcons.cloud, l.onbTitle3, l.onbBody3),
+                        _row(
+                          3,
+                          CupertinoIcons.sparkles,
+                          l.onbTitle4,
+                          l.onbBody4(kTrialActiveDays),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 8, 28, 12),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: FilledButton(
+                          // 이 단추만은 또렷한 파랑에 흰 글자 — 애플 첫 화면의 '계속'.
+                          // 앱의 다른 채운 단추(연한 하늘 + 남색 글자)보다 한 단계
+                          // 진하다. 첫인상의 선명함이 여기서 난다(소유자 '선명한 느낌').
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF0A5CF5),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          onPressed: _close,
+                          child: Text(
+                            l.onbStart,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                      if (kPaidTierLive)
+                        TextButton(
+                          onPressed: () {
+                            _close();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    const AdFreeScope(child: PremiumScreen()),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            l.onbSeePremium,
+                            style: TextStyle(fontSize: 15, color: c.accent),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

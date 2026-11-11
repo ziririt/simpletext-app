@@ -434,6 +434,10 @@ class L10nZhHans extends L10n {
   @override
   String get findNext => '下一个';
   @override
+  String get replaceAllShort => '全部';
+  @override
+  String get replaceHint => '替换为';
+  @override
   String get tableModeScroll => '横向滚动';
   @override
   String get tableModeFit => '适应宽度';
@@ -1511,35 +1515,37 @@ class L10nZhHans extends L10n {
   String get premiumHeadline => '无上限，无广告';
 
   @override
-  String get onbTitle1 => '粘贴，就整理好了';
+  String get onbWelcome => '欢迎使用\nSkyblue Note';
 
   @override
-  String get onbBody1 => '把 AI 的回答原样粘进来。星号、井号和多余的寒暄一次就清干净。';
+  String get onbTitle1 => '粘贴即整理';
 
   @override
-  String get onbTitle2 => '错乱的表格重新立起';
+  String get onbBody1 => '粘贴 AI 回答，符号和客套话自动去掉，只留下正文。';
 
   @override
-  String get onbBody2 => '把错位的表格重新排好，一键即可原样粘进 Excel 或 Google 表格。';
+  String get onbTitle2 => '表格就该像表格';
 
   @override
-  String get onbTitle3 => '每台设备都是同一份笔记';
+  String get onbBody2 => '错乱的表格立即复原，并以适合屏幕的样式显示。';
 
   @override
-  String get onbBody3 =>
-      'iPhone、iPad、Mac，还有在浏览器里打开的网页版，看到的都是同一份笔记。同时使用的其他设备也会跟上。改一处，其余跟着变。';
+  String get onbTitle3 => '所有设备，同一份笔记';
 
   @override
-  String get onbTitle4 => '全部已经开放';
+  String get onbBody3 => '通过 iCloud 或 Google Drive 同步，随时随地接着写。';
 
   @override
-  String onbBody4(int days) => '$days 天内不限次数先用着。觉得值得再决定也不迟，现在不用付费。';
+  String get onbTitle4 => '全部功能免费试用';
+
+  @override
+  String onbBody4(int days) => '$days 天内不限次数使用全部功能，之后再决定是否购买。';
 
   @override
   String get onbNext => '下一步';
 
   @override
-  String get onbStart => '开始使用';
+  String get onbStart => '继续';
 
   @override
   String get onbSkip => '跳过';

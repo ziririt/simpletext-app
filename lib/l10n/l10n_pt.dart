@@ -448,6 +448,10 @@ class L10nPt extends L10n {
   @override
   String get findNext => 'Próximo';
   @override
+  String get replaceAllShort => 'Tudo';
+  @override
+  String get replaceHint => 'Substituir por';
+  @override
   String get tableModeScroll => 'Rolar na horizontal';
   @override
   String get tableModeFit => 'Ajustar largura';
@@ -1596,38 +1600,37 @@ class L10nPt extends L10n {
   String get premiumHeadline => 'Sem limite. Sem anúncios.';
 
   @override
-  String get onbTitle1 => 'Cole, e já fica limpo';
+  String get onbWelcome => 'Boas-vindas ao\nSkyblue Note';
 
   @override
-  String get onbBody1 =>
-      'Cole a resposta da IA como ela veio. Asteriscos, cerquilhas e saudações de enfeite saem de uma vez.';
+  String get onbTitle1 => 'Cole e está limpo';
 
   @override
-  String get onbTitle2 => 'Tabelas quebradas voltam a ficar de pé';
+  String get onbBody1 => 'Cole uma resposta de IA: símbolos e saudações somem e fica só o texto.';
 
   @override
-  String get onbBody2 =>
-      'Tabelas desalinhadas são refeitas, e um toque cola tudo direto no Excel ou no Google Sheets.';
+  String get onbTitle2 => 'Tabelas que continuam tabelas';
 
   @override
-  String get onbTitle3 => 'As mesmas notas em todo lugar';
+  String get onbBody2 => 'Tabelas quebradas se ajeitam e se adaptam à sua tela.';
 
   @override
-  String get onbBody3 =>
-      'iPhone, iPad, Mac e o app web no navegador mostram as mesmas notas. Outros aparelhos usados junto também acompanham. Mude num lugar e o resto acompanha.';
+  String get onbTitle3 => 'As mesmas notas em todos os aparelhos';
 
   @override
-  String get onbTitle4 => 'Tudo está aberto';
+  String get onbBody3 => 'Sincronize com o iCloud ou o Google Drive e continue de onde parou.';
 
   @override
-  String onbBody4(int days) =>
-      'Use sem limites por $days dias. Decida depois, se valer a pena. Agora não há nada a pagar.';
+  String get onbTitle4 => 'Tudo para experimentar';
+
+  @override
+  String onbBody4(int days) => 'Use todos os recursos por $days dias. Decida depois.';
 
   @override
   String get onbNext => 'Próximo';
 
   @override
-  String get onbStart => 'Começar';
+  String get onbStart => 'Continuar';
 
   @override
   String get onbSkip => 'Pular';

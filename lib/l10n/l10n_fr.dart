@@ -452,6 +452,10 @@ class L10nFr extends L10n {
   @override
   String get findNext => 'Suivant';
   @override
+  String get replaceAllShort => 'Tout';
+  @override
+  String get replaceHint => 'Remplacer par';
+  @override
   String get tableModeScroll => 'Défiler latéralement';
   @override
   String get tableModeFit => 'Adapter la largeur';
@@ -1602,38 +1606,37 @@ class L10nFr extends L10n {
   String get premiumHeadline => 'Sans limite. Sans publicité.';
 
   @override
-  String get onbTitle1 => 'Collez, c’est mis au propre';
+  String get onbWelcome => 'Bienvenue dans\nSkyblue Note';
 
   @override
-  String get onbBody1 =>
-      'Collez la réponse de l’IA telle quelle. Astérisques, dièses et formules de politesse partent d’un coup.';
+  String get onbTitle1 => 'Collez, c’est rangé';
 
   @override
-  String get onbTitle2 => 'Les tableaux cassés se redressent';
+  String get onbBody1 => 'Collez une réponse d’IA : symboles et formules de politesse disparaissent, le texte reste.';
 
   @override
-  String get onbBody2 =>
-      'Les tableaux désalignés sont reconstruits, et un appui les colle tels quels dans Excel ou Google Sheets.';
+  String get onbTitle2 => 'Des tableaux qui restent des tableaux';
+
+  @override
+  String get onbBody2 => 'Les tableaux cassés se redressent et s’adaptent à votre écran.';
 
   @override
   String get onbTitle3 => 'Les mêmes notes partout';
 
   @override
-  String get onbBody3 =>
-      'iPhone, iPad, Mac et l’application web dans le navigateur affichent les mêmes notes. Les autres appareils utilisés en parallèle suivent aussi. Modifiez d’un côté, le reste suit.';
+  String get onbBody3 => 'Synchronisez avec iCloud ou Google Drive et reprenez là où vous étiez.';
 
   @override
-  String get onbTitle4 => 'Tout est ouvert';
+  String get onbTitle4 => 'Tout, à essayer';
 
   @override
-  String onbBody4(int days) =>
-      'Utilisez sans limite pendant $days jours. Vous déciderez ensuite, si cela vaut le coup. Rien à payer maintenant.';
+  String onbBody4(int days) => 'Profitez de toutes les fonctions pendant $days jours. Vous déciderez ensuite.';
 
   @override
   String get onbNext => 'Suivant';
 
   @override
-  String get onbStart => 'Commencer';
+  String get onbStart => 'Continuer';
 
   @override
   String get onbSkip => 'Passer';
