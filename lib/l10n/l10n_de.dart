@@ -446,6 +446,10 @@ class L10nDe extends L10n {
   @override
   String get tableStyleHint => 'Wähle passend zur Bildschirmbreite von Smartphone oder PC. Der Stil lässt sich später ändern.';
   @override
+  String get findPrev => 'Zurück';
+  @override
+  String get findNext => 'Weiter';
+  @override
   String get tableModeScroll => 'Seitlich scrollen';
   @override
   String get tableModeFit => 'Breite anpassen';

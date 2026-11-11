@@ -431,6 +431,10 @@ class L10nKo extends L10n {
   @override
   String get tableStyleHint => '스마트폰, PC 등 화면 너비를 고려하여 선택하세요. 이후에 스타일 변경이 가능합니다.';
   @override
+  String get findPrev => '이전';
+  @override
+  String get findNext => '다음';
+  @override
   String get tableModeScroll => '가로로 밀기';
   @override
   String get tableModeFit => '화면 폭 맞춤';

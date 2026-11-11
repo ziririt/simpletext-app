@@ -430,6 +430,10 @@ class L10nZhHans extends L10n {
   @override
   String get tableStyleHint => '请根据手机、电脑等屏幕宽度选择。之后也可以更改样式。';
   @override
+  String get findPrev => '上一个';
+  @override
+  String get findNext => '下一个';
+  @override
   String get tableModeScroll => '横向滚动';
   @override
   String get tableModeFit => '适应宽度';

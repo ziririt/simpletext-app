@@ -444,6 +444,10 @@ class L10nPt extends L10n {
   @override
   String get tableStyleHint => 'Escolha conforme a largura da tela, celular ou PC. Você pode mudar o estilo depois.';
   @override
+  String get findPrev => 'Anterior';
+  @override
+  String get findNext => 'Próximo';
+  @override
   String get tableModeScroll => 'Rolar na horizontal';
   @override
   String get tableModeFit => 'Ajustar largura';

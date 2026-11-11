@@ -38,6 +38,13 @@ class MonoTextController extends TextEditingController {
   /// 새 글을 접어 버린다. 함수면 언제 불려도 지금 글자로 셈한다.
   List<CardSlot> Function(String text)? cardSlots;
 
+  /// 찾기 막대가 찾은 자리들과 지금 보고 있는 것(2026-11-12). 본문에 손이
+  /// 없어도(찾기 칸에 손이 있어도) 어디인지 보이게 바탕색으로 칠한다.
+  List<({int start, int end})> findHits = const [];
+  int findCurrent = -1;
+  Color findColor = const Color(0x55FFD54F);
+  Color findCurrentColor = const Color(0xFFFFC107);
+
   /// 제목을 얼마나 키우나.
   ///
   /// 값을 1.3 위로 안 올리는 데는 까닭이 있다. 이 앱에는 **줄 쳐진 종이**가
@@ -128,7 +135,8 @@ class MonoTextController extends TextEditingController {
         rich.isEmpty &&
         composing == null &&
         gaps.isEmpty &&
-        cards.isEmpty) {
+        cards.isEmpty &&
+        findHits.isEmpty) {
       return TextSpan(text: text, style: style);
     }
 
@@ -163,6 +171,10 @@ class MonoTextController extends TextEditingController {
     for (final r in rich) {
       cuts.add(r.start.clamp(0, text.length));
       cuts.add(r.end.clamp(0, text.length));
+    }
+    for (final h in findHits) {
+      cuts.add(h.start.clamp(0, text.length));
+      cuts.add(h.end.clamp(0, text.length));
     }
     for (final c in cards) {
       cuts.add(c.start);
@@ -209,6 +221,15 @@ class MonoTextController extends TextEditingController {
         segStyle = segStyle.copyWith(
           height: (segStyle.height ?? lineHeight) * paraGap,
         );
+      }
+      for (var fi = 0; fi < findHits.length; fi++) {
+        final h = findHits[fi];
+        if (a >= h.start && b <= h.end) {
+          segStyle = segStyle.copyWith(
+            backgroundColor: fi == findCurrent ? findCurrentColor : findColor,
+          );
+          break;
+        }
       }
       // 표 카드 자리. 첫 줄은 카드 높이만큼 비우고, 나머지 줄은 접는다.
       // 글자는 그대로 있다 — 커서 자리와 글자 수가 어긋나면 안 된다.

@@ -261,6 +261,10 @@ abstract class L10n {
 
   /// 표 스타일 선택 창의 안내(2026-11-12).
   String get tableStyleHint;
+
+  /// 찾기 막대 ‹ › (2026-11-12).
+  String get findPrev;
+  String get findNext;
   String get tableModeScroll;
   String get tableModeFit;
   String get tableModeAligned;
@@ -1091,6 +1095,8 @@ abstract class L10n {
     'wideTableFit': wideTableFit,
     'tableEditTitle': tableEditTitle,
     'tableStyleHint': tableStyleHint,
+    'findPrev': findPrev,
+    'findNext': findNext,
     'tableModeScroll': tableModeScroll,
     'tableModeFit': tableModeFit,
     'tableModeAligned': tableModeAligned,

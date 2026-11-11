@@ -448,6 +448,10 @@ class L10nFr extends L10n {
   @override
   String get tableStyleHint => 'Choisissez selon la largeur d’écran, smartphone ou PC. Vous pourrez changer de style plus tard.';
   @override
+  String get findPrev => 'Précédent';
+  @override
+  String get findNext => 'Suivant';
+  @override
   String get tableModeScroll => 'Défiler latéralement';
   @override
   String get tableModeFit => 'Adapter la largeur';

@@ -431,6 +431,10 @@ class L10nJa extends L10n {
   @override
   String get tableStyleHint => 'スマートフォンやPCなど、画面の幅を考えて選んでください。あとからスタイルを変更できます。';
   @override
+  String get findPrev => '前へ';
+  @override
+  String get findNext => '次へ';
+  @override
   String get tableModeScroll => '横にスクロール';
   @override
   String get tableModeFit => '画面幅に合わせる';

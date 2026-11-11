@@ -6322,6 +6322,7 @@ class _EditorScreenState extends State<EditorScreen>
   String _lastBody = '';
 
   void _onBodyChanged(String v) {
+    if (_findOpen) _findUpdate();
     final before = _lastBody;
     _lastBody = v;
     _save();
@@ -7083,6 +7084,192 @@ class _EditorScreenState extends State<EditorScreen>
   /// 접은 줄들이 그래도 차지하는 키(카드 순번별). 비워 둘 줄에서 뺀다.
   final Map<int, double> _cardExtra = {};
 
+  // ── 찾기 막대 (2026-11-12 소유자 신고) ───────────────────────────────
+  //
+  // "찾은 게 둘 이상이면 '다음' '이전'이 없어 두 번째부터는 찾아갈 수가
+  // 없다." 예전 찾기는 대화창이었고, '찾기'를 누르면 첫 자리로 뛰고 창이
+  // 닫혔다. 맥 메모장(텍스트 편집기)처럼 막대가 떠 있는 채로 ‹ › 로 오간다.
+  // 찾은 자리는 본문에 바탕색으로 칠하고(지금 것은 진하게) 그 자리로 굴린다.
+  bool _findOpen = false;
+  final TextEditingController _findCtl = TextEditingController();
+  final FocusNode _findFocus = FocusNode();
+  int _findIdx = -1;
+
+  void _openFindBar() {
+    setState(() => _findOpen = true);
+    // 고른 글자가 있으면 그것을 찾는다 — 맥 메모장과 같은 버릇.
+    final sel = bodyCtl.selection;
+    if (sel.isValid && !sel.isCollapsed) {
+      _findCtl.text = sel.textInside(bodyCtl.text);
+    }
+    _findUpdate(reset: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _findFocus.requestFocus();
+    });
+  }
+
+  void _closeFindBar() {
+    final hits = bodyCtl.findHits;
+    if (_findIdx >= 0 && _findIdx < hits.length) {
+      bodyCtl.selection = TextSelection(
+        baseOffset: hits[_findIdx].start,
+        extentOffset: hits[_findIdx].end,
+      );
+    }
+    bodyCtl.findHits = const [];
+    bodyCtl.findCurrent = -1;
+    setState(() {
+      _findOpen = false;
+      _findIdx = -1;
+    });
+  }
+
+  void _findUpdate({bool reset = false}) {
+    final q = _findCtl.text;
+    final hits = q.isEmpty
+        ? const <({int start, int end})>[]
+        : findAll(bodyCtl.text, q);
+    if (hits.isEmpty) {
+      _findIdx = -1;
+    } else if (reset || _findIdx < 0) {
+      // 커서 자리에서부터. 그 뒤에 없으면 처음 것.
+      final at = bodyCtl.selection.isValid ? bodyCtl.selection.start : 0;
+      final i = hits.indexWhere((h) => h.start >= at);
+      _findIdx = i < 0 ? 0 : i;
+    } else {
+      _findIdx = _findIdx.clamp(0, hits.length - 1);
+    }
+    bodyCtl.findHits = hits;
+    bodyCtl.findCurrent = _findIdx;
+    setState(() {});
+    _findReveal();
+  }
+
+  void _findStep(int d) {
+    final n = bodyCtl.findHits.length;
+    if (n == 0) return;
+    _findIdx = (_findIdx + d) % n;
+    if (_findIdx < 0) _findIdx += n;
+    bodyCtl.findCurrent = _findIdx;
+    setState(() {});
+    _findReveal();
+  }
+
+  /// 지금 찾은 자리가 화면에 오게 굴린다.
+  void _findReveal() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final hits = bodyCtl.findHits;
+      if (_findIdx < 0 || _findIdx >= hits.length) return;
+      final ed = _findEditable(_bodyKey.currentContext?.findRenderObject());
+      if (ed == null || !ed.attached) return;
+      final boxes = ed.getBoxesForSelection(
+        TextSelection(
+          baseOffset: hits[_findIdx].start,
+          extentOffset: hits[_findIdx].end,
+        ),
+      );
+      if (boxes.isEmpty) return;
+      ed.showOnScreen(
+        rect: boxes.first.toRect().inflate(90),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  Widget _findBar() {
+    final l = L10n.of(context);
+    final n = bodyCtl.findHits.length;
+    final q = _findCtl.text;
+    final count = q.isEmpty ? '' : (n == 0 ? '0' : '${_findIdx + 1}/$n');
+    return Material(
+      color: context.c.toolbar,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: context.c.toolbarLine)),
+        ),
+        padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _findCtl,
+                focusNode: _findFocus,
+                textInputAction: TextInputAction.search,
+                onChanged: (_) => _findUpdate(reset: true),
+                // 자판의 '검색'은 다음으로 — 맥 메모장의 리턴과 같다.
+                onSubmitted: (_) {
+                  _findStep(1);
+                  _findFocus.requestFocus();
+                },
+                style: const TextStyle(fontSize: 15),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: l.findLabel,
+                  prefixIcon: const Icon(CupertinoIcons.search, size: 17),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 34),
+                  suffixText: count,
+                  suffixStyle: TextStyle(
+                    fontSize: 13,
+                    color: n == 0 && q.isNotEmpty
+                        ? context.c.danger
+                        : context.c.sub,
+                  ),
+                  filled: true,
+                  fillColor: context.c.field,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 9,
+                    horizontal: 8,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: l.findPrev,
+              onPressed: n > 1 ? () => _findStep(-1) : null,
+              icon: const Icon(CupertinoIcons.chevron_left, size: 18),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: l.findNext,
+              onPressed: n > 1 ? () => _findStep(1) : null,
+              icon: const Icon(CupertinoIcons.chevron_right, size: 18),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: const Size(0, 36),
+              ),
+              onPressed: () {
+                final text = _findCtl.text;
+                _closeFindBar();
+                unawaited(_showFindDialog(initialFind: text, replace: true));
+              },
+              child: Text(l.showReplaceLabel),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: const Size(0, 36),
+              ),
+              onPressed: _closeFindBar,
+              child: Text(
+                l.done,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   List<CardSlot> _cardSlotsFor(String text) {
     if (_cardW <= 0 || !text.contains('```$kScrollTableFence')) {
       _cardKey = null;
@@ -7723,7 +7910,7 @@ class _EditorScreenState extends State<EditorScreen>
   >
   _tools(L10n l) => [
     // 2026-08-27 소유자 지시 — 찾기를 맨 왼쪽으로.
-    _tool(icon: Icons.search, tip: l.findTitle, onTap: _showFindDialog),
+    _tool(icon: Icons.search, tip: l.findTitle, onTap: _openFindBar),
     // 2026-08-27 밤 소유자 지시 — 구분선(수평선)을 두 번째 자리로.
     //
     // 처음에 나는 이 말을 '세로 가름선을 넣어라'로 읽고 가름선을
@@ -8465,6 +8652,8 @@ class _EditorScreenState extends State<EditorScreen>
     bodyCtl.removeListener(_onSelectionChanged);
     _edgeTimer?.cancel();
     _bodyScroll.dispose();
+    _findCtl.dispose();
+    _findFocus.dispose();
     // 지금 쓰면 나가는 애니메이션이 무너진다(Store.flushAfter 주석).
     //
     // 450ms 로 뒀다가 900ms 로 늘렸다(2026-09-09 저녁). 아이폰의 미는
@@ -10451,11 +10640,14 @@ class _EditorScreenState extends State<EditorScreen>
   /// 펴지면서 '바꾸기'와 '모두 바꾸기'가 살아난다. 자주 하는 일을 앞에
   /// 두고 가끔 하는 일을 한 겹 뒤에 두는 것 — 이 앱이 메뉴를 두 뎁스로
   /// 접을 때 쓴 규칙과 같다.
-  Future<void> _showFindDialog() async {
-    final findCtl = TextEditingController();
+  Future<void> _showFindDialog({
+    String initialFind = '',
+    bool replace = false,
+  }) async {
+    final findCtl = TextEditingController(text: initialFind);
     final withCtl = TextEditingController();
     bool useRegex = false;
-    bool showReplace = false;
+    bool showReplace = replace;
     bool saveRule = false;
     bool ruleForAll = true;
     // 어디부터 찾을까. 창을 열 때의 커서 자리에서 시작해서, '바꾸기'를
@@ -12442,7 +12634,9 @@ Stack(
                       ),
                     ),
                     child: SafeArea(
-                      child: (_bodyFocus.hasFocus && !_isDesktop)
+                      child: _findOpen
+                          ? _findBar()
+                          : (_bodyFocus.hasFocus && !_isDesktop)
                           ? _accessoryBar()
                           // 2026-08-19 — 다섯 칸 막대를 걷어냈다. 이제 아래에 남는
                           // 것은 글자를 칠 때 뜨는 보조 막대뿐이다.
@@ -12459,7 +12653,8 @@ Stack(
                   // 글자를 치는 동안에는 감춘다. 키보드 위에 보조 막대가 뜨는데
                   // 그 위에 단추가 또 겹치면 손가락 갈 곳이 없다.
                   floatingActionButtonLocation: const BottomEdgeFabLocation(),
-                  floatingActionButton: (_bodyFocus.hasFocus && !_isDesktop)
+                  floatingActionButton:
+                      (_findOpen || (_bodyFocus.hasFocus && !_isDesktop))
                       ? null
                       : Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),

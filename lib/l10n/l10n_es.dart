@@ -444,6 +444,10 @@ class L10nEs extends L10n {
   @override
   String get tableStyleHint => 'Elige según el ancho de pantalla, móvil o PC. Puedes cambiar el estilo después.';
   @override
+  String get findPrev => 'Anterior';
+  @override
+  String get findNext => 'Siguiente';
+  @override
   String get tableModeScroll => 'Desplazar en horizontal';
   @override
   String get tableModeFit => 'Ajustar ancho';

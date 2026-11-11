@@ -430,6 +430,10 @@ class L10nZhHant extends L10n {
   @override
   String get tableStyleHint => '請依手機、電腦等螢幕寬度選擇。之後也可以變更樣式。';
   @override
+  String get findPrev => '上一個';
+  @override
+  String get findNext => '下一個';
+  @override
   String get tableModeScroll => '橫向捲動';
   @override
   String get tableModeFit => '符合寬度';
