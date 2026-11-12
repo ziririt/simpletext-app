@@ -12372,7 +12372,13 @@ class _EditorScreenState extends State<EditorScreen>
                                             _setSelHandleDrag(false),
                                         onPointerCancel: (_) =>
                                             _setSelHandleDrag(false),
-                                        child: SingleChildScrollView(
+                                        child: ScrollConfiguration(
+                                          // 2026-11-12 맥에서 스크롤 막대가 둘이었다: 데스크톱 기본
+                                          // 막대 + ReadingRail 손잡이. 기본 막대를 끈다.
+                                          behavior: ScrollConfiguration.of(
+                                            context,
+                                          ).copyWith(scrollbars: false),
+                                          child: SingleChildScrollView(
                                           key: _scrollKey,
                                           controller: _bodyScroll,
                                           // 핸들을 끄는 동안만 잠근다(위 _selHandleDrag 머리말).
@@ -12715,6 +12721,7 @@ Stack(
                                               ),
                                             ],
                                           ),
+                                        ),
                                         ),
                                       ),
                                     );

@@ -1384,7 +1384,7 @@ class L10nKo extends L10n {
   @override
   String get menuAppendShort => '이어 붙이기';
   @override
-  String get bookmarkHereShort => '여기에 책갈피';
+  String get bookmarkHereShort => '스크롤 북마크';
   @override
   String get rulesShort => '자동 바꾸기 규칙';
   @override
@@ -1406,19 +1406,19 @@ class L10nKo extends L10n {
   String get adClose => '광고 닫기';
 
   @override
-  String get bookmarkAdd => '여기에 스크롤 책갈피';
+  String get bookmarkAdd => '여기에 스크롤 북마크';
 
   @override
-  String get bookmarkRemove => '책갈피 빼기';
+  String get bookmarkRemove => '스크롤 북마크 빼기';
 
   @override
   String get bookmarkTooShort => '한 화면짜리 글이라 끼울 자리가 없습니다';
 
   @override
-  String bookmarkGoAt(int pct) => '책갈피 $pct%로';
+  String bookmarkGoAt(int pct) => '스크롤 북마크 $pct%로';
 
   @override
-  String bookmarkResume(int pct) => '책갈피 $pct%에서 이어 읽습니다';
+  String bookmarkResume(int pct) => '스크롤 북마크 $pct%에서 이어 읽습니다';
 
   @override
   String get bookmarkToTop => '맨 위로';
@@ -1467,7 +1467,7 @@ class L10nKo extends L10n {
   String get viewReset => '설정 초기화';
 
   @override
-  String bookmarkSaved(int pct) => '$pct% 자리에 책갈피를 끼웠습니다';
+  String bookmarkSaved(int pct) => '$pct% 자리에 스크롤 북마크를 남겼습니다';
   @override
   String get noteDuplicate => '복제';
   @override
