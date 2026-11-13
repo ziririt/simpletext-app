@@ -25,9 +25,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # 2026-11-13: Flutter 버전을 고정한다. channel: stable 만 쓰면 GitHub 이 그날의
+      # 최신판을 받아 와서, 11-11 밤 새 판이 나오자 코드 변경과 무관하게 APK 빌드가
+      # 커밋마다 실패했다(구식 코틀린 플러그인 KGP 를 쓰는 home_widget 등).
+      # 맥에서 실제로 스토어 빌드를 만드는 판과 같은 번호를 쓴다. 올릴 때는 맥과 함께
+      # 올리고, 올리기 전에 맥에서 flutter build apk --release 가 통과하는지 본다.
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.44.9
           cache: true
 
       - name: 의존성 내려받기
