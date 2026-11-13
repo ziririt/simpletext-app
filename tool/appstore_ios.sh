@@ -104,7 +104,9 @@ log "flutter build ipa…"
 # 자세한 것은 docs/셔버드.md.
 export PATH="$HOME/.shorebird/bin:$PATH"
 if [ -f shorebird.yaml ] && command -v shorebird >/dev/null 2>&1; then
-  FV=$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([0-9.]*\).*/\1/p')
+  # 2026-11-14 — 이 맥의 플러터가 3.50.0 으로 올라갔는데 셔버드는 3.47.9 까지만
+  # 안다("Version 3.50.0 not found"). 그럴 때 SKY_FV=3.47.9 로 밖에서 정한다.
+  FV=${SKY_FV:-$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([0-9.]*\).*/\1/p')}
   log "shorebird release ios (flutter $FV)…"
   # shellcheck disable=SC2086
   # 묻는 말("계속할까요?")에는 y 로 답해 둔다 — 터미널이 아니면 안 묻지만, 물어도 간다.
