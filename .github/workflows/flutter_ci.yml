@@ -21,6 +21,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.50.0   # 고정: android_build.yml 의 설명 참조
           cache: true
 
       - name: Get dependencies
