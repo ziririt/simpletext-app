@@ -23,7 +23,10 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          # 21: AGP 9.3 의 lint 가 Java 21 API(List.removeLast)를 쓴다. 17 이면
+          # lintVitalAnalyzeRelease 에서 NoSuchMethodError 로 죽는다(2026-11-14).
+          # 맥은 Android Studio 의 JBR 21 로 빌드하므로 같은 번호를 쓴다.
+          java-version: '21'
 
       # Flutter 판은 고정한다(네 워크플로 모두 같은 번호). channel: stable 만 쓰면 GitHub 이
       # 그날의 최신판을 받아 온다. 2026-11-11 18:46Z 에 3.50.0 이 나오자 코드와 무관하게
