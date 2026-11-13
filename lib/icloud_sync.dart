@@ -348,6 +348,7 @@ class ICloudSync {
       return w.isEmpty ? 'not-ready' : 'not-ready:$w';
     }
     if (err is SocketException) return 'network';
+    if (err is _SaveFailed) return 'save';
     return err.runtimeType.toString();
   }
 
@@ -789,6 +790,9 @@ class ICloudSync {
       store.notes = merged.notes;
       store.tombstones = merged.tombstones;
       await store.persistLocalOnly();
+      // 저장은 이제 실패해도 던지지 않는다(Store.persistLocalOnly). 대신
+      // 여기서 던져, 기록에는 정직하게 '실패(save)'가 남게 한다.
+      if (store.lastSaveError != null) throw _SaveFailed();
     } else {
       store.tombstones = merged.tombstones;
     }
@@ -1331,4 +1335,10 @@ class ICloudSync {
     }
     return '${s.length}:$h';
   }
+}
+
+/// 합친 결과를 이 기기에 저장하지 못했다(브라우저 그릇이 가득 찬 경우 등).
+class _SaveFailed implements Exception {
+  @override
+  String toString() => 'save-failed';
 }

@@ -2273,6 +2273,9 @@ class Store extends ChangeNotifier {
   bool _writing = false;
   bool _writeAgain = false;
 
+  /// 마지막 저장이 디스크에 못 닿았으면 그 까닭. 닿았으면 null.
+  Object? lastSaveError;
+
   Future<void> persistLocalOnly() async {
     if (_writing) {
       _writeAgain = true;
@@ -2303,11 +2306,22 @@ class Store extends ChangeNotifier {
         if (_unreadable.isNotEmpty) 'unreadable': _unreadable,
       };
       final text = await compute(_encodeStore, payload);
-      // 파일이 있는 기기(웹 말고 전부)는 파일에 쓴다. 서랍에 다시 넣지
-      // 않는다 — 16MB 를 서랍에 넣었다가 노트가 사라졌다(2026-11-11).
-      if (!await NoteFile.write(text)) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_notesKey, text);
+      // 파일이 있는 기기는 파일에, 웹은 IndexedDB 에 쓴다(note_file.dart).
+      // 서랍에 다시 넣지 않는다 — 16MB 를 서랍에 넣었다가 노트가
+      // 사라졌다(2026-11-11). 그릇을 못 열 때만 옛 서랍으로 간다.
+      try {
+        if (!await NoteFile.write(text)) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_notesKey, text);
+        }
+        lastSaveError = null;
+      } catch (e) {
+        // 2026-11-13 — 여기서 던지면 부른 쪽이 통째로 멈췄다. 새 메모
+        // 버튼은 편집 화면을 못 열었고, 목록은 다시 안 그려졌다. 메모는
+        // 이미 메모리에 있고 화면은 메모리를 그린다. 디스크에 못 닿은
+        // 것은 적어 두고(동기화 바퀴가 이걸 보고 실패로 기록한다),
+        // 화면 일은 계속한다.
+        lastSaveError = e;
       }
       notifyListeners();
     } finally {

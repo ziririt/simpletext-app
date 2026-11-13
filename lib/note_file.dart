@@ -1,54 +1,24 @@
-// 노트 묶음 파일을 여닫는다. 규칙은 core/note_store_codec.dart 에 있다.
+// 노트 묶음을 여닫는 창구. 판마다 그릇이 다르다.
 //
-// 쓸 때는 **옆 이름에 다 쓰고 나서 이름을 바꾼다.** 쓰다가 앱이 멈춰도
-// 원래 파일은 온전하다. 이름 바꾸기는 한 번에 일어난다.
+//   앱(아이폰·맥·안드로이드)  → 앱 전용 파일 notes.v3.json (note_file_io.dart)
+//   웹                         → 브라우저의 IndexedDB (note_file_web.dart)
 //
-// 웹은 파일이 없다 — 여기 함수들이 null/false 를 돌려주고, Store 가 예전
-// 처럼 SharedPreferences(브라우저 저장소)를 쓴다.
+// 2026-11-13 소유자 신고 — 윈도우 웹판에서 새 메모 버튼이 안 먹히는데
+// 맥에는 '제목 없음'이 마구 생겼다. 동기화 기록에는 "받음 620 · 실패
+// (JSObject)".
+//
+// 11-11 에 앱들은 파일로 옮겼는데 웹만 옛 서랍(localStorage)에 남아
+// 있었다. 그 서랍은 사이트 하나에 약 5MB 다. 노트 620개 묶음은 16MB
+// 안팎이라 들어가지 않는다. 쓰기가 '용량 초과'로 넘어지면서
+//   - 동기화 바퀴가 합치기까지 다 해 놓고 실패로 끝났고,
+//   - 새 메모 버튼은 메모리에 메모를 넣은 뒤 저장에서 넘어져 편집
+//     화면을 못 열었다. 메모리에 들어간 메모는 다음 바퀴에 올라가
+//     맥에 '제목 없음'으로 나타났다.
+// IndexedDB 는 같은 브라우저 안의 그릇이지만 수백 MB 를 받는다.
+//
+// 옮겨 오기는 Store.load() 의 옛길이 그대로 한다: 여기서 null 이 오면
+// 서랍을 읽고, _moveOutOfPrefs 가 새 그릇에 쓴 뒤 **다시 읽어 수가 맞을
+// 때만** 서랍 사본을 지운다.
+library;
 
-import 'dart:io';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:path_provider/path_provider.dart'
-    show getApplicationSupportDirectory;
-
-class NoteFile {
-  NoteFile._();
-
-  static const name = 'notes.v3.json';
-  static String? _path;
-
-  static Future<String?> path() async {
-    if (kIsWeb) return null;
-    if (_path != null) return _path;
-    final dir = await getApplicationSupportDirectory();
-    await dir.create(recursive: true);
-    return _path = '${dir.path}/$name';
-  }
-
-  static Future<String?> read() async {
-    final p = await path();
-    if (p == null) return null;
-    final f = File(p);
-    if (!await f.exists()) return null;
-    return f.readAsString();
-  }
-
-  /// 다 쓰고 디스크에 밀어 넣은 뒤에 이름을 바꾼다.
-  static Future<bool> write(String text) async {
-    final p = await path();
-    if (p == null) return false;
-    final tmp = File('$p.tmp');
-    await tmp.writeAsString(text, flush: true);
-    await tmp.rename(p);
-    return true;
-  }
-
-  /// 읽지 못한 파일을 지우지 않고 옆에 떠 둔다. 나중에 사람이 꺼낼 수 있게.
-  static Future<void> keepBroken(String text) async {
-    final p = await path();
-    if (p == null) return;
-    final ms = DateTime.now().millisecondsSinceEpoch;
-    await File('$p.broken-$ms').writeAsString(text, flush: true);
-  }
-}
+export 'note_file_io.dart' if (dart.library.js_interop) 'note_file_web.dart';
